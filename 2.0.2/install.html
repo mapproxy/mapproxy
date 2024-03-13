@@ -1,0 +1,623 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Installation &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'install';</script>
+    <link rel="canonical" href="/mapproxy/install.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation on OSGeo4W" href="install_osgeo4w.html" />
+    <link rel="prev" title="MapProxy Documentation" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Installation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-new-virtual-environment">Create a new virtual environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-dependencies">Install Dependencies</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Installation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-details">Dependency details</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyproj-or-libproj">pyproj or libproj</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pillow">Pillow</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#yaml">YAML</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#shapely-and-geos-optional">Shapely and GEOS <em>(optional)</em></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gdal-optional">GDAL <em>(optional)</em></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lxml-optional">lxml <em>(optional)</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-mapproxy">Install MapProxy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-configuration">Create a configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-test-server">Start the test server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upgrade">Upgrade</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes">Changes</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
+<p>This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to <a class="reference internal" href="install_windows.html"><span class="doc">Installation on Windows</span></a>.</p>
+<p>This tutorial was created and tested with Debian and Ubuntu, if you’re installing MapProxy on a different system you might need to change some package names.</p>
+<p>MapProxy is <a class="reference external" href="https://pypi.org/project/MapProxy/">registered at the Python Package Index</a> (PyPI). If you have Python 2.7.9 or higher, you can install MapProxy with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
+</pre></div>
+</div>
+<p>This is really, easy <cite>but</cite> we recommend to install MapProxy into a <a class="reference external" href="http://guide.python-distribute.org/virtualenv.html">virtual Python environment</a>. A <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don’t need root permissions for the installation.</p>
+<p><a class="reference external" href="https://virtualenv.pypa.io/en/latest/">Read about virtualenv</a> if you want to know more about the benefits.</p>
+<section id="create-a-new-virtual-environment">
+<h2>Create a new virtual environment<a class="headerlink" href="#create-a-new-virtual-environment" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> is available as <code class="docutils literal notranslate"><span class="pre">python-virtualenv</span></code> on most Linux systems. You can also <a class="reference external" href="https://virtualenv.pypa.io/en/latest/installation.html">install Virtualenv from source</a>.</p>
+<p>To create a new environment with the name <code class="docutils literal notranslate"><span class="pre">mapproxy</span></code> call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">mapproxy</span>
+</pre></div>
+</div>
+<p>You should now have a Python installation under <code class="docutils literal notranslate"><span class="pre">mapproxy/bin/python</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Virtualenv will use your Python system packages (like <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code> or <code class="docutils literal notranslate"><span class="pre">python-yaml</span></code>) only when the virtualenv was created with the <code class="docutils literal notranslate"><span class="pre">--system-site-packages</span></code> option.</p>
+</div>
+<p>You need to either prefix all commands with <code class="docutils literal notranslate"><span class="pre">mapproxy/bin</span></code>, set your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> variable to include the bin directory or <cite>activate</cite> the virtualenv with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">mapproxy</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+<p>This will change the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> for your <cite>current</cite> session.</p>
+</section>
+<section id="install-dependencies">
+<h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this heading">#</a></h2>
+<p>MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.8 or higher, which should already be installed with most Linux distributions.</p>
+<p>MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read <a class="reference internal" href="#dependency-details"><span class="std std-ref">Dependency details</span></a> for a list of all required and optional dependencies.</p>
+<section id="id1">
+<h3>Installation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<p>On a Debian or Ubuntu system, you need to install the following packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">pil</span> <span class="n">python3</span><span class="o">-</span><span class="n">yaml</span> <span class="n">python3</span><span class="o">-</span><span class="n">pyproj</span>
+</pre></div>
+</div>
+<p>To get all optional packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libgeos</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">lxml</span> <span class="n">libgdal</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">dev</span> <span class="n">python3</span><span class="o">-</span><span class="n">shapely</span>
+</pre></div>
+</div>
+</section>
+<section id="dependency-details">
+<span id="id2"></span><h3>Dependency details<a class="headerlink" href="#dependency-details" title="Permalink to this heading">#</a></h3>
+<section id="pyproj-or-libproj">
+<h4>pyproj or libproj<a class="headerlink" href="#pyproj-or-libproj" title="Permalink to this heading">#</a></h4>
+<p>MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
+The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.13: </span>Support for new PROJ API via pyproj.</p>
+</div>
+</section>
+<section id="pillow">
+<span id="dependencies-pil"></span><h4>Pillow<a class="headerlink" href="#pillow" title="Permalink to this heading">#</a></h4>
+<p>Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as <code class="docutils literal notranslate"><span class="pre">python-pil</span></code> or <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code>. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code> should be &gt;=3.1.</p>
+<p>You can install a new version of Pillow from source with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">build</span><span class="o">-</span><span class="n">essential</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">dev</span> \
+  <span class="n">zlib1g</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfreetype6</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">Pillow</span>
+</pre></div>
+</div>
+</section>
+<section id="yaml">
+<h4>YAML<a class="headerlink" href="#yaml" title="Permalink to this heading">#</a></h4>
+<p>MapProxy uses YAML for the configuration parsing. It is available as <code class="docutils literal notranslate"><span class="pre">python-yaml</span></code>, but you can also install it as a Python package with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">PyYAML</span></code>.</p>
+</section>
+<section id="shapely-and-geos-optional">
+<h4>Shapely and GEOS <em>(optional)</em><a class="headerlink" href="#shapely-and-geos-optional" title="Permalink to this heading">#</a></h4>
+<p>You will need Shapely to use the <a class="reference internal" href="coverages.html"><span class="doc">coverage feature</span></a> of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (<code class="docutils literal notranslate"><span class="pre">python-shapely</span></code>) and GEOS (<code class="docutils literal notranslate"><span class="pre">libgeos-dev</span></code>). You can install Shapely as a Python package with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">Shapely</span></code> if you system does not provide a recent (&gt;= 1.8) version of Shapely.</p>
+</section>
+<section id="gdal-optional">
+<h4>GDAL <em>(optional)</em><a class="headerlink" href="#gdal-optional" title="Permalink to this heading">#</a></h4>
+<p>The <a class="reference internal" href="coverages.html"><span class="doc">coverage feature</span></a> allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support (BBOX, WKT and GeoJSON coverages are supported natively). OGR is part of GDAL (<code class="docutils literal notranslate"><span class="pre">libgdal-dev</span></code>).</p>
+</section>
+<section id="lxml-optional">
+<span id="lxml-install"></span><h4>lxml <em>(optional)</em><a class="headerlink" href="#lxml-optional" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="http://lxml.de">lxml</a> is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple XML/HTML documents. It is available as <code class="docutils literal notranslate"><span class="pre">python-lxml</span></code>.</p>
+</section>
+</section>
+</section>
+<section id="install-mapproxy">
+<h2>Install MapProxy<a class="headerlink" href="#install-mapproxy" title="Permalink to this heading">#</a></h2>
+<p>Your virtual environment should contain <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>, a tool to install Python packages.</p>
+<p>To install you need to call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
+</pre></div>
+</div>
+<p>You specify the release version of MapProxy. E.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span><span class="o">==</span><span class="mf">1.10.0</span>
+</pre></div>
+</div>
+<p>or to get the latest 1.10.0 version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;MapProxy&gt;=1.10.0,&lt;=1.10.99&quot;</span>
+</pre></div>
+</div>
+<p>To check if the MapProxy was successfully installed, you can call the <cite>mapproxy-util</cite> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span></code> will download packages from the <a class="reference external" href="https://pypi.org/">Python Package Index</a> and therefore require full internet access. You need to set the <code class="docutils literal notranslate"><span class="pre">https_proxy</span></code> environment variable if you only have access to the internet via an HTTP proxy. See <a class="reference internal" href="configuration_examples.html#http-proxy"><span class="std std-ref">Access sources through HTTP proxy</span></a> for more information.</p>
+</div>
+</section>
+<section id="create-a-configuration">
+<span id="create-configuration"></span><h2>Create a configuration<a class="headerlink" href="#create-a-configuration" title="Permalink to this heading">#</a></h2>
+<p>To create a new set of configuration files for MapProxy call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">create</span> <span class="o">-</span><span class="n">t</span> <span class="n">base</span><span class="o">-</span><span class="n">config</span> <span class="n">mymapproxy</span>
+</pre></div>
+</div>
+<p>This will create a <code class="docutils literal notranslate"><span class="pre">mymapproxy</span></code> directory with a minimal example configuration (<code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code>) and two full example configuration files (<code class="docutils literal notranslate"><span class="pre">full_example.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">full_seed_example.yaml</span></code>).</p>
+<p>Refer to the <a class="reference internal" href="configuration.html"><span class="doc">configuration documentation</span></a> for more information. With the default configuration the cached data will be placed in the <code class="docutils literal notranslate"><span class="pre">cache_data</span></code> subdirectory.</p>
+</section>
+<section id="start-the-test-server">
+<h2>Start the test server<a class="headerlink" href="#start-the-test-server" title="Permalink to this heading">#</a></h2>
+<p>To start a test server:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">mymapproxy</span>
+<span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>There is already a test layer configured that obtains data from the <a class="reference external" href="https://maps.omniscale.com/">Omniscale OpenStreetMap WMS</a>. Feel free to use this service for testing.</p>
+<p>MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at <a class="reference external" href="http://localhost:8080/demo/">http://localhost:8080/demo/</a></p>
+</section>
+<section id="upgrade">
+<h2>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this heading">#</a></h2>
+<p>You can upgrade MapProxy with pip in combination with a version number or with the <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> option.
+Use the <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> option to avoid upgrading the dependencies.</p>
+<p>To upgrade to version 1.x.y:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s1">&#39;MapProxy==1.x.y&#39;</span>
+</pre></div>
+</div>
+<p>To upgrade to the latest release:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="n">MapProxy</span>
+</pre></div>
+</div>
+<p>To upgrade to the current development version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">/</span><span class="n">tarball</span><span class="o">/</span><span class="n">master</span>
+</pre></div>
+</div>
+<section id="changes">
+<h3>Changes<a class="headerlink" href="#changes" title="Permalink to this heading">#</a></h3>
+<p>New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on start-up if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">serve-develop</span></code> for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.</p>
+<p>If you upgrade from 0.8, please read the <a class="reference external" href="http://mapproxy.org/docs/1.5.0/migrate.html">old migration documentation</a>.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">MapProxy Documentation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="install_osgeo4w.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Installation on OSGeo4W</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-new-virtual-environment">Create a new virtual environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-dependencies">Install Dependencies</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Installation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-details">Dependency details</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyproj-or-libproj">pyproj or libproj</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pillow">Pillow</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#yaml">YAML</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#shapely-and-geos-optional">Shapely and GEOS <em>(optional)</em></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gdal-optional">GDAL <em>(optional)</em></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lxml-optional">lxml <em>(optional)</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-mapproxy">Install MapProxy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-configuration">Create a configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-test-server">Start the test server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upgrade">Upgrade</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes">Changes</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,962 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Authentication and Authorization &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'auth';</script>
+    <link rel="canonical" href="/mapproxy/auth.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Decorate Image" href="decorate_img.html" />
+    <link rel="prev" title="WMS Labeling" href="labeling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Authentication and Authorization</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#authentication-authorization-middleware">Authentication/Authorization Middleware</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wsgi-filter-middleware">WSGI Filter Middleware</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authorization-callback">Authorization Callback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-authorization-api">MapProxy Authorization API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authorize"><code class="docutils literal notranslate"><span class="pre">authorize()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#limited-to"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-service">WMS Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#service-types">Service types</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-map"><code class="docutils literal notranslate"><span class="pre">wms.map</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-featureinfo"><code class="docutils literal notranslate"><span class="pre">wms.featureinfo</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-capabilities"><code class="docutils literal notranslate"><span class="pre">wms.capabilities</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tms-tile-service">TMS/Tile Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kml-service">KML Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-service">WMTS Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-service">Demo Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multimapproxy">MultiMapProxy</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="authentication-and-authorization">
+<h1>Authentication and Authorization<a class="headerlink" href="#authentication-and-authorization" title="Permalink to this heading">#</a></h1>
+<p>Authentication is the process of mapping a request to a user. There are different ways to do this, from simple HTTP Basic Authentication to cookies or token based systems.</p>
+<p>Authorization is the process that defines what an authenticated user is allowed to do. A datastore is required to store this authorization information for everything but trivial systems. These datastores can range from really simple text files (all users in this text file are allowed to do everything) to complex schemas with relational databases (user A is allowed to do B but not C, etc.).</p>
+<p>As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like existing user data in a database or an existing login page on a website for a Web-GIS. So it is hard to offer a one-size-fits-all solution.</p>
+<p>Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (the SDI developer) to implement custom tailored systems.</p>
+<p>Luckily, there are lots of existing toolkits that can be used to build systems that match your requirements. For authentication there is the <a class="reference external" href="http://docs.repoze.org/who/">repoze.who</a> package with <a class="reference external" href="http://pypi.python.org/pypi?:action=search&amp;term=repoze.who">plugins for HTTP Basic Authentication, HTTP cookies, etc</a>. For authorization there is the <a class="reference external" href="http://docs.repoze.org/what/">repoze.what</a> package with <a class="reference external" href="http://pypi.python.org/pypi?:action=search&amp;term=repoze.what">plugins for SQL datastores, etc</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Developing custom authentication and authorization system requires a bit Python programming and knowledge of <a class="reference external" href="http://wsgi.org">WSGI</a> and WSGI middleware.</p>
+</div>
+<section id="authentication-authorization-middleware">
+<h2>Authentication/Authorization Middleware<a class="headerlink" href="#authentication-authorization-middleware" title="Permalink to this heading">#</a></h2>
+<p>Your auth system should be implemented as a WSGI middleware. The middleware sits between your web server and the MapProxy.</p>
+<section id="wsgi-filter-middleware">
+<h3>WSGI Filter Middleware<a class="headerlink" href="#wsgi-filter-middleware" title="Permalink to this heading">#</a></h3>
+<p>A simple middleware that authorizes random requests might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RandomAuthFilter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">global_conf</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+          <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">start_response</span><span class="p">(</span><span class="s1">&#39;403 Forbidden&#39;</span><span class="p">,</span>
+            <span class="p">[(</span><span class="s1">&#39;content-type&#39;</span><span class="p">,</span> <span class="s1">&#39;text/plain&#39;</span><span class="p">)])</span>
+          <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;no luck today&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You need to wrap the MapProxy application with your custom auth middleware. For deployment scripts it might look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;./mapproxy.yaml&#39;</span><span class="p">)</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">RandomAuthFilter</span><span class="p">(</span><span class="n">application</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For <a class="reference external" href="http://pythonpaste.org/deploy/">PasteDeploy</a> you can use the <code class="docutils literal notranslate"><span class="pre">filter-with</span></code> option. The <code class="docutils literal notranslate"><span class="pre">config.ini</span></code> looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">app</span><span class="p">:</span><span class="n">mapproxy</span><span class="p">]</span>
+<span class="n">use</span> <span class="o">=</span> <span class="n">egg</span><span class="p">:</span><span class="n">MapProxy</span><span class="c1">#app</span>
+<span class="n">mapproxy_conf</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">here</span><span class="p">)</span><span class="n">s</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+<span class="nb">filter</span><span class="o">-</span><span class="k">with</span> <span class="o">=</span> <span class="n">auth</span>
+
+<span class="p">[</span><span class="nb">filter</span><span class="p">:</span><span class="n">auth</span><span class="p">]</span>
+<span class="n">paste</span><span class="o">.</span><span class="n">filter_app_factory</span> <span class="o">=</span> <span class="n">myauthmodule</span><span class="p">:</span><span class="n">RandomAuthFilter</span>
+
+<span class="p">[</span><span class="n">server</span><span class="p">:</span><span class="n">main</span><span class="p">]</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>You can implement simple authentication systems with that method, but you should look at <a class="reference external" href="http://docs.repoze.org/who/">repoze.who</a> before reinventing the wheel.</p>
+</section>
+<section id="authorization-callback">
+<h3>Authorization Callback<a class="headerlink" href="#authorization-callback" title="Permalink to this heading">#</a></h3>
+<p>Authorization is a bit more complex, because your middleware would need to interpret the request to get information required for the authorization (e.g. layer names for WMS GetMap requests). Limiting the GetCapabilities response to certain layers would even require the middleware to manipulate the XML document. So it’s obvious that some parts of the authorization should be handled by MapProxy.</p>
+<p>MapProxy can call the middleware back for authorization as soon as it knows what to ask for (e.g. the layer names of a WMS GetMap request). You have to pass a callback function to the environment so that MapProxy knows what to call.</p>
+<p>Here is a more elaborate example that denies requests to all layers that start with a specific prefix. These layers are also hidden from capability documents.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleAuthFilter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Simple MapProxy authorization middleware.</span>
+
+<span class="sd">    It authorizes WMS requests for layers where the name does</span>
+<span class="sd">    not start with `prefix`.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;secure&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+        <span class="c1"># put authorize callback function into environment</span>
+        <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;mapproxy.authorize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorize</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">authorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[],</span> <span class="n">environ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">allowed</span> <span class="o">=</span> <span class="n">denied</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">service</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;wms.&#39;</span><span class="p">):</span>
+            <span class="n">auth_layers</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">):</span>
+                    <span class="n">auth_layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">denied</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">auth_layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s1">&#39;featureinfo&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s1">&#39;legendgraphic&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="n">allowed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># other services are denied</span>
+          <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">allowed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">denied</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;full&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">denied</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allowed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span> <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="n">auth_layers</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>And here is the part of the <code class="docutils literal notranslate"><span class="pre">config.py</span></code> where we define the filter and pass custom options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;./mapproxy.yaml&#39;</span><span class="p">)</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">SimpleAuthFilter</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;secure&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mapproxy-authorization-api">
+<h2>MapProxy Authorization API<a class="headerlink" href="#mapproxy-authorization-api" title="Permalink to this heading">#</a></h2>
+<p>MapProxy looks in the request environment for a <code class="docutils literal notranslate"><span class="pre">mapproxy.authorize</span></code> entry. This entry should contain a callable (function or method). If it does not find any callable, then MapProxy assumes that authorization is not enabled and that all requests are allowed.</p>
+<p>The signature of the authorization function:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="authorize">
+<span class="sig-name descname"><span class="pre">authorize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#authorize" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>service</strong> – service that should be authorized</p></li>
+<li><p><strong>layers</strong> – list of layer names that should be authorized</p></li>
+<li><p><strong>environ</strong> – the request environ</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary with authorization information</p>
+</dd>
+</dl>
+<p>The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a catch-all keyword argument (i.e. <code class="docutils literal notranslate"><span class="pre">**kw</span></code>).</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The actual name of the callable is insignificant, only the environment key <code class="docutils literal notranslate"><span class="pre">mapproxy.authorize</span></code> is important.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">service</span></code> parameter is a string and the content depends on the service that calls the authorize function. Generally, it is the lower-case name of the service (e.g. <code class="docutils literal notranslate"><span class="pre">tms</span></code> for TMS service), but it can be different to further control the service (e.g. <code class="docutils literal notranslate"><span class="pre">wms.map</span></code>).</p>
+<p>The function should return a dictionary with the authorization information. The expected content of that dictionary can vary with each service. Only the <code class="docutils literal notranslate"><span class="pre">authorized</span></code> key is consistent with all services.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">authorized</span></code> entry can have four values.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">full</span></code></dt><dd><p>The request for the given <cite>service</cite> and <cite>layers</cite> is fully authorized. MapProxy handles the request as if there is no authorization.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">partial</span></code></dt><dd><p>Only parts of the request are allowed. The dictionary should contains more information on what parts of the request are allowed and what parts are denied. Depending on the service, MapProxy can then filter the request based on that information, e.g. return WMS Capabilities with permitted layers only.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">none</span></code></dt><dd><p>The request is denied and MapProxy returns an HTTP 403 (Forbidden) response.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">unauthenticated</span></code></dt><dd><p>The request(er) was not authenticated and MapProxy returns an HTTP 401 response. Your middleware can capture this and ask the requester for authentication. <code class="docutils literal notranslate"><span class="pre">repoze.who</span></code>’s <code class="docutils literal notranslate"><span class="pre">PluggableAuthenticationMiddleware</span></code> will do this for example.</p>
+</dd>
+</dl>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.1.0: </span>The <code class="docutils literal notranslate"><span class="pre">environment</span></code> parameter and support for <code class="docutils literal notranslate"><span class="pre">authorized:</span> <span class="pre">unauthenticated</span></code> results.</p>
+</div>
+<section id="limited-to">
+<span id="id1"></span><h3><code class="docutils literal notranslate"><span class="pre">limited_to</span></code><a class="headerlink" href="#limited-to" title="Permalink to this heading">#</a></h3>
+<p>You can restrict the geographical area for each request. MapProxy will clip each request to the provided geometry – areas outside of the permitted area become transparent.</p>
+<p>Depending on the service, MapProxy supports this clipping for the whole request or for each layer. You need to provide a dictionary with <code class="docutils literal notranslate"><span class="pre">bbox</span></code> or <code class="docutils literal notranslate"><span class="pre">geometry</span></code> and the <code class="docutils literal notranslate"><span class="pre">srs</span></code> of the geometry. The following geometry values are supported:</p>
+<dl class="simple">
+<dt>BBOX:</dt><dd><p>Bounding box as a list of minx, miny, maxx, maxy.</p>
+</dd>
+<dt>WKT polygons:</dt><dd><p>String with one or more polygons and multipolygons as WKT. Multiple WKTs must be delimited by a new line character.
+Return this type if you are getting the geometries from a spatial database.</p>
+</dd>
+<dt>Shapely geometry:</dt><dd><p>Shapely geometry object. Return this type if you already processing the geometries in your Python code with <a class="reference external" href="http://toblerity.github.com/shapely/">Shapely</a>.</p>
+</dd>
+</dl>
+<p>Here is an example callback result for a WMS <cite>GetMap</cite> request with all three geometry types. See below for examples for other services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;layer2&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="s1">&#39;POLYGON((...))&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;layer3&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+          <span class="p">[(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]),</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="performance">
+<h4>Performance<a class="headerlink" href="#performance" title="Permalink to this heading">#</a></h4>
+<p>The clipping is quite fast, but if you notice that the overhead is to large, you should reduce the complexity of the geometries returned by your authorization callback. You can improve the performance by returning the geometry in the projection from <code class="docutils literal notranslate"><span class="pre">query_extent</span></code>, by limiting it to the <code class="docutils literal notranslate"><span class="pre">query_extent</span></code> and by simplifing the geometry. Refer to the <code class="docutils literal notranslate"><span class="pre">ST_Transform</span></code>, <code class="docutils literal notranslate"><span class="pre">ST_Intersection</span></code> and <code class="docutils literal notranslate"><span class="pre">ST_SimplifyPreserveTopology</span></code> functions when you query the geometries from PostGIS.</p>
+</section>
+</section>
+</section>
+<section id="wms-service">
+<h2>WMS Service<a class="headerlink" href="#wms-service" title="Permalink to this heading">#</a></h2>
+<p>The WMS service expects a <code class="docutils literal notranslate"><span class="pre">layers</span></code> entry in the authorization dictionary for <code class="docutils literal notranslate"><span class="pre">partial</span></code> results. <code class="docutils literal notranslate"><span class="pre">layers</span></code> itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.</p>
+<p>Each layer contains the information about the permitted features. A missing feature is interpreted as a denied feature.</p>
+<p>Here is an example result of a call to the authorize function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;featureinfo&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;layer2&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;featureinfo&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+  <span class="p">}</span><span class="s2">&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="id2">
+<h3><code class="docutils literal notranslate"><span class="pre">limited_to</span></code><a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.4.0.</span></p>
+</div>
+<p>The WMS service supports <code class="docutils literal notranslate"><span class="pre">limited_to</span></code> for <cite>GetCapabilities</cite>, <cite>GetMap</cite> and <cite>GetFeatureInfo</cite> requests. MapProxy will modify the bounding box of each restricted layer for <cite>GetCapabilities</cite> requests. <cite>GetFeatureInfo</cite> requests will only return data if the info coordinate is inside the permitted area. For <cite>GetMap</cite> requests, MapProxy will clip each layer to the provided geometry – areas outside of the permitted area become transparent or colored in the <cite>bgcolor</cite> of the WMS request.</p>
+<p>You can provide the geometry for each layer or for the whole request.</p>
+<p>See <a class="reference internal" href="#limited-to"><span class="std std-ref">limited_to</span></a> for more details.</p>
+<p>Here is an example callback result with two limited layers and one unlimited layer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;layer2&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="s1">&#39;POLYGON((...))&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;layer3&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Here is an example callback result where the complete request is limited:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+      <span class="p">[(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]),</span>
+    <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="service-types">
+<h3>Service types<a class="headerlink" href="#service-types" title="Permalink to this heading">#</a></h3>
+<p>The WMS service uses the following service strings:</p>
+<section id="wms-map">
+<h4><code class="docutils literal notranslate"><span class="pre">wms.map</span></code><a class="headerlink" href="#wms-map" title="Permalink to this heading">#</a></h4>
+<p>This is called for WMS GetMap requests. <code class="docutils literal notranslate"><span class="pre">layers</span></code> is a list with the actual layers to render, that means that group layers are resolved.
+The <code class="docutils literal notranslate"><span class="pre">map</span></code> feature needs to be set to <code class="docutils literal notranslate"><span class="pre">True</span></code> for each permitted layer.
+The whole request is rejected if any requested layer is not permitted. Resolved layers (i.e. sub layers of a requested group layer) are filtered out if they are not permitted.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.1.0: </span>The <code class="docutils literal notranslate"><span class="pre">authorize</span></code> function gets called with an additional <code class="docutils literal notranslate"><span class="pre">query_extent</span></code> argument:</p>
+</div>
+<section id="example">
+<h5>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h5>
+<p>With a layer tree like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1</span>
+<span class="w">  </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1a</span>
+<span class="w">      </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">l1a</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1b</span>
+<span class="w">      </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">l1b</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>An authorize result of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;layer1a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Results in the following:</p>
+<ul class="simple">
+<li><p>A request for <code class="docutils literal notranslate"><span class="pre">layer1</span></code> renders <code class="docutils literal notranslate"><span class="pre">layer1a</span></code>, <code class="docutils literal notranslate"><span class="pre">layer1b</span></code> gets filtered out.</p></li>
+<li><p>A request for <code class="docutils literal notranslate"><span class="pre">layer1a</span></code> renders <code class="docutils literal notranslate"><span class="pre">layer1a</span></code>.</p></li>
+<li><p>A request for <code class="docutils literal notranslate"><span class="pre">layer1b</span></code> is rejected.</p></li>
+<li><p>A request for <code class="docutils literal notranslate"><span class="pre">layer1a</span></code> and <code class="docutils literal notranslate"><span class="pre">layer1b</span></code> is rejected.</p></li>
+</ul>
+</section>
+</section>
+<section id="wms-featureinfo">
+<h4><code class="docutils literal notranslate"><span class="pre">wms.featureinfo</span></code><a class="headerlink" href="#wms-featureinfo" title="Permalink to this heading">#</a></h4>
+<p>This is called for WMS GetFeatureInfo requests and the behavior is similar to <code class="docutils literal notranslate"><span class="pre">wms.map</span></code>.</p>
+</section>
+<section id="wms-capabilities">
+<h4><code class="docutils literal notranslate"><span class="pre">wms.capabilities</span></code><a class="headerlink" href="#wms-capabilities" title="Permalink to this heading">#</a></h4>
+<p>This is called for WMS GetCapabilities requests. <code class="docutils literal notranslate"><span class="pre">layers</span></code> is a list with all named layers of the WMS service.
+Only layers with the <code class="docutils literal notranslate"><span class="pre">map</span></code> feature set to <code class="docutils literal notranslate"><span class="pre">True</span></code> are included in the capabilities document. Missing layers are not included.</p>
+<p>Sub layers are only included when the parent layer is included, since authorization interface is not able to reorder the layer tree. Note, that you are still able to request these sub layers (see <code class="docutils literal notranslate"><span class="pre">wms.map</span></code> above).</p>
+<p>Layers that are queryable and only marked so in the capabilities if the <code class="docutils literal notranslate"><span class="pre">featureinfo</span></code> feature set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<p>With a layer tree like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1</span>
+<span class="w">  </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1a</span>
+<span class="w">      </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">l1a</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1b</span>
+<span class="w">      </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">l1b</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1c</span>
+<span class="w">      </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">l1c</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>An authorize result of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span>  <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;layer1a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;layer1b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;layer1c&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Results in the following abbreviated capabilities:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;Layer</span><span class="w"> </span><span class="na">queryable=</span><span class="s">&#39;1&#39;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Name&gt;</span>layer1<span class="nt">&lt;/Name&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Layer</span><span class="w"> </span><span class="na">queryable=</span><span class="s">&#39;1&#39;</span><span class="nt">&gt;&lt;Name&gt;</span>layer1a<span class="nt">&lt;/Name&gt;&lt;/Layer&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Layer&gt;&lt;Name&gt;</span>layer1b<span class="nt">&lt;/Name&gt;&lt;/Layer&gt;</span>
+<span class="nt">&lt;/Layer&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="tms-tile-service">
+<h2>TMS/Tile Service<a class="headerlink" href="#tms-tile-service" title="Permalink to this heading">#</a></h2>
+<p>The TMS service expects a <code class="docutils literal notranslate"><span class="pre">layers</span></code> entry in the authorization dictionary for <code class="docutils literal notranslate"><span class="pre">partial</span></code> results. <code class="docutils literal notranslate"><span class="pre">layers</span></code> itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.</p>
+<p>Each layer contains the information about the permitted features. The TMS service only supports the <code class="docutils literal notranslate"><span class="pre">tile</span></code> feature. A missing feature is interpreted as a denied feature.</p>
+<p>Here is an example result of a call to the authorize function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;tile&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;layer2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;tile&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The TMS service uses <code class="docutils literal notranslate"><span class="pre">tms</span></code> as the service string for all authorization requests.</p>
+<p>Only layers with the <code class="docutils literal notranslate"><span class="pre">tile</span></code> feature set to <code class="docutils literal notranslate"><span class="pre">True</span></code> are included in the TMS capabilities document (<code class="docutils literal notranslate"><span class="pre">/tms/1.0.0</span></code>). Missing layers are not included.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">authorize</span></code> function gets called with an additional <code class="docutils literal notranslate"><span class="pre">query_extent</span></code> argument for all tile requests:</p>
+<section id="id3">
+<h3><code class="docutils literal notranslate"><span class="pre">limited_to</span></code><a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>MapProxy will clip each tile to the provided geometry – areas outside of the permitted area become transparent. MapProxy will return PNG images in this case.</p>
+<p>Here is an example callback result where the tile request is limited:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+      <span class="p">[(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]),</span>
+    <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;tile&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.1.</span></p>
+</div>
+<p>You can also add the limit to the layer and mix it with properties used for the other services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;layers&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s1">&#39;layer1&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;tile&#39;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+          <span class="p">[(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]),</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span>
+      <span class="p">},</span>
+    <span class="s1">&#39;layer2&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s1">&#39;tile&#39;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+      <span class="s1">&#39;map&#39;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+      <span class="s1">&#39;featureinfo&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+      <span class="s1">&#39;limited_to&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Polygon</span><span class="p">(</span>
+          <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">)]),</span>
+        <span class="s1">&#39;srs&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="#limited-to"><span class="std std-ref">limited_to</span></a> for more details.</p>
+</section>
+</section>
+<section id="kml-service">
+<h2>KML Service<a class="headerlink" href="#kml-service" title="Permalink to this heading">#</a></h2>
+<p>The KML authorization is similar to the TMS authorization, including the <code class="docutils literal notranslate"><span class="pre">limited_to</span></code> option.</p>
+<p>The KML service uses <code class="docutils literal notranslate"><span class="pre">kml</span></code> as the service string for all authorization requests.</p>
+</section>
+<section id="wmts-service">
+<h2>WMTS Service<a class="headerlink" href="#wmts-service" title="Permalink to this heading">#</a></h2>
+<p>The WMTS authorization is similar to the TMS authorization, including the <code class="docutils literal notranslate"><span class="pre">limited_to</span></code> option.</p>
+<p>The WMTS service uses <code class="docutils literal notranslate"><span class="pre">wmts</span></code> as the service string for tile requests and <code class="docutils literal notranslate"><span class="pre">wmts.featureinfo</span></code> for feature info requests.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.12: </span><code class="docutils literal notranslate"><span class="pre">wmts.featureinfo</span></code></p>
+</div>
+</section>
+<section id="demo-service">
+<h2>Demo Service<a class="headerlink" href="#demo-service" title="Permalink to this heading">#</a></h2>
+<p>The demo service only supports <code class="docutils literal notranslate"><span class="pre">full</span></code> or <code class="docutils literal notranslate"><span class="pre">none</span></code> authorization. <code class="docutils literal notranslate"><span class="pre">layers</span></code> is always an empty list. The demo service does not authorize the services and layers that are listed in the overview page. If you permit a user to access the demo service, then he can see all services and layers names. However, access to these services is still restricted to the according authorization.</p>
+<p>The service string is <code class="docutils literal notranslate"><span class="pre">demo</span></code>.</p>
+</section>
+<section id="multimapproxy">
+<h2>MultiMapProxy<a class="headerlink" href="#multimapproxy" title="Permalink to this heading">#</a></h2>
+<p>The <a class="reference internal" href="deployment.html#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a> application stores the instance name in the environment as <code class="docutils literal notranslate"><span class="pre">mapproxy.instance_name</span></code>. This information in not available when your middleware gets called, but you can use it in your authorization function.</p>
+<p>Example that rejects MapProxy instances where the name starts with <code class="docutils literal notranslate"><span class="pre">secure</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MultiMapProxyAuthFilter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">global_conf</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">):</span>
+        <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;mapproxy.authorize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">authorize</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span> <span class="n">start_response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">authorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mapproxy.instance_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">instance_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;secure&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;authorized&#39;</span><span class="p">:</span> <span class="s1">&#39;full&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="labeling.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">WMS Labeling</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="decorate_img.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Decorate Image</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#authentication-authorization-middleware">Authentication/Authorization Middleware</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wsgi-filter-middleware">WSGI Filter Middleware</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authorization-callback">Authorization Callback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-authorization-api">MapProxy Authorization API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authorize"><code class="docutils literal notranslate"><span class="pre">authorize()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#limited-to"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-service">WMS Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#service-types">Service types</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-map"><code class="docutils literal notranslate"><span class="pre">wms.map</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-featureinfo"><code class="docutils literal notranslate"><span class="pre">wms.featureinfo</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-capabilities"><code class="docutils literal notranslate"><span class="pre">wms.capabilities</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tms-tile-service">TMS/Tile Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3"><code class="docutils literal notranslate"><span class="pre">limited_to</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kml-service">KML Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-service">WMTS Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-service">Demo Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multimapproxy">MultiMapProxy</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

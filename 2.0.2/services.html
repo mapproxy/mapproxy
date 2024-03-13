@@ -1,0 +1,841 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Services &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'services';</script>
+    <link rel="canonical" href="/mapproxy/services.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sources" href="sources.html" />
+    <link rel="prev" title="Configuration" href="configuration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Services</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attribution"><code class="docutils literal notranslate"><span class="pre">attribution</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#srs"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox-srs"><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-formats"><code class="docutils literal notranslate"><span class="pre">image_formats</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-types"><code class="docutils literal notranslate"><span class="pre">featureinfo_types</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-xslt"><code class="docutils literal notranslate"><span class="pre">featureinfo_xslt</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#strict"><code class="docutils literal notranslate"><span class="pre">strict</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-source-errors"><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-output-pixels"><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#versions"><code class="docutils literal notranslate"><span class="pre">versions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full-example">Full example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-c">WMS-C</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-grid-names"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openlayers">OpenLayers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#google-maps">Google Maps</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-tile-services-wmts">Web Map Tile Services (WMTS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kvp">KVP</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restful">RESTful</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#url-template">URL Template</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-info">Feature Info</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-formats"><code class="docutils literal notranslate"><span class="pre">featureinfo_formats</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-demo-service">MapProxy Demo Service</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="services">
+<span id="id1"></span><h1>Services<a class="headerlink" href="#services" title="Permalink to this heading">#</a></h1>
+<p>The following services are available:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#wms-service-label"><span class="std std-ref">Web Map Service (OGC WMS)</span></a> and <a class="reference internal" href="#wmsc-service-label"><span class="std std-ref">WMS-C</span></a></p></li>
+<li><p><a class="reference internal" href="#tms-service-label"><span class="std std-ref">Tiled Map Services (TMS)</span></a></p></li>
+<li><p><a class="reference internal" href="#kml-service-label"><span class="std std-ref">Keyhole Markup Language (OGC KML)</span></a></p></li>
+<li><p><a class="reference internal" href="#wmts-service-label"><span class="std std-ref">Web Map Tile Services (WMTS)</span></a></p></li>
+<li><p><a class="reference internal" href="#demo-service-label"><span class="std std-ref">MapProxy Demo Service</span></a></p></li>
+</ul>
+<p>You need to add the service to the <code class="docutils literal notranslate"><span class="pre">services</span></code> section of your MapProxy configuration to enable it. Some services take additional options.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tms</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">kml</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">wmsoption1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">xxx</span>
+<span class="w">    </span><span class="nt">wmsoption2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">xxx</span>
+</pre></div>
+</div>
+<section id="web-map-service-ogc-wms">
+<span id="wms-service-label"></span><span id="index-0"></span><h2>Web Map Service (OGC WMS)<a class="headerlink" href="#web-map-service-ogc-wms" title="Permalink to this heading">#</a></h2>
+<p>The WMS server is accessible at <code class="docutils literal notranslate"><span class="pre">/service</span></code>, <code class="docutils literal notranslate"><span class="pre">/ows</span></code> and <code class="docutils literal notranslate"><span class="pre">/wms</span></code>  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.</p>
+<p>See <a class="reference internal" href="inspire.html"><span class="doc">INSPIRE View Service</span></a> for configuring INSPIRE metadata.</p>
+<p>The WMS service will use all configured <a class="reference internal" href="configuration.html#id1"><span class="std std-ref">layers</span></a>.</p>
+<p>The service takes the following additional option.</p>
+<section id="attribution">
+<h3><code class="docutils literal notranslate"><span class="pre">attribution</span></code><a class="headerlink" href="#attribution" title="Permalink to this heading">#</a></h3>
+<p>Adds an attribution (copyright) line to all WMS requests.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">text</span></code></dt><dd><p>The text line of the attribution (e.g. some copyright notice, etc).</p>
+</dd>
+</dl>
+</section>
+<section id="md">
+<span id="wms-md"></span><h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#md" title="Permalink to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">md</span></code> is for metadata. These fields are used for the WMS <code class="docutils literal notranslate"><span class="pre">GetCapabilities</span></code> responses. See the example below for all supported keys.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.8.1: </span><code class="docutils literal notranslate"><span class="pre">keyword_list</span></code></p>
+</div>
+</section>
+<section id="srs">
+<span id="wms-srs"></span><h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#srs" title="Permalink to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">srs</span></code> option defines which SRS the WMS service supports.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">srs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="s1">&#39;CRS:84&#39;</span><span class="p">,</span> <span class="s1">&#39;EPSG:900913&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="configuration.html#axis-order"><span class="std std-ref">axis order</span></a> for further configuration that might be needed for WMS 1.3.0.</p>
+</section>
+<section id="bbox-srs">
+<h3><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code><a class="headerlink" href="#bbox-srs" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code> option controls in which SRS the BBOX is advertised in the capabilities document. It should only contain SRS that are configured in the <code class="docutils literal notranslate"><span class="pre">srs</span></code> option.</p>
+<p>You need to make sure that all layer extents are valid for these SRS. E.g. you can’t choose a local SRS like UTM if you’re using a global grid without limiting all sources with a <code class="docutils literal notranslate"><span class="pre">coverage</span></code>.</p>
+<p>For example, a config with:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>will show the bbox in the capabilities in EPSG:4326, EPSG:3857 and EPSG:31467.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.7.0: </span>You can also define an explicit bbox for specific SRS. This bbox will overwrite all layer extents for that SRS.</p>
+</div>
+<p>The following example will show the actual bbox of each layer in EPSG:4326 and EPSG:3857, but always the specified bbox for EPSG:31467:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox_srs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">2750000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">5000000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4250000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">6500000</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>You can use this to offer global datasets with SRS that are only valid in a local region, like UTM zones.</p>
+</section>
+<section id="image-formats">
+<span id="wms-image-formats"></span><h3><code class="docutils literal notranslate"><span class="pre">image_formats</span></code><a class="headerlink" href="#image-formats" title="Permalink to this heading">#</a></h3>
+<p>A list of image mime types the server should offer.</p>
+</section>
+<section id="featureinfo-types">
+<span id="wms-featureinfo-types"></span><h3><code class="docutils literal notranslate"><span class="pre">featureinfo_types</span></code><a class="headerlink" href="#featureinfo-types" title="Permalink to this heading">#</a></h3>
+<p>A list of feature info types the server should offer. Available types are <code class="docutils literal notranslate"><span class="pre">text</span></code>, <code class="docutils literal notranslate"><span class="pre">html</span></code>, <code class="docutils literal notranslate"><span class="pre">xml</span></code> and <code class="docutils literal notranslate"><span class="pre">json</span></code>. The types are advertised in the capabilities with the correct mime type. Defaults to <code class="docutils literal notranslate"><span class="pre">[text,</span> <span class="pre">html,</span> <span class="pre">xml]</span></code>.</p>
+</section>
+<section id="featureinfo-xslt">
+<h3><code class="docutils literal notranslate"><span class="pre">featureinfo_xslt</span></code><a class="headerlink" href="#featureinfo-xslt" title="Permalink to this heading">#</a></h3>
+<p>You can define XSLT scripts to transform outgoing feature information. You can define scripts for different feature info types:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">html</span></code></dt><dd><p>Define a script for <code class="docutils literal notranslate"><span class="pre">INFO_FORMAT=text/html</span></code> requests.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">xml</span></code></dt><dd><p>Define a script for <code class="docutils literal notranslate"><span class="pre">INFO_FORMAT=application/vnd.ogc.gml</span></code> and <code class="docutils literal notranslate"><span class="pre">INFO_FORMAT=text/xml</span></code> requests.</p>
+</dd>
+</dl>
+<p>See <a class="reference internal" href="configuration_examples.html#fi-xslt"><span class="std std-ref">FeatureInformation for more informaiton</span></a>.</p>
+</section>
+<section id="strict">
+<h3><code class="docutils literal notranslate"><span class="pre">strict</span></code><a class="headerlink" href="#strict" title="Permalink to this heading">#</a></h3>
+<p>Some WMS clients do not send all required parameters in feature info requests, MapProxy ignores these errors unless you set <code class="docutils literal notranslate"><span class="pre">strict</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</section>
+<section id="on-source-errors">
+<h3><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code><a class="headerlink" href="#on-source-errors" title="Permalink to this heading">#</a></h3>
+<p>Configure what MapProxy should do when one or more sources return errors or no response at all (e.g. timeout). The default is <code class="docutils literal notranslate"><span class="pre">notify</span></code>, which adds a text line in the image response for each erroneous source, but only if a least one source was successful. When <code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code> is set to <code class="docutils literal notranslate"><span class="pre">raise</span></code>, MapProxy will return an OGC service exception in any error case.</p>
+</section>
+<section id="max-output-pixels">
+<h3><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code><a class="headerlink" href="#max-output-pixels" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to <code class="docutils literal notranslate"><span class="pre">[4000,</span> <span class="pre">4000]</span></code> which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).</p>
+<p>See also <a class="reference internal" href="configuration.html#max-tile-limit"><span class="std std-ref">globals.cache.max_tile_limit</span></a> for the maximum number of tiles MapProxy will merge together for each layer.</p>
+</section>
+<section id="versions">
+<h3><code class="docutils literal notranslate"><span class="pre">versions</span></code><a class="headerlink" href="#versions" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.7.0.</span></p>
+</div>
+<p>A list of WMS version numbers that MapProxy should support. Defaults to <code class="docutils literal notranslate"><span class="pre">['1.0.0',</span> <span class="pre">'1.1.0',</span> <span class="pre">'1.1.1',</span> <span class="pre">'1.3.0']</span></code>.</p>
+</section>
+<section id="full-example">
+<h3>Full example<a class="headerlink" href="#full-example" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:83&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">versions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;1.1.1&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">image_formats</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;image/png&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;image/jpeg&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">attribution</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">text</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;©</span><span class="nv"> </span><span class="s">MyCompany&quot;</span>
+<span class="w">    </span><span class="nt">md</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy WMS Proxy</span>
+<span class="w">      </span><span class="nt">abstract</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This is the fantastic MapProxy.</span>
+<span class="w">      </span><span class="nt">online_resource</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://mapproxy.org/</span>
+<span class="w">      </span><span class="nt">contact</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">person</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Your Name Here</span>
+<span class="w">        </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Technical Director</span>
+<span class="w">        </span><span class="nt">organization</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fakestreet 123</span>
+<span class="w">        </span><span class="nt">city</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Somewhere</span>
+<span class="w">        </span><span class="nt">postcode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span>
+<span class="w">        </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">XYZ</span>
+<span class="w">        </span><span class="nt">country</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Germany</span>
+<span class="w">        </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+49(0)000-000000-0</span>
+<span class="w">        </span><span class="nt">fax</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+49(0)000-000000-0</span>
+<span class="w">        </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">you@example.org</span>
+<span class="w">      </span><span class="nt">access_constraints</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This service is intended for private and evaluation use only.</span>
+<span class="w">      </span><span class="nt">fees</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;None&#39;</span>
+<span class="w">      </span><span class="nt">keyword_list</span><span class="p">:</span>
+<span class="w">       </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">vocabulary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEMET</span>
+<span class="w">         </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="nv">Orthoimagery</span><span class="p p-Indicator">]</span>
+<span class="w">       </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="s">&quot;View</span><span class="nv"> </span><span class="s">Service&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">MapProxy</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="wms-c">
+<span id="wmsc-service-label"></span><span id="index-1"></span><h3>WMS-C<a class="headerlink" href="#wms-c" title="Permalink to this heading">#</a></h3>
+<p>The MapProxy WMS service also supports the <a class="reference external" href="http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation">WMS Tiling Client Recommendation</a> from OSGeo.</p>
+<p>If you add <code class="docutils literal notranslate"><span class="pre">tiled=true</span></code> to the GetCapabilities request, MapProxy will add metadata about the internal tile structure to the WMS capabilities document. Clients that support WMS-C can use this information to request tiles at the exact tile boundaries. MapProxy can return the tile as-it-is for these requests, the performace is on par with the TMS service.</p>
+<p>MapProxy will limit the WMS support when <code class="docutils literal notranslate"><span class="pre">tiled=true</span></code> is added to the <cite>GetMap</cite> requests and it will return WMS service exceptions for requests that do not match the exact tile boundaries or if the requested image size or format differs.</p>
+</section>
+</section>
+<section id="tiled-map-services-tms">
+<span id="tms-service-label"></span><span id="index-2"></span><h2>Tiled Map Services (TMS)<a class="headerlink" href="#tiled-map-services-tms" title="Permalink to this heading">#</a></h2>
+<p>MapProxy supports the <a class="reference external" href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">Tile Map Service Specification</a> from the OSGeo. The TMS is available at <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0</span></code>.</p>
+<p>The TMS service will use all configured <a class="reference internal" href="configuration.html#id1"><span class="std std-ref">layers</span></a> that have a name and single cached source. Any layer grouping will be flattened.</p>
+<p>Here is an example TMS request: <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/base/EPSG900913/3/1/0.png</span></code>. <code class="docutils literal notranslate"><span class="pre">png</span></code> is the internal format of the cached tiles. <code class="docutils literal notranslate"><span class="pre">base</span></code> is the name of the layer and <code class="docutils literal notranslate"><span class="pre">EPSG900913</span></code> is the SRS of the layer. The tiles are also available under the layer name <code class="docutils literal notranslate"><span class="pre">base_EPSG900913</span></code> when <code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code> is false or unset.</p>
+<p>A request to <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0</span></code> will return the TMS metadata as XML. <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/layername</span></code> will return information about the bounding box, resolutions and tile size of this specific layer.</p>
+<section id="use-grid-names">
+<h3><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code><a class="headerlink" href="#use-grid-names" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>When set to <cite>true</cite>, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
+Tiles will then be available under <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer/mygrid/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer/EPSG1234/</span></code> or <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer_EPSG1234/</span></code>.</p>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">use_grid_names</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+<section id="openlayers">
+<span id="open-layers-label"></span><span id="index-3"></span><h3>OpenLayers<a class="headerlink" href="#openlayers" title="Permalink to this heading">#</a></h3>
+<p>When you create a map in OpenLayers with an explicit <code class="docutils literal notranslate"><span class="pre">mapExtent</span></code>, it will request only a single tile for the first (z=0) level.
+TMS begins with two or four tiles by default, depending on the SRS. MapProxy supports a different TMS mode to support this use-case. MapProxy will start with a single-tile level if you request <code class="docutils literal notranslate"><span class="pre">/tiles</span></code> instead of <code class="docutils literal notranslate"><span class="pre">/tms</span></code>.</p>
+<p>Alternatively, you can use the OpenLayers TMS option <code class="docutils literal notranslate"><span class="pre">zoomOffset</span></code> to compensate the difference. The option is available since OpenLayers 2.10.</p>
+<p>There is an example available at <a class="reference internal" href="configuration_examples.html#overlay-tiles-osm-openlayers"><span class="std std-ref">the configuration-examples section</span></a>, which shows the use of OpenLayers in combination with an overlay of tiles on top of OpenStreetMap tiles.</p>
+</section>
+<section id="google-maps">
+<span id="google-maps-label"></span><span id="index-4"></span><h3>Google Maps<a class="headerlink" href="#google-maps" title="Permalink to this heading">#</a></h3>
+<p>The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps and compatible services start at the upper left corner. The <code class="docutils literal notranslate"><span class="pre">/tiles</span></code> service accepts an <code class="docutils literal notranslate"><span class="pre">origin</span></code> parameter that flips the y-axis accordingly. You can set it to either <code class="docutils literal notranslate"><span class="pre">sw</span></code> (south-west), the default, or to <code class="docutils literal notranslate"><span class="pre">nw</span></code> (north-west), required for Google Maps.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw
+</pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0: </span>You can use the <code class="docutils literal notranslate"><span class="pre">origin</span></code> option of the TMS service to change the default origin of the tiles service. If you set it to <code class="docutils literal notranslate"><span class="pre">nw</span></code> then you can leave the <code class="docutils literal notranslate"><span class="pre">?origin=nw</span></code> parameter from the URL. This only works for the tiles service at <code class="docutils literal notranslate"><span class="pre">/tiles</span></code>, not for the TMS at <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/</span></code>.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">services</span><span class="p">:</span>
+  <span class="n">tms</span><span class="p">:</span>
+    <span class="n">origin</span><span class="p">:</span> <span class="s1">&#39;nw&#39;</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="keyhole-markup-language-ogc-kml">
+<span id="kml-service-label"></span><span id="index-5"></span><h2>Keyhole Markup Language (OGC KML)<a class="headerlink" href="#keyhole-markup-language-ogc-kml" title="Permalink to this heading">#</a></h2>
+<p>MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at <code class="docutils literal notranslate"><span class="pre">/kml/layername/EPSG1234/0/0/0.kml</span></code>. The tiles are also available under the layer name <code class="docutils literal notranslate"><span class="pre">layername_EPSG1234</span></code> when <code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code> is false or unset.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0: </span>The initial KML is also available at <code class="docutils literal notranslate"><span class="pre">/kml/layername_EPSG1234</span></code> and <code class="docutils literal notranslate"><span class="pre">/kml/layername/EPSG1234</span></code>.</p>
+</div>
+<section id="id2">
+<h3><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code><a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>When set to <cite>true</cite>, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
+Tiles will then be available under <code class="docutils literal notranslate"><span class="pre">/kml/mylayer/mygrid/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">/kml/mylayer/EPSG1234/</span></code>.</p>
+</section>
+<section id="id3">
+<h3>Example<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">kml</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">use_grid_names</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="web-map-tile-services-wmts">
+<span id="wmts-service-label"></span><span id="index-6"></span><h2>Web Map Tile Services (WMTS)<a class="headerlink" href="#web-map-tile-services-wmts" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.1.0.</span></p>
+</div>
+<p>MapProxy supports the OGC WMTS 1.0.0 specification.</p>
+<p>The WMTS service is similar to the TMS service and will use all configured <a class="reference internal" href="configuration.html#id1"><span class="std std-ref">layers</span></a> that have a name and single cached source. Any layer grouping will be flattened.</p>
+<p>There are some limitations depending on the grid configuration you use. Please refer to <a class="reference internal" href="configuration.html#grid-origin"><span class="std std-ref">grid.origin</span></a> for more information.</p>
+<p>The metadata (ServiceContact, etc. ) of this service is taken from the WMS configuration. You can add <code class="docutils literal notranslate"><span class="pre">md</span></code> to the <code class="docutils literal notranslate"><span class="pre">wmts</span></code> configuration to replace the WMS metadata. See <a class="reference internal" href="#wms-md"><span class="std std-ref">WMS metadata</span></a>.</p>
+<p>WMTS defines different access methods and MapProxy supports KVP and RESTful access. Both are enabled by default.</p>
+<section id="kvp">
+<h3>KVP<a class="headerlink" href="#kvp" title="Permalink to this heading">#</a></h3>
+<p>MapProxy supports <code class="docutils literal notranslate"><span class="pre">GetCapabilities</span></code> and <code class="docutils literal notranslate"><span class="pre">GetTile</span></code> KVP requests.
+The KVP service is available at <code class="docutils literal notranslate"><span class="pre">/service</span></code> and <code class="docutils literal notranslate"><span class="pre">/ows</span></code>.</p>
+<p>You can enable or disable the KVP service with the <code class="docutils literal notranslate"><span class="pre">kvp</span></code> option. It is enabled by default and you need to enable <code class="docutils literal notranslate"><span class="pre">restful</span></code> if you disable this one.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wmts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">kvp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">restful</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+<section id="restful">
+<h3>RESTful<a class="headerlink" href="#restful" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>MapProxy supports RESTful WMTS requests with custom URL templates.
+The RESTful service capabilities are available at <code class="docutils literal notranslate"><span class="pre">/wmts/1.0.0/WMTSCapabilities.xml</span></code>.</p>
+<p>You can enable or disable the RESTful service with the <code class="docutils literal notranslate"><span class="pre">restful</span></code> option. It is enabled by default and you need to enable <code class="docutils literal notranslate"><span class="pre">kvp</span></code> if you disable this one.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wmts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">restful</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">kvp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<section id="url-template">
+<h4>URL Template<a class="headerlink" href="#url-template" title="Permalink to this heading">#</a></h4>
+<p>WMTS RESTful service supports custom URLs. You can configure your own URL templates with the <code class="docutils literal notranslate"><span class="pre">restful_template</span></code> and <code class="docutils literal notranslate"><span class="pre">restful_fi_template</span></code>.</p>
+<p>The default template is <code class="docutils literal notranslate"><span class="pre">/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}</span></code> for tile requests and <code class="docutils literal notranslate"><span class="pre">/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}</span></code> for feature info requests. All RESTful WMTS requests begin with with <code class="docutils literal notranslate"><span class="pre">/wmts</span></code> and this prefix must not be added to the template.</p>
+<p>The template variables are identical with the WMTS specification. <code class="docutils literal notranslate"><span class="pre">TileMatrixSet</span></code> is the grid name, <code class="docutils literal notranslate"><span class="pre">TileMatrix</span></code> is the zoom level, <code class="docutils literal notranslate"><span class="pre">TileCol</span></code> and <code class="docutils literal notranslate"><span class="pre">TileRow</span></code> are the x and y of the tile. <code class="docutils literal notranslate"><span class="pre">InfoFormat</span></code> is the suffix of the requested feature info format. <code class="docutils literal notranslate"><span class="pre">I</span></code> and <code class="docutils literal notranslate"><span class="pre">J</span></code> are pixel column and row of the requested feature.</p>
+<p>You can access the tile x=3, y=9, z=4 at <code class="docutils literal notranslate"><span class="pre">http://example.org/wmts/1.0.0/mylayer-mygrid/4-3-9/tile</span></code>
+with the following configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wmts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">restful</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">restful_template</span><span class="p">:</span>
+<span class="w">        </span><span class="s">&#39;/1.0.0/{Layer}-{TileMatrixSet}/{TileMatrix}-{TileCol}-{TileRow}/tile&#39;</span>
+<span class="w">    </span><span class="nt">restful_fi_template</span><span class="p">:</span>
+<span class="w">        </span><span class="s">&#39;/1.0.0/{Layer}-{TileMatrixSet}/{TileMatrix}-{TileCol}-{TileRow}/{I}-{J}/{InfoFormat}&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="feature-info">
+<span id="wmts-feature-info"></span><h4>Feature Info<a class="headerlink" href="#feature-info" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.12.</span></p>
+</div>
+</section>
+</section>
+<section id="featureinfo-formats">
+<h3><code class="docutils literal notranslate"><span class="pre">featureinfo_formats</span></code><a class="headerlink" href="#featureinfo-formats" title="Permalink to this heading">#</a></h3>
+<p>A list of feature info formats that the WMTS service should offer. Each format requires the full mimetype and a filename suffix. The mimetype is the <code class="docutils literal notranslate"><span class="pre">infoformat</span></code> requested by KVP clients. The suffix is the <code class="docutils literal notranslate"><span class="pre">{InfoFormat}</span></code> requested by RESTful clients.</p>
+<p>No <code class="docutils literal notranslate"><span class="pre">featureinfo_formats</span></code> are configured by default.</p>
+<p>To enable GML and HTML feature info requests:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wmts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">featureinfo_formats</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mimetype</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/gml+xml; version=3.1</span>
+<span class="w">        </span><span class="nt">suffix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mimetype</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html</span>
+<span class="w">        </span><span class="nt">suffix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">html</span>
+</pre></div>
+</div>
+<p>You need to enable <code class="docutils literal notranslate"><span class="pre">wms_opts.featureinfo</span></code> for each queryable source.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The configuration differs from WMS as older WMS versions required a type like <code class="docutils literal notranslate"><span class="pre">html</span></code> instead of a mimetype like <code class="docutils literal notranslate"><span class="pre">text/html</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="mapproxy-demo-service">
+<span id="demo-service-label"></span><span id="index-7"></span><h2>MapProxy Demo Service<a class="headerlink" href="#mapproxy-demo-service" title="Permalink to this heading">#</a></h2>
+<p>MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can test each layer with a simple OpenLayers client.</p>
+<p>The service is available at <code class="docutils literal notranslate"><span class="pre">/demo/</span></code>.</p>
+<p>This service takes no further options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">code</span><span class="o">-</span><span class="n">block</span><span class="p">::</span> <span class="n">yaml</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="simple">
+<dt>services:</dt><dd><p>demo:</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="configuration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Configuration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sources.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Sources</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attribution"><code class="docutils literal notranslate"><span class="pre">attribution</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#srs"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox-srs"><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-formats"><code class="docutils literal notranslate"><span class="pre">image_formats</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-types"><code class="docutils literal notranslate"><span class="pre">featureinfo_types</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-xslt"><code class="docutils literal notranslate"><span class="pre">featureinfo_xslt</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#strict"><code class="docutils literal notranslate"><span class="pre">strict</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-source-errors"><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-output-pixels"><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#versions"><code class="docutils literal notranslate"><span class="pre">versions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full-example">Full example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-c">WMS-C</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-grid-names"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openlayers">OpenLayers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#google-maps">Google Maps</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-tile-services-wmts">Web Map Tile Services (WMTS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kvp">KVP</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restful">RESTful</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#url-template">URL Template</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-info">Feature Info</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinfo-formats"><code class="docutils literal notranslate"><span class="pre">featureinfo_formats</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-demo-service">MapProxy Demo Service</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

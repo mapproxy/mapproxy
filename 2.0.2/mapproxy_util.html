@@ -1,0 +1,1049 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>mapproxy-util &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'mapproxy_util';</script>
+    <link rel="canonical" href="/mapproxy/mapproxy_util.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mapproxy-util autoconfig" href="mapproxy_util_autoconfig.html" />
+    <link rel="prev" title="Coverages" href="coverages.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>mapproxy-util</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create"><code class="docutils literal notranslate"><span class="pre">create</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-templates">Configuration templates</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-develop"><code class="docutils literal notranslate"><span class="pre">serve-develop</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiapp-develop"><code class="docutils literal notranslate"><span class="pre">serve-multiapp-develop</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scales"><code class="docutils literal notranslate"><span class="pre">scales</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-capabilities"><code class="docutils literal notranslate"><span class="pre">wms-capabilities</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grids"><code class="docutils literal notranslate"><span class="pre">grids</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export"><code class="docutils literal notranslate"><span class="pre">export</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#export-types">Export types</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defrag-compact-cache"><code class="docutils literal notranslate"><span class="pre">defrag-compact-cache</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Examples</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="mapproxy-util">
+<span id="id1"></span><h1>mapproxy-util<a class="headerlink" href="#mapproxy-util" title="Permalink to this heading">#</a></h1>
+<p>The commandline tool <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code> provides sub-commands that are helpful when working with MapProxy.</p>
+<p>To get a list of all sub-commands call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span>
+</pre></div>
+</div>
+<p>To call a sub-command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">subcommand</span>
+</pre></div>
+</div>
+<p>Each sub-command provides additional information:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">subcommand</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<p>The current sub-commands are:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#mapproxy-util-create"><span class="std std-ref">create</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-serve-develop"><span class="std std-ref">serve-develop</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-serve-multiapp-develop"><span class="std std-ref">serve-multiapp-develop</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-scales"><span class="std std-ref">scales</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-wms-capabilities"><span class="std std-ref">wms-capabilities</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-grids"><span class="std std-ref">grids</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-util-export"><span class="std std-ref">export</span></a></p></li>
+<li><p><a class="reference internal" href="#mapproxy-defrag-compact-cache"><span class="std std-ref">defrag-compact-cache</span></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autoconfig</span></code> (see <a class="reference internal" href="mapproxy_util_autoconfig.html#mapproxy-util-autoconfig"><span class="std std-ref">mapproxy-util autoconfig</span></a>)</p></li>
+</ul>
+<section id="create">
+<span id="mapproxy-util-create"></span><h2><code class="docutils literal notranslate"><span class="pre">create</span></code><a class="headerlink" href="#create" title="Permalink to this heading">#</a></h2>
+<p>This sub-command creates example configurations for you. There are templates for each configuration file.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-create-l">
+<span id="cmdoption-mapproxy-util-create-list-templates"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--list-templates</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-create-l" title="Permalink to this definition">#</a></dt>
+<dd><p>List names of all available configuration templates.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-create-t">
+<span id="cmdoption-mapproxy-util-create-template"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--template</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-create-t" title="Permalink to this definition">#</a></dt>
+<dd><p>Create a configuration with the named template.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-create-f">
+<span id="cmdoption-mapproxy-util-create-mapproxy-conf"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mapproxy.yaml&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mapproxy-conf</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mapproxy.yaml&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-create-f" title="Permalink to this definition">#</a></dt>
+<dd><p>The path of the MapProxy configuration. Required for some templates.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-create-force">
+<span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-create-force" title="Permalink to this definition">#</a></dt>
+<dd><p>Overwrite any existing configuration with the same output filename.</p>
+</dd></dl>
+
+<section id="configuration-templates">
+<h3>Configuration templates<a class="headerlink" href="#configuration-templates" title="Permalink to this heading">#</a></h3>
+<p>Available templates are:</p>
+<dl class="simple">
+<dt>base-config:</dt><dd><p>Creates an example <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code> file. You need to pass the destination directory to the command.</p>
+</dd>
+<dt>log-ini:</dt><dd><p>Creates an example logging configuration. You need to pass the target filename to the command (i.e. <cite>my-app/log.ini</cite>).</p>
+</dd>
+<dt>wsgi-app:</dt><dd><p>Creates an example server script for the given MapProxy configuration (<a class="reference internal" href="#cmdoption-mapproxy-util-create-f"><code class="xref std std-option docutils literal notranslate"><span class="pre">--f/--mapproxy-conf</span></code></a>) . You need to pass the target filename to the command.</p>
+</dd>
+</dl>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">create</span> <span class="o">-</span><span class="n">t</span> <span class="n">base</span><span class="o">-</span><span class="n">config</span> <span class="o">./</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="serve-develop">
+<span id="mapproxy-util-serve-develop"></span><span id="index-0"></span><h2><code class="docutils literal notranslate"><span class="pre">serve-develop</span></code><a class="headerlink" href="#serve-develop" title="Permalink to this heading">#</a></h2>
+<p>This sub-command starts a MapProxy instance of your configuration as a stand-alone server.</p>
+<p>You need to pass the MapProxy configuration as an argument. The server will automatically reload if you change the configuration or any of the MapProxy source code.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-serve-develop-b">
+<span id="cmdoption-mapproxy-util-serve-develop-bind"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;address&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--bind</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;address&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-serve-develop-b" title="Permalink to this definition">#</a></dt>
+<dd><p>The server address where the HTTP server should listen for incomming connections. Can be a port (<code class="docutils literal notranslate"><span class="pre">:8080</span></code>), a host (<code class="docutils literal notranslate"><span class="pre">localhost</span></code>) or both (<code class="docutils literal notranslate"><span class="pre">localhost:8081</span></code>). The default is <code class="docutils literal notranslate"><span class="pre">localhost:8080</span></code>. You need to use <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> to be able to connect to the server from external clients.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-serve-develop-debug">
+<span class="sig-name descname"><span class="pre">--debug</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-serve-develop-debug" title="Permalink to this definition">#</a></dt>
+<dd><p>The server outputs debug logging information to the console.</p>
+</dd></dl>
+
+<section id="id2">
+<h3>Example<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="o">./</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="serve-multiapp-develop">
+<span id="mapproxy-util-serve-multiapp-develop"></span><span id="index-1"></span><h2><code class="docutils literal notranslate"><span class="pre">serve-multiapp-develop</span></code><a class="headerlink" href="#serve-multiapp-develop" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>This sub-command is similar to <code class="docutils literal notranslate"><span class="pre">serve-develop</span></code> but it starts a <a class="reference internal" href="deployment.html#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a> instance.</p>
+<p>You need to pass a directory of your MapProxy configurations as an argument. The server will automatically reload if you change any configuration or any of the MapProxy source code.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-serve-multiapp-develop-b">
+<span id="cmdoption-mapproxy-util-serve-multiapp-develop-bind"></span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;address&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--bind</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;address&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-serve-multiapp-develop-b" title="Permalink to this definition">#</a></dt>
+<dd><p>The server address where the HTTP server should listen for incomming connections. Can be a port (<code class="docutils literal notranslate"><span class="pre">:8080</span></code>), a host (<code class="docutils literal notranslate"><span class="pre">localhost</span></code>) or both (<code class="docutils literal notranslate"><span class="pre">localhost:8081</span></code>). The default is <code class="docutils literal notranslate"><span class="pre">localhost:8080</span></code>. You need to use <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> to be able to connect to the server from external clients.</p>
+</dd></dl>
+
+<section id="id3">
+<h3>Example<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">multiapp</span><span class="o">-</span><span class="n">develop</span> <span class="n">my_projects</span><span class="o">/</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="scales">
+<span id="mapproxy-util-scales"></span><span id="index-2"></span><h2><code class="docutils literal notranslate"><span class="pre">scales</span></code><a class="headerlink" href="#scales" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.2.0.</span></p>
+</div>
+<p>This sub-command helps to convert between scales and resolutions.</p>
+<p>Scales are ambiguous when the resolution of the output device (LCD, printer, mobile, etc) is unknown and therefore MapProxy only uses resolutions for configuration (see <a class="reference internal" href="configuration.html#scale-resolution"><span class="std std-ref">Scale vs. resolution</span></a>). You can use the <code class="docutils literal notranslate"><span class="pre">scales</span></code> sub-command to calculate between known scale values and resolutions.</p>
+<p>The command takes a list with one or more scale values and returns the corresponding resolution value.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-scales-unit">
+<span class="sig-name descname"><span class="pre">--unit</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;m|d&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-scales-unit" title="Permalink to this definition">#</a></dt>
+<dd><p>Return resolutions in this unit per pixel (default meter per pixel).</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-scales-l">
+<span id="cmdoption-mapproxy-util-scales-levels"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;n&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--levels</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;n&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-scales-l" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate resolutions for <code class="docutils literal notranslate"><span class="pre">n</span></code> levels. This will double the resolution of the last scale value if <code class="docutils literal notranslate"><span class="pre">n</span></code> is larger than the number of the provided scales.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-scales-d">
+<span id="cmdoption-mapproxy-util-scales-dpi"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dpi&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dpi</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dpi&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-scales-d" title="Permalink to this definition">#</a></dt>
+<dd><p>The resolution of the output display to use for the calculation. You need to set this to the same value of the client/server software you are using. Common values are 72 and 96. The default value is the equivalent of a pixel size of .28mm, which is around 91 DPI. This is the value the OGC uses since the WMS 1.3.0 specification.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-scales-as-res-config">
+<span class="sig-name descname"><span class="pre">--as-res-config</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-scales-as-res-config" title="Permalink to this definition">#</a></dt>
+<dd><p>Format the output so that it can be pasted into a MapProxy grid configuration.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-scales-res-to-scale">
+<span class="sig-name descname"><span class="pre">--res-to-scale</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-scales-res-to-scale" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate from resolutions to scale.</p>
+</dd></dl>
+
+<section id="id4">
+<h3>Example<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<p>For multiple levels as MapProxy configuration snippet:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">scales</span> <span class="o">-</span><span class="n">l</span> <span class="mi">4</span> <span class="o">--</span><span class="k">as</span><span class="o">-</span><span class="n">res</span><span class="o">-</span><span class="n">config</span> <span class="mi">100000</span>
+</pre></div>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">res</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<span class="w">     </span><span class="c1">#  res            level        scale</span>
+<span class="w">       </span><span class="nv">28.0000000000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  0      100000.00000000</span>
+<span class="w">       </span><span class="nv">14.0000000000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  1       50000.00000000</span>
+<span class="w">        </span><span class="nv">7.0000000000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  2       25000.00000000</span>
+<span class="w">        </span><span class="nv">3.5000000000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  3       12500.00000000</span>
+<span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>With multiple scale values and custom DPI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">scales</span> <span class="o">--</span><span class="n">dpi</span> <span class="mi">96</span> <span class="o">--</span><span class="k">as</span><span class="o">-</span><span class="n">res</span><span class="o">-</span><span class="n">config</span> \
+    <span class="mi">100000</span> <span class="mi">50000</span> <span class="mi">25000</span> <span class="mi">10000</span>
+</pre></div>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">res</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<span class="w">     </span><span class="c1">#  res            level        scale</span>
+<span class="w">       </span><span class="nv">26.4583333333</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  0      100000.00000000</span>
+<span class="w">       </span><span class="nv">13.2291666667</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  1       50000.00000000</span>
+<span class="w">        </span><span class="nv">6.6145833333</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  2       25000.00000000</span>
+<span class="w">        </span><span class="nv">2.6458333333</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="c1">#  3       10000.00000000</span>
+<span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="wms-capabilities">
+<span id="mapproxy-util-wms-capabilities"></span><h2><code class="docutils literal notranslate"><span class="pre">wms-capabilities</span></code><a class="headerlink" href="#wms-capabilities" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>This sub-command parses a valid capabilites document from a URL and displays all available layers.</p>
+<p>This tool does not create a MapProxy configuration, but the output should help you to set up or modify your MapProxy configuration.</p>
+<p>The command takes a valid URL GetCapabilities URL.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-wms_capabilities-host">
+<span class="sig-name descname"><span class="pre">--host</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;URL&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-wms_capabilities-host" title="Permalink to this definition">#</a></dt>
+<dd><p>Display all available Layers for this service. Each new layer will be marked with a hyphen and all sublayers are indented.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-wms_capabilities-version">
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;versionnumber&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-wms_capabilities-version" title="Permalink to this definition">#</a></dt>
+<dd><p>Parse the Capabilities-document for the given version. Only version 1.1.1 and 1.3.0 are supported. The default value is 1.1.1</p>
+</dd></dl>
+
+<section id="id5">
+<h3>Example<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<p>With the following MapProxy layer configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">osm</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My OSM Layer</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_cache</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group Layer</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1a</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1a</span>
+<span class="w">        </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_cache</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1b</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1b</span>
+<span class="w">        </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_cache</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Parsed capabilities document:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
+</pre></div>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">Capabilities Document Version 1.1.1</span>
+<span class="l l-Scalar l-Scalar-Plain">Root-Layer</span><span class="p p-Indicator">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy WMS Proxy</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:8080/service?</span>
+<span class="w">    </span><span class="nt">opaque</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span>
+<span class="w">          </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31468&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:84&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4258&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">EPSG:900913</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">EPSG:4326</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">queryable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">llbbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">osm</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My OSM Layer</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:8080/service?</span>
+<span class="w">        </span><span class="nt">opaque</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span>
+<span class="w">              </span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31468&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:84&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4258&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">EPSG:900913</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">EPSG:4326</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">queryable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">        </span><span class="nt">llbbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group Layer</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:8080/service?</span>
+<span class="w">        </span><span class="nt">opaque</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span>
+<span class="w">              </span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31468&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:84&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4258&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">EPSG:900913</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">EPSG:4326</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">queryable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">        </span><span class="nt">llbbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1a</span>
+<span class="w">            </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1a</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:8080/service?</span>
+<span class="w">            </span><span class="nt">opaque</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">            </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span>
+<span class="w">                  </span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31468&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:84&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4258&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">EPSG:900913</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">]</span>
+<span class="w">                </span><span class="nt">EPSG:4326</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">queryable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">            </span><span class="nt">llbbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1b</span>
+<span class="w">            </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1b</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://127.0.0.1:8080/service?</span>
+<span class="w">            </span><span class="nt">opaque</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">            </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span>
+<span class="w">                  </span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:31468&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;CRS:84&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:4258&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">bbox</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">EPSG:900913</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20037508.3428</span><span class="p p-Indicator">]</span>
+<span class="w">                </span><span class="nt">EPSG:4326</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">queryable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">            </span><span class="nt">llbbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-85.0511287798</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">180.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">85.0511287798</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="grids">
+<span id="mapproxy-util-grids"></span><h2><code class="docutils literal notranslate"><span class="pre">grids</span></code><a class="headerlink" href="#grids" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>This sub-command displays information about configured grids.</p>
+<p>The command takes a MapProxy configuration file and returns all configured grids.</p>
+<p>Furthermore, default values for each grid will be displayed if they are not defined explicitly.
+All default values are marked with an asterisk in the output.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-f">
+<span id="cmdoption-mapproxy-util-grids-mapproxy-config"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;path/to/config&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mapproxy-config</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;path/to/config&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-f" title="Permalink to this definition">#</a></dt>
+<dd><p>Display all configured grids for this MapProxy configuration with detailed information.
+If this option is not set, the sub-command will try to use the last argument as the mapproxy config.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-l">
+<span id="cmdoption-mapproxy-util-grids-list"></span><span class="sig-name descname"><span class="pre">-l</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--list</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-l" title="Permalink to this definition">#</a></dt>
+<dd><p>Display only the names of the grids for the given configuration, which are used by any grid.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-all">
+<span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-all" title="Permalink to this definition">#</a></dt>
+<dd><p>Show also grids that are not referenced by any cache.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-g">
+<span id="cmdoption-mapproxy-util-grids-grid"></span><span class="sig-name descname"><span class="pre">-g</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;grid_name&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--grid</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;grid_name&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-g" title="Permalink to this definition">#</a></dt>
+<dd><p>Display information only for a single grid.
+The tool will exit, if the grid name is not found.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-c">
+<span id="cmdoption-mapproxy-util-grids-coverage"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;coverage</span> <span class="pre">name&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--coverage</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;coverage</span> <span class="pre">name&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-c" title="Permalink to this definition">#</a></dt>
+<dd><p>Display an approximation of the number of tiles for each level that  which are within this coverage.
+The coverage must be defined in Seed configuration.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-grids-s">
+<span id="cmdoption-mapproxy-util-grids-seed-conf"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;seed.yaml&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--seed-conf</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;seed.yaml&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-grids-s" title="Permalink to this definition">#</a></dt>
+<dd><p>This option loads the seed configuration and is needed if you use the <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> option.</p>
+</dd></dl>
+
+<section id="id6">
+<h3>Example<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<p>With the following MapProxy grid configuration:
+.. code-block:: yaml</p>
+<blockquote>
+<div><dl class="simple">
+<dt>grids:</dt><dd><dl class="simple">
+<dt>localgrid:</dt><dd><p>srs: EPSG:31467
+bbox: [5,50,10,55]
+bbox_srs: EPSG:4326
+min_res: 10000</p>
+</dd>
+<dt>localgrid2:</dt><dd><p>base: localgrid
+srs: EPSG:25832
+res_factor: sqrt2
+tile_size: [512, 512]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>List all configured grids:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">grids</span> <span class="o">--</span><span class="nb">list</span> <span class="o">--</span><span class="n">mapproxy</span><span class="o">-</span><span class="n">config</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GLOBAL_GEODETIC</span>
+<span class="n">GLOBAL_MERCATOR</span>
+<span class="n">localgrid</span>
+<span class="n">localgrid2</span>
+</pre></div>
+</div>
+<p>Display detailed information for one specific grid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">grids</span> <span class="o">--</span><span class="n">grid</span> <span class="n">localgrid</span> <span class="o">--</span><span class="n">mapproxy</span><span class="o">-</span><span class="n">conf</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">localgrid</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Configuration</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">bbox_srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="w">        </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+<span class="w">        </span><span class="nt">origin*</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;sw&#39;</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span>
+<span class="w">        </span><span class="nt">tile_size*</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">256</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">256</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">Levels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Resolutions,</span><span class="w"> </span><span class="c1"># x * y = total tiles</span>
+<span class="w">        </span><span class="nt">00</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">10000,</span><span class="w">             </span><span class="c1">#      1 * 1      =        1</span>
+<span class="w">        </span><span class="nt">01</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">5000.0,</span><span class="w">            </span><span class="c1">#      1 * 1      =        1</span>
+<span class="w">        </span><span class="nt">02</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">2500.0,</span><span class="w">            </span><span class="c1">#      1 * 1      =        1</span>
+<span class="w">        </span><span class="nt">03</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">1250.0,</span><span class="w">            </span><span class="c1">#      2 * 2      =        4</span>
+<span class="w">        </span><span class="nt">04</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">625.0,</span><span class="w">             </span><span class="c1">#      3 * 4      =       12</span>
+<span class="w">        </span><span class="nt">05</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">312.5,</span><span class="w">             </span><span class="c1">#      5 * 8      =       40</span>
+<span class="w">        </span><span class="nt">06</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">156.25,</span><span class="w">            </span><span class="c1">#      9 * 15     =      135</span>
+<span class="w">        </span><span class="nt">07</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">78.125,</span><span class="w">            </span><span class="c1">#     18 * 29     =      522</span>
+<span class="w">        </span><span class="nt">08</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">39.0625,</span><span class="w">           </span><span class="c1">#     36 * 57     =   2.052K</span>
+<span class="w">        </span><span class="nt">09</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">19.53125,</span><span class="w">          </span><span class="c1">#     72 * 113    =   8.136K</span>
+<span class="w">        </span><span class="nt">10</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">9.765625,</span><span class="w">          </span><span class="c1">#    144 * 226    =  32.544K</span>
+<span class="w">        </span><span class="nt">11</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">4.8828125,</span><span class="w">         </span><span class="c1">#    287 * 451    = 129.437K</span>
+<span class="w">        </span><span class="nt">12</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">2.44140625,</span><span class="w">        </span><span class="c1">#    574 * 902    = 517.748K</span>
+<span class="w">        </span><span class="nt">13</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">1.220703125,</span><span class="w">       </span><span class="c1">#   1148 * 1804   =   2.071M</span>
+<span class="w">        </span><span class="nt">14</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.6103515625,</span><span class="w">      </span><span class="c1">#   2295 * 3607   =   8.278M</span>
+<span class="w">        </span><span class="nt">15</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.30517578125,</span><span class="w">     </span><span class="c1">#   4589 * 7213   =  33.100M</span>
+<span class="w">        </span><span class="nt">16</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.152587890625,</span><span class="w">    </span><span class="c1">#   9178 * 14426  = 132.402M</span>
+<span class="w">        </span><span class="nt">17</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.0762939453125,</span><span class="w">   </span><span class="c1">#  18355 * 28851  = 529.560M</span>
+<span class="w">        </span><span class="nt">18</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.03814697265625,</span><span class="w">  </span><span class="c1">#  36709 * 57701  =   2.118G</span>
+<span class="w">        </span><span class="nt">19</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.019073486328125,</span><span class="w"> </span><span class="c1">#  73417 * 115402 =   8.472G</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="export">
+<span id="mapproxy-util-export"></span><h2><code class="docutils literal notranslate"><span class="pre">export</span></code><a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
+<p>This sub-command exports tiles from one cache to another. This is similar to the seed tool, but you don’t need to edit the configuration. The destination cache, grid and the coverage can be defined on the command line.</p>
+<p>Required arguments:</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-f">
+<span id="cmdoption-mapproxy-util-export-mapproxy-conf"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mapproxy-conf</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-f" title="Permalink to this definition">#</a></dt>
+<dd><p>The path of the MapProxy configuration of the source cache.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-source">
+<span class="sig-name descname"><span class="pre">--source</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-source" title="Permalink to this definition">#</a></dt>
+<dd><p>Name of the source or cache to export.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-levels">
+<span class="sig-name descname"><span class="pre">--levels</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-levels" title="Permalink to this definition">#</a></dt>
+<dd><p>Comma separated list of levels to export. You can also define a range of levels. For example <code class="docutils literal notranslate"><span class="pre">'1,2,3,4,5'</span></code>, <code class="docutils literal notranslate"><span class="pre">'1..10'</span></code> or <code class="docutils literal notranslate"><span class="pre">'1,3,4,6..8'</span></code>.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-grid">
+<span class="sig-name descname"><span class="pre">--grid</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-grid" title="Permalink to this definition">#</a></dt>
+<dd><p>The tile grid for the export. The option can either be the name of the grid as defined in the in the MapProxy configuration, or it can be the grid definition itself. You can define a grid as a single string of the key-value pairs. The grid definition <a class="reference internal" href="configuration.html#id6"><span class="std std-ref">supports all grid parameters</span></a>. See below for examples.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-dest">
+<span class="sig-name descname"><span class="pre">--dest</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-dest" title="Permalink to this definition">#</a></dt>
+<dd><p>Destination of the export. Can be a filename, directory or URL, depending on the export <code class="docutils literal notranslate"><span class="pre">--type</span></code>.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-type">
+<span class="sig-name descname"><span class="pre">--type</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-type" title="Permalink to this definition">#</a></dt>
+<dd><p>Choose the export type. See below for a list of all options.</p>
+</dd></dl>
+
+<p>Other options:</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-fetch-missing-tiles">
+<span class="sig-name descname"><span class="pre">--fetch-missing-tiles</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-fetch-missing-tiles" title="Permalink to this definition">#</a></dt>
+<dd><p>If MapProxy should request missing tiles from the source. By default, the export tool will only existing tiles.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-coverage">
+<span id="cmdoption-mapproxy-util-export-srs"></span><span id="cmdoption-mapproxy-util-export-where"></span><span class="sig-name descname"><span class="pre">--coverage</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--srs</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--where</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-coverage" title="Permalink to this definition">#</a></dt>
+<dd><p>Limit the export to this coverage. You can use a BBOX, WKT files or OGR datasources. See <a class="reference internal" href="coverages.html"><span class="doc">Coverages</span></a>.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-export-c">
+<span id="cmdoption-mapproxy-util-export-concurrency"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"> <span class="pre">N</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--concurrency</span></span><span class="sig-prename descclassname"> <span class="pre">N</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-export-c" title="Permalink to this definition">#</a></dt>
+<dd><p>The number of concurrent export processes.</p>
+</dd></dl>
+
+<section id="export-types">
+<h3>Export types<a class="headerlink" href="#export-types" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">tms</span></code>:</dt><dd><p>Export tiles in a TMS like directory structure.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy</span></code> or <code class="docutils literal notranslate"><span class="pre">tc</span></code>:</dt><dd><p>Export tiles like the internal cache directory structure. This is compatible with TileCache.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mbtile</span></code>:</dt><dd><p>Export tiles into a MBTile file.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sqlite</span></code>:</dt><dd><p>Export tiles into SQLite level files.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">geopackage</span></code>:</dt><dd><p>Export tiles into a GeoPackage file.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">arcgis</span></code>:</dt><dd><p>Export tiles in a ArcGIS exploded cache directory structure.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">compact-v1</span></code>:</dt><dd><p>Export tiles as ArcGIS compact cache bundle files (version 1).</p>
+</dd>
+</dl>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h3>
+<p>Export tiles into a TMS directory structure under <code class="docutils literal notranslate"><span class="pre">./cache/</span></code>. Limit export to the BBOX and levels 0 to 6.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">export</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">grid</span> <span class="n">osm_grid</span> \
+    <span class="o">--</span><span class="n">source</span> <span class="n">osm_cache</span> <span class="o">--</span><span class="n">dest</span> <span class="o">./</span><span class="n">cache</span><span class="o">/</span> \
+    <span class="o">--</span><span class="n">levels</span> <span class="mf">1..6</span> <span class="o">--</span><span class="n">coverage</span> <span class="mi">5</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">60</span> <span class="o">--</span><span class="n">srs</span> <span class="mi">4326</span>
+</pre></div>
+</div>
+<p>Export tiles into an MBTiles file. Limit export to a shape coverage.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">export</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">grid</span> <span class="n">osm_grid</span> \
+    <span class="o">--</span><span class="n">source</span> <span class="n">osm_cache</span> <span class="o">--</span><span class="n">dest</span> <span class="n">osm</span><span class="o">.</span><span class="n">mbtiles</span> <span class="o">--</span><span class="nb">type</span> <span class="n">mbtile</span> \
+    <span class="o">--</span><span class="n">levels</span> <span class="mf">1..6</span> <span class="o">--</span><span class="n">coverage</span> <span class="n">boundaries</span><span class="o">.</span><span class="n">shp</span> \
+    <span class="o">--</span><span class="n">where</span> <span class="s1">&#39;CNTRY_NAME = &quot;Germany&quot;&#39;</span> <span class="o">--</span><span class="n">srs</span> <span class="mi">3857</span>
+</pre></div>
+</div>
+<p>Export tiles into an MBTiles file using a custom grid definition.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">export</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">levels</span> <span class="mf">1..6</span> \
+    <span class="o">--</span><span class="n">grid</span> <span class="s2">&quot;srs=&#39;EPSG:4326&#39; bbox=[5,50,10,60] tile_size=[512,512]&quot;</span> \
+    <span class="o">--</span><span class="n">source</span> <span class="n">osm_cache</span> <span class="o">--</span><span class="n">dest</span> <span class="n">osm</span><span class="o">.</span><span class="n">mbtiles</span> <span class="o">--</span><span class="nb">type</span> <span class="n">mbtile</span> \
+</pre></div>
+</div>
+</section>
+</section>
+<section id="defrag-compact-cache">
+<span id="mapproxy-defrag-compact-cache"></span><h2><code class="docutils literal notranslate"><span class="pre">defrag-compact-cache</span></code><a class="headerlink" href="#defrag-compact-cache" title="Permalink to this heading">#</a></h2>
+<p>The ArcGIS compact cache format version 1 and 2 are append only. Updating existing tiles will increase the file size. Bundle files become larger and fragmented with time. The <code class="docutils literal notranslate"><span class="pre">defrag-compact-cache</span></code> sub-command compacts existing bundle files by rewriting and reorganizing each bundle file.</p>
+<p>Required arguments:</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-defrag-compact-cache-f">
+<span id="cmdoption-mapproxy-util-defrag-compact-cache-mapproxy-conf"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mapproxy-conf</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-defrag-compact-cache-f" title="Permalink to this definition">#</a></dt>
+<dd><p>The path of the MapProxy configuration with the configured compact caches.</p>
+</dd></dl>
+
+<p>Optional arguments:</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-defrag-compact-cache-caches">
+<span class="sig-name descname"><span class="pre">--caches</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-defrag-compact-cache-caches" title="Permalink to this definition">#</a></dt>
+<dd><p>Comma separated list of caches to defragment. By default all configured compact caches will be defragmented.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-defrag-compact-cache-min-percent">
+<span id="cmdoption-mapproxy-util-defrag-compact-cache-min-mb"></span><span class="sig-name descname"><span class="pre">--min-percent</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--min-mb</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-defrag-compact-cache-min-percent" title="Permalink to this definition">#</a></dt>
+<dd><p>Bundle files with only a minmal fragmentation are skipped. You can define this threshold with <code class="docutils literal notranslate"><span class="pre">--min-percent</span></code> as the required minimal percentage of unused space and <code class="docutils literal notranslate"><span class="pre">--min-mb</span></code> as the minimal required unused space in megabytes. Both thresholds must be exceeded. Defaults to 10% and 1MB.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-defrag-compact-cache-n">
+<span id="cmdoption-mapproxy-util-defrag-compact-cache-dry-run"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dry-run</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-defrag-compact-cache-n" title="Permalink to this definition">#</a></dt>
+<dd><p>This will simulate the defragmentation process.</p>
+</dd></dl>
+
+<section id="id7">
+<h3>Examples<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<p>Defragment bundle files from <code class="docutils literal notranslate"><span class="pre">map1_cache</span></code> and <code class="docutils literal notranslate"><span class="pre">map2_cache</span></code> when they have more than 20% and 5MB of unused space. E.g. a 20 MB bundle file only gets rewritten if it becomes smaller then 15MB after defragmentation; a 500MB bundle file only gets rewritten if it becomes smaller then 400MB after defragmentation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">defrag</span><span class="o">-</span><span class="n">compact</span><span class="o">-</span><span class="n">cache</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> \
+  <span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">percent</span> <span class="mi">20</span> \
+  <span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">mb</span> <span class="mi">5</span> \
+  <span class="o">--</span><span class="n">caches</span> <span class="n">map1_cache</span><span class="p">,</span><span class="n">map2_cache</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="coverages.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Coverages</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="mapproxy_util_autoconfig.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">mapproxy-util autoconfig</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create"><code class="docutils literal notranslate"><span class="pre">create</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-templates">Configuration templates</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-develop"><code class="docutils literal notranslate"><span class="pre">serve-develop</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiapp-develop"><code class="docutils literal notranslate"><span class="pre">serve-multiapp-develop</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scales"><code class="docutils literal notranslate"><span class="pre">scales</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-capabilities"><code class="docutils literal notranslate"><span class="pre">wms-capabilities</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grids"><code class="docutils literal notranslate"><span class="pre">grids</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export"><code class="docutils literal notranslate"><span class="pre">export</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#export-types">Export types</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defrag-compact-cache"><code class="docutils literal notranslate"><span class="pre">defrag-compact-cache</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Examples</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,719 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Coverages &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'coverages';</script>
+    <link rel="canonical" href="/mapproxy/coverages.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mapproxy-util" href="mapproxy_util.html" />
+    <link rel="prev" title="Seeding" href="seed.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Coverages</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coverage-types">Coverage Types</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bounding-box">Bounding box</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#polygon-file">Polygon file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geojson">GeoJSON</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ogr-datasource">OGR datasource</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#expire-tiles">Expire tiles</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#union">Union</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#difference">Difference</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#intersection">Intersection</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clipping">Clipping</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources">sources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-seed">mapproxy-seed</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="coverages">
+<span id="id1"></span><h1>Coverages<a class="headerlink" href="#coverages" title="Permalink to this heading">#</a></h1>
+<p>With coverages you can define areas where data is available or where data you are interested in is.
+MapProxy supports coverages for <a class="reference internal" href="sources.html"><span class="doc">sources</span></a>, <a class="reference internal" href="caches.html"><span class="doc">caches</span></a> and in the <a class="reference internal" href="seed.html"><span class="doc">mapproxy-seed tool</span></a>. Refer to the corresponding section in the documentation.</p>
+<p>There are five different ways to describe a coverage:</p>
+<ul class="simple">
+<li><p>a simple rectangular bounding box,</p></li>
+<li><p>a text file with one or more (multi)polygons in WKT format,</p></li>
+<li><p>a GeoJSON file with (multi)polygons features,</p></li>
+<li><p>(multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS),</p></li>
+<li><p>a file with webmercator tile coordinates.</p></li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>You can also build intersections, unions and differences between multiple coverages.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">#</a></h2>
+<p>If you want to use polygons to define a coverage, instead of simple bounding boxes, you will also need Shapely and GEOS. For loading polygons from shapefiles you’ll also need GDAL/OGR.</p>
+<p>MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.</p>
+<p>On Debian:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>aptitude<span class="w"> </span>install<span class="w"> </span>libgeos-dev<span class="w"> </span>libgdal-dev
+pip<span class="w"> </span>install<span class="w"> </span>Shapely
+</pre></div>
+</div>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h2>
+<p>All coverages are configured by defining the source of the coverage and the SRS.
+The configuration of the coverage depends on the type. The SRS can allways be configured with the <code class="docutils literal notranslate"><span class="pre">srs</span></code> option.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0: </span>MapProxy can autodetect the type of the coverage. You can now use <code class="docutils literal notranslate"><span class="pre">coverage</span></code> instead of the <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, <code class="docutils literal notranslate"><span class="pre">polygons</span></code> or <code class="docutils literal notranslate"><span class="pre">ogr_datasource</span></code> option.
+The old options are still supported.</p>
+</div>
+</section>
+<section id="coverage-types">
+<h2>Coverage Types<a class="headerlink" href="#coverage-types" title="Permalink to this heading">#</a></h2>
+<section id="bounding-box">
+<h3>Bounding box<a class="headerlink" href="#bounding-box" title="Permalink to this heading">#</a></h3>
+<p>For simple box coverages.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">bbox</span></code> or <code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>A simple BBOX as a list of minx, miny, maxx, maxy, e.g: <cite>[4, -30, 10, -28]</cite> or as a string <cite>4,-30,10,-28</cite>.</p>
+</dd>
+</dl>
+</section>
+<section id="polygon-file">
+<h3>Polygon file<a class="headerlink" href="#polygon-file" title="Permalink to this heading">#</a></h3>
+<p>Text files with one WKT polygon or multi-polygon per line.
+You can create your own files or use <a class="reference external" href="http://mapproxy.org/static/polygons/">one of the files we provide for every country</a>. Read <a class="reference external" href="http://mapproxy.org/static/polygons/0-fips-codes.txt">the index</a> to find your country.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The path to the polygon file. Should be relative to the proxy configuration or absolute.</p>
+</dd>
+</dl>
+</section>
+<section id="geojson">
+<h3>GeoJSON<a class="headerlink" href="#geojson" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10: </span>Previous versions required OGR/GDAL for reading GeoJSON.</p>
+</div>
+<p>You can use GeoJSON files with Polygon and MultiPolygons geometries. FeatureCollections and Features of these geometries are suppored as well. MapProxy uses OGR to read GeoJSON files if you define a <code class="docutils literal notranslate"><span class="pre">where</span></code> filter.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The path to the GeoJSON file. Should be relative to the proxy configuration or absolute.</p>
+</dd>
+</dl>
+</section>
+<section id="ogr-datasource">
+<h3>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Permalink to this heading">#</a></h3>
+<p>Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGIS).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The name of the datasource. Refer to the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR format page</a> for a list of all supported
+datasources. File paths should be relative to the proxy configuration or absolute.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">where</span></code>:</dt><dd><p>Restrict which polygons should be loaded from the datasource. Either a simple where
+statement (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;CNTRY_NAME='Germany'&quot;</span></code>) or a full select statement. Refer to the
+<a class="reference external" href="http://www.gdal.org/ogr/ogr_sql.html">OGR SQL support documentation</a>. If this
+option is unset, the first layer from the datasource will be used.</p>
+</dd>
+</dl>
+</section>
+<section id="expire-tiles">
+<h3>Expire tiles<a class="headerlink" href="#expire-tiles" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>Text file with webmercator tile coordinates. The tiles should be in <code class="docutils literal notranslate"><span class="pre">z/x/y</span></code> format (e.g. <code class="docutils literal notranslate"><span class="pre">14/1283/6201</span></code>),
+with one tile coordinate per line. Only tiles in the webmercator grid are supported (origin is always <cite>nw</cite>).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">expire_tiles</span></code>:</dt><dd><p>File or directory with expire tile files. Directories are loaded recursive.</p>
+</dd>
+</dl>
+</section>
+<section id="union">
+<h3>Union<a class="headerlink" href="#union" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>A union coverage contains the combined coverage of one or more sub-coverages. This can be used to combine multiple coverages a single source. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">union</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+<section id="difference">
+<h3>Difference<a class="headerlink" href="#difference" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>A difference coverage subtracts the coverage of other sub-coverages from the first coverage. This can be used to exclude parts from a coverage. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">difference</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+<section id="intersection">
+<h3>Intersection<a class="headerlink" href="#intersection" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>An intersection coverage contains only areas that are covered by all sub-coverages. This can be used to limit a larger coverage to a smaller area. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">difference</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="clipping">
+<h2>Clipping<a class="headerlink" href="#clipping" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>By default MapProxy tries to get and serve full source image even if a coverage only touches it.
+Clipping by coverage can be enabled by setting <code class="docutils literal notranslate"><span class="pre">clip:</span> <span class="pre">true</span></code>. If enabled, all areas outside the coverage will be converted to transparent pixels.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">clip</span></code> option is only active for source coverages and not for seeding coverages.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h2>
+<section id="sources">
+<h3>sources<a class="headerlink" href="#sources" title="Permalink to this heading">#</a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option to define a coverage for a WMS or tile source.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mywms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.com/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">base</span>
+<span class="w">    </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<p>Example of an intersection coverage with clipping:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mywms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.com/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">base</span>
+<span class="w">    </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">clip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">intersection</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">datasource</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">coverage.geojson</span>
+<span class="w">          </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="caches">
+<h3>caches<a class="headerlink" href="#caches" title="Permalink to this heading">#</a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option to define a coverage for any cache.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_GEODETIC</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geopackage</span>
+<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file.gpkg</span>
+<span class="w">      </span><span class="nt">table_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mygeopackage</span>
+<span class="w">      </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may define a <code class="docutils literal notranslate"><span class="pre">coverage</span></code> for both a <code class="docutils literal notranslate"><span class="pre">source</span></code> and the <code class="docutils literal notranslate"><span class="pre">cache</span></code> defined on that source, in this case the <code class="docutils literal notranslate"><span class="pre">intersection</span></code> of both <code class="docutils literal notranslate"><span class="pre">coverages</span></code> will be used.
+The <code class="docutils literal notranslate"><span class="pre">coverage</span></code> of a <code class="docutils literal notranslate"><span class="pre">cache</span></code> is meant to be contained in the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> of it’s <code class="docutils literal notranslate"><span class="pre">source</span></code>, in other cases where it either intersects or has no intersection, there may be unexpected bahaviour.</p>
+<blockquote>
+<div><p>Example for defining coverages for source and corresponding cache:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_GEODETIC</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mywms</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geopackage</span>
+<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file.gpkg</span>
+<span class="w">      </span><span class="nt">table_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mygeopackage</span>
+<span class="w">      </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mywms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.com/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">base</span>
+<span class="w">    </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</section>
+<section id="mapproxy-seed">
+<h3>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Permalink to this heading">#</a></h3>
+<p>To define a seed-area in the <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code>, add the coverage directly to the view.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">coverages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">germany</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">datasource</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;shps/world_boundaries_m.shp&#39;</span>
+<span class="w">    </span><span class="nt">where</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNTRY_NAME = &#39;Germany&#39;</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span>
+</pre></div>
+</div>
+<p id="index-0">Here is the same example with a PostGIS source:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">coverages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">germany</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">datasource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PG:</span><span class="nv"> </span><span class="s">dbname=&#39;db&#39;</span><span class="nv"> </span><span class="s">host=&#39;host&#39;</span><span class="nv"> </span><span class="s">user=&#39;user&#39;</span>
+<span class="w">  </span><span class="s">password=&#39;password&#39;&quot;</span>
+<span class="w">    </span><span class="nt">where</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;select</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">coverages</span><span class="nv"> </span><span class="s">where</span><span class="nv"> </span><span class="s">country=&#39;germany&#39;&quot;</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:900913&#39;</span>
+</pre></div>
+</div>
+<p id="index-1">And here is an example with a GeoJSON source:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">coverages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">germany</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">datasource</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;boundary.geojson&#39;</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">the OGR driver list</a> for all supported formats.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="seed.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Seeding</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="mapproxy_util.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">mapproxy-util</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coverage-types">Coverage Types</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bounding-box">Bounding box</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#polygon-file">Polygon file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#geojson">GeoJSON</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ogr-datasource">OGR datasource</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#expire-tiles">Expire tiles</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#union">Union</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#difference">Difference</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#intersection">Intersection</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clipping">Clipping</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources">sources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-seed">mapproxy-seed</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

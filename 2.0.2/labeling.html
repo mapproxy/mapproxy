@@ -1,0 +1,699 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>WMS Labeling &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'labeling';</script>
+    <link rel="canonical" href="/mapproxy/labeling.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Authentication and Authorization" href="auth.html" />
+    <link rel="prev" title="INSPIRE View Service" href="inspire.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>WMS Labeling</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-problem">The Problem</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-placement-outside-the-bbox">No placement outside the BBOX</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-label-placement">Dynamic label placement</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#repeated-labels">Repeated labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-options">MapProxy Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-tiles">Meta Tiles</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-buffer">Meta Buffer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-server-options">WMS Server Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapserver-options">MapServer Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#partial-false"><code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#points">Points</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#polygons">Polygons</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lines">Lines</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-wms-servers">Other WMS Servers</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="wms-labeling">
+<h1>WMS Labeling<a class="headerlink" href="#wms-labeling" title="Permalink to this heading">#</a></h1>
+<p>The tiling of rendered vector maps often results in issues with truncated or repeated labels. Some of these issues can be reduced with a proper configuration of MapProxy, but some require changes to the configuration of the source WMS server.</p>
+<p>This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other WMS servers. Refer to their documentations on how to configure these settings.</p>
+<section id="the-problem">
+<h2>The Problem<a class="headerlink" href="#the-problem" title="Permalink to this heading">#</a></h2>
+<p>MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, but it always requests images/tiles that are aligned to the internal grid. MapProxy combines, scales and reprojects these tiles for WMS requests and for tiled requests (TMS/KML) the tiles are combined by the client (OpenLayers, etc).</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Except for uncached, cascaded WMS requests.</p>
+</aside>
+</aside>
+<p>When tiles are combined, the text labels at the boundaries need to be present at both tiles and need to be placed at the exact same (geographic) location.</p>
+<p>There are three common problems here.</p>
+<section id="no-placement-outside-the-bbox">
+<h3>No placement outside the BBOX<a class="headerlink" href="#no-placement-outside-the-bbox" title="Permalink to this heading">#</a></h3>
+<p>WMS servers do not draw features that are outside of the map bounds. For example, a city label that extends into the neighboring map tile will not be drawn in that other tile, because the geographic feature of the city (a single point) is only present in one tile.</p>
+<img alt="_images/labeling-no-placement.png" src="_images/labeling-no-placement.png" />
+</section>
+<section id="dynamic-label-placement">
+<h3>Dynamic label placement<a class="headerlink" href="#dynamic-label-placement" title="Permalink to this heading">#</a></h3>
+<p>WMS servers can adjust the position of labels so that more labels can fit on a map. For example, a city label is not always displayed at the same geographic location, but moved around to fit in the requested map or to make space for other labels.</p>
+<img alt="_images/labeling-dynamic.png" src="_images/labeling-dynamic.png" />
+</section>
+<section id="repeated-labels">
+<h3>Repeated labels<a class="headerlink" href="#repeated-labels" title="Permalink to this heading">#</a></h3>
+<p>WMS servers render labels for polygon areas in each request. Labels for large areas will appear multiple times, once in each tile.</p>
+<img alt="_images/labeling-repeated.png" src="_images/labeling-repeated.png" />
+</section>
+</section>
+<section id="mapproxy-options">
+<h2>MapProxy Options<a class="headerlink" href="#mapproxy-options" title="Permalink to this heading">#</a></h2>
+<p>There are two options that help with these issues.</p>
+<section id="meta-tiles">
+<span id="id3"></span><h3>Meta Tiles<a class="headerlink" href="#meta-tiles" title="Permalink to this heading">#</a></h3>
+<p>You can use meta tiles to reduce the labeling issues. A meta tile is a collection of multiple tiles. Instead of requesting each tile with a single request, MapProxy requests a single image that covers the area of multiple tiles and then splits that response into the actual tiles.</p>
+<p>The following image demonstrates that:</p>
+<img alt="_images/labeling-metatiling.png" src="_images/labeling-metatiling.png" />
+<p>The thin lines represent the tiles. The WMS request (inner box) consists of 20 tiles and without metatiling each tile results in a request to the WMS source. With a meta tile size of 4x4, only two larger requests to the source WMS are required (thick black box).</p>
+<p>Because you are requesting less images, you have less boundaries where labeling issues can appear. In this case it reduces the number of tile/image boundaries from 31 to only one.</p>
+<p>But, it only reduces the problem and does not solve it. Nonetheless, it should be used because it also reduces the load on the source WMS server.</p>
+<p>You can configure the meta tile size in the <code class="docutils literal notranslate"><span class="pre">globals.cache</span></code> section and for each <code class="docutils literal notranslate"><span class="pre">cache</span></code>. It defaults to <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">6</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">6</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">8</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">8</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>This does also work for tiles services. When a client like OpenLayers requests the 20 tiles from the example above in parallel, MapProxy will still requests the two meta tiles. Locking ensures that each meta tile will be requested only once.</p>
+</section>
+<section id="meta-buffer">
+<span id="id4"></span><h3>Meta Buffer<a class="headerlink" href="#meta-buffer" title="Permalink to this heading">#</a></h3>
+<p>In addition to meta tiles, MapProxy implements a meta buffer. The meta buffer adds extra space at the edges of the requested area. With this buffer, you can solve the first issue: no placement outside the BBOX.</p>
+<img alt="_images/labeling-meta-buffer.png" src="_images/labeling-meta-buffer.png" />
+<p>You can combine meta tiling and meta buffer. MapProxy then extends the whole meta tile with the configured buffer.</p>
+<p>A meta buffer of 100 will add 100 pixels at each edge of the request. With a meta size of 4x4 and a tile size of 256x256, the requested image is extended from 1024x1024 to 1224x1224. The BBOX is also extended to match the new geographical extent.</p>
+<img alt="_images/labeling-metatiling-buffer.png" src="_images/labeling-metatiling-buffer.png" />
+<p>To solve the first issue, the value should be at least half of your longest labels: If you have text labels that are up to 200 pixels wide, than you should use a meta buffer of around 120 pixels.</p>
+<p>You can configure the size of the meta buffer in the <code class="docutils literal notranslate"><span class="pre">globals.cache</span></code> section and for each <code class="docutils literal notranslate"><span class="pre">cache</span></code>. It defaults to <code class="docutils literal notranslate"><span class="pre">80</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="wms-server-options">
+<h2>WMS Server Options<a class="headerlink" href="#wms-server-options" title="Permalink to this heading">#</a></h2>
+<p>You can reduce some of the labeling issues with meta tiling, and solve the first issue with the meta buffer. The issues with dynamic and repeated labeling requires some changes to your WMS server.</p>
+<p>In general, you need to disable the dynamic position of labels and you need to allow the rendering of partial labels.</p>
+</section>
+<section id="mapserver-options">
+<h2>MapServer Options<a class="headerlink" href="#mapserver-options" title="Permalink to this heading">#</a></h2>
+<p>MapServer has lots of settings that affect the rendering. The two most important settings are</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">PROCESSING</span> <span class="pre">&quot;LABEL_NO_CLIP=ON&quot;</span></code> from the <code class="docutils literal notranslate"><span class="pre">LAYER</span></code> configuration.</dt><dd><p>With this option the labels are fixed to the whole feature and not only the part of the feature that is visible in the current map request. Default is off.</p>
+</dd>
+</dl>
+<p>and</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">PARTIALS</span></code> from the <code class="docutils literal notranslate"><span class="pre">LABEL</span></code> configuration.</dt><dd><p>If this option is true, then labels are rendered beyond the boundaries of the map request. Default is true.</p>
+</dd>
+</dl>
+<section id="partial-false">
+<h3><code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code><a class="headerlink" href="#partial-false" title="Permalink to this heading">#</a></h3>
+<p>The easiest option to solve all issues is <code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code> with a meta buffer of 0. This prevents any label from truncation, but it comes with a large downside: Since no labels are rendered at the boundaries of the meta tiles, you will have areas with no labels at all. These areas form a noticeable grid pattern on your maps.</p>
+<p>The following images demonstrates a WMS request with a meta tile boundary in the center.</p>
+<img alt="_images/labeling-partial-false.png" src="_images/labeling-partial-false.png" />
+<p>You can improve that with the right set of configuration options for each type of geometry.</p>
+</section>
+<section id="points">
+<h3>Points<a class="headerlink" href="#points" title="Permalink to this heading">#</a></h3>
+<p>As described above, you can use a meta buffer to prevent missing labels. You need to set <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">TRUE</span></code> (which is the default), and configure a large enough meta buffer. The labels need to be placed at the same position with each request. You can configure that with the <code class="docutils literal notranslate"><span class="pre">POSITION</span></code> options. The default is <code class="docutils literal notranslate"><span class="pre">auto</span></code> and you should set this to an explicit value, <code class="docutils literal notranslate"><span class="pre">cc</span></code> or <code class="docutils literal notranslate"><span class="pre">uc</span></code> for example.</p>
+<p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LABEL</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">POSITION</span> <span class="n">cc</span>
+  <span class="n">PARTIALS</span> <span class="n">TRUE</span>
+<span class="n">END</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span>
+<span class="w">    </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="polygons">
+<h3>Polygons<a class="headerlink" href="#polygons" title="Permalink to this heading">#</a></h3>
+<p>Meta tiling reduces the number of repeated labels, but they can still appear at the border of meta tiles.</p>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">PROCESSING</span> <span class="pre">&quot;LABEL_NO_CLIP=ON&quot;</span></code> option to fix this problem.
+With this option, MapServer places the label always at a fixed position, even if that position is outside the current map request.</p>
+<img alt="_images/labeling-no-clip.png" src="_images/labeling-no-clip.png" />
+<p>If the <code class="docutils literal notranslate"><span class="pre">LABEL_NO_CLIP</span></code> option is used, <code class="docutils literal notranslate"><span class="pre">PARTIALS</span></code> should be <code class="docutils literal notranslate"><span class="pre">TRUE</span></code>. Otherwise label would not be rendered if they overlap the map boundary. This options also requires a meta buffer.</p>
+<p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LAYER</span>
+  <span class="n">TYPE</span> <span class="n">POLYGON</span>
+  <span class="n">PROCESSING</span> <span class="s2">&quot;LABEL_NO_CLIP=ON&quot;</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">LABEL</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">POSITION</span> <span class="n">cc</span>
+    <span class="n">PARTIALS</span> <span class="n">TRUE</span>
+  <span class="n">END</span>
+<span class="n">END</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span>
+<span class="w">    </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="lines">
+<h3>Lines<a class="headerlink" href="#lines" title="Permalink to this heading">#</a></h3>
+<p>By default, labels are repeated on longer line strings. Where these labels are repeated depends on the current view of that line. That placement might differ in two neighboring image requests for long lines.</p>
+<p>Most of the time, the labels will match at the boundaries of the meta tiles, when you use <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">TRUE</span></code> and a meta buffer. But, you might notice truncated labels on long line strings. In practice these issues are rare, though.</p>
+<p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LAYER</span>
+  <span class="n">TYPE</span> <span class="n">LINE</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">LABEL</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">PARTIALS</span> <span class="n">TRUE</span>
+  <span class="n">END</span>
+<span class="n">END</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span>
+<span class="w">    </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>You can disable repeated labels with <code class="docutils literal notranslate"><span class="pre">PROCESSING</span> <span class="pre">LABEL_NO_CLIP=&quot;ON&quot;</span></code>, if don’t want to have any truncated labels. Like with polygons, you need set <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">TRUE</span></code> and use a meta buffer. The downside of this is that each lines will only have one label in the center of that line.</p>
+<p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LAYER</span>
+  <span class="n">TYPE</span> <span class="n">LINE</span>
+  <span class="n">PROCESSING</span> <span class="s2">&quot;LABEL_NO_CLIP=ON&quot;</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">LABEL</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">PARTIALS</span> <span class="n">TRUE</span>
+  <span class="n">END</span>
+<span class="n">END</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">150</span>
+<span class="w">    </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>There is a third option. If you want repeated labels but don’t want any truncated labels, you can set <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">FALSE</span></code>. Remember that you will get the same grid pattern as mentioned above, but it might not be noted if you mix this layer with other point and polygon layers where <code class="docutils literal notranslate"><span class="pre">PARTIALS</span></code> is enabled.</p>
+<p>You need to compensate the meta buffer when you use <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">FALSE</span></code> in combination with other layers that require a meta buffer. You need to set the option <code class="docutils literal notranslate"><span class="pre">LABELCACHE_MAP_EDGE_BUFFER</span></code> to the negative value of your meta buffer.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WEB</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">METADATA</span>
+    <span class="n">LABELCACHE_MAP_EDGE_BUFFER</span> <span class="s2">&quot;-100&quot;</span>
+  <span class="n">END</span>
+<span class="n">END</span>
+
+<span class="n">LAYER</span>
+  <span class="n">TYPE</span> <span class="n">LINE</span>
+  <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">LABEL</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">PARTIALS</span> <span class="n">FALSE</span>
+  <span class="n">END</span>
+<span class="n">END</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">    </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="other-wms-servers">
+<h2>Other WMS Servers<a class="headerlink" href="#other-wms-servers" title="Permalink to this heading">#</a></h2>
+<p>The most important step for all WMS servers is to disable to dynamic placement of labels. Look into the documentation how to do this for you WMS server.</p>
+<p>If you want to contribute to this document then join our <a class="reference external" href="http://lists.osgeo.org/mailman/listinfo/mapproxy">mailing list</a> or use our <a class="reference external" href="https://github.com/mapproxy/mapproxy/issues/">issue tracker</a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="inspire.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">INSPIRE View Service</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="auth.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Authentication and Authorization</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-problem">The Problem</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-placement-outside-the-bbox">No placement outside the BBOX</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-label-placement">Dynamic label placement</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#repeated-labels">Repeated labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-options">MapProxy Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-tiles">Meta Tiles</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-buffer">Meta Buffer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-server-options">WMS Server Options</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapserver-options">MapServer Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#partial-false"><code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#points">Points</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#polygons">Polygons</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lines">Lines</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-wms-servers">Other WMS Servers</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

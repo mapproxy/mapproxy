@@ -1,0 +1,1653 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuration &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'configuration';</script>
+    <link rel="canonical" href="/mapproxy/configuration.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Services" href="services.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Configuration</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#title"><code class="docutils literal notranslate"><span class="pre">title</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">layers</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-sources"><code class="docutils literal notranslate"><span class="pre">tile_sources</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-max-res-or-min-scale-max-scale"><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#band-merging">Band merging</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-sources">Cache sources</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#format"><code class="docutils literal notranslate"><span class="pre">format</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#request-format"><code class="docutils literal notranslate"><span class="pre">request_format</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#link-single-color-images"><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimize-meta-requests"><code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#watermark"><code class="docutils literal notranslate"><span class="pre">watermark</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#grids"><code class="docutils literal notranslate"><span class="pre">grids</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-size-and-meta-buffer"><code class="docutils literal notranslate"><span class="pre">meta_size</span></code> and <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bulk-meta-tiles"><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-direct-from-level-and-use-direct-from-res"><code class="docutils literal notranslate"><span class="pre">use_direct_from_level</span></code> and <code class="docutils literal notranslate"><span class="pre">use_direct_from_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#upscale-tiles-and-downscale-tiles"><code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> and <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-rescaled-tiles"><code class="docutils literal notranslate"><span class="pre">cache_rescaled_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refresh-before"><code class="docutils literal notranslate"><span class="pre">refresh_before</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#disable-storage"><code class="docutils literal notranslate"><span class="pre">disable_storage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-dir"><code class="docutils literal notranslate"><span class="pre">cache_dir</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-caches-configuration">Example <code class="docutils literal notranslate"><span class="pre">caches</span></code> configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">grids</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#srs"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-size"><code class="docutils literal notranslate"><span class="pre">tile_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#res"><code class="docutils literal notranslate"><span class="pre">res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#res-factor"><code class="docutils literal notranslate"><span class="pre">res_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#threshold-res"><code class="docutils literal notranslate"><span class="pre">threshold_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox"><code class="docutils literal notranslate"><span class="pre">bbox</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox-srs"><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#origin"><code class="docutils literal notranslate"><span class="pre">origin</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#num-levels"><code class="docutils literal notranslate"><span class="pre">num_levels</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-and-max-res"><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stretch-factor"><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shrink-factor"><code class="docutils literal notranslate"><span class="pre">max_shrink_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-grids-configuration">Example <code class="docutils literal notranslate"><span class="pre">grids</span></code> configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http"><code class="docutils literal notranslate"><span class="pre">http</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#secure-http-connections-https">Secure HTTP Connections (HTTPS)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#client-timeout"><code class="docutils literal notranslate"><span class="pre">client_timeout</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method"><code class="docutils literal notranslate"><span class="pre">method</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#headers"><code class="docutils literal notranslate"><span class="pre">headers</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#access-control-allow-origin"><code class="docutils literal notranslate"><span class="pre">access_control_allow_origin</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-cookies"><code class="docutils literal notranslate"><span class="pre">manage_cookies</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#hide-error-details"><code class="docutils literal notranslate"><span class="pre">hide_error_details</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tiles"><code class="docutils literal notranslate"><span class="pre">tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapserver"><code class="docutils literal notranslate"><span class="pre">mapserver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#binary"><code class="docutils literal notranslate"><span class="pre">binary</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#working-dir"><code class="docutils literal notranslate"><span class="pre">working_dir</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#image-format-options">Image Format Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#encoding-options"><code class="docutils literal notranslate"><span class="pre">encoding_options</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#global">Global</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-vs-resolution">Scale vs. resolution</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-scalehint">WMS ScaleHint</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h1>
+<p>There are two configuration files used by MapProxy.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code></dt><dd><p>This is the main configuration of MapProxy. It configures all aspects of the server:
+Which servers should be started, where comes the data from, what should be cached,
+etc..</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code></dt><dd><p>This file is the configuration for the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool. See <a class="reference internal" href="seed.html"><span class="doc">seeding documentation</span></a> for more information.</p>
+</dd>
+</dl>
+<section id="mapproxy-yaml">
+<span id="index-0"></span><h2>mapproxy.yaml<a class="headerlink" href="#mapproxy-yaml" title="Permalink to this heading">#</a></h2>
+<p>The configuration uses the YAML format. The Wikipedia contains a <a class="reference external" href="http://en.wikipedia.org/wiki/YAML">good introduction to YAML</a>.</p>
+<p>The MapProxy configuration is grouped into sections, each configures a different aspect of MapProxy. These are the following sections:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">globals</span></code>:  Internals of MapProxy and default values that are used in the other configuration sections.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">services</span></code>:
+The services MapProxy offers, e.g. WMS or TMS.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sources</span></code>: Define where MapProxy can retrieve new data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">caches</span></code>: Configure the internal caches.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">layers</span></code>: Configure the layers that MapProxy offers. Each layer can consist of multiple sources and caches.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">grids</span></code>: Define the grids that MapProxy uses to aligns cached images.</p></li>
+</ul>
+<p>The order of the sections is not important, so you can organize it your way.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The indentation is significant and shall only contain space characters. Tabulators are <strong>not</strong> permitted for indentation.</p>
+</div>
+<p>There is another optional section:</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">parts</span></code>: YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the <code class="docutils literal notranslate"><span class="pre">parts</span></code> section.</p></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">parts</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">coverages</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">mycoverage</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;mycoverage</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mysource1</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">coverage</span><span class="p">:</span><span class="w"> </span><span class="nv">*mycoverage</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">mysource2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">coverage</span><span class="p">:</span><span class="w"> </span><span class="nv">*mycoverage</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<section id="base">
+<h3><code class="docutils literal notranslate"><span class="pre">base</span></code><a class="headerlink" href="#base" title="Permalink to this heading">#</a></h3>
+<p>You can split a configuration into multiple files with the <code class="docutils literal notranslate"><span class="pre">base</span></code> option. The <code class="docutils literal notranslate"><span class="pre">base</span></code> option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrids.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mycaches_sources.yaml</span><span class="p p-Indicator">]</span>
+<span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.4.0: </span>Support for recursive imports and for multiple files.</p>
+</div>
+</section>
+</section>
+<section id="services">
+<span id="index-1"></span><h2>services<a class="headerlink" href="#services" title="Permalink to this heading">#</a></h2>
+<p>Here you can configure which services should be started. The configuration for all services is described in the <a class="reference internal" href="services.html"><span class="doc">Services</span></a> documentation.</p>
+<p>Here is an example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tms</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">md</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy Example WMS</span>
+<span class="w">      </span><span class="nt">contact</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># [...]</span>
+</pre></div>
+</div>
+</section>
+<section id="layers">
+<span id="layers-section"></span><span id="index-2"></span><h2>layers<a class="headerlink" href="#layers" title="Permalink to this heading">#</a></h2>
+<p>Here you can define all layers MapProxy should offer. The layer definition is similar to WMS: each layer can have a name and title and you can nest layers to build a layer tree.</p>
+<p>Layers should be configured as a list (<code class="docutils literal notranslate"><span class="pre">-</span></code> in YAML), where each layer configuration is a dictionary (<code class="docutils literal notranslate"><span class="pre">key:</span> <span class="pre">value</span></code> in YAML)</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">source2</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer2</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 2</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache3</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Each layer contains information about the layer and where the data comes from.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.4.0.</span></p>
+</div>
+<p>The old syntax to configure each layer as a dictionary with the key as the name is deprecated.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mylayer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Layer</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mysource</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>should become</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mylayer</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Layer</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mysource</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>The mixed format where the layers are a list (<code class="docutils literal notranslate"><span class="pre">-</span></code>) but each layer is still a dictionary is no longer supported (e.g. <code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">mylayer:</span></code> becomes <code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">name:</span> <span class="pre">mylayer</span></code>). Note that the deprecated format is still currently required if you are using the base: option due to  <cite>issue #490 &lt;https://github.com/mapproxy/mapproxy/issues/490&gt;</cite>.</p>
+<section id="name">
+<span id="layers-name"></span><h3><code class="docutils literal notranslate"><span class="pre">name</span></code><a class="headerlink" href="#name" title="Permalink to this heading">#</a></h3>
+<p>The name of the layer. You can omit the name for group layers (e.g. layers with <code class="docutils literal notranslate"><span class="pre">layers</span></code>), in this case the layer is not addressable in WMS and used only for grouping.</p>
+</section>
+<section id="title">
+<h3><code class="docutils literal notranslate"><span class="pre">title</span></code><a class="headerlink" href="#title" title="Permalink to this heading">#</a></h3>
+<p>Readable name of the layer, e.g WMS layer title.</p>
+</section>
+<section id="id1">
+<span id="id2"></span><h3><code class="docutils literal notranslate"><span class="pre">layers</span></code><a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<p>Each layer can contain another <code class="docutils literal notranslate"><span class="pre">layers</span></code> configuration. You can use this to build group layers and to build a nested layer tree.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">root</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Root Layer</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1a</span>
+<span class="w">            </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1a</span>
+<span class="w">            </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source1a</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer1b</span>
+<span class="w">            </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 1b</span>
+<span class="w">            </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source1b</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer2</span>
+<span class="w">        </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title of Layer 2</span>
+<span class="w">        </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache2</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">root</span></code> and <code class="docutils literal notranslate"><span class="pre">layer1</span></code> is a group layer in this case. The WMS service will render <code class="docutils literal notranslate"><span class="pre">layer1a</span></code> and <code class="docutils literal notranslate"><span class="pre">layer1b</span></code> if you request <code class="docutils literal notranslate"><span class="pre">layer1</span></code>. Note that <code class="docutils literal notranslate"><span class="pre">sources</span></code> is optional if you supply <code class="docutils literal notranslate"><span class="pre">layers</span></code>. You can still configure <code class="docutils literal notranslate"><span class="pre">sources</span></code> for group layers. In this case the group <code class="docutils literal notranslate"><span class="pre">sources</span></code> will replace the <code class="docutils literal notranslate"><span class="pre">sources</span></code> of the child layers.</p>
+<p>MapProxy will wrap all layers into an unnamed root layer, if you define multiple layers on the first level.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The old syntax (see <code class="docutils literal notranslate"><span class="pre">name</span></code> <a class="reference internal" href="#layers-name"><span class="std std-ref">above</span></a>) is not supported if you use the nested layer configuration format.</p>
+</div>
+</section>
+<section id="sources">
+<h3><code class="docutils literal notranslate"><span class="pre">sources</span></code><a class="headerlink" href="#sources" title="Permalink to this heading">#</a></h3>
+<p>A list of data sources for this layer. You can use sources defined in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> and <code class="docutils literal notranslate"><span class="pre">caches</span></code> section. MapProxy will merge multiple sources from left (bottom) to right (top).</p>
+<p>WMS and Mapserver sources also support tagged names (<code class="docutils literal notranslate"><span class="pre">wms:lyr1,lyr2</span></code>). See <a class="reference internal" href="sources.html#tagged-source-names"><span class="std std-ref">Tagged source names</span></a>.</p>
+</section>
+<section id="tile-sources">
+<h3><code class="docutils literal notranslate"><span class="pre">tile_sources</span></code><a class="headerlink" href="#tile-sources" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.8.2.</span></p>
+</div>
+<p>A list of caches for this layer. This list overrides <code class="docutils literal notranslate"><span class="pre">sources</span></code> for WMTS and TMS. <code class="docutils literal notranslate"><span class="pre">tile_sources</span></code> are not merged like <code class="docutils literal notranslate"><span class="pre">sources</span></code>, instead all the caches are added as additional tile (matrix) sets.</p>
+</section>
+<section id="min-res-max-res-or-min-scale-max-scale">
+<h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code><a class="headerlink" href="#min-res-max-res-or-min-scale-max-scale" title="Permalink to this heading">#</a></h3>
+<p>Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (<code class="docutils literal notranslate"><span class="pre">min_res</span></code> is inclusive, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> exclusive). You can use either the resolution or the scale values, missing values will be interpreted as <cite>unlimited</cite>. Resolutions should be in meters per pixel.</p>
+<p>The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).</p>
+<p>Please read <a class="reference internal" href="#scale-resolution"><span class="std std-ref">scale vs. resolution</span></a> for some notes on <cite>scale</cite>.</p>
+</section>
+<section id="legendurl">
+<h3><code class="docutils literal notranslate"><span class="pre">legendurl</span></code><a class="headerlink" href="#legendurl" title="Permalink to this heading">#</a></h3>
+<p>Configure a URL to an image that should be returned as the legend for this layer. Local URLs (<code class="docutils literal notranslate"><span class="pre">file://</span></code>) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> here.</p>
+</section>
+<section id="md">
+<span id="layer-metadata"></span><h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#md" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.4.0.</span></p>
+</div>
+<p>Add additional metadata for this layer. This metadata appears in the WMS 1.3.0 capabilities documents. Refer to the OGC 1.3.0 specification for a description of each option.</p>
+<p>See also <a class="reference internal" href="inspire.html"><span class="doc">INSPIRE View Service</span></a> for configuring additional INSPIRE metadata.</p>
+<p>Here is an example layer with extended layer capabilities:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">md_layer</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WMS layer with extended capabilities</span>
+<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">wms_source</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">md</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">abstract</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Some abstract</span>
+<span class="w">    </span><span class="nt">keyword_list</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">vocabulary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name of the vocabulary</span>
+<span class="w">        </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="nv">keyword1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">keyword2</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">vocabulary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name of another vocabulary</span>
+<span class="w">        </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="nv">keyword1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">keyword2</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="s">&quot;keywords</span><span class="nv"> </span><span class="s">without</span><span class="nv"> </span><span class="s">vocabulary&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">attribution</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My attribution title</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/</span>
+<span class="w">    </span><span class="nt">logo</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/logo.jpg</span>
+<span class="w">       </span><span class="nt">width</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">       </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">       </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/jpeg</span>
+<span class="w">    </span><span class="nt">identifier</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">HKU1234</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">Some value</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/metadata2.xml</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">INSPIRE</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/metadata2.xml</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">ISO19115:2003</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/xml</span>
+<span class="w">    </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/datasets/test.shp</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/octet-stream</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/datasets/test.gml</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/xml; subtype=gml/3.2.1</span>
+<span class="w">    </span><span class="nt">feature_list</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/datasets/test.pdf</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/pdf</span>
+</pre></div>
+</div>
+</section>
+<section id="dimensions">
+<h3><code class="docutils literal notranslate"><span class="pre">dimensions</span></code><a class="headerlink" href="#dimensions" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dimensions are only supported for uncached WMTS services for now. See <a class="reference internal" href="configuration_examples.html#wmts-dimensions"><span class="std std-ref">WMTS service with dimensions</span></a> for a working use-case.</p>
+</div>
+<p>Configure the dimensions that this layer supports. Dimensions should be a dictionary with one entry for each dimension.
+Each dimension is another dictionary with a list of <code class="docutils literal notranslate"><span class="pre">values</span></code> and an optional <code class="docutils literal notranslate"><span class="pre">default</span></code> value. When the <code class="docutils literal notranslate"><span class="pre">default</span></code> value is omitted, the last value will be used.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dimension_layer</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer with dimensions</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">time</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-12T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-13T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-14T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-15T00:00:00&quot;</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2012-11-15T00:00:00&quot;</span>
+<span class="w">      </span><span class="nt">elevation</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="caches">
+<span id="index-3"></span><span id="id3"></span><h2>caches<a class="headerlink" href="#caches" title="Permalink to this heading">#</a></h2>
+<p>Here you can configure which sources should be cached.
+Available options are:</p>
+<section id="id4">
+<h3><code class="docutils literal notranslate"><span class="pre">sources</span></code><a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<p>A list of data sources for this cache. You can use sources defined in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> and <code class="docutils literal notranslate"><span class="pre">caches</span></code> section. This parameter is <cite>required</cite>. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caches</span><span class="p">:</span>
+  <span class="n">my_cache</span><span class="p">:</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">background_wms</span><span class="p">,</span> <span class="n">overlay_wms</span><span class="p">]</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>WMS and Mapserver sources also support tagged names (<code class="docutils literal notranslate"><span class="pre">wms:lyr1,lyr2</span></code>). See <a class="reference internal" href="sources.html#tagged-source-names"><span class="std std-ref">Tagged source names</span></a>.</p>
+<section id="band-merging">
+<h4>Band merging<a class="headerlink" href="#band-merging" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.9.0.</span></p>
+</div>
+<p>You can also define a list of sources for each color band. The target color bands are specified as <code class="docutils literal notranslate"><span class="pre">r</span></code>, <code class="docutils literal notranslate"><span class="pre">g</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code> for RGB images, optionally with <code class="docutils literal notranslate"><span class="pre">a</span></code> for the alpha band. You can also use <code class="docutils literal notranslate"><span class="pre">l</span></code> (luminance) to create tiles with a single color band (e.g. grayscale images).</p>
+<p>You need to define the <code class="docutils literal notranslate"><span class="pre">source</span></code> and the <code class="docutils literal notranslate"><span class="pre">band</span></code> index for each source band. The indices of the source bands are numeric and start from 0.</p>
+<p>The following example creates a colored infra-red (false-color) image by using near infra-red for red, red (band 0) for green, and green (band 1) for blue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">code</span><span class="o">-</span><span class="n">block</span><span class="p">::</span> <span class="n">yaml</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="simple">
+<dt>caches:</dt><dd><dl class="simple">
+<dt>cir_cache:</dt><dd><dl class="simple">
+<dt>sources:</dt><dd><p>r: [{source: nir_cache, band: 0}]
+g: [{source: dop_cache, band: 0}]
+b: [{source: dop_cache, band: 1}]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>You can define multiple sources for each target band. The values are summed and clipped at 255. An optional <code class="docutils literal notranslate"><span class="pre">factor</span></code> allows you to reduce the values. You can use this to mix multiple bands into a single grayscale image:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w"> </span><span class="nt">grayscale_cache</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">l</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop_cache</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.21</span><span class="p p-Indicator">},</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop_cache</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.72</span><span class="p p-Indicator">},</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop_cache</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.07</span><span class="p p-Indicator">},</span>
+<span class="w">         </span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-sources">
+<h4>Cache sources<a class="headerlink" href="#cache-sources" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>You can also use other caches as a source. MapProxy loads tiles directly from that cache if the grid of the target cache is identical or <em>compatible</em> with the grid of the source cache. You have a compatible grid when all tiles in the cache grid are also available in source grid, even if the tile coordinates (X/Y/Z) are different.</p>
+<p>When the grids are not compatible, e.g. when they use different projections, then MapProxy will access the source cache as if it is a WMS source and it will use meta-requests and do image reprojection as necessary.</p>
+<p>See <a class="reference internal" href="configuration_examples.html#using-existing-caches"><span class="std std-ref">Using existing caches</span></a> for more information.</p>
+</section>
+</section>
+<section id="format">
+<span id="mixed-image-format"></span><h3><code class="docutils literal notranslate"><span class="pre">format</span></code><a class="headerlink" href="#format" title="Permalink to this heading">#</a></h3>
+<p>The internal image format for the cache. Available options are <code class="docutils literal notranslate"><span class="pre">image/png</span></code>, <code class="docutils literal notranslate"><span class="pre">image/jpeg</span></code> etc. and <code class="docutils literal notranslate"><span class="pre">mixed</span></code>.
+The default is <code class="docutils literal notranslate"><span class="pre">image/png</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>With the <code class="docutils literal notranslate"><span class="pre">mixed</span></code> format, MapProxy stores tiles as either PNG or JPEG, depending on the transparency of each tile.
+Images with transparency will be stored as PNG, fully opaque images as JPEG.
+You need to set the <code class="docutils literal notranslate"><span class="pre">request_format</span></code> to <code class="docutils literal notranslate"><span class="pre">image/png</span></code> when using <code class="docutils literal notranslate"><span class="pre">mixed</span></code>-mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caches</span><span class="p">:</span>
+  <span class="n">mixed_mode_cache</span><span class="p">:</span>
+    <span class="nb">format</span><span class="p">:</span> <span class="n">mixed</span>
+    <span class="n">request_format</span><span class="p">:</span> <span class="n">image</span><span class="o">/</span><span class="n">png</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="request-format">
+<h3><code class="docutils literal notranslate"><span class="pre">request_format</span></code><a class="headerlink" href="#request-format" title="Permalink to this heading">#</a></h3>
+<p>MapProxy will try to use this format to request new tiles, if it is not set <code class="docutils literal notranslate"><span class="pre">format</span></code> is used. This option has no effect if the source does not support that format or the format of the source is set explicitly (see <code class="docutils literal notranslate"><span class="pre">suported_format</span></code> or <code class="docutils literal notranslate"><span class="pre">format</span></code> for sources).</p>
+</section>
+<section id="link-single-color-images">
+<span id="id5"></span><h3><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code><a class="headerlink" href="#link-single-color-images" title="Permalink to this heading">#</a></h3>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">symlink</span></code>, MapProxy will not store tiles that only contain a single color as a
+separate file. MapProxy stores these tiles only once and uses symbolic links to this file
+for every occurrence. This can reduce the size of your tile cache if you have larger areas
+with no data (e.g. water areas, areas with no roads, etc.).</p>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">hardlink</span></code>, MapProxy will store the duplicate tiles as hard links.</p>
+<p>This avoids using up inodes for symlinks, which is especially useful if single color images outnumber others (as might be the case in world maps or low-detail maps for example). Directory entries for the hardlinks will still be created of course.</p>
+<p>The usual limitation applies: files can only be linked on the same filesystem, assuming it has support for hardlinks in the first place. Furthermore, all the linked files will have the same metadata, in particular the modification time (<code class="docutils literal notranslate"><span class="pre">mtime</span></code>), which is used in seeding or cleanups with the <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> or <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> directives.</p>
+<p>In practice this means that all the linked images will have the first such tile’s modification date and therefore will appear older to the seeding or cleanup process than when they were actually linked. This means that they are <em>more likely</em> to be included in the <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> or <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> filters, which may or may not be an issue depending on your seeding or cleanup use-cases.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This feature is only available on Unix, since Windows has no support for symbolic links.</p>
+</div>
+</section>
+<section id="minimize-meta-requests">
+<h3><code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code><a class="headerlink" href="#minimize-meta-requests" title="Permalink to this heading">#</a></h3>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).</p>
+<p>By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the <code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code> option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.</p>
+</section>
+<section id="watermark">
+<span id="index-4"></span><h3><code class="docutils literal notranslate"><span class="pre">watermark</span></code><a class="headerlink" href="#watermark" title="Permalink to this heading">#</a></h3>
+<p>Add a watermark right into the cached tiles. The watermark is thus also present in TMS or KML requests.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">text</span></code></dt><dd><p>The watermark text. Should be short.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">opacity</span></code></dt><dd><p>The opacity of the watermark (from 0 transparent to 255 full opaque).
+Use a value between 30 and 100 for unobtrusive watermarks.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">font_size</span></code></dt><dd><p>Font size of the watermark text.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">color</span></code></dt><dd><p>Color of the watermark text. Default is grey which works good for vector images. Can be either a list of color values (<code class="docutils literal notranslate"><span class="pre">[255,</span> <span class="pre">255,</span> <span class="pre">255]</span></code>) or a hex string (<code class="docutils literal notranslate"><span class="pre">#ffffff</span></code>).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">spacing</span></code></dt><dd><p>Configure the spacing between repeated watermarks. By default the watermark will be placed on
+every tile, with <code class="docutils literal notranslate"><span class="pre">wide</span></code> the watermark will be placed on every second tile.</p>
+</dd>
+</dl>
+</section>
+<section id="grids">
+<h3><code class="docutils literal notranslate"><span class="pre">grids</span></code><a class="headerlink" href="#grids" title="Permalink to this heading">#</a></h3>
+<p>You can configure one or more grids for each cache. MapProxy will create one cache for each grid.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;my_utm_grid&#39;</span><span class="p">,</span> <span class="s1">&#39;GLOBAL_MERCATOR&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>MapProxy supports on-the-fly transformation of requests with different SRSs. So
+it is not required to add an extra cache for each supported SRS. For best performance
+only the SRS most requests are in should be used.</p>
+<p>There is some special handling for layers that need geographical and projected coordinate
+systems. For example, if you set one grid with <code class="docutils literal notranslate"><span class="pre">EPSG:4326</span></code> and one with <code class="docutils literal notranslate"><span class="pre">EPSG:3857</span></code>
+then all requests for projected SRS will access the <code class="docutils literal notranslate"><span class="pre">EPSG:3857</span></code> cache and
+requests for geographical SRS will use <code class="docutils literal notranslate"><span class="pre">EPSG:4326</span></code>.</p>
+</section>
+<section id="meta-size-and-meta-buffer">
+<h3><code class="docutils literal notranslate"><span class="pre">meta_size</span></code> and <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code><a class="headerlink" href="#meta-size-and-meta-buffer" title="Permalink to this heading">#</a></h3>
+<p>Change the <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> and <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code> of this cache. See <a class="reference internal" href="#meta-size"><span class="std std-ref">global cache options</span></a> for more details.</p>
+</section>
+<section id="bulk-meta-tiles">
+<h3><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code><a class="headerlink" href="#bulk-meta-tiles" title="Permalink to this heading">#</a></h3>
+<p>Enables meta-tile handling for tiled sources. See <a class="reference internal" href="#meta-size"><span class="std std-ref">global cache options</span></a> for more details.</p>
+</section>
+<section id="image">
+<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#image" title="Permalink to this heading">#</a></h3>
+<p><a class="reference internal" href="#image-options"><span class="std std-ref">See below</span></a> for all image options.</p>
+</section>
+<section id="use-direct-from-level-and-use-direct-from-res">
+<h3><code class="docutils literal notranslate"><span class="pre">use_direct_from_level</span></code> and <code class="docutils literal notranslate"><span class="pre">use_direct_from_res</span></code><a class="headerlink" href="#use-direct-from-level-and-use-direct-from-res" title="Permalink to this heading">#</a></h3>
+<p>You can limit until which resolution MapProxy should cache data with these two options.
+Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of <code class="docutils literal notranslate"><span class="pre">use_direct_from_res</span></code> should use the units of the first configured grid of this cache. This takes only effect when used in WMS services.</p>
+</section>
+<section id="upscale-tiles-and-downscale-tiles">
+<h3><code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> and <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code><a class="headerlink" href="#upscale-tiles-and-downscale-tiles" title="Permalink to this heading">#</a></h3>
+<p>MapProxy is able to create missing tiles by rescaling tiles from zoom levels below or above.</p>
+<p>MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> allows you to provide responses for 10cm requests in all areas, always returning the best available data.</p>
+<p>MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore <cite>not</cite> recommended to use <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> values larger then one.</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> to fill a cache for a source that only provides data for higher resolutions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> will seed each level independently for caches with <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> or <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code>. It will start with the highest zoom level for <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code>, so that tiles in the next (lower) zoom levels can be created by downscaling the already created tiles. It will start in the lowest zoom level for <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code>, so that tiles in the next (higher) zoom levels can be created by upscaling the already creates tiles.</p>
+<p>A transparent tile is returned if no tile is found within the configured <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> or <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> range.</p>
+<p>To trigger the rescaling behaviour, a tile needs to be missing in the cache and MapProxy needs to be unable to fetch the tile from the source. MapProxy is unable to fetch the tile if the cache has no sources, or if all sources are either <code class="docutils literal notranslate"><span class="pre">seed_only</span></code> or limited to a different resolution (<code class="docutils literal notranslate"><span class="pre">min_res</span></code>/<code class="docutils literal notranslate"><span class="pre">max_res</span></code>).</p>
+</section>
+<section id="cache-rescaled-tiles">
+<h3><code class="docutils literal notranslate"><span class="pre">cache_rescaled_tiles</span></code><a class="headerlink" href="#cache-rescaled-tiles" title="Permalink to this heading">#</a></h3>
+<p>Tiles created by the <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> or <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> option are only stored in the cache if this option is set to true.</p>
+</section>
+<section id="refresh-before">
+<h3><code class="docutils literal notranslate"><span class="pre">refresh_before</span></code><a class="headerlink" href="#refresh-before" title="Permalink to this heading">#</a></h3>
+<p>Here you can force MapProxy to refresh tiles from the source while serving if they are found to be expired.
+The validity conditions are the same as for seeding:</p>
+<p>Explanation:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># absolute as ISO time</span>
+<span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2010-10-21T12:35:00</span>
+
+<span class="c1"># relative from the time of the tile request</span>
+<span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">weeks</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7</span>
+<span class="w">  </span><span class="nt">hours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">  </span><span class="nt">minutes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+
+<span class="c1"># modification time of a given file</span>
+<span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/file</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">osm_cache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;osm_grid&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">OSM</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+</section>
+<section id="disable-storage">
+<h3><code class="docutils literal notranslate"><span class="pre">disable_storage</span></code><a class="headerlink" href="#disable-storage" title="Permalink to this heading">#</a></h3>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
+even if the there are matching tiles in the cache. See <a class="reference internal" href="sources.html#wms-seed-only"><span class="std std-ref">seed_only</span></a> if you need an <em>offline</em> mode.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.</p>
+</div>
+</section>
+<section id="cache-dir">
+<h3><code class="docutils literal notranslate"><span class="pre">cache_dir</span></code><a class="headerlink" href="#cache-dir" title="Permalink to this heading">#</a></h3>
+<p>Directory where MapProxy should store tiles for this cache. Uses the value of <code class="docutils literal notranslate"><span class="pre">globals.cache.base_dir</span></code> by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. <code class="docutils literal notranslate"><span class="pre">cachename_EPSG1234</span></code>).
+See <a class="reference internal" href="caches.html#cache-file-directory"><span class="std std-ref">directory option</span></a> on how configure a complete path.</p>
+</section>
+<section id="cache">
+<h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.2.0.</span></p>
+</div>
+<p>Configure the type of the background tile cache. You configure the type with the <code class="docutils literal notranslate"><span class="pre">type</span></code> option.  The default type is <code class="docutils literal notranslate"><span class="pre">file</span></code> and you can leave out the <code class="docutils literal notranslate"><span class="pre">cache</span></code> option if you want to use the file cache. Read <a class="reference internal" href="caches.html"><span class="doc">Caches</span></a> for a detailed list of all available cache backends.</p>
+</section>
+<section id="example-caches-configuration">
+<h3>Example <code class="docutils literal notranslate"><span class="pre">caches</span></code> configuration<a class="headerlink" href="#example-caches-configuration" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">simple</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mysource</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrid</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">fullexample</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mysource</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mysecondsource</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrid</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mygrid2</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">8</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">8</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
+<span class="w">    </span><span class="nt">watermark</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">text</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy</span>
+<span class="w">    </span><span class="nt">request_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/tiff</span>
+<span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/jpeg</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file</span>
+<span class="w">      </span><span class="nt">directory_layout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tms</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id6">
+<span id="index-5"></span><span id="id7"></span><h2>grids<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h2>
+<p>Here you can define the tile grids that MapProxy uses for the internal caching.
+There are multiple options to define the grid, but beware, not all are required at the same time and some combinations will result in ambiguous results.</p>
+<p>There are three pre-defined grids all with global coverage:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GLOBAL_GEODETIC</span></code>: EPSG:4326, origin south-west, compatible with OpenLayers map in EPSG:4326</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GLOBAL_MERCATOR</span></code>: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code>: similar to <code class="docutils literal notranslate"><span class="pre">GLOBAL_MERCATOR</span></code> but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.</p></li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0: </span><code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code></p>
+</div>
+<section id="id8">
+<h3><code class="docutils literal notranslate"><span class="pre">name</span></code><a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<p>Overwrite the name of the grid used in WMTS URLs. The name is also used in TMS and KML URLs when the <code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code> option of the services is set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</section>
+<section id="srs">
+<h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#srs" title="Permalink to this heading">#</a></h3>
+<p>The spatial reference system used for the internal cache, written as <code class="docutils literal notranslate"><span class="pre">EPSG:xxxx</span></code>.</p>
+</section>
+<section id="tile-size">
+<span id="index-6"></span><h3><code class="docutils literal notranslate"><span class="pre">tile_size</span></code><a class="headerlink" href="#tile-size" title="Permalink to this heading">#</a></h3>
+<p>The size of each tile. Defaults to 256x256 pixel.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tile_size</span><span class="p">:</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="res">
+<span id="index-7"></span><h3><code class="docutils literal notranslate"><span class="pre">res</span></code><a class="headerlink" href="#res" title="Permalink to this heading">#</a></h3>
+<p>A list with all resolutions that MapProxy should cache.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">res</span><span class="p">:</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="res-factor">
+<span id="index-8"></span><h3><code class="docutils literal notranslate"><span class="pre">res_factor</span></code><a class="headerlink" href="#res-factor" title="Permalink to this heading">#</a></h3>
+<p>Here you can define a factor between each resolution.
+It should be either a number or the term <code class="docutils literal notranslate"><span class="pre">sqrt2</span></code>.
+<code class="docutils literal notranslate"><span class="pre">sqrt2</span></code> is a shorthand for a resolution factor of 1.4142, the square root of two. With this factor the resolution doubles every second level.
+Compared to the default factor 2 you will get another cached level between all standard
+levels. This is suited for free zooming in vector-based layers where the results might
+look to blurry/pixelated in some resolutions.</p>
+<p>For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result.</p>
+</section>
+<section id="threshold-res">
+<h3><code class="docutils literal notranslate"><span class="pre">threshold_res</span></code><a class="headerlink" href="#threshold-res" title="Permalink to this heading">#</a></h3>
+<p>A list with resolutions at which MapProxy should switch from one level to another. MapProxy automatically tries to determine the optimal cache level for each request. You can tweak the behavior with the <code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code> option (see below).</p>
+<p>If you need explicit transitions from one level to another at fixed resolutions, then you can use the <code class="docutils literal notranslate"><span class="pre">threshold_res</span></code> option to define these resolutions. You only need to define the explicit transitions.</p>
+<p>Example: You are caching at 1000, 500 and 200m/px resolutions and you are required to display the 1000m/px level for requests with lower than 700m/px resolutions and the 500m/px level for requests with higher resolutions. You can define that transition as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">res</span><span class="p">:</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
+<span class="n">threshold_res</span><span class="p">:</span> <span class="p">[</span><span class="mi">700</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Requests with 1500, 1000 or 701m/px resolution will use the first level, requests with 700 or 500m/px will use the second level. All other transitions (between 500 an 200m/px in this case) will be calculated automatically with the <code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code> (about 416m/px in this case with a default configuration).</p>
+</section>
+<section id="bbox">
+<h3><code class="docutils literal notranslate"><span class="pre">bbox</span></code><a class="headerlink" href="#bbox" title="Permalink to this heading">#</a></h3>
+<p>The extent of your grid. You can use either a list or a string with the lower left and upper right coordinates. You can set the SRS of the coordinates with the <code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code> option. If that option is not set the <code class="docutils literal notranslate"><span class="pre">srs</span></code> of the grid will be used.</p>
+<p>MapProxy always expects your BBOX coordinates order to be west, south, east, north regardless of your SRS <a class="reference internal" href="#axis-order"><span class="std std-ref">axis order</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bbox</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">55</span><span class="p">]</span>
+  <span class="ow">or</span>
+<span class="n">bbox</span><span class="p">:</span> <span class="s2">&quot;0,40,15,55&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="bbox-srs">
+<h3><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code><a class="headerlink" href="#bbox-srs" title="Permalink to this heading">#</a></h3>
+<p>The SRS of the grid bbox. See above.</p>
+</section>
+<section id="origin">
+<span id="grid-origin"></span><span id="index-9"></span><h3><code class="docutils literal notranslate"><span class="pre">origin</span></code><a class="headerlink" href="#origin" title="Permalink to this heading">#</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>The default origin (x=0, y=0) of the tile grid is the lower left corner, similar to TMS. WMTS defines the tile origin in the upper left corner. MapProxy can translate between services and caches with different tile origins, but there are some limitations for grids with custom BBOX and resolutions that are not of factor 2. You can only use one service in these cases and need to use the matching <code class="docutils literal notranslate"><span class="pre">origin</span></code> for that service.</p>
+<p>The following values are supported:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ll</span></code> or <code class="docutils literal notranslate"><span class="pre">sw</span></code>:</dt><dd><p>If the x=0, y=0 tile is in the lower-left/south-west corner of the tile grid. This is the default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ul</span></code> or <code class="docutils literal notranslate"><span class="pre">nw</span></code>:</dt><dd><p>If the x=0, y=0 tile is in the upper-left/north-west corner of the tile grid.</p>
+</dd>
+</dl>
+</section>
+<section id="num-levels">
+<h3><code class="docutils literal notranslate"><span class="pre">num_levels</span></code><a class="headerlink" href="#num-levels" title="Permalink to this heading">#</a></h3>
+<p>The total number of cached resolution levels. Defaults to 20, except for grids with  <code class="docutils literal notranslate"><span class="pre">sqrt2</span></code> resolutions. This option has no effect when you set an explicit list of cache resolutions.</p>
+</section>
+<section id="min-res-and-max-res">
+<h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code><a class="headerlink" href="#min-res-and-max-res" title="Permalink to this heading">#</a></h3>
+<p>The the resolutions of the first and the last level.</p>
+</section>
+<section id="stretch-factor">
+<h3><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code><a class="headerlink" href="#stretch-factor" title="Permalink to this heading">#</a></h3>
+<p>MapProxy chooses the <cite>optimal</cite> cached level for requests that do not exactly
+match any cached resolution. MapProxy will stretch or shrink images to the
+requested resolution. The <cite>stretch_factor</cite> defines the maximum factor
+MapProxy is allowed to stretch images. Stretched images result in better
+performance but will look blurry when the value is to large (&gt; 1.2).</p>
+<p>Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
+resolution will be generated from the 10m level, requests for 8m from the 5m
+level.</p>
+</section>
+<section id="max-shrink-factor">
+<h3><code class="docutils literal notranslate"><span class="pre">max_shrink_factor</span></code><a class="headerlink" href="#max-shrink-factor" title="Permalink to this heading">#</a></h3>
+<p>This factor only applies for the first level and defines the maximum factor
+that MapProxy will shrink images.</p>
+<p>Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
+resolution will get a result, requests with 5km will get a blank response.</p>
+</section>
+<section id="id9">
+<h3><code class="docutils literal notranslate"><span class="pre">base</span></code><a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<p>With this option, you can base the grid on the options of another grid you already defined.</p>
+</section>
+<section id="defining-resolutions">
+<h3>Defining Resolutions<a class="headerlink" href="#defining-resolutions" title="Permalink to this heading">#</a></h3>
+<p>There are multiple options that influence the resolutions MapProxy will use for caching: <code class="docutils literal notranslate"><span class="pre">res</span></code>, <code class="docutils literal notranslate"><span class="pre">res_factor</span></code>, <code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code>, <code class="docutils literal notranslate"><span class="pre">num_levels</span></code> and also <code class="docutils literal notranslate"><span class="pre">bbox</span></code> and <code class="docutils literal notranslate"><span class="pre">tile_size</span></code>. We describe the process MapProxy uses to build the list of all cache resolutions.</p>
+<p>If you supply a list with resolution values in <code class="docutils literal notranslate"><span class="pre">res</span></code> then MapProxy will use this list and will ignore all other options.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">min_res</span></code> is set then this value will be used for the first level, otherwise MapProxy will use the resolution that is needed for a single tile (<code class="docutils literal notranslate"><span class="pre">tile_size</span></code>) that contains the whole <code class="docutils literal notranslate"><span class="pre">bbox</span></code>.</p>
+<p>If you have <code class="docutils literal notranslate"><span class="pre">max_res</span></code> and <code class="docutils literal notranslate"><span class="pre">num_levels</span></code>: The resolutions will be distributed between <code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code>, both resolutions included. The resolutions will be logarithmical, so you will get a constant factor between each resolution. With resolutions from 1000 to 10 and 6 levels you would get 1000, 398, 158, 63, 25, 10 (rounded here for readability).</p>
+<p>If you have <code class="docutils literal notranslate"><span class="pre">max_res</span></code> and <code class="docutils literal notranslate"><span class="pre">res_factor</span></code>: The resolutions will be multiplied by <code class="docutils literal notranslate"><span class="pre">res_factor</span></code> until larger then <code class="docutils literal notranslate"><span class="pre">max_res</span></code>.</p>
+<p>If you have <code class="docutils literal notranslate"><span class="pre">num_levels</span></code> and <code class="docutils literal notranslate"><span class="pre">res_factor</span></code>: The resolutions will be multiplied by <code class="docutils literal notranslate"><span class="pre">res_factor</span></code> for up to <code class="docutils literal notranslate"><span class="pre">num_levels</span></code> levels.</p>
+</section>
+<section id="example-grids-configuration">
+<h3>Example <code class="docutils literal notranslate"><span class="pre">grids</span></code> configuration<a class="headerlink" href="#example-grids-configuration" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">localgrid</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EPSG:31467</span>
+<span class="w">    </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox_srs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EPSG:4326</span>
+<span class="w">    </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+<span class="w">    </span><span class="nt">res_factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqrt2</span>
+<span class="w">  </span><span class="nt">localgrid2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">localgrid</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EPSG:25832</span>
+<span class="w">    </span><span class="nt">tile_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">512</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">512</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="sources-conf-label">
+<span id="index-10"></span><span id="id10"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Permalink to this heading">#</a></h2>
+<p>A sources defines where MapProxy can request new data. Each source has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and all other options are dependent to this type.</p>
+<p>See <a class="reference internal" href="sources.html"><span class="doc">Sources</span></a> for the documentation of all available sources.</p>
+<p>An example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sourcename</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:8080/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">base</span>
+<span class="w">  </span><span class="nt">anothersource</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="c1"># ...</span>
+</pre></div>
+</div>
+</section>
+<section id="globals">
+<span id="globals-conf-label"></span><span id="index-11"></span><h2>globals<a class="headerlink" href="#globals" title="Permalink to this heading">#</a></h2>
+<p>Here you can define some internals of MapProxy and default values that are used in the other configuration directives.</p>
+<section id="background">
+<span id="globals-background"></span><h3><code class="docutils literal notranslate"><span class="pre">background</span></code><a class="headerlink" href="#background" title="Permalink to this heading">#</a></h3>
+<p>Configuration of the background displayed in the map viewer. This background map can be observed in the /demo service
+of MapProxy, in any of the three types of service (WMS, WMTS and TMS).</p>
+<dl class="simple" id="background-url">
+<dt><code class="docutils literal notranslate"><span class="pre">url</span></code></dt><dd><p>URL of the tile service (it MUST be a service that offers tiles in XYZ format e.g. “<a class="reference external" href="https://tile.openstreetmap.org">https://tile.openstreetmap.org</a>/{z}/{x}/{y}.png”)</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
+<p>Here you can define some options that affect the way MapProxy generates image results.</p>
+<dl id="image-resampling-method">
+<dt><code class="docutils literal notranslate"><span class="pre">resampling_method</span></code></dt><dd><p>The resampling method used when results need to be rescaled or transformed.
+You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
+bicubic the slowest. The results will look best with bilinear or bicubic.
+Bicubic enhances the contrast at edges and should be used for vector images.</p>
+<p>With <cite>bilinear</cite> you should get about 2/3 of the <cite>nearest</cite> performance, with
+<cite>bicubic</cite> 1/3.</p>
+<p>See the examples below:</p>
+<p><code class="docutils literal notranslate"><span class="pre">nearest</span></code>:</p>
+<blockquote>
+<div><img alt="_images/nearest.png" src="_images/nearest.png" />
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">bilinear</span></code>:</p>
+<blockquote>
+<div><img alt="_images/bilinear.png" src="_images/bilinear.png" />
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">bicubic</span></code>:</p>
+<blockquote>
+<div><img alt="_images/bicubic.png" src="_images/bicubic.png" />
+</div></blockquote>
+</dd>
+</dl>
+<dl class="simple" id="image-paletted">
+<dt><code class="docutils literal notranslate"><span class="pre">paletted</span></code></dt><dd><p>Enable paletted (8bit) PNG images. It defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code> for backwards compatibility. You should set this to <code class="docutils literal notranslate"><span class="pre">false</span></code> if you need 24bit PNG files. You can enable 8bit PNGs for single caches with a custom format (<code class="docutils literal notranslate"><span class="pre">colors:</span> <span class="pre">256</span></code>).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">formats</span></code></dt><dd><p>Modify existing or define new image formats. <a class="reference internal" href="#image-options"><span class="std std-ref">See below</span></a> for all image format options.</p>
+</dd>
+</dl>
+</section>
+<section id="globals-cache">
+<span id="id12"></span><h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#globals-cache" title="Permalink to this heading">#</a></h3>
+<p>The following options define how tiles are created and stored. Most options can be set individually for each cache as well.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0: </span><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code></p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0: </span><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></p>
+</div>
+<dl class="simple" id="meta-size">
+<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <cite>bulk_meta_tiles</cite>.</p>
+</dd>
+</dl>
+<dl class="simple" id="id13">
+<dt><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></dt><dd><p>Enables meta-tile handling for caches with tile sources.
+If set to <cite>true</cite>, MapProxy will request neighboring tiles from the source even if only one tile is requested from the cache. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how many tiles should be requested in one step and <code class="docutils literal notranslate"><span class="pre">concurrent_tile_creators</span></code> defines how many requests are made in parallel. This option improves the performance for caches that allow to store multiple tiles with one request, like SQLite/MBTiles but not the <code class="docutils literal notranslate"><span class="pre">file</span></code> cache.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code></dt><dd><p>MapProxy will increase the size of each meta-tile request by this number of
+pixels in each direction. This can solve cases where labels are cut-off at
+the edge of tiles.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">base_dir</span></code></dt><dd><p>The base directory where all cached tiles will be stored. The path can
+either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/var/mapproxy/cache</span></code>) or relative to the
+mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span class="pre">./cache_data</span></code>.</p>
+</dd>
+</dl>
+<dl class="simple" id="lock-dir">
+<dt><code class="docutils literal notranslate"><span class="pre">lock_dir</span></code></dt><dd><p>MapProxy uses locking to limit multiple request to the same service. See <code class="docutils literal notranslate"><span class="pre">concurrent_requests</span></code>.
+This option defines where the temporary lock files will be stored. The path
+can either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/tmp/lock/mapproxy</span></code>) or relative to the
+mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span class="pre">./cache_data/tile_locks</span></code>.</p>
+</dd>
+</dl>
+<dl id="tile-lock-dir">
+<dt><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code></dt><dd><p>MapProxy uses locking to prevent that the same tile gets created multiple times.
+This option defines where the temporary lock files will be stored. The path
+can either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/tmp/lock/mapproxy</span></code>) or relative to the
+mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span class="pre">./cache_data/dir_of_the_cache/tile_locks</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">concurrent_tile_creators</span></code></dt><dd><p>This limits the number of parallel requests MapProxy will make to a source. This limit is per request for this cache and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the <code class="docutils literal notranslate"><span class="pre">concurrent_requests</span></code> option.</p>
+<p>Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A <code class="docutils literal notranslate"><span class="pre">concurrent_tile_creators</span></code> value of two allows MapProxy to make two requests to the source WMS request in parallel. The splitting of the meta-tile and the encoding of the new tiles will happen in parallel to.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code></dt><dd><p>Enables the <code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code> option for all caches if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">symlink</span></code> or <code class="docutils literal notranslate"><span class="pre">hardlink</span></code>. See <a class="reference internal" href="#link-single-color-images"><span class="std std-ref">link_single_color_images</span></a>.</p>
+</dd>
+</dl>
+<dl class="simple" id="max-tile-limit">
+<dt><code class="docutils literal notranslate"><span class="pre">max_tile_limit</span></code></dt><dd><p>Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">preferred_src_proj</span></code></dt><dd><p>This option allows you to control which source projection MapProxy should use
+when it needs to reproject an image.</p>
+<p>When you make a request for a projection that is not supported by your cache (tile grid) or by your source (<code class="docutils literal notranslate"><span class="pre">supported_srs</span></code>), then MapProxy will reproject the image from the <cite>best</cite> available projection. By default, the <cite>best</cite> available projection is the first supported projection by your cache or source that is also either projected or geographic.</p>
+<p>You can change this behavior with <code class="docutils literal notranslate"><span class="pre">preferred_src_proj</span></code>. For example, you can configure that MapProxy should prefer similar projections from neighboring zones over Webmercator.</p>
+<p><code class="docutils literal notranslate"><span class="pre">preferred_src_proj</span></code> is a dictionary with the target EPSG code (i.e. the SRS requested by the user) and a list of preferred source EPSG codes.</p>
+<p>With the following configuration, WMS requests for EPSG:25831 are served from a cache with EPSG:25832, if there is no cache for EPSG:25831.</p>
+<blockquote>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">srs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">preferred_src_proj</span><span class="p">:</span>
+<span class="w">    </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:25832</span><span class="se">&#39;&#39;</span><span class="s">,</span><span class="nv"> </span><span class="s">&#39;</span><span class="nv">EPSG</span><span class="p p-Indicator">:</span><span class="nv">3857&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="s">&#39;EPSG:31466&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="s">&#39;EPSG:31467&#39;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25833&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25831&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:3857&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.12.0.</span></p>
+</div>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">proj_data_dir</span></code></p>
+<blockquote>
+<div><p>MapProxy uses PROJ for all coordinate transformations. If you need custom projections
+or need to tweak existing definitions. You can point MapProxy to your own set of PROJ data files.</p>
+<p>This path should contain an <code class="docutils literal notranslate"><span class="pre">epsg</span></code> file with the EPSG definitions for installations with PROJ version 4.
+PROJ&gt;=5 uses a different configuration format. Please refer to the PROJ documentation.</p>
+<p>The configured path can be absolute or relative to the mapproxy.yaml.</p>
+</div></blockquote>
+<dl id="axis-order">
+<dt><code class="docutils literal notranslate"><span class="pre">axis_order_ne</span></code> and <code class="docutils literal notranslate"><span class="pre">axis_order_en</span></code></dt><dd><p>The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
+The ordering is dependent to the SRS. Most clients and servers did not respected the
+ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
+emphasized that the axis ordering of the SRS should be used.</p>
+<p>Here you can define the axis ordering of your SRS. This might be required for proper
+WMS 1.3.0 support if you use any SRS that is not in the default configuration.</p>
+<p>By default MapProxy assumes lat/long (north/east) order for all geographic and x/y
+(east/north) order for all projected SRS.</p>
+<p>You need to add the SRS name to the appropriate parameter, if that is not the case for
+your SRS.:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">srs</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># for North/East ordering</span>
+<span class="w">  </span><span class="nt">axis_order_ne</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:9999&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:9998&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="c1"># for East/North ordering</span>
+<span class="w">  </span><span class="nt">axis_order_en</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:0000&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:0001&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>If you need to override one of the default values, then you need to define both axis
+order options, even if one is empty.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.13.0: </span>MapProxy can now determine the correct axis order for all coordinate systems when using pyproj&gt;=2. The axis_order_ne/axis_order_en are ignored in this case.</p>
+</div>
+</dd>
+</dl>
+</section>
+<section id="http">
+<span id="http-ssl"></span><h3><code class="docutils literal notranslate"><span class="pre">http</span></code><a class="headerlink" href="#http" title="Permalink to this heading">#</a></h3>
+<p>HTTP related options.</p>
+<section id="secure-http-connections-https">
+<h4>Secure HTTP Connections (HTTPS)<a class="headerlink" href="#secure-http-connections-https" title="Permalink to this heading">#</a></h4>
+<p>MapProxy supports access to HTTPS servers. Just use <code class="docutils literal notranslate"><span class="pre">https</span></code> instead of <code class="docutils literal notranslate"><span class="pre">http</span></code> when
+defining the URL of a source.</p>
+<p>MapProxy verifies the SSL/TLS connections against your systems “certification authority” (CA) certificates. You can provide your own set of root certificates with the <code class="docutils literal notranslate"><span class="pre">ssl_ca_certs</span></code> option.
+See the <a class="reference external" href="http://docs.python.org/dev/library/ssl.html#ssl-certificates">Python SSL documentation</a> for more information about the format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span>
+  <span class="n">ssl_ca_certs</span><span class="p">:</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ssl</span><span class="o">/</span><span class="n">certs</span><span class="o">/</span><span class="n">ca</span><span class="o">-</span><span class="n">certificates</span><span class="o">.</span><span class="n">crt</span>
+</pre></div>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.11.0: </span>MapProxy uses the systems CA files by default, if you use Python &gt;=2.7.9 or &gt;=3.4.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You need to supply a CA file that includes the root certificates if you use older MapProxy or older Python versions. Otherwise MapProxy will fail to establish the connection. You can set the <code class="docutils literal notranslate"><span class="pre">http.ssl_no_cert_checks</span></code> options to <code class="docutils literal notranslate"><span class="pre">true</span></code> to disable this verification.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ssl_no_cert_checks</span></code></p>
+<p>If you want to use SSL/TLS but do not need certificate verification, then you can disable it with the <code class="docutils literal notranslate"><span class="pre">ssl_no_cert_checks</span></code> option. You can also disable this check on a source level.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span>
+  <span class="n">ssl_no_cert_checks</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+</section>
+<section id="client-timeout">
+<h4><code class="docutils literal notranslate"><span class="pre">client_timeout</span></code><a class="headerlink" href="#client-timeout" title="Permalink to this heading">#</a></h4>
+<p>This defines how long MapProxy should wait for data from source servers. Increase this value if your source servers are slower.</p>
+</section>
+<section id="method">
+<h4><code class="docutils literal notranslate"><span class="pre">method</span></code><a class="headerlink" href="#method" title="Permalink to this heading">#</a></h4>
+<p>Configure which HTTP method should be used for HTTP requests. By default (<cite>AUTO</cite>) MapProxy will use GET for most requests, except for requests with a long query string (e.g. WMS requests with <cite>sld_body</cite>) where POST is used instead. You can disable this behavior with either <cite>GET</cite> or <cite>POST</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span>
+  <span class="n">method</span><span class="p">:</span> <span class="n">GET</span>
+</pre></div>
+</div>
+</section>
+<section id="headers">
+<h4><code class="docutils literal notranslate"><span class="pre">headers</span></code><a class="headerlink" href="#headers" title="Permalink to this heading">#</a></h4>
+<p>Add additional HTTP headers to all requests to your sources.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span>
+  <span class="n">headers</span><span class="p">:</span>
+    <span class="n">My</span><span class="o">-</span><span class="n">Header</span><span class="p">:</span> <span class="n">header</span> <span class="n">value</span>
+</pre></div>
+</div>
+</section>
+<section id="access-control-allow-origin">
+<h4><code class="docutils literal notranslate"><span class="pre">access_control_allow_origin</span></code><a class="headerlink" href="#access-control-allow-origin" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.8.0.</span></p>
+</div>
+<p>Sets the <code class="docutils literal notranslate"><span class="pre">Access-control-allow-origin</span></code> header to HTTP responses for <a class="reference external" href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">Cross-origin resource sharing</a>. This header is required for WebGL or Canvas web clients. Defaults to <cite>*</cite>. Leave empty to disable the header. This option is only available in <cite>globals</cite>.</p>
+</section>
+<section id="manage-cookies">
+<h4><code class="docutils literal notranslate"><span class="pre">manage_cookies</span></code><a class="headerlink" href="#manage-cookies" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.14.0.</span></p>
+</div>
+<p>Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed
+back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process).
+Cookie handling is based on Python <a class="reference external" href="https://docs.python.org/3/library/http.cookiejar.html">CookieJar</a>. Disabled by default.</p>
+</section>
+<section id="hide-error-details">
+<h4><code class="docutils literal notranslate"><span class="pre">hide_error_details</span></code><a class="headerlink" href="#hide-error-details" title="Permalink to this heading">#</a></h4>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.13.0.</span></p>
+</div>
+<p>When enabled, MapProxy will only report generic error messages to the client in case of any errors while fetching source services.
+The full error message might contain confidential information like internal URLs. You will find the full error message in the logs, regardless of this option. The option is enabled by default, i.e. the details are hidden.</p>
+</section>
+</section>
+<section id="tiles">
+<h3><code class="docutils literal notranslate"><span class="pre">tiles</span></code><a class="headerlink" href="#tiles" title="Permalink to this heading">#</a></h3>
+<p>Configuration options for the TMS/Tile service.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">expires_hours</span></code></dt><dd><p>The number of hours a Tile is valid. TMS clients like web browsers will
+cache the tile for this time. Clients will try to refresh the tiles after
+that time. MapProxy supports the ETag and Last-Modified headers and will
+respond with the appropriate HTTP <cite>‘304 Not modified’</cite> response if the tile
+was not changed.</p>
+</dd>
+</dl>
+</section>
+<section id="mapserver">
+<h3><code class="docutils literal notranslate"><span class="pre">mapserver</span></code><a class="headerlink" href="#mapserver" title="Permalink to this heading">#</a></h3>
+<p>Options for the <a class="reference internal" href="sources.html#mapserver-label"><span class="std std-ref">Mapserver source</span></a>.</p>
+<section id="binary">
+<h4><code class="docutils literal notranslate"><span class="pre">binary</span></code><a class="headerlink" href="#binary" title="Permalink to this heading">#</a></h4>
+<p>The complete path to the <code class="docutils literal notranslate"><span class="pre">mapserv</span></code> executable. Required if you use the <code class="docutils literal notranslate"><span class="pre">mapserver</span></code> source.</p>
+</section>
+<section id="working-dir">
+<h4><code class="docutils literal notranslate"><span class="pre">working_dir</span></code><a class="headerlink" href="#working-dir" title="Permalink to this heading">#</a></h4>
+<p>Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on. Defaults to the directory of <code class="docutils literal notranslate"><span class="pre">binary</span></code>.</p>
+</section>
+</section>
+</section>
+<section id="image-format-options">
+<span id="image-options"></span><h2>Image Format Options<a class="headerlink" href="#image-format-options" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.1.0.</span></p>
+</div>
+<p>There are a few options that affect how MapProxy encodes and transforms images. You can set these options in the <code class="docutils literal notranslate"><span class="pre">globals</span></code> section or individually for each source or cache.</p>
+<section id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this heading">#</a></h3>
+<p>Available options are:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">format</span></code></dt><dd><p>The mime-type of this image format. The format defaults to the name of the image configuration.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mode</span></code></dt><dd><p>One of <code class="docutils literal notranslate"><span class="pre">RGB</span></code> for 24bit images, <code class="docutils literal notranslate"><span class="pre">RGBA</span></code> 32bit images with alpha, <code class="docutils literal notranslate"><span class="pre">P</span></code> for paletted images or <code class="docutils literal notranslate"><span class="pre">I</span></code> for integer images.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">colors</span></code></dt><dd><p>The number of colors to reduce the image before encoding. Use <code class="docutils literal notranslate"><span class="pre">0</span></code> to disable color reduction (quantizing) for this format and <code class="docutils literal notranslate"><span class="pre">256</span></code> for paletted images. See also <a class="reference internal" href="#image-paletted"><span class="std std-ref">globals.image.paletted</span></a>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">transparent</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">true</span></code> if the image should have an alpha channel.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">resampling_method</span></code></dt><dd><p>The resampling method used for scaling or reprojection. One of <code class="docutils literal notranslate"><span class="pre">nearest</span></code>, <code class="docutils literal notranslate"><span class="pre">bilinear</span></code> or <code class="docutils literal notranslate"><span class="pre">bicubic</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">encoding_options</span></code></dt><dd><p>Options that modify the way MapProxy encodes (saves) images. These options are format dependent. See below.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">opacity</span></code></dt><dd><p>Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).</p>
+</dd>
+</dl>
+<section id="encoding-options">
+<h4><code class="docutils literal notranslate"><span class="pre">encoding_options</span></code><a class="headerlink" href="#encoding-options" title="Permalink to this heading">#</a></h4>
+<p>The following encoding options are available:</p>
+<dl id="jpeg-quality">
+<dt><code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code></dt><dd><p>An integer value from 0 to 100 that defines the image quality of JPEG images. Larger values result in slower performance, larger file sizes but better image quality. You should try values between 75 and 90 for good compromise between performance and quality.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">quantizer</span></code></dt><dd><p>The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> and <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code>. <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code> is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> in some cases.
+The quantizing is done by the Python Image Library (PIL). <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code> is a <a class="reference external" href="http://mapproxy.org/blog/improving-the-performance-for-png-requests/">new quantizer</a> that is only available in Pillow &gt;=2.0. See <a class="reference internal" href="install.html#dependencies-pil"><span class="std std-ref">installation of PIL</span></a>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tiff_compression</span></code></dt><dd><p>Enable compression for TIFF images. Available compression methods are <cite>tiff_lzw</cite> for lossless LZW compression, <cite>jpeg</cite> for JPEG compression and <cite>raw</cite> for no compression (default). You can use the <code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code> option to tune the image quality for JPEG compressed TIFFs. Requires Pillow &gt;= 6.1.0.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.12.0.</span></p>
+</div>
+</dd>
+</dl>
+</section>
+</section>
+<section id="global">
+<h3>Global<a class="headerlink" href="#global" title="Permalink to this heading">#</a></h3>
+<p>You can configure image formats globally with the <code class="docutils literal notranslate"><span class="pre">image.formats</span></code> option. Each format has a name and one or more options from the list above. You can choose any name, but you need to specify a <code class="docutils literal notranslate"><span class="pre">format</span></code> if the name is not a valid mime-type (e.g. <code class="docutils literal notranslate"><span class="pre">myformat</span></code> instead of <code class="docutils literal notranslate"><span class="pre">image/png</span></code>).</p>
+<p>Here is an example that defines a custom format:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">formats</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">my_format</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/png</span>
+<span class="w">        </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">P</span>
+<span class="w">        </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<p>You can also modify existing image formats:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">formats</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">image/png</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">encoding_options</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">quantizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fastoctree</span>
+</pre></div>
+</div>
+<p>MapProxy will use your image formats when you are using the format name as the <code class="docutils literal notranslate"><span class="pre">format</span></code> of any source or cache.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_format</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">source2</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_grid</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="local">
+<h3>Local<a class="headerlink" href="#local" title="Permalink to this heading">#</a></h3>
+<p>You can change all options individually for each cache or source. You can do this by choosing a base format and changing some options:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/jpeg</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">encoding_options</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">jpeg_quality</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">source2</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_grid</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>You can also configure the format from scratch:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/jpeg</span>
+<span class="w">      </span><span class="nt">resampling_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nearest</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">source2</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_grid</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h2>
+<section id="scale-vs-resolution">
+<span id="scale-resolution"></span><h3>Scale vs. resolution<a class="headerlink" href="#scale-vs-resolution" title="Permalink to this heading">#</a></h3>
+<p>Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a <cite>map</cite> is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the <cite>map</cite> is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.</p>
+<p>This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 91dpi). But you need to understand that a <cite>scale</cite> will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).</p>
+<p>You can convert between scales and resolutions with the <a class="reference internal" href="mapproxy_util.html#mapproxy-util-scales"><span class="std std-ref">mapproxy-util scales tool</span></a>.</p>
+<p>MapProxy will use the OCG value (0.28mm/px) if it’s necessary to use a scale value (e.g. MinScaleDenominator in WMS 1.3.0 capabilities), but you should always use resolutions within MapProxy.</p>
+<section id="wms-scalehint">
+<h4>WMS ScaleHint<a class="headerlink" href="#wms-scalehint" title="Permalink to this heading">#</a></h4>
+<p>The WMS ScaleHint is a bit misleading. The parameter is not a scale but the diagonal pixel resolution. It also defines the <code class="docutils literal notranslate"><span class="pre">min</span></code> as the minimum value not the minimum resolution (e.g. 10m/px is a lower resolution than 5m/px, but 5m/px is the minimum value). MapProxy always uses the term resolutions as the side length in ground units per pixel and minimum resolution is always the higher number (100m/px &lt; 10m/px). Keep that in mind when you use these values.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tutorial.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tutorial</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="services.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Services</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#title"><code class="docutils literal notranslate"><span class="pre">title</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">layers</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-sources"><code class="docutils literal notranslate"><span class="pre">tile_sources</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-max-res-or-min-scale-max-scale"><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#band-merging">Band merging</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-sources">Cache sources</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#format"><code class="docutils literal notranslate"><span class="pre">format</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#request-format"><code class="docutils literal notranslate"><span class="pre">request_format</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#link-single-color-images"><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimize-meta-requests"><code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#watermark"><code class="docutils literal notranslate"><span class="pre">watermark</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#grids"><code class="docutils literal notranslate"><span class="pre">grids</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-size-and-meta-buffer"><code class="docutils literal notranslate"><span class="pre">meta_size</span></code> and <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bulk-meta-tiles"><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-direct-from-level-and-use-direct-from-res"><code class="docutils literal notranslate"><span class="pre">use_direct_from_level</span></code> and <code class="docutils literal notranslate"><span class="pre">use_direct_from_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#upscale-tiles-and-downscale-tiles"><code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> and <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-rescaled-tiles"><code class="docutils literal notranslate"><span class="pre">cache_rescaled_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refresh-before"><code class="docutils literal notranslate"><span class="pre">refresh_before</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#disable-storage"><code class="docutils literal notranslate"><span class="pre">disable_storage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-dir"><code class="docutils literal notranslate"><span class="pre">cache_dir</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-caches-configuration">Example <code class="docutils literal notranslate"><span class="pre">caches</span></code> configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">grids</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#srs"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-size"><code class="docutils literal notranslate"><span class="pre">tile_size</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#res"><code class="docutils literal notranslate"><span class="pre">res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#res-factor"><code class="docutils literal notranslate"><span class="pre">res_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#threshold-res"><code class="docutils literal notranslate"><span class="pre">threshold_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox"><code class="docutils literal notranslate"><span class="pre">bbox</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bbox-srs"><code class="docutils literal notranslate"><span class="pre">bbox_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#origin"><code class="docutils literal notranslate"><span class="pre">origin</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#num-levels"><code class="docutils literal notranslate"><span class="pre">num_levels</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-and-max-res"><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stretch-factor"><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shrink-factor"><code class="docutils literal notranslate"><span class="pre">max_shrink_factor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-grids-configuration">Example <code class="docutils literal notranslate"><span class="pre">grids</span></code> configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http"><code class="docutils literal notranslate"><span class="pre">http</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#secure-http-connections-https">Secure HTTP Connections (HTTPS)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#client-timeout"><code class="docutils literal notranslate"><span class="pre">client_timeout</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method"><code class="docutils literal notranslate"><span class="pre">method</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#headers"><code class="docutils literal notranslate"><span class="pre">headers</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#access-control-allow-origin"><code class="docutils literal notranslate"><span class="pre">access_control_allow_origin</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-cookies"><code class="docutils literal notranslate"><span class="pre">manage_cookies</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#hide-error-details"><code class="docutils literal notranslate"><span class="pre">hide_error_details</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tiles"><code class="docutils literal notranslate"><span class="pre">tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mapserver"><code class="docutils literal notranslate"><span class="pre">mapserver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#binary"><code class="docutils literal notranslate"><span class="pre">binary</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#working-dir"><code class="docutils literal notranslate"><span class="pre">working_dir</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#image-format-options">Image Format Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#encoding-options"><code class="docutils literal notranslate"><span class="pre">encoding_options</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#global">Global</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scale-vs-resolution">Scale vs. resolution</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-scalehint">WMS ScaleHint</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1094 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Caches &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'caches';</script>
+    <link rel="canonical" href="/mapproxy/caches.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Seeding" href="seed.html" />
+    <link rel="prev" title="Sources" href="sources.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Caches</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#file"><code class="docutils literal notranslate"><span class="pre">file</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mbtiles"><code class="docutils literal notranslate"><span class="pre">mbtiles</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sqlite"><code class="docutils literal notranslate"><span class="pre">sqlite</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#couchdb"><code class="docutils literal notranslate"><span class="pre">couchdb</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#riak"><code class="docutils literal notranslate"><span class="pre">riak</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#redis"><code class="docutils literal notranslate"><span class="pre">redis</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#geopackage"><code class="docutils literal notranslate"><span class="pre">geopackage</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#s3"><code class="docutils literal notranslate"><span class="pre">s3</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-usage-with-digitalocean-spaces">Example usage with DigitalOcean Spaces</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#azureblob"><code class="docutils literal notranslate"><span class="pre">azureblob</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compact"><code class="docutils literal notranslate"><span class="pre">compact</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="caches">
+<h1>Caches<a class="headerlink" href="#caches" title="Permalink to this heading">#</a></h1>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.2.0.</span></p>
+</div>
+<p>MapProxy supports multiple backends to store the internal tiles. The default backend is file based and does not require any further configuration.</p>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h2>
+<p>You can configure a backend for each cache with the <code class="docutils literal notranslate"><span class="pre">cache</span></code> option.
+Each backend has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and one or more options.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backendtype</span>
+<span class="w">      </span><span class="nt">backendoption1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+<span class="w">      </span><span class="nt">backendoption2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+</pre></div>
+</div>
+<p>You may add a coverage definition to any cache with the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option under <code class="docutils literal notranslate"><span class="pre">cache</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backendtype</span>
+<span class="w">      </span><span class="nt">backendoption1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+<span class="w">      </span><span class="nt">backendoption2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+<span class="w">      </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">50</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">55</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<p>The following backend types are available.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#cache-file"><span class="std std-ref">file</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-mbtiles"><span class="std std-ref">mbtiles</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-sqlite"><span class="std std-ref">sqlite</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-geopackage"><span class="std std-ref">geopackage</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-couchdb"><span class="std std-ref">couchdb</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-riak"><span class="std std-ref">riak</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-redis"><span class="std std-ref">redis</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-s3"><span class="std std-ref">s3</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-azureblob"><span class="std std-ref">azureblob</span></a></p></li>
+<li><p><a class="reference internal" href="#cache-compact"><span class="std std-ref">compact</span></a></p></li>
+</ul>
+</section>
+<section id="file">
+<span id="cache-file"></span><h2><code class="docutils literal notranslate"><span class="pre">file</span></code><a class="headerlink" href="#file" title="Permalink to this heading">#</a></h2>
+<p>This is the default cache type and it uses a single file for each tile. Available options are:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">directory_layout</span></code>:</dt><dd><p>The directory layout MapProxy uses to store tiles on disk. Defaults to <code class="docutils literal notranslate"><span class="pre">tc</span></code> which uses a TileCache compatible directory layout (<code class="docutils literal notranslate"><span class="pre">zz/xxx/xxx/xxx/yyy/yyy/yyy.format</span></code>). <code class="docutils literal notranslate"><span class="pre">mp</span></code> uses a directory layout with less nesting (<code class="docutils literal notranslate"><span class="pre">zz/xxxx/xxxx/yyyy/yyyy.format`</span></code>). <code class="docutils literal notranslate"><span class="pre">tms</span></code> uses TMS compatible directories (<code class="docutils literal notranslate"><span class="pre">zz/xxxx/yyyy.format</span></code>). <code class="docutils literal notranslate"><span class="pre">quadkey</span></code> uses Microsoft Virtual Earth or quadkey compatible directories (see <a class="reference external" href="http://msdn.microsoft.com/en-us/library/bb259689.aspx">http://msdn.microsoft.com/en-us/library/bb259689.aspx</a>). <code class="docutils literal notranslate"><span class="pre">arcgis</span></code> uses a directory layout with hexadecimal row and column numbers that is compatible to ArcGIS exploded caches (<code class="docutils literal notranslate"><span class="pre">Lzz/Rxxxxxxxx/Cyyyyyyyy.format</span></code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">tms</span></code>, <code class="docutils literal notranslate"><span class="pre">quadkey</span></code> and <code class="docutils literal notranslate"><span class="pre">arcgis</span></code> layout are not suited for large caches, since it will create directories with thousands of files, which most file systems do not handle well.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code>:</dt><dd><p>When <code class="docutils literal notranslate"><span class="pre">true</span></code> MapProxy will use the actual grid name in the path instead of the SRS code. E.g. tiles will be stored in <code class="docutils literal notranslate"><span class="pre">./cache_data/mylayer/mygrid/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">./cache_data/mylayer/EPSG1234/</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+</dd>
+</dl>
+<dl id="cache-file-directory">
+<dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>Directory where MapProxy should directly store the tiles. This will not add the cache name or grid name (<code class="docutils literal notranslate"><span class="pre">use_grid_name</span></code>) to the path. You can use this option to point MapProxy to an existing tile collection (created with <code class="docutils literal notranslate"><span class="pre">gdal2tiles</span></code> for example).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code>:</dt><dd><p>Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to <code class="docutils literal notranslate"><span class="pre">cache_data/tile_locks</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">image</span></code>:</dt><dd><p>See <a class="reference internal" href="configuration.html#image-options"><span class="std std-ref">Image Format Options</span></a> for options.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 2.0.0.</span></p>
+</div>
+</dd>
+</dl>
+</section>
+<section id="mbtiles">
+<span id="cache-mbtiles"></span><h2><code class="docutils literal notranslate"><span class="pre">mbtiles</span></code><a class="headerlink" href="#mbtiles" title="Permalink to this heading">#</a></h2>
+<p>Use a single SQLite file for this cache. It uses the <a class="reference external" href="http://mbtiles.org/">MBTile specification</a>.</p>
+<p>Available options:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">filename</span></code>:</dt><dd><p>The path to the MBTiles file. Defaults to <code class="docutils literal notranslate"><span class="pre">cachename.mbtiles</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code>:</dt><dd><p>Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to <code class="docutils literal notranslate"><span class="pre">cache_data/tile_locks</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+</dd>
+</dl>
+<p>You can set the <code class="docutils literal notranslate"><span class="pre">sources</span></code> to an empty list, if you use an existing MBTiles file and do not have a source.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mbtiles_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mbtiles</span>
+<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/bluemarble.mbtiles</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The MBTiles format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> times for MBTiles and it always removes all tiles.
+Use the <code class="docutils literal notranslate"><span class="pre">--summary</span></code> option of the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool.</p>
+</div>
+<p>The note about <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code> for SQLite below applies to MBtiles as well.</p>
+</section>
+<section id="sqlite">
+<span id="cache-sqlite"></span><h2><code class="docutils literal notranslate"><span class="pre">sqlite</span></code><a class="headerlink" href="#sqlite" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+<p>Use SQLite databases to store the tiles, similar to <code class="docutils literal notranslate"><span class="pre">mbtiles</span></code> cache. The difference to <code class="docutils literal notranslate"><span class="pre">mbtiles</span></code> cache is that the <code class="docutils literal notranslate"><span class="pre">sqlite</span></code> cache stores each level into a separate database. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The <code class="docutils literal notranslate"><span class="pre">sqlite</span></code> cache also stores the timestamp of each tile.</p>
+<p>Available options:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">dirname</span></code>:</dt><dd><p>The directory where the level databases will be stored.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code>:</dt><dd><p>Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to <code class="docutils literal notranslate"><span class="pre">cache_data/tile_locks</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ttl</span></code>:</dt><dd><p>The time-to-live of each tile in the cache in seconds. Use 0 (default) to allow unlimited tile reuse.</p>
+</dd>
+</dl>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sqlite_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mywms</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/cache</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>All tiles from a meta tile request are stored in one transaction into the SQLite file to increase performance. You need to activate the <a class="reference internal" href="configuration.html#id13"><span class="std std-ref">bulk_meta_tiles</span></a> option to get the same benefit when you are using tiled sources.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sqlite_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mytilesource</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bulk_meta_tiles</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/cache</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="couchdb">
+<span id="cache-couchdb"></span><h2><code class="docutils literal notranslate"><span class="pre">couchdb</span></code><a class="headerlink" href="#couchdb" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.3.0.</span></p>
+</div>
+<p>Store tiles inside a <a class="reference external" href="http://couchdb.apache.org/">CouchDB</a>. MapProxy creates a JSON document for each tile. This document contains metadata, like timestamps, and the tile image itself as a attachment.</p>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">#</a></h3>
+<p>Besides a running CouchDB you will need the <a class="reference external" href="http://python-requests.org/">Python requests package</a>. You can install it the usual way, for example <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">requests</span></code>.</p>
+</section>
+<section id="id2">
+<h3>Configuration<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<p>You can configure the database and database name and the tile ID and additional metadata.</p>
+<p>Available options:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">url</span></code>:</dt><dd><p>The URL of the CouchDB server. Defaults to <code class="docutils literal notranslate"><span class="pre">http://localhost:5984</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">db_name</span></code>:</dt><dd><p>The name of the database MapProxy uses for this cache. Defaults to the name of the cache.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code>:</dt><dd><p>Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to <code class="docutils literal notranslate"><span class="pre">cache_data/tile_locks</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_id</span></code>:</dt><dd><p>Each tile document needs a unique ID. You can change the format with a Python format string that expects the following keys:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code>:</dt><dd><p>The tile coordinate.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">grid_name</span></code>:</dt><dd><p>The name of the grid.</p>
+</dd>
+</dl>
+<p>The default ID uses the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="p">(</span><span class="n">grid_name</span><span class="p">)</span><span class="n">s</span><span class="o">-%</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="n">d</span><span class="o">-%</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="n">d</span><span class="o">-%</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="n">d</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can’t use slashes (<code class="docutils literal notranslate"><span class="pre">/</span></code>) in CouchDB IDs.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tile_metadata</span></code>:</dt><dd><p>MapProxy stores a JSON document for each tile in CouchDB and you can add additional key-value pairs  with metadata to each document.
+There are a few predefined values that MapProxy will replace with  tile-depended values, all other values will be added as they are.</p>
+<p>Predefined values:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">{{x}}</span></code>, <code class="docutils literal notranslate"><span class="pre">{{y}}</span></code>, <code class="docutils literal notranslate"><span class="pre">{{z}}</span></code>:</dt><dd><p>The tile coordinate.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">{{timestamp}}</span></code>:</dt><dd><p>The creation time of the tile as seconds since epoch. MapProxy will add a <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> key for you, if you don’t provide a custom timestamp key.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">{{utc_iso}}</span></code>:</dt><dd><p>The creation time of the tile in UTC in ISO format. For example: <code class="docutils literal notranslate"><span class="pre">2011-12-31T23:59:59Z</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">{{tile_centroid}}</span></code>:</dt><dd><p>The center coordinate of the tile in the cache’s coordinate system as a list of long/lat or x/y values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">{{wgs_tile_centroid}}</span></code>:</dt><dd><p>The center coordinate of the tile in WGS 84 as a list of long/lat values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mycouchdbcache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mywms</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrid</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">couchdb</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:9999</span>
+<span class="w">      </span><span class="nt">db_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mywms_tiles</span>
+<span class="w">      </span><span class="nt">tile_metadata</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">mydata</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myvalue</span>
+<span class="w">        </span><span class="nt">tile_col</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{x}}&#39;</span>
+<span class="w">        </span><span class="nt">tile_row</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{y}}&#39;</span>
+<span class="w">        </span><span class="nt">tile_level</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{z}}&#39;</span>
+<span class="w">        </span><span class="nt">created_ts</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{timestamp}}&#39;</span>
+<span class="w">        </span><span class="nt">created</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{utc_iso}}&#39;</span>
+<span class="w">        </span><span class="nt">center</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;{{wgs_tile_centroid}}&#39;</span>
+</pre></div>
+</div>
+<p>MapProxy will place the JSON document for tile z=3, x=1, y=2 at <code class="docutils literal notranslate"><span class="pre">http://localhost:9999/mywms_tiles/mygrid-3-1-2</span></code>. The document will look like:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;_attachments&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;tile&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;content_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;md5-ch4j5Piov6a5FlAZtwPVhQ==&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">921</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;revpos&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;stub&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mygrid-3-1-2&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;_rev&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2-9932acafd060e10bc0db23231574f933&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;center&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="mf">-112.5</span><span class="p">,</span>
+<span class="w">        </span><span class="mf">-55.7765730186677</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;created&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2011-12-15T12:56:21Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;created_ts&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1323953781.531889</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;mydata&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;myvalue&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tile_col&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tile_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tile_row&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">_attachments</span></code>-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: <code class="docutils literal notranslate"><span class="pre">http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile</span></code>.</p>
+</section>
+</section>
+<section id="riak">
+<span id="cache-riak"></span><h2><code class="docutils literal notranslate"><span class="pre">riak</span></code><a class="headerlink" href="#riak" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+<p>Store tiles in a <a class="reference external" href="http://basho.com/riak/">Riak</a> cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
+This backend is good for very large caches which can be distributed over many nodes. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.</p>
+<section id="id4">
+<h3>Requirements<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<p>You will need the <a class="reference external" href="https://pypi.org/project/riak">Python Riak client</a> version 2.4.2 or older. You can install it in the usual way, for example with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">riak==2.4.2</span></code>. Environments with older version must be upgraded with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">riak==2.4.2</span></code>. Python library depends on packages <cite>python-dev</cite>, <cite>libffi-dev</cite> and <cite>libssl-dev</cite>.</p>
+</section>
+<section id="id5">
+<h3>Configuration<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<p>Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nodes</span></code>:</dt><dd><p>A list of riak nodes. Each node needs a <code class="docutils literal notranslate"><span class="pre">host</span></code> and optionally a <code class="docutils literal notranslate"><span class="pre">pb_port</span></code> and an <code class="docutils literal notranslate"><span class="pre">http_port</span></code> if the ports differ from the default. Defaults to single localhost node.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">protocol</span></code>:</dt><dd><p>Communication protocol. Allowed options is <code class="docutils literal notranslate"><span class="pre">http</span></code>, <code class="docutils literal notranslate"><span class="pre">https</span></code> and <code class="docutils literal notranslate"><span class="pre">pbc</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">pbc</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">bucket</span></code>:</dt><dd><p>The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and must be unique for each cache. Defaults to cache name suffixed with grid name (e.g. <code class="docutils literal notranslate"><span class="pre">mycache_webmercator</span></code>).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">default_ports</span></code>:</dt><dd><p>Default <code class="docutils literal notranslate"><span class="pre">pb</span></code> and <code class="docutils literal notranslate"><span class="pre">http</span></code> ports for <code class="docutils literal notranslate"><span class="pre">pbc</span></code> and <code class="docutils literal notranslate"><span class="pre">http</span></code> protocols. Will be used as the default for each defined node.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">secondary_index</span></code>:</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">true</span></code> enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Example<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">myriakcache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mywms</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrid</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">riak</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.example.org</span>
+<span class="w">        </span><span class="nt">pb_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9999</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.example.org</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.example.org</span>
+<span class="w">    </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pbc</span>
+<span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myriakcachetiles</span>
+<span class="w">    </span><span class="nt">default_ports</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">pb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8087</span>
+<span class="w">      </span><span class="nt">http</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8098</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="redis">
+<span id="cache-redis"></span><h2><code class="docutils literal notranslate"><span class="pre">redis</span></code><a class="headerlink" href="#redis" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>Store tiles in a <a class="reference external" href="https://redis.io/">Redis</a> in-memory database. This backend is useful for short-term caching. Typical use-case is a small Redis cache that allows you to benefit from meta-tiling.</p>
+<p>Your Redis database should be configured with <code class="docutils literal notranslate"><span class="pre">maxmemory</span></code> and <code class="docutils literal notranslate"><span class="pre">maxmemory-policy</span></code> options to limit the memory usage. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">maxmemory</span> <span class="mi">256</span><span class="n">mb</span>
+<span class="n">maxmemory</span><span class="o">-</span><span class="n">policy</span> <span class="n">volatile</span><span class="o">-</span><span class="n">ttl</span>
+</pre></div>
+</div>
+<section id="id8">
+<h3>Requirements<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<p>You will need the <a class="reference external" href="https://pypi.org/project/redis">Python Redis client</a>. You can install it in the usual way, for example with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">redis</span></code>.</p>
+</section>
+<section id="id9">
+<h3>Configuration<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<p>Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">host</span></code>:</dt><dd><p>Host name of the Redis server. Defaults to <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">port</span></code>:</dt><dd><p>Port of the Redis server. Defaults to <code class="docutils literal notranslate"><span class="pre">6379</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">db</span></code>:</dt><dd><p>Number of the Redis database. Please refer to the Redis documentation. Defaults to <cite>0</cite>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">username</span></code>:</dt><dd><p>Optional authentication username. No defaults.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">password</span></code>:</dt><dd><p>Optional authentication password. No defaults.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">prefix</span></code>:</dt><dd><p>The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to <code class="docutils literal notranslate"><span class="pre">cache-name_grid-name</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">default_ttl</span></code>:</dt><dd><p>The default Time-To-Live of each tile in the Redis cache in seconds. Defaults to 3600 seconds (1 hour).</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Example<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">redis_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mywms</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrid</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<span class="w">      </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mapproxy</span>
+<span class="w">      </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">iamgreatpassword</span>
+<span class="w">      </span><span class="nt">default_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="geopackage">
+<span id="cache-geopackage"></span><h2><code class="docutils literal notranslate"><span class="pre">geopackage</span></code><a class="headerlink" href="#geopackage" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>Store tiles in a <a class="reference external" href="http://www.geopackage.org/">geopackage</a> database. MapProxy creates a tile table if one isn’t defined and populates the required meta data fields.
+This backend is good for datasets that require portability.
+Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">filename</span></code>:</dt><dd><p>The path to the geopackage file. Defaults to <code class="docutils literal notranslate"><span class="pre">cachename.gpkg</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">table_name</span></code>:</dt><dd><p>The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the <code class="docutils literal notranslate"><span class="pre">cachename_gridname</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">levels</span></code>:</dt><dd><p>Set this to true to cache to a directory where each level is stored in a separate geopackage. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+If set to true, <code class="docutils literal notranslate"><span class="pre">filename</span></code> is ignored.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>If levels is true use this to specify the directory to store geopackage files.</p>
+</dd>
+</dl>
+<p>You can set the <code class="docutils literal notranslate"><span class="pre">sources</span></code> to an empty list, if you use an existing geopackage file and do not have a source.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">geopackage_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geopackage</span>
+<span class="w">      </span><span class="nt">filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/bluemarble.gpkg</span>
+<span class="w">      </span><span class="nt">table_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bluemarble_tiles</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The geopackage format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> times for geopackage and it always removes all tiles.
+Use the <code class="docutils literal notranslate"><span class="pre">--summary</span></code> option of the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool.</p>
+</div>
+</section>
+<section id="s3">
+<span id="cache-s3"></span><h2><code class="docutils literal notranslate"><span class="pre">s3</span></code><a class="headerlink" href="#s3" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.11.0: </span><code class="docutils literal notranslate"><span class="pre">region_name</span></code>, <code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code> and <code class="docutils literal notranslate"><span class="pre">access_control_list</span></code></p>
+</div>
+<p>Store tiles in a <a class="reference external" href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> or any other S3 compatible object storage.</p>
+<section id="id12">
+<h3>Requirements<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
+<p>You will need the Python <a class="reference external" href="https://pypi.org/project/boto3">boto3</a> package. You can install it in the usual way, for example with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">boto3</span></code>.</p>
+</section>
+<section id="id13">
+<h3>Configuration<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
+<p>Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">bucket_name</span></code>:</dt><dd><p>The bucket used for this cache. You can set the default bucket with <code class="docutils literal notranslate"><span class="pre">globals.cache.s3.bucket_name</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">profile_name</span></code>:</dt><dd><p>Optional profile name for <a class="reference external" href="http://boto3.readthedocs.io/en/latest/guide/configuration.html">shared credentials</a> for this cache. Alternative methods of authentification are using the  <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code> environmental variables, or by using an <a class="reference external" href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html">IAM role</a> when using an Amazon EC2 instance.
+You can set the default profile with <code class="docutils literal notranslate"><span class="pre">globals.cache.s3.profile_name</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">region_name</span></code>:</dt><dd><p>Optional name of the region. You can set the default region_name with <code class="docutils literal notranslate"><span class="pre">globals.cache.s3.region_name</span></code></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">endpoint_url</span></code>:</dt><dd><p>Optional endpoint_url for the S3. You can set the default endpoint_url with <code class="docutils literal notranslate"><span class="pre">globals.cache.s3.endpoint_url</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">access_control_list</span></code>:</dt><dd><p>Optional access control list for the S3. You can set the default access_control_list with <code class="docutils literal notranslate"><span class="pre">globals.cache.s3.access_control_list</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>Base directory (path) where all tiles are stored.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">directory_layout</span></code>:</dt><dd><p>Defines the directory layout for the tiles (<code class="docutils literal notranslate"><span class="pre">12/12345/67890.png</span></code>, <code class="docutils literal notranslate"><span class="pre">L12/R00010932/C00003039.png</span></code>, etc.).  See <a class="reference internal" href="#cache-file"><span class="std std-ref">file</span></a> for available options. Defaults to <code class="docutils literal notranslate"><span class="pre">tms</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">12/12345/67890.png</span></code>). This cache cache also supports <code class="docutils literal notranslate"><span class="pre">reverse_tms</span></code> where tiles are stored as <code class="docutils literal notranslate"><span class="pre">y/x/z.format</span></code>. See <em>note</em> below.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">use_http_get</span></code>:</dt><dd><p>When set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, requests to S3 <code class="docutils literal notranslate"><span class="pre">GetObject</span></code> will be fetched via urllib2 instead of boto, which decreases response times. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The hierarchical <code class="docutils literal notranslate"><span class="pre">directory_layouts</span></code> can hit limitations of S3 <em>“if you are routinely processing 100 or more requests per second”</em>. <code class="docutils literal notranslate"><span class="pre">directory_layout:</span> <span class="pre">reverse_tms</span></code> can work around this limitation. Please read <a class="reference external" href="http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html">S3 Request Rate and Performance Considerations</a> for more information on this issue.</p>
+</div>
+</section>
+<section id="id14">
+<h3>Example<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_layer_20110501_epsg_4326_cache_out</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_layer_20110501_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/1.0.0/my_layer/default/20110501/4326/</span>
+<span class="w">      </span><span class="nt">bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-s3-tiles-cache</span>
+
+<span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">s3</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">profile_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+</pre></div>
+</div>
+</section>
+<section id="example-usage-with-digitalocean-spaces">
+<h3>Example usage with DigitalOcean Spaces<a class="headerlink" href="#example-usage-with-digitalocean-spaces" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_layer_20110501_epsg_4326_cache_out</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_layer_20110501_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/1.0.0/my_layer/default/20110501/4326/</span>
+<span class="w">      </span><span class="nt">bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-s3-tiles-cache</span>
+
+<span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">s3</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">profile_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">      </span><span class="nt">region_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nyc3</span>
+<span class="w">      </span><span class="nt">endpoint_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://nyc3.digitaloceanspaces.com</span>
+<span class="w">      </span><span class="nt">access_control_list</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public-read</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="azureblob">
+<span id="cache-azureblob"></span><h2><code class="docutils literal notranslate"><span class="pre">azureblob</span></code><a class="headerlink" href="#azureblob" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version to: </span>be released</p>
+</div>
+<p>Store tiles in <a class="reference external" href="https://azure.microsoft.com/en-us/products/storage/blobs/">Azure Blob Storage</a>, Microsoft’s object storage solution for the cloud.</p>
+<section id="id15">
+<h3>Requirements<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
+<p>You will need the <a class="reference external" href="https://pypi.org/project/azure-storage-blob/">azure-storage-blob</a> package. You can install it in the usual way, for example with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">azure-storage-blob</span></code>.</p>
+</section>
+<section id="id16">
+<h3>Configuration<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h3>
+<p>Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">container_name</span></code>:</dt><dd><p>The blob container used for this cache. You can set the default container with <code class="docutils literal notranslate"><span class="pre">globals.cache.azureblob.container_name</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">connection_string</span></code>:</dt><dd><p>Credentials/url to connect and authenticate against Azure Blob storage. You can set the default connection_string with <code class="docutils literal notranslate"><span class="pre">globals.cache.azureblob.connection_string</span></code> or
+using the <code class="docutils literal notranslate"><span class="pre">AZURE_STORAGE_CONNECTION_STRING</span></code> environment variable. There are several ways to
+<a class="reference external" href="https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string">authenticate against Azure Blob storage</a>:</p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>Using the storage account key. This connection string can also found in the Azure Portal under the “Access Keys” section. For example:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;DefaultEndpointsProtocol=https;AccountName=my-storage-account;AccountKey=my-key&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Using a SAS token. For example:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;BlobEndpoint=https://my-storage-account.blob.core.windows.net;SharedAccessSignature=sv=2015-04-05&amp;sr=b&amp;si=tutorial-policy-635959936145100803&amp;sig=9aCzs76n0E7y5BpEi2GvsSv433BZa22leDOZXX%2BXXIU%3D&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Using a local Azurite emulator, this is for TESTING purposes only. For example, using the default Azurite account:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1&quot;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>Base directory (path) where all tiles are stored.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">directory_layout</span></code>:</dt><dd><p>Defines the directory layout for the tiles (<code class="docutils literal notranslate"><span class="pre">12/12345/67890.png</span></code>, <code class="docutils literal notranslate"><span class="pre">L12/R00010932/C00003039.png</span></code>, etc.).  See <a class="reference internal" href="#cache-file"><span class="std std-ref">file</span></a> for available options. Defaults to <code class="docutils literal notranslate"><span class="pre">tms</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">12/12345/67890.png</span></code>). This cache cache also supports <code class="docutils literal notranslate"><span class="pre">reverse_tms</span></code> where tiles are stored as <code class="docutils literal notranslate"><span class="pre">y/x/z.format</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h3>Example<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_layer_20110501_epsg_4326_cache_out</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_layer_20110501_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">azureblob</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/1.0.0/my_layer/default/20110501/4326/</span>
+<span class="w">      </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-azureblob-tiles-cache</span>
+
+<span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">azureblob</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">connection_string</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="compact">
+<span id="cache-compact"></span><h2><code class="docutils literal notranslate"><span class="pre">compact</span></code><a class="headerlink" href="#compact" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0: </span>Support for format version 1</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.11.0: </span>Support for format version 2</p>
+</div>
+<p>Store tiles in ArcGIS compatible compact cache files. A single compact cache <code class="docutils literal notranslate"><span class="pre">.bundle</span></code> file stores up to about 16,000 tiles.</p>
+<p>Version 1 of the compact cache format is compatible with ArcGIS 10.0 and the default version of ArcGIS 10.0-10.2. Version 2 is supported by ArcGIS 10.3 or higher.
+Version 1 stores is one additional <code class="docutils literal notranslate"><span class="pre">.bundlx</span></code> index file for each <code class="docutils literal notranslate"><span class="pre">.bundle</span></code> data file.</p>
+<p>Available options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>Directory where MapProxy should store the level directories. This will not add the cache name or grid name to the path. You can use this option to point MapProxy to an existing compact cache.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">version</span></code>:</dt><dd><p>The version of the ArcGIS compact cache format. This option is required. Either <code class="docutils literal notranslate"><span class="pre">1</span></code> or <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p>
+</dd>
+</dl>
+<p>You can set the <code class="docutils literal notranslate"><span class="pre">sources</span></code> to an empty list, if you use an existing compact cache files and do not have a source.</p>
+<p>The following configuration will load tiles from <code class="docutils literal notranslate"><span class="pre">/path/to/cache/L00/R0000C0000.bundle</span></code>, etc.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">compact_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">webmercator</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compact</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/cache</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>MapProxy does not support reading and writiting of the <code class="docutils literal notranslate"><span class="pre">conf.cdi</span></code> and <code class="docutils literal notranslate"><span class="pre">conf.xml</span></code> files. You need to configure a compatible MapProxy grid when you want to reuse exsting ArcGIS compact caches in MapProxy. You need to create or modify existing <code class="docutils literal notranslate"><span class="pre">conf.cdi</span></code> and <code class="docutils literal notranslate"><span class="pre">conf.xml</span></code> files when you want to use compact caches created with MapProxy in ArcGIS.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The compact cache format does not include any timestamps for each tile and the seeding function is limited therefore. If you include any <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> times for compact caches and it always removes all tiles.
+Use the <code class="docutils literal notranslate"><span class="pre">--summary</span></code> option of the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The compact cache format is append-only to allow parallel read and write operations.
+Removing or refreshing tiles with <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> does not reduce the size of the cache files.
+You can use the <a class="reference internal" href="mapproxy_util.html#mapproxy-defrag-compact-cache"><span class="std std-ref">defrag-compact-cache</span></a> util to reduce the file size of existing bundle files.</p>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="sources.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Sources</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="seed.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Seeding</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#file"><code class="docutils literal notranslate"><span class="pre">file</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mbtiles"><code class="docutils literal notranslate"><span class="pre">mbtiles</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sqlite"><code class="docutils literal notranslate"><span class="pre">sqlite</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#couchdb"><code class="docutils literal notranslate"><span class="pre">couchdb</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#riak"><code class="docutils literal notranslate"><span class="pre">riak</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#redis"><code class="docutils literal notranslate"><span class="pre">redis</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#geopackage"><code class="docutils literal notranslate"><span class="pre">geopackage</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#s3"><code class="docutils literal notranslate"><span class="pre">s3</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-usage-with-digitalocean-spaces">Example usage with DigitalOcean Spaces</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#azureblob"><code class="docutils literal notranslate"><span class="pre">azureblob</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compact"><code class="docutils literal notranslate"><span class="pre">compact</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,631 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>mapproxy-util autoconfig &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'mapproxy_util_autoconfig';</script>
+    <link rel="canonical" href="/mapproxy/mapproxy_util_autoconfig.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Deployment" href="deployment.html" />
+    <link rel="prev" title="mapproxy-util" href="mapproxy_util.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>mapproxy-util autoconfig</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overwrites">Overwrites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#special-keys">Special keys</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#all">All</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#extend">Extend</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wildcard">Wildcard</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="mapproxy-util-autoconfig">
+<span id="id1"></span><h1>mapproxy-util autoconfig<a class="headerlink" href="#mapproxy-util-autoconfig" title="Permalink to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">autoconfig</span></code> sub-command of <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code> creates MapProxy and MapProxy-seeding configurations based on existing WMS capabilities documents.</p>
+<p>It creates a <code class="docutils literal notranslate"><span class="pre">source</span></code> for each available layer. The source will include a BBOX coverage from the layer extent, <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> for legend graphics, <code class="docutils literal notranslate"><span class="pre">featureinfo</span></code> for querlyable layers, scale hints and all detected <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code>. It will duplicate the layer tree to the <code class="docutils literal notranslate"><span class="pre">layers</span></code> section of the MapProxy configuration, including the name, title and abstract.</p>
+<p>The tool will create a cache for each source layer and <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code> _if_ there is a grid configured in your <code class="docutils literal notranslate"><span class="pre">--base</span></code> configuration for that SRS.</p>
+<p>The MapProxy layers will use the caches when available, otherwise they will use the source directly (cascaded WMS).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The tool can help you to create new configations, but it can’t predict how you will use the MapProxy services.
+The generated configuration can be highly inefficient, especially when multiple layers with separate caches are requested at once.
+Please make sure you understand the configuration and check the documentation for more options that are useful for your use-cases.</p>
+</div>
+<section id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this heading">#</a></h2>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-capabilities">
+<span class="sig-name descname"><span class="pre">--capabilities</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;url|filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-capabilities" title="Permalink to this definition">#</a></dt>
+<dd><p>URL or filename of the WMS capabilities document. The tool will add <cite>REQUEST</cite> and <cite>SERVICE</cite> parameters to the URL as necessary.  This option cannot be used with the –geopackage option.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-geopackage">
+<span class="sig-name descname"><span class="pre">--geopackage</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-geopackage" title="Permalink to this definition">#</a></dt>
+<dd><p>Filename of the geopackage file used for configuration, no sources will be added. This option cannot be used with the –capabilities option.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-output">
+<span class="sig-name descname"><span class="pre">--output</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-output" title="Permalink to this definition">#</a></dt>
+<dd><p>Filename for the created MapProxy configuration.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-output-seed">
+<span class="sig-name descname"><span class="pre">--output-seed</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-output-seed" title="Permalink to this definition">#</a></dt>
+<dd><p>Filename for the created MapProxy-seeding configuration.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-force">
+<span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-force" title="Permalink to this definition">#</a></dt>
+<dd><p>Overwrite any existing configuration with the same output filename.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-base">
+<span class="sig-name descname"><span class="pre">--base</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-base" title="Permalink to this definition">#</a></dt>
+<dd><p>Base configuration that should be included in the <code class="docutils literal notranslate"><span class="pre">--output</span></code> file with the <code class="docutils literal notranslate"><span class="pre">base</span></code> option.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-overwrite">
+<span class="sig-name descname"><span class="pre">--overwrite</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-overwrite" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-autoconfig-overwrite-seed">
+<span class="sig-name descname"><span class="pre">--overwrite-seed</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-mapproxy-util-autoconfig-overwrite-seed" title="Permalink to this definition">#</a></dt>
+<dd><p>YAML configuration that overwrites configuration options before the generated configuration is written to <code class="docutils literal notranslate"><span class="pre">--output</span></code>/<code class="docutils literal notranslate"><span class="pre">--output-seed</span></code>.</p>
+</dd></dl>
+
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h3>
+<p>Print configuration on console:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span>
+</pre></div>
+</div>
+<p>Write MapProxy and MapProxy-seeding configuration to files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span> \
+    <span class="o">--</span><span class="n">output</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">seed</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>Write MapProxy configuration with caches for grids from <code class="docutils literal notranslate"><span class="pre">base.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span> \
+    <span class="o">--</span><span class="n">output</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> \
+    <span class="o">--</span><span class="n">base</span> <span class="n">base</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>Write MapProxy configuration with caches based on a geopackage file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
+    <span class="o">--</span><span class="n">geopackage</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">geopackage</span><span class="o">.</span><span class="n">gpkg</span> \
+    <span class="o">--</span><span class="n">output</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="overwrites">
+<h2>Overwrites<a class="headerlink" href="#overwrites" title="Permalink to this heading">#</a></h2>
+<p>It’s likely that you need to tweak the created configuration – e.g. to define another coverage, disable featureinfo, etc. You can do this by editing the output file of course, or you can modify the output by defining all changes to an overwrite file. Overwrite files are applied every time you call <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">autoconfig</span></code>.</p>
+<p>Overwrites are YAML files that will be merged with the created configuration file.</p>
+<p>The overwrites are applied independently for each <code class="docutils literal notranslate"><span class="pre">services</span></code>, <code class="docutils literal notranslate"><span class="pre">sources</span></code>, <code class="docutils literal notranslate"><span class="pre">caches</span></code> and <code class="docutils literal notranslate"><span class="pre">layers</span></code> section. That means, for example, that you can modify the <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code> of a source and the tool will use the updated SRS list to decide which caches will be configured for that source.</p>
+<section id="id2">
+<h3>Example<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<p>Created configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mysource_wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">a</span>
+</pre></div>
+</div>
+<p>Overwrite file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mysource_wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">supported_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">]</span><span class="w"> </span><span class="c1"># add new value for mysource_wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">a,b</span><span class="w">  </span><span class="c1"># overwrite existing value</span>
+<span class="w">        </span><span class="nt">custom_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span><span class="w">  </span><span class="c1">#  new value</span>
+</pre></div>
+</div>
+<p>Actual configuration written to <code class="docutils literal notranslate"><span class="pre">--output</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mysource_wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">supported_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">a,b</span>
+<span class="w">        </span><span class="nt">custom_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
+</pre></div>
+</div>
+</section>
+<section id="special-keys">
+<h3>Special keys<a class="headerlink" href="#special-keys" title="Permalink to this heading">#</a></h3>
+<p>There are a few special keys that you can use in your overwrite file.</p>
+<section id="all">
+<h4>All<a class="headerlink" href="#all" title="Permalink to this heading">#</a></h4>
+<p>The value of the <code class="docutils literal notranslate"><span class="pre">__all__</span></code> key will be merged into all dictionaries. The following overwrite will add <code class="docutils literal notranslate"><span class="pre">sessionid</span></code> to the <code class="docutils literal notranslate"><span class="pre">req</span></code> options of all <code class="docutils literal notranslate"><span class="pre">sources</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sources</span><span class="p">:</span>
+  <span class="n">__all__</span><span class="p">:</span>
+    <span class="n">req</span><span class="p">:</span>
+      <span class="n">sessionid</span><span class="p">:</span> <span class="mi">123456789</span>
+</pre></div>
+</div>
+</section>
+<section id="extend">
+<h4>Extend<a class="headerlink" href="#extend" title="Permalink to this heading">#</a></h4>
+<p>The values of keys ending with <code class="docutils literal notranslate"><span class="pre">__extend__</span></code> will be added to existing lists.</p>
+<p>To add another SRS for one source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sources</span><span class="p">:</span>
+    <span class="n">my_wms</span><span class="p">:</span>
+      <span class="n">supported_srs__extend__</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:31467&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="wildcard">
+<h4>Wildcard<a class="headerlink" href="#wildcard" title="Permalink to this heading">#</a></h4>
+<p>The values of keys starting or ending with three underscores (<code class="docutils literal notranslate"><span class="pre">___</span></code>) will be merged with values where the key matches the suffix or prefix.</p>
+<p>For example, to set <code class="docutils literal notranslate"><span class="pre">levels</span></code> for <code class="docutils literal notranslate"><span class="pre">osm_webmercator</span></code> and <code class="docutils literal notranslate"><span class="pre">aerial_webmercator</span></code> and to set <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> for <code class="docutils literal notranslate"><span class="pre">osm_webmercator</span></code> and <code class="docutils literal notranslate"><span class="pre">osm_utm32</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">seeds</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">____webmercator</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">levels</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">          </span><span class="nt">to</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span>
+
+<span class="w">    </span><span class="nt">osm____</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="mapproxy_util.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">mapproxy-util</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="deployment.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Deployment</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overwrites">Overwrites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#special-keys">Special keys</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#all">All</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#extend">Extend</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wildcard">Wildcard</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Mar 13, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
