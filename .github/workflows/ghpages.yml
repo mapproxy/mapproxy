@@ -1,7 +1,6 @@
 name: Build and deploy documentation on github pages
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "*.*.*"
@@ -29,13 +28,13 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: docs
-        target-folder: latest
+        target-folder: docs/latest
 
     - name: Deploy docs to a folder named after the new tag to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: docs
-        target-folder: ${{ github.ref_name }}
+        target-folder: docs/${{ github.ref_name }}
 
     - name: Update versions config
       # read existing versions from gh-pages branch, add new version, sort, dedupe and write results to config/versions.json
@@ -48,4 +47,4 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: config
-        target-folder: config
+        target-folder: docs/config

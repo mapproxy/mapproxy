@@ -4,5 +4,7 @@ MapProxy is a tile cache, but also offers many new and innovative features like 
 
 MapProxy is released under the Apache Software License 2.0, runs on Unix/Linux and Windows and is easy to install and to configure.
 
+Go to https://mapproxy.org/ for more information.
+
 The documentation is available at: http://mapproxy.github.io/mapproxy/latest/
 
