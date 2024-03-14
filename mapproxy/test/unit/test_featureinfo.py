@@ -238,10 +238,32 @@ class TestCombineDocs(object):
             JSONFeatureInfoDoc("{}"),
             JSONFeatureInfoDoc('{"results": [{"foo": 1}]}'),
             JSONFeatureInfoDoc('{"results": [{"bar": 2}]}'),
+            JSONFeatureInfoDoc("{}"),
         ]
         result, infotype = combine_docs(docs, None)
 
         assert """{"results": [{"foo": 1}, {"bar": 2}]}""" == result
+        assert infotype == "json"
+
+    def test_combine_json_with_null_response(self):
+        docs = [
+            JSONFeatureInfoDoc("null"),
+            JSONFeatureInfoDoc('{"results": [{"foo": 1}]}'),
+            JSONFeatureInfoDoc("null"),
+        ]
+        result, infotype = combine_docs(docs, None)
+
+        assert """{"results": [{"foo": 1}]}""" == result
+        assert infotype == "json"
+
+    def test_combine_json_with_only_empty_responses(self):
+        docs = [
+            JSONFeatureInfoDoc("{}"),
+            JSONFeatureInfoDoc("{}"),
+        ]
+        result, infotype = combine_docs(docs, None)
+
+        assert """{}""" == result
         assert infotype == "json"
 
     def test_combine_xml(self):
