@@ -5,6 +5,8 @@ import pkg_resources
 
 install_requires = [
     'PyYAML>=3.0',
+    'future',
+    'pyproj>=2'
 ]
 
 def package_installed(pkg):
