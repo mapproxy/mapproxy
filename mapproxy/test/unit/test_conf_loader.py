@@ -694,17 +694,95 @@ sources:
 class TestConfImport(object):
 
     yaml_string = """
+services:
+  wms:
+    # ======= overwritten max_output_pixels:
+    max_output_pixels: [4000, 4000]
+
+layers:
+  - name: Zones_A
+    title: Zones_A
+    # ======= overwritten sources and layers:
+    sources: []
+    layers:
+      - name: layerA1
+        title: layer A 1
+        sources: [osm_cache]
+      - name: layerA2
+        title: layer A 2
+        sources: [osm_cache]
+    # ======= overwritten add Zones_B:
+  - name: Zones_B
+    title: Zones_B
+    sources: [cache-Zones_B]
+  - name: osm
+    # ======= overwritten sources:
+    sources: [overwritten_source]
+
+caches:
+  cache-Zones_B:
+    sources: ['src_mymap:Zones_B']
+    grids: [webmercator]
+    cache:
+      type: file
+      directory_layout: mp
+
+sources:
+  overwritten_source:
+    type: wms
+    req:
+      url: http://localhost/qgis/overwritten_source?
+      transparent: true
+      layers: osm
+
 globals:
   http:
     client_timeout: 1
+    # ======= overwritten headers:
     headers:
       baz: quux
+
+grids:
+  webmercator:
+    base: GLOBAL_WEBMERCATOR
+    srs: EPSG:3857
+    # ======= overwritten tile size:
+    tile_size: [1024, 1024]
 """
 
     yaml_parent = """
+layers:
+  - name: Zones_A
+    title: Zones_A
+    sources: [cache-Zones_A]
+  - name: osm
+    # ======= overwritten title:
+    title: overwritten
+
+sources:
+  src_mymap:
+    type: wms
+    req:
+      url: http://localhost/qgis/mymap?
+      transparent: true
+
+caches:
+  cache-Zones_A:
+    sources: ['src_mymap:Zones_A']
+    grids: [webmercator]
+    cache:
+      type: file
+      directory_layout: mp
+
+grids:
+  grid_alaska_4326:
+    # ======= overwritten bbox:
+    bbox: [-180, 60, -100, 70]
+
 globals:
   http:
     client_timeout: 2
+    # ======= overwritten headers:
     headers:
       foo: bar
       bar: qux
@@ -712,6 +790,49 @@ globals:
 """
 
     yaml_grand_parent = """
+services:
+  demo:
+  tms:
+    use_grid_names: true
+    origin: 'nw'
+  kml:
+      use_grid_names: true
+  wmts:
+  wms:
+    image_formats: ['image/jpeg', 'image/png']
+    srs: [ 'EPSG:3857' ]
+    max_output_pixels: [2000, 2000]
+
+layers:
+  - name: osm
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm_cache]
+
+caches:
+  osm_cache:
+    grids: [webmercator]
+    sources: [osm_wms]
+
+sources:
+  osm_wms:
+    type: wms
+    req:
+      url: https://maps.omniscale.net/v2/demo/style.default/service?
+      layers: osm
+
+grids:
+  webmercator:
+    base: GLOBAL_WEBMERCATOR
+    srs: EPSG:3857
+    bbox_srs: EPSG:3857
+    tile_size: [512, 512]
+
+  grid_alaska_4326:
+    srs: EPSG:4326
+    origin: sw
+    bbox: [-167, 53, -141, 67]
+    bbox_srs: 'EPSG:4326'
+
 globals:
   http:
     client_timeout: 3
@@ -748,6 +869,32 @@ base: [%s]
                     assert http['headers']['foo'] == 'bar'
                     assert http['headers']['baz'] == 'quux'
                     assert http['method'] == 'GET'
+
+                    grid_webmercator = config.grids['webmercator']
+                    assert grid_webmercator is not None
+                    assert grid_webmercator.tile_grid().tile_size == (1024, 1024)
+                    assert grid_webmercator.conf['srs'] == 'EPSG:3857'
+                    assert grid_webmercator.conf['bbox_srs'] == 'EPSG:3857'
+
+                    grid_alaska = config.grids['grid_alaska_4326']
+                    assert grid_alaska is not None
+                    assert grid_alaska.conf['bbox'] == [-180.0, 60.0, -100.0, 70.0]
+                    assert grid_alaska.conf['srs'] == 'EPSG:4326'
+                    assert grid_alaska.conf['bbox_srs'] == 'EPSG:4326'
+                    assert grid_alaska.conf['origin'] == 'sw'
+
+                    wms = config.services.conf['wms']
+                    assert wms is not None
+                    assert wms['max_output_pixels'] == [4000, 4000]
+                    assert wms['image_formats'] == ['image/jpeg', 'image/png']
+
+                    layers = config.layers
+                    assert layers['osm'].conf['title'] == 'overwritten'
+                    assert layers['osm'].conf['sources'] == ['overwritten_source']
+                    assert layers['Zones_A'].conf['sources'] == []
+                    assert layers['layerA1'].conf['sources'] == ['osm_cache']
+                    assert layers['layerA2'].conf['sources'] == ['osm_cache']
+                    assert layers['Zones_B'].conf['sources'] == ['cache-Zones_B']
 
                     config_files = config.config_files()
                     assert set(config_files.keys()) == set([gp, p, cfg])

@@ -37,21 +37,24 @@ The order of the sections is not important, so you can organize it your way.
 
 .. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
 
-There is another optional section:
+There are other optional sections:
 
-.. versionadded:: 1.6.0
+- ``parts``
 
-- ``parts``: YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the ``parts`` section.
+  .. versionadded:: 1.6.0
 
-For example:
+  YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the ``parts`` section.
 
-.. code-block:: yaml
+  For example:
+
+  .. code-block:: yaml
 
     parts:
       coverages:
           mycoverage: &mycoverage
             bbox: [0, 0, 10, 10]
             srs: 'EPSG:4326'
+
     sources:
       mysource1:
         coverage: *mycoverage
@@ -60,23 +63,102 @@ For example:
         coverage: *mycoverage
         ...
 
+- ``base``
 
-``base``
-""""""""
+  You can split a configuration into multiple files with the ``base`` option. 
 
-You can split a configuration into multiple files with the ``base`` option. The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
+  The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
-For example:
+  For example, to externalize ``grids`` and ``caches``sections, we will have in ``mappproxy.yaml``:
 
-.. code-block:: yaml
+  .. code-block:: YAML
 
-  base: [mygrids.yaml, mycaches_sources.yaml]
-  service: ...
-  layers: ...
+    base: [mygrids.yaml, mycaches_sources.yaml]
+    service: ...
+    layers: ...
 
+  Also in more complex configurations (with many layers, caches, sources, etc.), the ``mappproxy.yaml`` can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in ``mappproxy.yaml``:
 
-.. versionchanged:: 1.4.0
-  Support for recursive imports and for multiple files.
+  .. code-block:: YAML
+
+    base: [nature.yaml, artificial_building.yaml, topography.yaml]
+    service: ...
+    sources:
+      src_mymap:
+        type: wms
+        req:
+          url: ...
+
+  And we could have in ``nature.yaml``:
+
+  .. code-block:: YAML
+
+    layers: 
+      - name: lake
+        sources: [cache_lake]
+        # ...
+      - name: river
+        sources: [cache_river]
+        # ...
+      - name: forest
+        sources: [cache_forest]
+        # ...
+    caches: 
+      - cache_lake
+        sources: ['src_mymap:lake']
+      - cache_river
+        sources: ['src_mymap:river']
+      - cache_forest
+        sources: ['src_mymap:forest']
+
+  The same for ``artificial_building.yaml``:
+
+  .. code-block:: YAML
+
+    layers: 
+      - name: road
+        sources: [cache_road]
+        # ...
+      - name: power_plant
+        sources: [cache_power_plant]
+        # ...
+    caches: 
+      - cache_road
+        sources: ['src_mymap:road']
+      - cache_power_plant
+        sources: ['src_energy:power_plant']
+    sources:
+      src_energy:
+        type: wms
+        req:
+          url: ...
+
+  Finally, when all the configuration files are merged together, we will obtain:
+
+  .. code-block:: YAML
+
+      service: ...
+      sources:
+        src_mymap:
+        src_energy:
+      layers: 
+        - name: lake
+        - name: river
+        - name: forest
+        - name: road
+        - name: power_plant
+      caches: 
+        - cache_lake
+        - cache_river
+        - cache_forest
+        - cache_road
+        - cache_power_plant
+
+  .. versionchanged:: 1.4.0
+    Support for recursive imports and for multiple files.
+
+  .. versionchanged:: 1.16.0
+    Improved support of splat configuration files
 
 .. #################################################################################
 
