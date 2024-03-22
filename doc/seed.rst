@@ -151,19 +151,27 @@ Options
 Examples
 ~~~~~~~~
 
-Seed with concurrency of 4::
+Seed with concurrency of 4:
+
+.. code-block:: sh
 
     mapproxy-seed -f mapproxy.yaml -c 4 seed.yaml
 
-Print summary of all seed tasks and exit::
+Print summary of all seed tasks and exit:
+
+.. code-block:: sh
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml --summary --seed ALL
 
-Interactively select which tasks should be seeded::
+Interactively select which tasks should be seeded:
+
+.. code-block:: sh
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml -i
 
-Seed task1 and task2 and cleanup task3 with concurrency of 2::
+Seed task1 and task2 and cleanup task3 with concurrency of 2:
+
+.. code-block:: sh
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml -c 2 --seed task1,task2 \
      --cleanup task3
@@ -190,7 +198,7 @@ The configuration is a YAML file with three sections:
 Example
 ~~~~~~~
 
-::
+.. code-block:: yaml
 
   seeds:
     myseed1:
@@ -239,7 +247,9 @@ By default, the grids that are common to all configured caches will be seeded.
 Either a list of levels that should be seeded, or a dictionary with ``from`` and ``to`` that define a range of levels. You can omit ``from`` to start at level 0, or you can omit ``to`` to seed till the last level.
 By default, all levels will be seeded.
 
-Examples::
+Examples:
+
+.. code-block:: yaml
 
   # seed multiple levels
   levels: [2, 3, 4, 8, 9]
@@ -268,7 +278,9 @@ Regenerate all tiles that are older than the given date. The date can either be 
 
 MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.
 
-Examples::
+Examples:
+
+.. code-block:: yaml
 
   # absolute as ISO time
   refresh_before:
@@ -290,7 +302,7 @@ Examples::
 Example
 ~~~~~~~~
 
-::
+.. code-block:: yaml
 
   seeds:
     myseed1:
@@ -332,7 +344,9 @@ By default, the grids that are common to all configured caches will be used.
 Either a list of levels that should be cleaned up, or a dictionary with ``from`` and ``to`` that define a range of levels. You can omit ``from`` to start at level 0, or you can omit ``to`` to cleanup till the last level.
 By default, all levels will be cleaned up.
 
-Examples::
+Examples:
+
+.. code-block:: yaml
 
   # cleanup multiple levels
   levels: [2, 3, 4, 8, 9]
@@ -369,7 +383,9 @@ Remove all tiles that are older than the given date. The date can either be abso
 
 MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.
 
-Examples::
+Examples:
+
+.. code-block:: yaml
 
   # absolute as ISO time
   remove_before:
@@ -391,7 +407,7 @@ Examples::
 Example
 ~~~~~~~~
 
-::
+.. code-block:: yaml
 
   cleanups:
     highres:
@@ -431,7 +447,7 @@ Each coverage has a name that is used in the seed and cleanup task configuration
 Example
 ~~~~~~~
 
-::
+.. code-block:: yaml
 
   coverages:
     germany:
@@ -501,7 +517,9 @@ those ``views``.
 Seeds
 ~~~~~
 
-Contains a dictionary with layer/view mapping.::
+Contains a dictionary with layer/view mapping.:
+
+.. code-block:: yaml
 
     seeds:
         cache1:
@@ -562,7 +580,7 @@ or
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: yaml
 
   views:
     germany:

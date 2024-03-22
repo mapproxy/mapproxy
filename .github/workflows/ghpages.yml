@@ -1,31 +1,50 @@
 name: Build and deploy documentation on github pages
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - '*'
+      - "*.*.*"
 
-jobs:  
+permissions:
+  contents: write
+
+jobs:
   build:
     runs-on: ubuntu-20.04
 
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
+      with:
+        ref: upgrade-docs
 
     - name: Install dependencies ⏬
-      run: pip install sphinx sphinx-bootstrap-theme
+      run: pip install sphinx sphinx-book-theme sphinx-copybutton
 
-    - name: Run documentation build and publish 🏗️
+    - name: Run documentation build
+      run: sphinx-build doc/ docs -D html_context.current_version=${{ github.ref_name }}
+
+    - name: Deploy docs to folder `latest` to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        folder: docs
+        target-folder: docs/latest
+
+    - name: Deploy docs to a folder named after the new tag to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        folder: docs
+        target-folder: docs/${{ github.ref_name }}
+
+    - name: Update versions config
+      # read existing versions from gh-pages branch, add new version, sort, dedupe and write results to config/versions.json
       run: |
-        git config --global user.name 'ghpages'
-        git config --global user.email 'ghpages@users.noreply.github.com'
-        git fetch --all
-        git reset --hard HEAD
-        git checkout gh-pages
-        git rebase origin/master
-        sphinx-build doc/ docs
-        git add docs
-        git commit -m "Automated documentation"
-        git push -f origin gh-pages
+        mkdir config
+        echo -e "${{ github.ref_name }}\n$(git show gh-pages:config/versions.json | jq -r '.[]')" \
+        | sort -V | uniq | jq -R -s -c 'split("\n")[:-1]' > config/versions.json
+
+    - name: Deploy config folder to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        folder: config
+        target-folder: docs/config

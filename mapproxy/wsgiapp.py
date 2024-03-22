@@ -49,7 +49,7 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
 
     if reloader:
         def make_app():
-            make_wsgi_app(services_conf=services_conf, debug=debug, reloader=False)
+            return make_wsgi_app(services_conf=services_conf, debug=debug, reloader=False)
         return ReloaderApp(services_conf, make_app)
 
     try:

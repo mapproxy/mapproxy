@@ -27,7 +27,9 @@ Your auth system should be implemented as a WSGI middleware. The middleware sits
 WSGI Filter Middleware
 ~~~~~~~~~~~~~~~~~~~~~~
 
-A simple middleware that authorizes random requests might look like::
+A simple middleware that authorizes random requests might look like:
+
+.. code-block:: python
 
   class RandomAuthFilter(object):
       def __init__(self, app, global_conf):
@@ -73,15 +75,15 @@ MapProxy can call the middleware back for authorization as soon as it knows what
 
 Here is a more elaborate example that denies requests to all layers that start with a specific prefix. These layers are also hidden from capability documents.
 
-::
+.. code-block:: python
 
   class SimpleAuthFilter(object):
-      """
+      '''
       Simple MapProxy authorization middleware.
 
       It authorizes WMS requests for layers where the name does
       not start with `prefix`.
-      """
+      '''
       def __init__(self, app, prefix='secure'):
           self.app = app
           self.prefix = prefix
@@ -238,7 +240,7 @@ Here is an example result of a call to the authorize function::
         'map': True,
         'featureinfo': True,
       }
-    }
+    }"
   }
 
 
@@ -312,6 +314,7 @@ The whole request is rejected if any requested layer is not permitted. Resolved 
   The ``authorize`` function gets called with an additional ``query_extent`` argument:
 
   .. function:: authorize(service, environ, layers, query_extent, **kw)
+    :no-index:
 
     :param query_extent: a tuple of the SRS (e.g. ``EPSG:4326``) and the BBOX
       of the request to authorize.
@@ -320,7 +323,9 @@ The whole request is rejected if any requested layer is not permitted. Resolved 
 Example
 +++++++
 
-With a layer tree like::
+With a layer tree like:
+
+.. code-block:: yaml
 
   - name: layer1
     layers:
@@ -362,7 +367,9 @@ Sub layers are only included when the parent layer is included, since authorizat
 
 Layers that are queryable and only marked so in the capabilities if the ``featureinfo`` feature set to ``True``.
 
-With a layer tree like::
+With a layer tree like:
+
+.. code-block:: yaml
 
   - name: layer1
     layers:
@@ -385,11 +392,13 @@ An authorize result of::
     }
   }
 
-Results in the following abbreviated capabilities::
+Results in the following abbreviated capabilities:
 
-  <Layer queryable="1">
+.. code-block:: xml
+
+  <Layer queryable='1'>
     <Name>layer1</Name>
-    <Layer queryable="1"><Name>layer1a</Name></Layer>
+    <Layer queryable='1'><Name>layer1a</Name></Layer>
     <Layer><Name>layer1b</Name></Layer>
   </Layer>
 
@@ -419,6 +428,7 @@ Only layers with the ``tile`` feature set to ``True`` are included in the TMS ca
 The ``authorize`` function gets called with an additional ``query_extent`` argument for all tile requests:
 
 .. function:: authorize(service, environ, layers, query_extent=None, **kw)
+  :no-index:
 
   :param query_extent: a tuple of the SRS (e.g. ``EPSG:4326``) and the BBOX
     of the request to authorize, or ``None`` for capabilities requests.
@@ -456,22 +466,22 @@ You can also add the limit to the layer and mix it with properties used for the 
     'authorized': 'partial',
     'layers': {
       'layer1': {
-        'tile': True,
-        'map': True,
+        'tile': true,
+        'map': true,
         'limited_to': {
           'geometry': shapely.geometry.Polygon(
             [(-10, 0), (30, -5), (30, 50), (20, 50)]),
-          'srs': 'EPSG:4326',
+          'srs': 'EPSG:4326'
         },
       'layer2': {
-        'tile': True,
-        'map': False,
+        'tile': true,
+        'map': false,
         'featureinfo': True,
         'limited_to': {
           'geometry': shapely.geometry.Polygon(
             [(0, 0), (20, -5), (30, 50), (20, 50)]),
-          'srs': 'EPSG:4326',
-        },
+          'srs': 'EPSG:4326'
+        }
       },
     }
   }
@@ -512,7 +522,9 @@ MultiMapProxy
 The :ref:`MultiMapProxy <multimapproxy>` application stores the instance name in the environment as ``mapproxy.instance_name``. This information in not available when your middleware gets called, but you can use it in your authorization function.
 
 Example that rejects MapProxy instances where the name starts with ``secure``.
-::
+
+
+.. code-block:: python
 
 
   class MultiMapProxyAuthFilter(object):
@@ -529,5 +541,4 @@ Example that rejects MapProxy instances where the name starts with ``secure``.
               return {'authorized': 'none'}
           else:
               return {'authorized': 'full'}
-
 

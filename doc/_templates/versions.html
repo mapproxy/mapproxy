@@ -1,0 +1,27 @@
+<div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">{{ current_version }}</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `{{ docsBaseUrl}}/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div>
