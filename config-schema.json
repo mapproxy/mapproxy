@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mapproxy.org/mapproxy.schema.json",
+  "title": "MapProxy Configuration",
+  "description": "Configuration for a MapProxy server",
+  "type": "object",
+  "properties": {
+    "layers": {
+      "description": "The published layers",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/layer"
+      }
+    },
+    "sources": {
+      "description": "The map data sources",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "services": {
+      "type": "object"
+    },
+    "caches": {
+      "description": "The configured caches",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/cache"
+      }
+    },
+    "grids": {},
+
+    "globals": {}
+  },
+  "required": ["layers", "services"],
+
+  "$defs": {
+    "layer": {
+      "description": "Configuration of a published layer",
+      "type": "object",
+      "properties": {
+        "sources": {
+          "description": "Associated source for the layer",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "child_layers": {
+          "description": "Child layers of the layer",
+          "type": "array",
+          "item": {
+            "$ref": "#/$defs/layer"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["sources"]
+        },
+        {
+          "required": ["child_layers"]
+        },
+        {
+          "required": ["tile_sources"]
+        }
+      ]
+    },
+
+    "cache": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "grids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "source": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "layers": {},
+        "req": {
+          "type": "object",
+          "properties": {
+            "layers": {}
+          }
+        }
+      },
+      "required": ["type"],
+
+      "if": {
+        "properties": {
+          "type": {
+            "const": "wms"
+          }
+        }
+      },
+      "then": {
+        "$ref": "#/$defs/source-wms"
+      }
+    },
+
+    "source-wms": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": ["layers"]
+        },
+        {
+          "properties": {
+            "req": {
+              "required": ["layers"]
+            }
+          },
+          "required": ["req"]
+        }
+      ]
+    }
+  }
+}
