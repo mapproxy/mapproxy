@@ -2324,10 +2324,50 @@ def merge_dict(conf, base):
             base[k] = v
         else:
             if isinstance(base[k], dict):
-                merge_dict(v, base[k])
+                if v is not None:
+                    base[k] = merge_dict(v, base[k])
+            elif isinstance(base[k], list):
+                if v is not None:
+                    if k in ['bbox', 'tile_size', 'max_output_pixels', 'sources', 'grids']:
+                        base[k] = v
+                    elif k in ['layers']:
+                        base[k] = merge_layers(v, base[k])
+                    elif len(v) == 0:  # delete
+                        base[k] = None
+                    else:
+                        base[k] = base[k] + v
             else:
                 base[k] = v
     return base
+
+
+def merge_layers(conf, base):
+    """
+    Return `base` dict with values from `conf` merged in.
+    """
+    out = []
+    remaining_conf = []
+    for conf_layer in conf:
+        remaining_conf.append(conf_layer['name'])
+
+    for base_layer in base:
+        found = False
+        for conf_layer in conf:
+            if conf_layer['name'] in remaining_conf and base_layer['name'] == conf_layer['name']:
+                new_layer = merge_dict(conf_layer, base_layer)
+                out.append(new_layer)
+                remaining_conf.remove(conf_layer['name'])
+                found = True
+                break
+
+        if not found:
+            out.append(base_layer)
+
+    for conf_layer in conf:
+        if conf_layer['name'] in remaining_conf:
+            out.append(conf_layer)
+
+    return out
 
 
 def parse_color(color):
