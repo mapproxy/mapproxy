@@ -22,7 +22,7 @@ from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.py import memoize
 from mapproxy.config.spec import validate_options, add_source_to_mapproxy_yaml_spec, add_service_to_mapproxy_yaml_spec
-from mapproxy.config.validator import validate_references
+from mapproxy.config.validator import validate
 from mapproxy.config import load_default_config, finish_base_config, defaults
 
 import os
@@ -2284,7 +2284,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
         log.warning(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
-    errors = validate_references(conf_dict)
+    errors = validate(conf_dict)
     for error in errors:
         log.warning(error)
 
