@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MapProxy Configuration",
+  "description": "Configuration for a MapProxy server",
+  "type": "object",
+  "properties": {
+    "layers": {
+      "description": "The published layers",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/layer"
+      }
+    },
+    "sources": {
+      "title": "sources",
+      "description": "The map data sources",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "services": {
+      "title": "services",
+      "type": "object"
+    },
+    "caches": {
+      "title": "caches",
+      "description": "The configured caches",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/cache"
+      }
+    },
+    "grids": {},
+
+    "globals": {}
+  },
+  "required": ["layers", "services"],
+
+  "$defs": {
+    "layer": {
+      "title": "layer",
+      "description": "Configuration of a published layer",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The addressable name of the layer",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "title": {
+          "description": "The title of the layer",
+          "type": "string"
+        },
+        "sources": {
+          "description": "Associated sources for the layer",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          }
+        },
+        "layers": {
+          "description": "Child layers of the layer",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "item": {
+            "$ref": "#/$defs/layer"
+          }
+        },
+        "tile_sources": {
+          "description": "Associated tile sources for the layer",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["sources"]
+        },
+        {
+          "required": ["layers"]
+        },
+        {
+          "required": ["tile_sources"]
+        }
+      ]
+    },
+
+    "cache": {
+      "title": "cache",
+      "type": "object",
+      "properties": {
+        "sources": {
+          "description": "Sources of the cache",
+          "oneOf": [
+            {
+              "description": "Source or cache name",
+              "type": "string"
+            },
+            {
+              "description": "Source or cache name",
+              "type": "integer"
+            },
+            {
+              "description": "Sources or caches name",
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            },
+            {
+              "title": "sources",
+              "type": "object",
+              "description": "Band merging config",
+              "properties": {
+                "r": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "g": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "b": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "l": {
+                  "$ref": "#/$defs/bandMerge"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "grids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "source": {
+      "title": "source",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "layers": {},
+        "req": {
+          "title": "req",
+          "type": "object",
+          "properties": {
+            "layers": {}
+          }
+        }
+      },
+      "required": ["type"],
+
+      "if": {
+        "properties": {
+          "type": {
+            "const": "wms"
+          }
+        }
+      },
+      "then": {
+        "$ref": "#/$defs/source-wms"
+      }
+    },
+
+    "source-wms": {
+      "title": "source",
+      "type": "object",
+      "anyOf": [
+        {
+          "required": ["layers"]
+        },
+        {
+          "properties": {
+            "req": {
+              "title": "req",
+              "type": "object"
+            }
+          },
+          "required": ["req"]
+        }
+      ]
+    },
+
+    "bandMerge": {
+      "description": "Band merging configs",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "sources",
+        "type": "object",
+        "properties": {
+          "source": {
+            "oneOf": [
+              {
+                "description": "A source name",
+                "type": "string"
+              },
+              {
+                "description": "An array of source names",
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "band": {
+            "description": "The band index starting from 0",
+            "type": "integer"
+          },
+          "additionalProperties": false
+        },
+        "required": ["source", "band"]
+      }
+    }
+  }
+}

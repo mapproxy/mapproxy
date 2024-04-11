@@ -17,7 +17,7 @@ from __future__ import print_function
 
 import yaml
 
-from mapproxy.config.validator import validate_references
+from mapproxy.config.validator import validate
 
 
 class TestValidator(object):
@@ -49,16 +49,26 @@ class TestValidator(object):
     def test_valid_config(self):
         conf = self._test_conf()
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_missing_layer_source(self):
         conf = self._test_conf()
         del conf['caches']['one_cache']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Source 'one_cache' for layer 'one' not in cache or source section"
+        ]
+
+    def test_multiple_errors(self):
+        conf = self._test_conf()
+        del conf['caches']['one_cache']
+        del conf['services']
+        errors = validate(conf)
+        assert errors == [
+            "'services' is a required property in root",
+            "Source 'one_cache' for layer 'one' not in cache or source section",
         ]
 
     def test_empty_layer_sources(self):
@@ -69,16 +79,16 @@ class TestValidator(object):
                   sources: []
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
-            "Missing sources for layer 'one'"
+            "[] is too short in root.layers[0].sources"
         ]
 
     def test_missing_cache_source(self):
         conf = self._test_conf()
         del conf['sources']['one_source']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Source 'one_source' for cache 'one_cache' not found in config"
         ]
@@ -87,17 +97,17 @@ class TestValidator(object):
         conf = self._test_conf()
         del conf['layers']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
-            'Missing layers section'
+            "'layers' is a required property in root"
         ]
 
     def test_missing_services_section(self):
         conf = self._test_conf()
         del conf['services']
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
-            'Missing services section'
+            "'services' is a required property in root"
         ]
 
     def test_tile_source(self):
@@ -107,7 +117,7 @@ class TestValidator(object):
                   tile_sources: [missing]
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Tile source 'missing' for layer 'one' not in cache section"
         ]
@@ -122,7 +132,7 @@ class TestValidator(object):
                     base: GLOBAL_GEODETIC
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Grid 'MYGRID_OTHERGRID' for cache 'one_cache' not found in config"
         ]
@@ -132,7 +142,7 @@ class TestValidator(object):
 
         del conf['sources']['one_source']['req']['layers']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Missing 'layers' for source 'one_source'"
         ]
@@ -148,21 +158,21 @@ class TestValidator(object):
                         binary: /foo/bar/baz
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             'Could not find mapserver binary (/foo/bar/baz)'
         ]
 
         del conf['sources']['one_source']['mapserver']['binary']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Missing mapserver binary for source 'one_source'"
         ]
 
         del conf['sources']['one_source']['mapserver']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Missing mapserver binary for source 'one_source'"
         ]
@@ -179,14 +189,14 @@ class TestValidator(object):
                     binary: /foo/bar/baz
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             'Could not find mapserver binary (/foo/bar/baz)'
         ]
 
         del conf['globals']['mapserver']['binary']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Missing mapserver binary for source 'one_source'"
         ]
@@ -199,7 +209,7 @@ class TestValidator(object):
                     sources: ['one_source:foo,bar']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Supported layers for source 'one_source' are 'one' but tagged source "
             "requested layers 'foo, bar'"
@@ -213,7 +223,7 @@ class TestValidator(object):
                   sources: ['one_source:foo,bar']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Supported layers for source 'one_source' are 'one' but tagged source "
             "requested layers 'foo, bar'"
@@ -229,7 +239,7 @@ class TestValidator(object):
 
         del conf['sources']['one_source']['req']['layers']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_tagged_source_without_layers(self):
@@ -242,7 +252,7 @@ class TestValidator(object):
 
         del conf['sources']['one_source']['req']['layers']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_tagged_source_with_colons(self):
@@ -255,7 +265,7 @@ class TestValidator(object):
 
         del conf['sources']['one_source']['req']['layers']
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_with_grouped_layer(self):
@@ -269,7 +279,7 @@ class TestValidator(object):
                       sources: [one_cache]
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_without_cache(self):
@@ -280,7 +290,7 @@ class TestValidator(object):
                 sources: [one_source]
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_mapserver_with_tagged_layers(self):
@@ -299,7 +309,7 @@ class TestValidator(object):
                     sources: ['one_source:foo,bar']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             'Could not find mapserver binary (/foo/bar/baz)',
             "Supported layers for source 'one_source' are 'one' but tagged source "
@@ -319,7 +329,7 @@ class TestValidator(object):
                     sources: ['one_source:foo,bar']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Supported layers for source 'one_source' are 'one' but tagged source "
             "requested layers 'foo, bar'"
@@ -337,7 +347,7 @@ class TestValidator(object):
                     sources: ['one_source:foo,bar']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Found tagged source 'one_source' in cache 'one_cache' but tagged sources "
             "only supported for 'wms, mapserver, mapnik' sources"
@@ -353,7 +363,7 @@ class TestValidator(object):
                     sources: ['one_source']
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_with_int_0_as_names_and_layers(self):
@@ -378,7 +388,7 @@ class TestValidator(object):
                         layers: 0
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == []
 
     def test_band_merge_missing_source(self):
@@ -409,7 +419,7 @@ class TestValidator(object):
                         layers: dop
         ''')
 
-        errors = validate_references(conf)
+        errors = validate(conf)
         assert errors == [
             "Source 'missing1' for cache 'one_cache' not found in config",
             "Source 'missing2' for cache 'cache_missing_source' not found in config",
