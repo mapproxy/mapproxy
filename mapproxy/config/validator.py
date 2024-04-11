@@ -15,9 +15,9 @@
 import itertools
 import json
 import os.path
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict, Set, Tuple, Union
 
-import jsonschema
+from jsonschema.validators import Draft202012Validator
 
 import mapproxy.config.defaults
 
@@ -41,14 +41,16 @@ def make_path_readable(json_path: str) -> str:
 
 
 def validate(conf_dict: Dict) -> List[str]:
-    try:
-        jsonschema.validate(instance=conf_dict, schema=schema)
-    except jsonschema.exceptions.ValidationError as e:
-        return [f'{e.message} in {make_path_readable(e.json_path)}']
+    validator = Draft202012Validator(schema=schema)
+    errors_iter = validator.iter_errors(conf_dict)
+    errors = [] if errors_iter is None else [f'{e.message} in {make_path_readable(e.json_path)}' for e in errors_iter]
 
     layers_conf = conf_dict.get('layers')
 
-    return list(itertools.chain.from_iterable(_validate_layer(conf_dict, layer) for layer in layers_conf))
+    if layers_conf is None:
+        return errors
+    else:
+        return errors + list(itertools.chain.from_iterable(_validate_layer(conf_dict, layer) for layer in layers_conf))
 
 
 def _validate_layer(conf_dict: Dict, layer: Dict) -> List[str]:
@@ -56,8 +58,8 @@ def _validate_layer(conf_dict: Dict, layer: Dict) -> List[str]:
     tile_sources: List[str] = layer.get('tile_sources', [])
     child_layers: List[Dict] = layer.get('layers', [])
 
-    caches_conf: Dict = conf_dict.get('caches')
-    sources_conf: Dict = conf_dict.get('sources')
+    caches_conf: Dict = conf_dict.get('caches', {})
+    sources_conf: Dict = conf_dict.get('sources', {})
 
     errors = []
 
@@ -106,16 +108,22 @@ def _validate_source(conf_dict: Dict, name: str, source: Dict, layers: List[str]
         return _validate_mapserver_source(conf_dict, name, source, layers)
     elif source_type == 'mapnik':
         return _validate_mapnik_source(name, source, layers)
+    return []
 
 
 def _validate_wms_source(name: str, source: Dict, layers: List[str]) -> List[str]:
+    errors = []
+    if source['req'].get('layers') is None and layers is None:
+        errors.append("Missing 'layers' for source '%s'" % (
+            name
+        ))
     if source['req'].get('layers') is not None and layers is not None:
-        return _validate_tagged_layer_source(
+        errors += _validate_tagged_layer_source(
             name,
             source['req'].get('layers'),
             layers
         )
-    return []
+    return errors
 
 
 def _validate_mapserver_source(conf_dict: Dict, name: str, source: Dict, layers: List[str]) -> List[str]:
@@ -152,7 +160,8 @@ def _validate_mapnik_source(name: str, source: Dict, layers: List[str]) -> List[
     return []
 
 
-def _validate_tagged_layer_source(name: str, supported_layers: str|List[str], requested_layers: List[str]) -> List[str]:
+def _validate_tagged_layer_source(
+        name: str, supported_layers: Union[str, List[str]], requested_layers: List[str]) -> List[str]:
     errors = []
     if isinstance(supported_layers, str):
         supported_layers = [supported_layers]
@@ -187,8 +196,8 @@ def _validate_cache(conf_dict: Dict, name: str, cache: Dict) -> List[str]:
 
 def _validate_cache_source(conf_dict: Dict, cache_name: str, source_name: str) -> List[str]:
     errors = []
-    sources_conf: Dict = conf_dict.get('sources')
-    caches_conf: Dict = conf_dict.get('caches_conf')
+    sources_conf: Dict = conf_dict.get('sources', {})
+    caches_conf: Dict = conf_dict.get('caches', {})
     source_name, layers = _split_tagged_source(source_name)
     if sources_conf and source_name in sources_conf:
         source = sources_conf.get(source_name)
@@ -198,10 +207,10 @@ def _validate_cache_source(conf_dict: Dict, cache_name: str, source_name: str) -
                 f" '{', '.join(TAGGED_SOURCE_TYPES)}' sources"
             )
             return errors
-        _validate_source(conf_dict, source_name, source, layers)
+        errors += _validate_source(conf_dict, source_name, source, layers)
         return errors
     if caches_conf and source_name in caches_conf:
-        _validate_cache(conf_dict, source_name, caches_conf[source_name])
+        errors += _validate_cache(conf_dict, source_name, caches_conf[source_name])
         return errors
     errors.append(
         f"Source '{source_name}' for cache '{cache_name}' not found in config"
