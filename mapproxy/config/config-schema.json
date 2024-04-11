@@ -21,7 +21,259 @@
     },
     "services": {
       "title": "services",
-      "type": "object"
+      "description": "The available services and their configurations",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wms": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "title": "wms",
+              "description": "WMS service configuration",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "attribution": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "md": {
+                  "title": "md",
+                  "description": "The metadata config for the wms service",
+                  "$ref": "#/$defs/metadata"
+                },
+                "srs": {
+                  "title": "srs",
+                  "description": "Supported SRS of the WMS service",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "bbox_srs": {
+                  "title": "bbox_srs",
+                  "description": "Supported SRS of the BBOX of the WMS service",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["srs", "bbox"],
+                        "properties": {
+                          "srs": {
+                            "type": "string"
+                          },
+                          "bbox": {
+                            "type": "array",
+                            "minItems": 4,
+                            "maxItems": 4,
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "image_formats": {
+                  "title": "image_formats",
+                  "description": "List of image mime types",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "featureinfo_types": {
+                  "title": "featureinfo_types",
+                  "description": "List of feature info types",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "oneOf": [
+                      {
+                        "const": "text"
+                      },
+                      {
+                        "const": "html"
+                      },
+                      {
+                        "const": "xml"
+                      }
+                    ]
+                  }
+                },
+                "featureinfo_xslt": {
+                  "description": "XSLT to transform feature info",
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "title": "featureinfo_xslt",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "html": {
+                          "type": "string"
+                        },
+                        "xml": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "strict": {
+                  "description": "Require wms feature info request to contain all required parameters",
+                  "type": "boolean"
+                },
+                "on_source_errors": {
+                  "description": "What to do when one or more sources return errors or no response at all",
+                  "oneOf": [
+                    {
+                      "const": "notify"
+                    },
+                    {
+                      "const": "raise"
+                    }
+                  ]
+                },
+                "max_output_pixels": {
+                  "description": "Maximum output size for a WMS requests in pixel",
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "versions": {
+                  "description": "Versions the the MapProxy WMS should support",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "tms": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "title": "tms",
+              "description": "TMS service configuration",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "use_grid_names": {
+                  "description": "Use name of grid instead of srs identifier in url",
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
+        "kml": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "title": "kml",
+              "description": "KML service configuration",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "use_grid_names": {
+                  "description": "Use name of grid instead of srs identifier in url",
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
+        "wmts": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "title": "wmts",
+              "description": "WMTS service configuration",
+              "type": "object",
+              "properties": {
+                "md": {
+                  "title": "md",
+                  "description": "The metadata config for the wmts service",
+                  "$ref": "#/$defs/metadata"
+                },
+                "kvp": {
+                  "title": "kvp",
+                  "description": "Enable KVP requests",
+                  "type": "boolean"
+                },
+                "restful": {
+                  "title": "restful",
+                  "description": "Enable restful requests",
+                  "type": "boolean"
+                },
+                "restful_template": {
+                  "title": "restful_template",
+                  "description": "URL Template for restful tile request",
+                  "type": "string"
+                },
+                "restful_fi_template": {
+                  "title": "restful_fi_template",
+                  "description": "URL Template for restful feature info request",
+                  "type": "string"
+                },
+                "featureinfo_formats": {
+                  "title": "featureinfo_formats",
+                  "description": "List of feature info formats",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "mimetype": {
+                        "type": "string"
+                      },
+                      "suffix": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "demo": {
+          "type": "null"
+        }
+      }
     },
     "caches": {
       "title": "caches",
@@ -215,6 +467,91 @@
       ]
     },
 
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "abstract": {
+          "type": "string"
+        },
+        "online_resource": {
+          "type": "string"
+        },
+        "contact": {
+          "title": "contact",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "person": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string"
+            },
+            "organization": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "integer"
+            },
+            "state": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "fax": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "access_constraints": {
+          "type": "string"
+        },
+        "fees": {
+          "type": "string"
+        },
+        "keyword_list": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keywords"
+            ],
+            "properties": {
+              "vocabulary": {
+                "type": "string"
+              },
+              "keywords": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
     "bandMerge": {
       "description": "Band merging configs",
       "type": "array",
@@ -228,6 +565,10 @@
               {
                 "description": "A source name",
                 "type": "string"
+              },
+              {
+                "description": "A source name",
+                "type": "integer"
               },
               {
                 "description": "An array of source names",
