@@ -189,6 +189,17 @@
                 "use_grid_names": {
                   "description": "Use name of grid instead of srs identifier in url",
                   "type": "boolean"
+                },
+                "origin": {
+                  "description": "Change the default origin for the tiles",
+                  "oneOf": [
+                    {
+                      "const": "nw"
+                    },
+                    {
+                      "const": "sw"
+                    }
+                  ]
                 }
               }
             }
@@ -294,6 +305,18 @@
       "title": "layer",
       "description": "Configuration of a published layer",
       "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": ["sources"]
+        },
+        {
+          "required": ["layers"]
+        },
+        {
+          "required": ["tile_sources"]
+        }
+      ],
       "properties": {
         "name": {
           "description": "The addressable name of the layer",
@@ -343,38 +366,85 @@
           "items": {
             "type": "string"
           }
-        }
-      },
-      "anyOf": [
-        {
-          "required": ["sources"]
         },
-        {
-          "required": ["layers"]
+        "min_res": {
+          "description": "Minimum resolution",
+          "type": "number"
         },
-        {
-          "required": ["tile_sources"]
+        "max_res": {
+          "description": "Maximum resolution",
+          "type": "number"
+        },
+        "min_scale": {
+          "description": "Minimum scale",
+          "type": "number"
+        },
+        "max_scale": {
+          "description": "Maximum scale",
+          "type": "number"
+        },
+        "legendurl": {
+          "description": "URL to an image used as a legend for this layer",
+          "type": "string"
+        },
+        "md": {
+          "title": "md",
+          "description": "Additional metadata for this layer",
+          "type": "object"
+        },
+        "dimensions": {
+          "title": "dimensions",
+          "description": "Configure dimensions for the layer",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "values": {
+                "type": "array",
+                "minItems": 1,
+                "item": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "default": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          }
         }
-      ]
+      }
     },
 
     "cache": {
       "title": "cache",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "sources": {
           "description": "Sources of the cache",
           "oneOf": [
             {
-              "description": "Source or cache name",
               "type": "string"
             },
             {
-              "description": "Source or cache name",
               "type": "integer"
             },
             {
-              "description": "Sources or caches name",
               "type": "array",
               "items": {
                 "oneOf": [
@@ -409,13 +479,143 @@
             }
           ]
         },
+        "format": {
+          "description": "Internal image format",
+          "type": "string"
+        },
+        "request_format": {
+          "description": "Image format used in request",
+          "type": "string"
+        },
+        "link_single_color_images": {
+          "description": "How to store single color images",
+          "oneOf": [
+            {
+              "const": true
+            },
+            {
+              "const": "symlink"
+            },
+            {
+              "const": "hardlink"
+            }
+          ]
+        },
+        "minimize_meta_requests": {
+          "description": "Only issue a single request to the source",
+          "type": "boolean"
+        },
+        "watermark": {
+          "title": "watermark",
+          "description": "Watermark for cached tiles",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text"],
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "opacity": {
+              "type": "number"
+            },
+            "font_size": {
+              "type": "number"
+            },
+            "color": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "item": {
+                    "type": "integer"
+                  }
+                }
+              ]
+            },
+            "spacing": {
+              "const": "wide"
+            }
+          }
+        },
         "grids": {
+          "description": "Grids used for storing by the cache",
           "type": "array",
-          "items": {
+          "item": {
             "type": "string"
           }
+        },
+        "meta_size": {
+          "$ref": "#/$defs/metaSize"
+        },
+        "meta_buffer": {
+          "$ref": "#/$defs/metaBuffer"
+        },
+        "bulk_meta_tiles": {
+          "description": "Enables bulk loading of meta tiles",
+          "type": "boolean"
+        },
+        "image": {
+          "title": "image",
+          "description": "Image options",
+          "type": "object"
+        },
+        "use_direct_from_level": {
+          "description": "Requests below this level will not be stored",
+          "type": "boolean"
+        },
+        "use_direct_from_res": {
+          "description": "Requests below this resolution will not be stored",
+          "type": "boolean"
+        },
+        "upscale_tiles": {
+          "description": "Upscale tiles by this many zoom levels if not available in cache",
+          "type": "integer"
+        },
+        "downscale_tiles": {
+          "description": "Downscale tiles by this many zoom levels if not available in cache",
+          "type": "integer"
+        },
+        "cache_rescaled_tiles": {
+          "description": "Cache rescaled tiles",
+          "type": "boolean"
+        },
+        "refresh_before": {
+          "title": "refresh_before",
+          "description": "Refresh tiles if requested before this time",
+          "type": "object"
+        },
+        "disable_storage": {
+          "description": "Do not use cache, get everything from source",
+          "type": "boolean"
+        },
+        "cache_dir": {
+          "description": "Directory to store data for this cache",
+          "type": "string"
+        },
+        "cache": {
+          "title": "cache",
+          "description": "Configure type of the cache"
         }
       }
+    },
+
+    "metaSize": {
+      "description": "Size of meta tile in tiles",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "item": {
+        "type": "integer"
+      }
+    },
+
+    "metaBuffer": {
+      "description": "Buffer around each meta tile",
+      "type": "integer"
     },
 
     "source": {
