@@ -61,6 +61,16 @@ class TestValidator(object):
             "Source 'one_cache' for layer 'one' not in cache or source section"
         ]
 
+    def test_multiple_errors(self):
+        conf = self._test_conf()
+        del conf['caches']['one_cache']
+        del conf['services']
+        errors = validate(conf)
+        assert errors == [
+            "'services' is a required property in root",
+            "Source 'one_cache' for layer 'one' not in cache or source section",
+        ]
+
     def test_empty_layer_sources(self):
         conf = self._test_conf('''
             layers:
@@ -71,7 +81,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         assert errors == [
-            "Missing sources for layer 'one'"
+            "[] is too short in root.layers[0].sources"
         ]
 
     def test_missing_cache_source(self):
@@ -89,7 +99,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         assert errors == [
-            'Missing layers section'
+            "'layers' is a required property in root"
         ]
 
     def test_missing_services_section(self):
@@ -97,7 +107,7 @@ class TestValidator(object):
         del conf['services']
         errors = validate(conf)
         assert errors == [
-            'Missing services section'
+            "'services' is a required property in root"
         ]
 
     def test_tile_source(self):

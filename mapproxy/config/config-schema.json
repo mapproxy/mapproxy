@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mapproxy.org/mapproxy.schema.json",
   "title": "MapProxy Configuration",
   "description": "Configuration for a MapProxy server",
   "type": "object",
@@ -13,6 +12,7 @@
       }
     },
     "sources": {
+      "title": "sources",
       "description": "The map data sources",
       "type": "object",
       "additionalProperties": {
@@ -20,9 +20,11 @@
       }
     },
     "services": {
+      "title": "services",
       "type": "object"
     },
     "caches": {
+      "title": "caches",
       "description": "The configured caches",
       "type": "object",
       "additionalProperties": {
@@ -37,21 +39,57 @@
 
   "$defs": {
     "layer": {
+      "title": "layer",
       "description": "Configuration of a published layer",
       "type": "object",
       "properties": {
+        "name": {
+          "description": "The addressable name of the layer",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "title": {
+          "description": "The title of the layer",
+          "type": "string"
+        },
         "sources": {
-          "description": "Associated source for the layer",
+          "description": "Associated sources for the layer",
           "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
           "items": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
           }
         },
-        "child_layers": {
+        "layers": {
           "description": "Child layers of the layer",
           "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
           "item": {
             "$ref": "#/$defs/layer"
+          }
+        },
+        "tile_sources": {
+          "description": "Associated tile sources for the layer",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
           }
         }
       },
@@ -60,7 +98,7 @@
           "required": ["sources"]
         },
         {
-          "required": ["child_layers"]
+          "required": ["layers"]
         },
         {
           "required": ["tile_sources"]
@@ -69,21 +107,53 @@
     },
 
     "cache": {
+      "title": "cache",
       "type": "object",
       "properties": {
         "sources": {
+          "description": "Sources of the cache",
           "oneOf": [
             {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
+              "description": "Source or cache name",
+              "type": "string"
+            },
+            {
+              "description": "Source or cache name",
+              "type": "integer"
+            },
+            {
+              "description": "Sources or caches name",
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
               }
             },
             {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "title": "sources",
+              "type": "object",
+              "description": "Band merging config",
+              "properties": {
+                "r": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "g": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "b": {
+                  "$ref": "#/$defs/bandMerge"
+                },
+                "l": {
+                  "$ref": "#/$defs/bandMerge"
+                }
+              },
+              "additionalProperties": false
             }
           ]
         },
@@ -97,6 +167,7 @@
     },
 
     "source": {
+      "title": "source",
       "type": "object",
       "properties": {
         "type": {
@@ -104,6 +175,7 @@
         },
         "layers": {},
         "req": {
+          "title": "req",
           "type": "object",
           "properties": {
             "layers": {}
@@ -125,6 +197,7 @@
     },
 
     "source-wms": {
+      "title": "source",
       "type": "object",
       "anyOf": [
         {
@@ -133,12 +206,54 @@
         {
           "properties": {
             "req": {
-              "required": ["layers"]
+              "title": "req",
+              "type": "object"
             }
           },
           "required": ["req"]
         }
       ]
+    },
+
+    "bandMerge": {
+      "description": "Band merging configs",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "sources",
+        "type": "object",
+        "properties": {
+          "source": {
+            "oneOf": [
+              {
+                "description": "A source name",
+                "type": "string"
+              },
+              {
+                "description": "An array of source names",
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "band": {
+            "description": "The band index starting from 0",
+            "type": "integer"
+          },
+          "additionalProperties": false
+        },
+        "required": ["source", "band"]
+      }
     }
   }
 }
