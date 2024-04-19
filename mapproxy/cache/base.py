@@ -44,6 +44,7 @@ class TileCacheBase(object):
     """
 
     supports_timestamp = True
+    supports_dimensions = False
 
     def __init__(self, coverage=None) -> None:
         self.coverage = coverage
