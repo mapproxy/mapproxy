@@ -38,681 +38,766 @@ def validate_options(conf_dict):
 
 
 time_spec = {
-    'seconds': number(),
-    'minutes': number(),
-    'hours': number(),
-    'days': number(),
-    'weeks': number(),
-    'time': anything(),
-    'mtime': str(),
+    "seconds": number(),
+    "minutes": number(),
+    "hours": number(),
+    "days": number(),
+    "weeks": number(),
+    "time": anything(),
+    "mtime": str(),
 }
 
-coverage = recursive({
-    'polygons': str(),
-    'polygons_srs': str(),
-    'bbox': one_of(str(), [number()]),
-    'bbox_srs': str(),
-    'ogr_datasource': str(),
-    'ogr_where': str(),
-    'ogr_srs': str(),
-    'datasource': one_of(str(), [number()]),
-    'where': str(),
-    'srs': str(),
-    'expire_tiles': str(),
-    'union': [recursive()],
-    'difference': [recursive()],
-    'intersection': [recursive()],
-    'clip': bool(),
-})
+coverage = recursive(
+    {
+        "polygons": str(),
+        "polygons_srs": str(),
+        "bbox": one_of(str(), [number()]),
+        "bbox_srs": str(),
+        "ogr_datasource": str(),
+        "ogr_where": str(),
+        "ogr_srs": str(),
+        "datasource": one_of(str(), [number()]),
+        "where": str(),
+        "srs": str(),
+        "expire_tiles": str(),
+        "union": [recursive()],
+        "difference": [recursive()],
+        "intersection": [recursive()],
+        "clip": bool(),
+    }
+)
 
 image_opts = {
-    'mode': str(),
-    'colors': number(),
-    'transparent': bool(),
-    'resampling_method': str(),
-    'format': str(),
-    'encoding_options': {
-        anything(): anything()
-    },
-    'merge_method': str(),
+    "mode": str(),
+    "colors": number(),
+    "transparent": bool(),
+    "resampling_method": str(),
+    "format": str(),
+    "encoding_options": {anything(): anything()},
+    "merge_method": str(),
 }
 
 http_opts = {
-    'method': str(),
-    'client_timeout': number(),
-    'ssl_no_cert_checks': bool(),
-    'ssl_ca_certs': str(),
-    'hide_error_details': bool(),
-    'headers': {
-        anything(): str()
-    },
-    'manage_cookies': bool(),
+    "method": str(),
+    "client_timeout": number(),
+    "ssl_no_cert_checks": bool(),
+    "ssl_ca_certs": str(),
+    "hide_error_details": bool(),
+    "headers": {anything(): str()},
+    "manage_cookies": bool(),
 }
 
 mapserver_opts = {
-    'binary': str(),
-    'working_dir': str(),
+    "binary": str(),
+    "working_dir": str(),
 }
 
 scale_hints = {
-    'max_scale': number(),
-    'min_scale': number(),
-    'max_res': number(),
-    'min_res': number(),
+    "max_scale": number(),
+    "min_scale": number(),
+    "max_res": number(),
+    "min_res": number(),
 }
 
 source_commons = combined(
     scale_hints,
     {
-        'concurrent_requests': int(),
-        'coverage': coverage,
-        'seed_only': bool(),
-    }
+        "concurrent_requests": int(),
+        "coverage": coverage,
+        "seed_only": bool(),
+    },
 )
 
 cache_commons = combined(
     {
-        'coverage': coverage,
+        "coverage": coverage,
     }
 )
 
 cache_types = {
-    'file': combined(cache_commons, {
-        'directory_layout': str(),
-        'use_grid_names': bool(),
-        'directory': str(),
-        'tile_lock_dir': str(),
-        'directory_permissions': str(),
-        'file_permissions': str(),
-    }),
-    'sqlite': combined(cache_commons, {
-        'directory': str(),
-        'sqlite_timeout': number(),
-        'sqlite_wal': bool(),
-        'tile_lock_dir': str(),
-        'ttl': int(),
-        'directory_permissions': str(),
-        'file_permissions': str(),
-    }),
-    'mbtiles': combined(cache_commons, {
-        'filename': str(),
-        'sqlite_timeout': number(),
-        'sqlite_wal': bool(),
-        'tile_lock_dir': str(),
-        'directory_permissions': str(),
-        'file_permissions': str(),
-    }),
-    'geopackage': combined(cache_commons, {
-        'filename': str(),
-        'directory': str(),
-        'tile_lock_dir': str(),
-        'table_name': str(),
-        'levels': bool(),
-        'directory_permissions': str(),
-        'file_permissions': str(),
-    }),
-    'couchdb': combined(cache_commons, {
-        'url': str(),
-        'db_name': str(),
-        'tile_metadata': {
-            anything(): anything()
+    "file": combined(
+        cache_commons,
+        {
+            "directory_layout": str(),
+            "use_grid_names": bool(),
+            "directory": str(),
+            "tile_lock_dir": str(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
         },
-        'tile_id': str(),
-        'tile_lock_dir': str(),
-    }),
-    's3': combined(cache_commons, {
-        'bucket_name': str(),
-        'directory_layout': str(),
-        'directory': str(),
-        'profile_name': str(),
-        'region_name': str(),
-        'endpoint_url': str(),
-        'access_control_list': str(),
-        'tile_lock_dir': str(),
-        'use_http_get': bool(),
-        'include_grid_name': bool(),
-    }),
-    'redis': combined(cache_commons, {
-        'host': str(),
-        'port': int(),
-        'password': str(),
-        'username': str(),
-        'db': int(),
-        'prefix': str(),
-        'default_ttl': int(),
-        'ssl_certfile': str(),
-        'ssl_keyfile': str(),
-        'ssl_ca_certs': str(),
-    }),
-    'compact': combined(cache_commons, {
-        'directory': str(),
-        required('version'): number(),
-        'tile_lock_dir': str(),
-        'directory_permissions': str(),
-        'file_permissions': str(),
-    }),
-    'azureblob': combined(cache_commons, {
-        'connection_string': str(),
-        'container_name': str(),
-        'directory_layout': str(),
-        'directory': str(),
-        'tile_lock_dir': str(),
-    }),
+    ),
+    "sqlite": combined(
+        cache_commons,
+        {
+            "directory": str(),
+            "sqlite_timeout": number(),
+            "sqlite_wal": bool(),
+            "tile_lock_dir": str(),
+            "ttl": int(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
+        },
+    ),
+    "mbtiles": combined(
+        cache_commons,
+        {
+            "filename": str(),
+            "sqlite_timeout": number(),
+            "sqlite_wal": bool(),
+            "tile_lock_dir": str(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
+        },
+    ),
+    "mbtiles_dimensions": combined(
+        cache_commons,
+        {
+            "directory": str(),
+            "sqlite_timeout": number(),
+            "sqlite_wal": bool(),
+            "tile_lock_dir": str(),
+            "dimensions": [str()],
+            "directory_permissions": str(),
+            "file_permissions": str(),
+        },
+    ),
+    "geopackage": combined(
+        cache_commons,
+        {
+            "filename": str(),
+            "directory": str(),
+            "tile_lock_dir": str(),
+            "table_name": str(),
+            "levels": bool(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
+        },
+    ),
+    "couchdb": combined(
+        cache_commons,
+        {
+            "url": str(),
+            "db_name": str(),
+            "tile_metadata": {anything(): anything()},
+            "tile_id": str(),
+            "tile_lock_dir": str(),
+        },
+    ),
+    "s3": combined(
+        cache_commons,
+        {
+            "bucket_name": str(),
+            "directory_layout": str(),
+            "directory": str(),
+            "profile_name": str(),
+            "region_name": str(),
+            "endpoint_url": str(),
+            "access_control_list": str(),
+            "tile_lock_dir": str(),
+            "use_http_get": bool(),
+            "include_grid_name": bool(),
+        },
+    ),
+    "redis": combined(
+        cache_commons,
+        {
+            "host": str(),
+            "port": int(),
+            "password": str(),
+            "username": str(),
+            "db": int(),
+            "prefix": str(),
+            "default_ttl": int(),
+            "ssl_certfile": str(),
+            "ssl_keyfile": str(),
+            "ssl_ca_certs": str(),
+        },
+    ),
+    "compact": combined(
+        cache_commons,
+        {
+            "directory": str(),
+            required("version"): number(),
+            "tile_lock_dir": str(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
+        },
+    ),
+    "azureblob": combined(
+        cache_commons,
+        {
+            "connection_string": str(),
+            "container_name": str(),
+            "directory_layout": str(),
+            "directory": str(),
+            "tile_lock_dir": str(),
+        },
+    ),
 }
 
 on_error = {
     anything(): {
-        required('response'): one_of([int], str),
-        'cache': bool,
-        'authorize_stale': bool
+        required("response"): one_of([int], str),
+        "cache": bool,
+        "authorize_stale": bool,
     }
 }
 
 
 inspire_md = {
-    'linked': {
-        required('metadata_url'): {
-            required('url'): str,
-            required('media_type'): str,
+    "linked": {
+        required("metadata_url"): {
+            required("url"): str,
+            required("media_type"): str,
         },
-        required('languages'): {
-            required('default'): str,
+        required("languages"): {
+            required("default"): str,
         },
     },
-    'embedded': {
-        required('resource_locators'): [{
-            required('url'): str,
-            required('media_type'): str,
-        }],
-        required('temporal_reference'): {
-            'date_of_publication': one_of(str, datetime.date),
-            'date_of_creation': one_of(str, datetime.date),
-            'date_of_last_revision': one_of(str, datetime.date),
+    "embedded": {
+        required("resource_locators"): [
+            {
+                required("url"): str,
+                required("media_type"): str,
+            }
+        ],
+        required("temporal_reference"): {
+            "date_of_publication": one_of(str, datetime.date),
+            "date_of_creation": one_of(str, datetime.date),
+            "date_of_last_revision": one_of(str, datetime.date),
         },
-        required('conformities'): [{
-            'title': str,
-            'uris': [str],
-            'date_of_publication': one_of(str, datetime.date),
-            'date_of_creation': one_of(str, datetime.date),
-            'date_of_last_revision': one_of(str, datetime.date),
-            required('resource_locators'): [{
-                required('url'): str,
-                required('media_type'): str,
-            }],
-            required('degree'): str,
-        }],
-        required('metadata_points_of_contact'): [{
-            'organisation_name': str,
-            'email': str,
-        }],
-        required('mandatory_keywords'): [str],
-        'keywords': [{
-            required('title'): str,
-            'date_of_publication': one_of(str, datetime.date),
-            'date_of_creation': one_of(str, datetime.date),
-            'date_of_last_revision': one_of(str, datetime.date),
-            'uris': [str],
-            'resource_locators': [{
-                required('url'): str,
-                required('media_type'): str,
-            }],
-            required('keyword_value'): str,
-        }],
-        required('metadata_date'): one_of(str, datetime.date),
-        'metadata_url': {
-            required('url'): str,
-            required('media_type'): str,
+        required("conformities"): [
+            {
+                "title": str,
+                "uris": [str],
+                "date_of_publication": one_of(str, datetime.date),
+                "date_of_creation": one_of(str, datetime.date),
+                "date_of_last_revision": one_of(str, datetime.date),
+                required("resource_locators"): [
+                    {
+                        required("url"): str,
+                        required("media_type"): str,
+                    }
+                ],
+                required("degree"): str,
+            }
+        ],
+        required("metadata_points_of_contact"): [
+            {
+                "organisation_name": str,
+                "email": str,
+            }
+        ],
+        required("mandatory_keywords"): [str],
+        "keywords": [
+            {
+                required("title"): str,
+                "date_of_publication": one_of(str, datetime.date),
+                "date_of_creation": one_of(str, datetime.date),
+                "date_of_last_revision": one_of(str, datetime.date),
+                "uris": [str],
+                "resource_locators": [
+                    {
+                        required("url"): str,
+                        required("media_type"): str,
+                    }
+                ],
+                required("keyword_value"): str,
+            }
+        ],
+        required("metadata_date"): one_of(str, datetime.date),
+        "metadata_url": {
+            required("url"): str,
+            required("media_type"): str,
         },
-        required('languages'): {
-            required('default'): str,
+        required("languages"): {
+            required("default"): str,
         },
     },
 }
 
 wms_130_layer_md = {
-    'abstract': str,
-    'keyword_list': [
+    "abstract": str,
+    "keyword_list": [
         {
-            'vocabulary': str,
-            'keywords': [str],
+            "vocabulary": str,
+            "keywords": [str],
         }
     ],
-    'attribution': {
-        'title': str,
-        'url':    str,
-        'logo': {
-            'url':    str,
-            'width':  int,
-            'height': int,
-            'format': str,
-        }
+    "attribution": {
+        "title": str,
+        "url": str,
+        "logo": {
+            "url": str,
+            "width": int,
+            "height": int,
+            "format": str,
+        },
     },
-    'identifier': [
+    "identifier": [
         {
-            'url': str,
-            'name': str,
-            'value': str,
+            "url": str,
+            "name": str,
+            "value": str,
         }
     ],
-    'metadata': [
+    "metadata": [
         {
-            'url': str,
-            'type': str,
-            'format': str,
+            "url": str,
+            "type": str,
+            "format": str,
         },
     ],
-    'data': [
+    "data": [
         {
-            'url': str,
-            'format': str,
+            "url": str,
+            "format": str,
         }
-
     ],
-    'feature_list': [
+    "feature_list": [
         {
-            'url': str,
-            'format': str,
+            "url": str,
+            "format": str,
         }
     ],
 }
 
 grid_opts = {
-    'base': str(),
-    'name': str(),
-    'srs': str(),
-    'bbox': one_of(str(), [number()]),
-    'bbox_srs': str(),
-    'num_levels': int(),
-    'res': [number()],
-    'res_factor': one_of(number(), str()),
-    'max_res': number(),
-    'min_res': number(),
-    'stretch_factor': number(),
-    'max_shrink_factor': number(),
-    'align_resolutions_with': str(),
-    'origin': str(),
-    'tile_size': [int()],
-    'threshold_res': [number()],
+    "base": str(),
+    "name": str(),
+    "srs": str(),
+    "bbox": one_of(str(), [number()]),
+    "bbox_srs": str(),
+    "num_levels": int(),
+    "res": [number()],
+    "res_factor": one_of(number(), str()),
+    "max_res": number(),
+    "min_res": number(),
+    "stretch_factor": number(),
+    "max_shrink_factor": number(),
+    "align_resolutions_with": str(),
+    "origin": str(),
+    "tile_size": [int()],
+    "threshold_res": [number()],
 }
 
 ogc_service_md = {
-    'title': str,
-    'abstract': str,
-    'online_resource': str,
-    'contact': anything(),
-    'fees': str,
-    'access_constraints': str,
-    'keyword_list': [
+    "title": str,
+    "abstract": str,
+    "online_resource": str,
+    "contact": anything(),
+    "fees": str,
+    "access_constraints": str,
+    "keyword_list": [
         {
-            'vocabulary': str,
-            'keywords': [str],
+            "vocabulary": str,
+            "keywords": [str],
         }
     ],
 }
 
 band_source = {
-    required('source'): str(),
-    required('band'): int,
-    'factor': number(),
+    required("source"): str(),
+    required("band"): int,
+    "factor": number(),
 }
 
 band_sources = {
-    'r': [band_source],
-    'g': [band_source],
-    'b': [band_source],
-    'a': [band_source],
-    'l': [band_source],
+    "r": [band_source],
+    "g": [band_source],
+    "b": [band_source],
+    "a": [band_source],
+    "l": [band_source],
 }
 
 mapproxy_yaml_spec = {
-    '__config_files__': anything(),  # only used internaly
-    'globals': {
-        'image': {
-            'resampling_method': 'method',
-            'paletted': bool(),
-            'stretch_factor': number(),
-            'max_shrink_factor': number(),
-            'jpeg_quality': number(),
-            'formats': {
+    "__config_files__": anything(),  # only used internaly
+    "globals": {
+        "image": {
+            "resampling_method": "method",
+            "paletted": bool(),
+            "stretch_factor": number(),
+            "max_shrink_factor": number(),
+            "jpeg_quality": number(),
+            "formats": {
                 anything(): image_opts,
             },
-            'font_dir': str(),
-            'merge_method': str(),
+            "font_dir": str(),
+            "merge_method": str(),
         },
-        'http': combined(
+        "http": combined(
             http_opts,
             {
-                'access_control_allow_origin': one_of(str(), {}),
-            }
+                "access_control_allow_origin": one_of(str(), {}),
+            },
         ),
-        'cache': {
-            'base_dir': str(),
-            'lock_dir': str(),
-            'tile_lock_dir': str(),
-            'directory_permissions': str(),
-            'file_permissions': str(),
-            'meta_size': [number()],
-            'meta_buffer': number(),
-            'bulk_meta_tiles': bool(),
-            'max_tile_limit': number(),
-            'minimize_meta_requests': bool(),
-            'concurrent_tile_creators': int(),
-            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
-            's3': {
-                'bucket_name': str(),
-                'profile_name': str(),
-                'region_name': str(),
-                'endpoint_url': str(),
+        "cache": {
+            "base_dir": str(),
+            "lock_dir": str(),
+            "tile_lock_dir": str(),
+            "directory_permissions": str(),
+            "file_permissions": str(),
+            "meta_size": [number()],
+            "meta_buffer": number(),
+            "bulk_meta_tiles": bool(),
+            "max_tile_limit": number(),
+            "minimize_meta_requests": bool(),
+            "concurrent_tile_creators": int(),
+            "link_single_color_images": one_of(bool(), "symlink", "hardlink"),
+            "s3": {
+                "bucket_name": str(),
+                "profile_name": str(),
+                "region_name": str(),
+                "endpoint_url": str(),
             },
-            'azureblob': {
-                'connection_string': str(),
-                'container_name': str(),
+            "azureblob": {
+                "connection_string": str(),
+                "container_name": str(),
             },
+            "dimensions": [str()],
         },
-        'grid': {
-            'tile_size': [int()],
+        "grid": {
+            "tile_size": [int()],
         },
-        'srs': {
-            'axis_order_ne': [str()],
-            'axis_order_en': [str()],
-            'proj_data_dir': str(),
-            'preferred_src_proj': {anything(): [str()]},
+        "srs": {
+            "axis_order_ne": [str()],
+            "axis_order_en": [str()],
+            "proj_data_dir": str(),
+            "preferred_src_proj": {anything(): [str()]},
         },
-        'tiles': {
-            'expires_hours': number(),
+        "tiles": {
+            "expires_hours": number(),
         },
-        'mapserver': mapserver_opts,
-        'renderd': {
-            'address': str(),
-        }
+        "mapserver": mapserver_opts,
+        "renderd": {
+            "address": str(),
+        },
     },
-    'grids': {
+    "grids": {
         anything(): grid_opts,
     },
-    'caches': {
+    "caches": {
         anything(): {
-            required('sources'): one_of([str], band_sources),
-            'name': str(),
-            'grids': [str()],
-            'cache_dir': str(),
-            'meta_size': [number()],
-            'meta_buffer': number(),
-            'bulk_meta_tiles': bool(),
-            'minimize_meta_requests': bool(),
-            'concurrent_tile_creators': int(),
-            'disable_storage': bool(),
-            'format': str(),
-            'image': image_opts,
-            'request_format': str(),
-            'use_direct_from_level': number(),
-            'use_direct_from_res': number(),
-            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
-            'cache_rescaled_tiles': bool(),
-            'upscale_tiles': int(),
-            'downscale_tiles': int(),
-            'refresh_before': time_spec,
-            'watermark': {
-                'text': str,
-                'font_size': number(),
-                'color': one_of(str(), [number()]),
-                'opacity': number(),
-                'spacing': str(),
+            required("sources"): one_of([str], band_sources),
+            "name": str(),
+            "grids": [str()],
+            "cache_dir": str(),
+            "meta_size": [number()],
+            "meta_buffer": number(),
+            "bulk_meta_tiles": bool(),
+            "minimize_meta_requests": bool(),
+            "concurrent_tile_creators": int(),
+            "disable_storage": bool(),
+            "format": str(),
+            "image": image_opts,
+            "request_format": str(),
+            "use_direct_from_level": number(),
+            "use_direct_from_res": number(),
+            "link_single_color_images": one_of(bool(), "symlink", "hardlink"),
+            "cache_rescaled_tiles": bool(),
+            "upscale_tiles": int(),
+            "downscale_tiles": int(),
+            "refresh_before": time_spec,
+            "watermark": {
+                "text": str,
+                "font_size": number(),
+                "color": one_of(str(), [number()]),
+                "opacity": number(),
+                "spacing": str(),
             },
-            'cache': type_spec('type', cache_types)
+            "cache": type_spec("type", cache_types),
         }
     },
-    'services': {
-        'demo': {},
-        'kml': {
-            'use_grid_names': bool(),
+    "services": {
+        "demo": {},
+        "kml": {
+            "use_grid_names": bool(),
         },
-        'tms': {
-            'use_grid_names': bool(),
-            'origin': str(),
+        "tms": {
+            "use_grid_names": bool(),
+            "origin": str(),
         },
-        'wmts': {
-            'kvp': bool(),
-            'restful': bool(),
-            'restful_template': str(),
-            'restful_featureinfo_template': str(),
-            'md': ogc_service_md,
-            'featureinfo_formats': [
+        "wmts": {
+            "kvp": bool(),
+            "restful": bool(),
+            "restful_template": str(),
+            "restful_featureinfo_template": str(),
+            "md": ogc_service_md,
+            "featureinfo_formats": [
                 {
-                    required('mimetype'): str(),
-                    'suffix': str(),
+                    required("mimetype"): str(),
+                    "suffix": str(),
                 },
             ],
         },
-        'wms': {
-            'srs': [str()],
-            'bbox_srs': [one_of(str(), {'bbox': [number()], 'srs': str()})],
-            'image_formats': [str()],
-            'attribution': {
-                'text': str,
+        "wms": {
+            "srs": [str()],
+            "bbox_srs": [one_of(str(), {"bbox": [number()], "srs": str()})],
+            "image_formats": [str()],
+            "attribution": {
+                "text": str,
             },
-            'featureinfo_types': [str()],
-            'featureinfo_xslt': {
-                anything(): str()
-            },
-            'on_source_errors': str(),
-            'max_output_pixels': one_of(number(), [number()]),
-            'strict': bool(),
-            'md': ogc_service_md,
-            'inspire_md': type_spec('type', inspire_md),
-            'versions': [str()],
+            "featureinfo_types": [str()],
+            "featureinfo_xslt": {anything(): str()},
+            "on_source_errors": str(),
+            "max_output_pixels": one_of(number(), [number()]),
+            "strict": bool(),
+            "md": ogc_service_md,
+            "inspire_md": type_spec("type", inspire_md),
+            "versions": [str()],
         },
-        'ogcapi': {
-            'enable_tiles': bool(),
-            'enable_maps': bool(),
-            'map_srs': [str()],
-            'attribution': {
-                'text': str,
+        "ogcapi": {
+            "enable_tiles": bool(),
+            "enable_maps": bool(),
+            "map_srs": [str()],
+            "attribution": {
+                "text": str,
             },
-            'on_source_errors': str(),
-            'max_output_pixels': one_of(number(), [number()]),
-            'image_formats': [str()],
-            'concurrent_layer_renderer': number(),
-            'md': {
-                'identification': {
-                    'title': str(),
-                    'description': str(),
-                    'url': str(),
-                    'terms_of_service': str(),
-                    'keywords': anything(),
+            "on_source_errors": str(),
+            "max_output_pixels": one_of(number(), [number()]),
+            "image_formats": [str()],
+            "concurrent_layer_renderer": number(),
+            "md": {
+                "identification": {
+                    "title": str(),
+                    "description": str(),
+                    "url": str(),
+                    "terms_of_service": str(),
+                    "keywords": anything(),
                 },
-                'contact': {
-                    'name': str(),
-                    'email': str(),
-                    'address': str(),
-                    'city': str(),
-                    'stateorprovince': str(),
-                    'postalcode': str(),
-                    'country': str(),
-                    'phone': str(),
-                    'fax': str(),
-                    'url': str(),
-                    'instructions': str(),
+                "contact": {
+                    "name": str(),
+                    "email": str(),
+                    "address": str(),
+                    "city": str(),
+                    "stateorprovince": str(),
+                    "postalcode": str(),
+                    "country": str(),
+                    "phone": str(),
+                    "fax": str(),
+                    "url": str(),
+                    "instructions": str(),
                 },
-                'license': {
-                    required('name'): str(),
-                    'url': str(),
+                "license": {
+                    required("name"): str(),
+                    "url": str(),
                 },
-                'provider': {
-                    'name': str(),
-                    'url': str(),
+                "provider": {
+                    "name": str(),
+                    "url": str(),
                 },
             },
             "default_dataset_layers": [str()],
-        }
-    },
-
-    'sources': {
-        anything(): type_spec('type', {
-            'wms': combined(source_commons, {
-                'wms_opts': {
-                    'version': str(),
-                    'map': bool(),
-                    'featureinfo': bool(),
-                    'legendgraphic': bool(),
-                    'legendurl': str(),
-                    'featureinfo_format': str(),
-                    'featureinfo_xslt': str(),
-                    'featureinfo_out_format': str(),
-                    'query_layers': str(),
-                },
-                'image': combined(image_opts, {
-                    'opacity': number(),
-                    'transparent_color': one_of(str(), [number()]),
-                    'transparent_color_tolerance': number(),
-                }),
-                'supported_formats': [str()],
-                'supported_srs': [str()],
-                'http': http_opts,
-                'on_error': on_error,
-                'forward_req_params': [str()],
-                required('req'): {
-                    required('url'): str(),
-                    anything(): anything()
-                }
-            }),
-            'mapserver': combined(source_commons, {
-                'wms_opts': {
-                    'version': str(),
-                    'map': bool(),
-                    'featureinfo': bool(),
-                    'legendgraphic': bool(),
-                    'legendurl': str(),
-                    'featureinfo_format': str(),
-                    'featureinfo_xslt': str(),
-                },
-                'image': combined(image_opts, {
-                    'opacity': number(),
-                    'transparent_color': one_of(str(), [number()]),
-                    'transparent_color_tolerance': number(),
-                }),
-                'supported_formats': [str()],
-                'supported_srs': [str()],
-                'forward_req_params': [str()],
-                required('req'): {
-                    required('map'): str(),
-                    anything(): anything()
-                },
-                'mapserver': mapserver_opts,
-            }),
-            'tile': combined(source_commons, {
-                required('url'): str(),
-                'transparent': bool(),
-                'image': image_opts,
-                'grid': str(),
-                'request_format': str(),
-                'origin': str(),  # TODO: remove with 1.5
-                'http': http_opts,
-                'on_error': on_error,
-            }),
-            'mapnik': combined(source_commons, {
-                required('mapfile'): str(),
-                'transparent': bool(),
-                'image': image_opts,
-                'layers': one_of(str(), [str()]),
-                'use_mapnik2': bool(),
-                'scale_factor': number(),
-                'multithreaded': bool(),
-            }),
-            'arcgis': combined(source_commons, {
-                required('req'): {
-                    required('url'): str(),
-                    'dpi': int(),
-                    'layers': str(),
-                    'transparent': bool(),
-                    'time': str()
-                },
-                'opts': {
-                    'featureinfo': bool(),
-                    'featureinfo_tolerance': number(),
-                    'featureinfo_return_geometries': bool(),
-                },
-                'supported_srs': [str()],
-                'http': http_opts,
-                'on_error': on_error
-            }),
-            'debug': {
-            },
-            'ogcapitiles': combined(source_commons, {
-                required('landingpage_url'): str(),
-                'collection': str(),
-                'tile_matrix_set_id': str(),
-                'image': image_opts,
-            }),
-            'ogcapimaps': combined(source_commons, {
-                required('landingpage_url'): str(),
-                'collection': str(),
-                'supported_srs': [str()],
-                'transparent': bool(),
-                'image': combined(image_opts, {
-                    'transparent_color': one_of(str(), [number()]),
-                    'transparent_color_tolerance': number(),
-                }),
-                'bgcolor': one_of(str(), [number()]),
-            }),
-        })
-    },
-
-    'layers': one_of(
-        {
-            anything(): combined(scale_hints, {
-                'sources': [str],
-                required('title'): str,
-                'legendurl': str(),
-                'md': wms_130_layer_md,
-            })
         },
-        recursive([combined(scale_hints, {
-            'sources': [str],
-            'tile_sources': [str],
-            'name': str(),
-            required('title'): str,
-            'legendurl': str(),
-            'wmts_rest_legendurl': str(),
-            'wmts_kvp_legendurl': str(),
-            'layers': recursive(),
-            'md': wms_130_layer_md,
-            'dimensions': {
-                anything(): {
-                    required('values'): [one_of(str, float, int)],
-                    'default': one_of(str, float, int),
-                }
+    },
+    "sources": {
+        anything(): type_spec(
+            "type",
+            {
+                "wms": combined(
+                    source_commons,
+                    {
+                        "wms_opts": {
+                            "version": str(),
+                            "map": bool(),
+                            "featureinfo": bool(),
+                            "legendgraphic": bool(),
+                            "legendurl": str(),
+                            "featureinfo_format": str(),
+                            "featureinfo_xslt": str(),
+                            "featureinfo_out_format": str(),
+                            "query_layers": str(),
+                        },
+                        "image": combined(
+                            image_opts,
+                            {
+                                "opacity": number(),
+                                "transparent_color": one_of(str(), [number()]),
+                                "transparent_color_tolerance": number(),
+                            },
+                        ),
+                        "supported_formats": [str()],
+                        "supported_srs": [str()],
+                        "http": http_opts,
+                        "on_error": on_error,
+                        "forward_req_params": [str()],
+                        required("req"): {
+                            required("url"): str(),
+                            anything(): anything(),
+                        },
+                    },
+                ),
+                "mapserver": combined(
+                    source_commons,
+                    {
+                        "wms_opts": {
+                            "version": str(),
+                            "map": bool(),
+                            "featureinfo": bool(),
+                            "legendgraphic": bool(),
+                            "legendurl": str(),
+                            "featureinfo_format": str(),
+                            "featureinfo_xslt": str(),
+                        },
+                        "image": combined(
+                            image_opts,
+                            {
+                                "opacity": number(),
+                                "transparent_color": one_of(str(), [number()]),
+                                "transparent_color_tolerance": number(),
+                            },
+                        ),
+                        "supported_formats": [str()],
+                        "supported_srs": [str()],
+                        "forward_req_params": [str()],
+                        required("req"): {
+                            required("map"): str(),
+                            anything(): anything(),
+                        },
+                        "mapserver": mapserver_opts,
+                    },
+                ),
+                "tile": combined(
+                    source_commons,
+                    {
+                        required("url"): str(),
+                        "transparent": bool(),
+                        "image": image_opts,
+                        "grid": str(),
+                        "request_format": str(),
+                        "origin": str(),  # TODO: remove with 1.5
+                        "http": http_opts,
+                        "on_error": on_error,
+                    },
+                ),
+                "mapnik": combined(
+                    source_commons,
+                    {
+                        required("mapfile"): str(),
+                        "transparent": bool(),
+                        "image": image_opts,
+                        "layers": one_of(str(), [str()]),
+                        "use_mapnik2": bool(),
+                        "scale_factor": number(),
+                        "multithreaded": bool(),
+                    },
+                ),
+                "arcgis": combined(
+                    source_commons,
+                    {
+                        required("req"): {
+                            required("url"): str(),
+                            "dpi": int(),
+                            "layers": str(),
+                            "transparent": bool(),
+                            "time": str(),
+                        },
+                        "opts": {
+                            "featureinfo": bool(),
+                            "featureinfo_tolerance": number(),
+                            "featureinfo_return_geometries": bool(),
+                        },
+                        "supported_srs": [str()],
+                        "http": http_opts,
+                        "on_error": on_error,
+                    },
+                ),
+                "debug": {},
+                "ogcapitiles": combined(
+                    source_commons,
+                    {
+                        required("landingpage_url"): str(),
+                        "collection": str(),
+                        "tile_matrix_set_id": str(),
+                        "image": image_opts,
+                    },
+                ),
+                "ogcapimaps": combined(
+                    source_commons,
+                    {
+                        required("landingpage_url"): str(),
+                        "collection": str(),
+                        "supported_srs": [str()],
+                        "transparent": bool(),
+                        "image": combined(
+                            image_opts,
+                            {
+                                "transparent_color": one_of(str(), [number()]),
+                                "transparent_color_tolerance": number(),
+                            },
+                        ),
+                        "bgcolor": one_of(str(), [number()]),
+                    },
+                ),
             },
-            "nominal_res": number(),
-            "nominal_scale": number(),
-        })])
+        )
+    },
+    "layers": one_of(
+        {
+            anything(): combined(
+                scale_hints,
+                {
+                    "sources": [str],
+                    required("title"): str,
+                    "legendurl": str(),
+                    "md": wms_130_layer_md,
+                },
+            )
+        },
+        recursive(
+            [
+                combined(
+                    scale_hints,
+                    {
+                        "sources": [str],
+                        "tile_sources": [str],
+                        "name": str(),
+                        required("title"): str,
+                        "legendurl": str(),
+                        "wmts_rest_legendurl": str(),
+                        "wmts_kvp_legendurl": str(),
+                        "layers": recursive(),
+                        "md": wms_130_layer_md,
+                        "dimensions": {
+                            anything(): {
+                                required("values"): [one_of(str, float, int)],
+                                "default": one_of(str, float, int),
+                            }
+                        },
+                        "nominal_res": number(),
+                        "nominal_scale": number(),
+                    },
+                )
+            ]
+        ),
     ),
     # `parts` can be used for partial configurations that are referenced
     # from other sections (e.g. coverages, dimensions, etc.)
-    'parts': anything(),
+    "parts": anything(),
 }
 
 
 def add_source_to_mapproxy_yaml_spec(source_name, source_spec):
-    """ Add a new source type to mapproxy_yaml_spec.
-        Used by plugins.
+    """Add a new source type to mapproxy_yaml_spec.
+    Used by plugins.
     """
 
     # sources has a single anything() : {} member
-    values = list(mapproxy_yaml_spec['sources'].values())
+    values = list(mapproxy_yaml_spec["sources"].values())
     assert len(values) == 1
     values[0].add_subspec(source_name, source_spec)
 
 
 def add_service_to_mapproxy_yaml_spec(service_name, service_spec):
-    """ Add a new service type to mapproxy_yaml_spec.
-        Used by plugins.
+    """Add a new service type to mapproxy_yaml_spec.
+    Used by plugins.
     """
 
-    mapproxy_yaml_spec['services'][service_name] = service_spec
+    mapproxy_yaml_spec["services"][service_name] = service_spec
 
 
 def add_subcategory_to_layer_md(category_name, category_def):
-    """ Add a new category to wms_130_layer_md.
-        Used by plugins
+    """Add a new category to wms_130_layer_md.
+    Used by plugins
     """
     wms_130_layer_md[category_name] = category_def
