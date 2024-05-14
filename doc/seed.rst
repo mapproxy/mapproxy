@@ -50,7 +50,7 @@ Options
 ~~~~~~~
 
 
-.. option:: -s <seed.yaml>, --seed-conf==<seed.yaml>
+.. option:: -s <seed.yaml>, --seed-conf=<seed.yaml>
 
   The seed configuration. You can also pass the configuration as the last argument to ``mapproxy-seed``
 
