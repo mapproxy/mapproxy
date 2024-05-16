@@ -83,7 +83,6 @@ class TileURLTemplate(object):
         if extra_params:
             data.update(extra_params)
 
-
         return self.template % data
 
     def __repr__(self):

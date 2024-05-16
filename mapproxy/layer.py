@@ -477,7 +477,8 @@ class CacheMapLayer(MapLayer):
 
         with self.tile_manager.session():
             tile_collection = self.tile_manager.load_tile_coords(
-                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions, extra_params=query.extra_params)
+                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions,
+                extra_params=query.extra_params)
 
         if tile_collection.empty:
             raise BlankImage()
