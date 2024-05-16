@@ -118,12 +118,12 @@ class TileManager(object):
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
 
-    def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
+    def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False, extra_params=None):
         return self.load_tile_coords(
-            [tile_coord], dimensions=dimensions, with_metadata=with_metadata,
+            [tile_coord], dimensions=dimensions, with_metadata=with_metadata, extra_params=extra_params
         )[0]
 
-    def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
+    def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False, extra_params=None):
         tiles = TileCollection(tile_coords)
         rescale_till_zoom = 0
         if self.rescale_tiles:
@@ -151,6 +151,7 @@ class TileManager(object):
         tiles = self._load_tile_coords(
             tiles, dimensions=dimensions, with_metadata=with_metadata,
             rescale_till_zoom=rescale_till_zoom, rescaled_tiles={},
+            extra_params=extra_params,
         )
 
         for t in tiles.tiles:
@@ -179,7 +180,8 @@ class TileManager(object):
             return not self.is_cached(tile, dimensions=dimensions)
 
     def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,
-                          rescale_till_zoom=None, rescaled_tiles=None
+                          rescale_till_zoom=None, rescaled_tiles=None,
+                          extra_params=None,
                           ):
         uncached_tiles = []
 
@@ -202,7 +204,7 @@ class TileManager(object):
                 uncached_tiles.append(tile)
 
         if uncached_tiles:
-            creator = self.creator(dimensions=dimensions)
+            creator = self.creator(dimensions=dimensions, extra_params=extra_params)
             created_tiles = creator.create_tiles(uncached_tiles)
             if not created_tiles and self.rescale_tiles:
                 created_tiles = [self._scaled_tile(t, rescale_till_zoom, rescaled_tiles) for t in uncached_tiles]
@@ -217,8 +219,8 @@ class TileManager(object):
         tiles = TileCollection(tile_coords)
         self.cache.remove_tiles(tiles)
 
-    def creator(self, dimensions=None):
-        return self.tile_creator_class(self, dimensions=dimensions)
+    def creator(self, dimensions=None, extra_params=None):
+        return self.tile_creator_class(self, dimensions=dimensions, extra_params=extra_params)
 
     def lock(self, tile):
         if self.meta_grid:
@@ -344,7 +346,7 @@ RESCALE_TILE_MISSING = BlankImageSource((256, 256), ImageOptions())
 
 
 class TileCreator(object):
-    def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):
+    def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False, extra_params=None):
         self.cache = tile_mgr.cache
         self.sources = tile_mgr.sources
         self.grid = tile_mgr.grid
@@ -352,6 +354,7 @@ class TileCreator(object):
         self.bulk_meta_tiles = bulk_meta_tiles
         self.tile_mgr = tile_mgr
         self.dimensions = dimensions
+        self.extra_params = extra_params
         self.image_merger = image_merger
 
     def is_cached(self, tile, dimensions=None):
@@ -407,7 +410,8 @@ class TileCreator(object):
     def _create_single_tile(self, tile, dimensions=None):
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
-                         self.tile_mgr.request_format, dimensions=self.dimensions)
+                         self.tile_mgr.request_format, dimensions=self.dimensions,
+                         extra_params=self.extra_params)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile, dimensions=dimensions):
                 source = None
@@ -494,7 +498,7 @@ class TileCreator(object):
         """
         tile_size = self.grid.tile_size
         query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.tile_mgr.request_format,
-                         dimensions=self.dimensions)
+                         dimensions=self.dimensions, extra_params=self.extra_params)
         main_tile = Tile(meta_tile.main_tile_coord)
         with self.tile_mgr.lock(main_tile):
             if not all(self.is_cached(t, dimensions=self.dimensions) for t in meta_tile.tiles if t is not None):
@@ -527,7 +531,7 @@ class TileCreator(object):
                     try:
                         query = MapQuery(
                             self.grid.tile_bbox(coord), tile_size, self.grid.srs, self.tile_mgr.request_format,
-                            dimensions=self.dimensions)
+                            dimensions=self.dimensions, extra_params=self.extra_params)
                         tile_image = self._query_sources(query)
                         if tile_image is None:
                             return None

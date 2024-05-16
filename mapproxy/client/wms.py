@@ -104,6 +104,7 @@ class WMSClient(object):
         req.params.srs = query.srs.srs_code
         req.params.format = format
         req.params.update(query.dimensions_for_params(self.fwd_req_params))
+        req.params.update(query.extra_params_for_params(self.fwd_req_params))
         return req
 
     def combined_client(self, other, query):

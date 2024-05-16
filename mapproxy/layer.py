@@ -123,7 +123,7 @@ class MapQuery(object):
     """
 
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False, dimensions=None):
+                 tiled_only=False, dimensions=None, extra_params=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -131,6 +131,18 @@ class MapQuery(object):
         self.transparent = transparent
         self.tiled_only = tiled_only
         self.dimensions = dimensions or {}
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = MapQuery(None, None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
     def dimensions_for_params(self, params):
         """
@@ -465,7 +477,7 @@ class CacheMapLayer(MapLayer):
 
         with self.tile_manager.session():
             tile_collection = self.tile_manager.load_tile_coords(
-                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
+                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions, extra_params=query.extra_params)
 
         if tile_collection.empty:
             raise BlankImage()
