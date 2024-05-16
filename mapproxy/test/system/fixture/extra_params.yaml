@@ -1,0 +1,48 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+
+services:
+  demo:
+  tms:
+  wmts:
+  wms:
+    md:
+      title: MapProxy test fixture
+
+layers:
+  - name: tile_layer
+    title: Tiles layer
+    sources: [tile_cache]
+  - name: wms_layer
+    title: WMS layer
+    sources: [wms_cache]
+  - name: wms_direct_layer
+    title: WMS layer
+    sources: [wms_source]
+
+caches:
+  tile_cache:
+    sources: [tile_source]
+    grids: [webmercator]
+  wms_cache:
+    sources: [wms_source]
+    grids: [webmercator]
+
+sources:
+  tile_source:
+    type: tile
+    url: http://localhost:42423/tile.png?key=%(key)s
+    grid: webmercator
+  wms_source:
+    type: wms
+    forward_req_params: ['key']
+    req:
+      url: http://localhost:42423/service
+      layers: bar
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
