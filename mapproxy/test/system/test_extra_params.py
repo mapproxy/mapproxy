@@ -15,7 +15,7 @@
 
 import pytest
 
-from mapproxy.test.image import is_png, tmp_image
+from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
 
@@ -63,7 +63,11 @@ class TestExtraParams(SysTest):
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
-                app.get("/service?layer=tile_layer&style=&tilematrixset=webmercator&Service=WMTS&Request=GetTile&Version=1.0.0&Format=png&TileMatrix=0&TileCol=0&TileRow=0&key=123456")
+                url = (
+                    "/service?layer=tile_layer&style=&tilematrixset=webmercator&Service=WMTS&"
+                    "Request=GetTile&Version=1.0.0&Format=png&TileMatrix=0&TileCol=0&TileRow=0&key=123456"
+                )
+                app.get(url)
 
     def test_wmts_rest_request_to_tile_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
@@ -105,7 +109,11 @@ class TestExtraParams(SysTest):
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
-                app.get("/service?layer=wms_layer&style=&tilematrixset=webmercator&Service=WMTS&Request=GetTile&Version=1.0.0&Format=png&TileMatrix=0&TileCol=0&TileRow=0&key=123456")
+                url = (
+                    "/service?layer=wms_layer&style=&tilematrixset=webmercator&Service=WMTS&"
+                    "Request=GetTile&Version=1.0.0&Format=png&TileMatrix=0&TileCol=0&TileRow=0&key=123456"
+                )
+                app.get(url)
 
     def test_wmts_rest_request_to_wms_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
