@@ -27,7 +27,7 @@ def config_file():
 
 class TestExtraParams(SysTest):
 
-    wms_source_url = (
+    wms_getmap_source_url = (
         r"/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng"
         "&REQUEST=GetMap&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&styles="
         "&VERSION=1.1.1"
@@ -47,7 +47,7 @@ class TestExtraParams(SysTest):
             with mock_httpd(("localhost", 42423), [expected_req]):
                 app.get("/tms/1.0.0/tile_layer/EPSG3857/0/0/0.png?key=123456")
 
-    def test_tile_request_to_tile_source(self, app, cache_dir):
+    def test_tiles_request_to_tile_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
                 {"path": self.tile_source_url},
@@ -81,7 +81,7 @@ class TestExtraParams(SysTest):
     def test_wms_request_to_tile_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
-                {"path": self.wms_source_url},
+                {"path": self.wms_getmap_source_url},
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
@@ -96,7 +96,7 @@ class TestExtraParams(SysTest):
     def test_tiles_request_to_wms_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
-                {"path": self.wms_source_url},
+                {"path": self.wms_getmap_source_url},
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
@@ -105,7 +105,7 @@ class TestExtraParams(SysTest):
     def test_wmts_kvp_request_to_wms_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
-                {"path": self.wms_source_url},
+                {"path": self.wms_getmap_source_url},
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
@@ -118,7 +118,7 @@ class TestExtraParams(SysTest):
     def test_wmts_rest_request_to_wms_source(self, app, cache_dir):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
-                {"path": self.wms_source_url},
+                {"path": self.wms_getmap_source_url},
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
             with mock_httpd(("localhost", 42423), [expected_req]):
@@ -128,7 +128,7 @@ class TestExtraParams(SysTest):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
                 {
-                    "path": self.wms_source_url
+                    "path": self.wms_getmap_source_url
                 },
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
@@ -147,7 +147,7 @@ class TestExtraParams(SysTest):
         with tmp_image((256, 256), format="png") as img:
             expected_req = (
                 {
-                    "path": self.wms_source_url
+                    "path": self.wms_getmap_source_url
                 },
                 {"body": img.read(), "headers": {"content-type": "image/png"}},
             )
@@ -159,5 +159,51 @@ class TestExtraParams(SysTest):
                     "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
                     "&width=256&height=256&layers=wms_direct_layer&srs=EPSG%3A3857&format=image%2Fpng"
                     "&styles=&request=GetMap&key=123456"
+                )
+                app.get(url)
+
+    def test_getfeatureinfo(self, app):
+        expected_req = (
+            {
+                "path": (
+                    r"/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng"
+                    "&REQUEST=GetFeatureInfo&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&styles="
+                    "&VERSION=1.1.1"
+                    "&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+                    "&QUERY_LAYERS=bar&X=10&Y=20&feature_count=10"
+                    # The key should be present in the request to the source
+                    "&key=123456"
+                )
+            },
+            {"body": b"info", "headers": {"content-type": "text/plain"}},
+        )
+        with mock_httpd(("localhost", 42423), [expected_req]):
+            url = (
+                "/service?x=10&y=20&width=256&height=256&layers=wms_layer&format=image%2Fpng"
+                "&query_layers=wms_layer&styles="
+                "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+                "&srs=EPSG%3A3857&feature_count=10&request=GetFeatureInfo&version=1.1.1&service=WMS"
+                "&key=123456"
+            )
+            app.get(url)
+
+    def test_getlegendgraphic(self, app, cache_dir):
+        with tmp_image((256, 256), format="png") as img:
+            expected_req = (
+                {
+                    "path": (
+                        r"/service?LAYER=bar&VERSION=1.1.1&FORMAT=image/png&"
+                        "SERVICE=WMS&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0"
+                        # The key should be present in the request to the source
+                        "&key=123456"
+                    )
+                },
+                {"body": img.read(), "headers": {"content-type": "image/png"}},
+            )
+            with mock_httpd(("localhost", 42423), [expected_req]):
+                url = (
+                    "/service?layer=wms_layer&format=image%2Fpng"
+                    "&request=GetLegendGraphic&version=1.1.1&service=WMS"
+                    "&key=123456"
                 )
                 app.get(url)

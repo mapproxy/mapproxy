@@ -42,6 +42,9 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+    wms_opts:
+      featureinfo: True
+      legendgraphic: True
 
 grids:
     webmercator:

@@ -835,6 +835,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = wms_opts.get('version', '1.1.1')
             if 'featureinfo_format' in wms_opts:
                 params['info_format'] = wms_opts['featureinfo_format']
+            fwd_req_params = set(self.conf.get('forward_req_params', []))
             fi_request = create_request(self.conf['req'], params,
                                         req_type='featureinfo', version=version,
                                         abspath=self.context.globals.abspath)
@@ -844,7 +845,7 @@ class WMSSourceConfiguration(SourceConfiguration):
 
             http_client, fi_request.url = self.http_client(fi_request.url)
             fi_client = WMSInfoClient(fi_request, supported_srs=self.supported_srs(),
-                                      http_client=http_client)
+                                      http_client=http_client, fwd_req_params=fwd_req_params)
             coverage = self.coverage()
             fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer,
                                       coverage=coverage)
@@ -871,6 +872,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         elif self.conf.get('wms_opts', {}).get('legendgraphic', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
+            fwd_req_params = set(self.conf.get('forward_req_params', []))
             lg_clients = []
             lg_layers = str(lg_req['layers']).split(',')
             del lg_req['layers']
@@ -880,7 +882,8 @@ class WMSSourceConfiguration(SourceConfiguration):
                                             req_type='legendgraphic', version=version,
                                             abspath=self.context.globals.abspath)
                 http_client, lg_request.url = self.http_client(lg_request.url)
-                lg_client = WMSLegendClient(lg_request, http_client=http_client)
+                lg_client = WMSLegendClient(lg_request, http_client=http_client,
+                                            fwd_req_params=fwd_req_params)
                 lg_clients.append(lg_client)
             legend_cache = LegendCache(cache_dir=cache_dir)
             lg_source = WMSLegendSource(lg_clients, legend_cache)

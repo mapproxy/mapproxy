@@ -165,7 +165,7 @@ class MapQuery(object):
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None,
-                 feature_count=None):
+                 feature_count=None, extra_params=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -173,6 +173,18 @@ class InfoQuery(object):
         self.info_format = info_format
         self.format = format
         self.feature_count = feature_count
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = InfoQuery(None, None, None, None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
     @property
     def coord(self):
@@ -180,9 +192,21 @@ class InfoQuery(object):
 
 
 class LegendQuery(object):
-    def __init__(self, format, scale):
+    def __init__(self, format, scale, extra_params=None):
         self.format = format
         self.scale = scale
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = LegendQuery(None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
 
 class Dimension(list):
