@@ -20,9 +20,13 @@ jscript_functions=None
 <script type="text/javascript">
     async function init() {
 
-        const transparent = "{{if format == 'png'}}true{{endif}}";
+        const transparent = {{if format == 'png'}}true{{else}}false{{endif}};
+        const format = "{{format}}";
         const srs = "{{srs}}";
+        const tileSize = "{{layer.grid.tile_size}}";  // TODO allow custom e.g. Retina tilesizes
         const extent = [{{', '.join(str(r) for r in layer.bbox)}}];
+        const grid_extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
+        const resolutions = [{{', '.join(str(r) for r in resolutions)}}];
 
         if (!ol.proj.get(srs)) {
             const allDefs = await import('./static/proj4defs.js');
@@ -35,11 +39,17 @@ jscript_functions=None
             ol.proj.proj4.register(proj4);
         }
 
+        // Define TMS as specialized XYZ service: origin lower-left and may have custom grid
         const source = new ol.source.XYZ({
-            url: '../tms/{{"/".join(layer.md["name_path"])}}/{z}/{x}/{-y}.png',
-            opaque: transparent === "true" ? false : true,
+            url: '../tms/1.0.0/{{"/".join(layer.md["name_path"])}}/{z}/{x}/{-y}.' + format,
+            opaque: transparent,
             projection: "{{srs}}",
-            maxResolution: {{resolutions[0]}}
+            maxResolution: {{resolutions[0]}},
+            tileGrid: new  ol.tilegrid.TileGrid({
+               tileSize: 256,
+               resolutions: resolutions,
+               extent: grid_extent
+            }),
         });
 
         const background_source = new ol.source.XYZ({
