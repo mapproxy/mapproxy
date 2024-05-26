@@ -1,7 +1,7 @@
 {{py:
 from html import escape
 import textwrap
-
+import json
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
                                break_long_words=False)
 
@@ -23,7 +23,7 @@ jscript_functions=None
         const transparent = {{if format == 'png'}}true{{else}}false{{endif}};
         const format = "{{format}}";
         const srs = "{{srs}}";
-        const tileSize = "{{layer.grid.tile_size}}";  // TODO allow custom e.g. Retina tilesizes
+        const tileSize = {{json.dumps(layer.grid.tile_size)}};
         const extent = [{{', '.join(str(r) for r in layer.bbox)}}];
         const grid_extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
         const resolutions = [{{', '.join(str(r) for r in resolutions)}}];
@@ -46,7 +46,7 @@ jscript_functions=None
             projection: "{{srs}}",
             maxResolution: {{resolutions[0]}},
             tileGrid: new  ol.tilegrid.TileGrid({
-               tileSize: 256,
+               tileSize: tileSize,
                resolutions: resolutions,
                extent: grid_extent
             }),
