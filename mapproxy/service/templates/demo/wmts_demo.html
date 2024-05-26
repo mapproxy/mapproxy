@@ -1,6 +1,7 @@
 {{py:
 from html import escape
 import textwrap
+import json
 
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
                                break_long_words=False)
@@ -20,7 +21,7 @@ jscript_functions=None
 <script type="text/javascript">
     async function init() {
 
-        const transparent = "{{if format == 'image/png'}}true{{endif}}";
+        const transparent = {{if format == 'image/png'}}true{{else}}false{{endif}};
         const srs = "{{srs}}";
         const grid_extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
         const extent = [{{', '.join(str(r) for r in layer.bbox)}}];
@@ -29,6 +30,7 @@ jscript_functions=None
         for (let z = 0; z < resolutions.length; ++z) {
             matrixIds[z] = z;
         }
+        const tileSize = {{json.dumps(layer.grid.tile_size)}};
 
         if (!ol.proj.get(srs)) {
             const allDefs = await import('./static/proj4defs.js');
@@ -49,12 +51,13 @@ jscript_functions=None
             matrixSet: '{{matrix_set}}',
             format: "{{format}}",
             projection: "{{srs}}",
-            transparent: transparent === "true" ? true: false,
+            transparent: transparent,
             style: '',
             tileGrid: new ol.tilegrid.WMTS({
                 origin: ol.extent.getTopLeft(grid_extent),
                 resolutions: resolutions,
-                matrixIds
+                matrixIds: matrixIds,
+                tileSize: tileSize
             })
         });
 
