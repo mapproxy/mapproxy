@@ -249,6 +249,19 @@ class TestSeed(SeedTestBase):
                 seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
+    def test_seed_sqlite(self):
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req = ({'path': r'/service?LAYERS=baz&SERVICE=WMS&FORMAT=image%2Fpng'
+                                     '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                                     '&width=256&height=128&srs=EPSG:4326'},
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                tasks, cleanup_tasks = seed_conf.seeds(['sqlite_cache']), seed_conf.cleanups(['cleanup_sqlite_cache'])
+                seed(tasks, dry_run=False)
+                cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
     def create_tile(self, coord=(0, 0, 0)):
         return Tile(coord,
                     ImageSource(tile_image_buf,
@@ -290,7 +303,7 @@ class TestSeed(SeedTestBase):
 
     def test_cleanup_sqlite(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['sqlite_cache'])
+        cleanup_tasks = seed_conf.cleanups(['cleanup_sqlite_cache'])
 
         cache = cleanup_tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile((0, 0, 2)))
@@ -337,8 +350,8 @@ class TestSeed(SeedTestBase):
     def test_active_seed_tasks(self):
         with local_base_config(self.mapproxy_conf.base_config):
             seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-            assert len(seed_conf.seed_tasks_names()) == 5
-            assert len(seed_conf.seeds()) == 5
+            assert len(seed_conf.seed_tasks_names()) == 6
+            assert len(seed_conf.seeds()) == 6
 
     def test_seed_refresh_remove_before_from_file(self):
         # tile already there but old
