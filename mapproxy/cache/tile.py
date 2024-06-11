@@ -207,7 +207,11 @@ class TileManager(object):
             creator = self.creator(dimensions=dimensions, extra_params=extra_params)
             created_tiles = creator.create_tiles(uncached_tiles)
             if not created_tiles and self.rescale_tiles:
-                created_tiles = [self._scaled_tile(t, rescale_till_zoom, rescaled_tiles) for t in uncached_tiles]
+                # TODO Should _scaled_tile accept a dimensions argument?
+                created_tiles = [
+                    self._scaled_tile(t, rescale_till_zoom, rescaled_tiles, extra_params=extra_params)
+                    for t in uncached_tiles
+                ]
 
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
@@ -284,7 +288,7 @@ class TileManager(object):
             tile = img_filter(tile)
         return tile
 
-    def _scaled_tile(self, tile, stop_zoom, rescaled_tiles):
+    def _scaled_tile(self, tile, stop_zoom, rescaled_tiles, extra_params=None):
         """
         Try to load tile by loading, scaling and clipping tiles from zoom levels above or
         below. stop_zoom determines if tiles from above should be scaled up, or if tiles
@@ -321,6 +325,7 @@ class TileManager(object):
             affected_tiles,
             rescale_till_zoom=stop_zoom,
             rescaled_tiles=rescaled_tiles,
+            extra_params=extra_params,
         )
 
         if tile_collection.blank:
