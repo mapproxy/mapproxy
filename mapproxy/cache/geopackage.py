@@ -125,7 +125,7 @@ class GeopackageCache(TileCacheBase):
         return True
 
     def _verify_table(self):
-        with sqlite3.connect(self.geopackage_file) as db:
+        with sqlite3.connect(self.geopackage_file, timeout=self.timeout) as db:
             cur = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name=?""",
                              (self.table_name,))
             content = cur.fetchone()
@@ -135,7 +135,7 @@ class GeopackageCache(TileCacheBase):
             return True
 
     def _verify_gpkg_contents(self):
-        with sqlite3.connect(self.geopackage_file) as db:
+        with sqlite3.connect(self.geopackage_file, timeout=self.timeout) as db:
             cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?""", (self.table_name,))
 
         results = cur.fetchone()
@@ -159,7 +159,7 @@ class GeopackageCache(TileCacheBase):
         return True
 
     def _verify_tile_size(self):
-        with sqlite3.connect(self.geopackage_file) as db:
+        with sqlite3.connect(self.geopackage_file, timeout=self.timeout) as db:
             cur = db.execute(
                 """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
                 (self.table_name,))
@@ -193,7 +193,7 @@ class GeopackageCache(TileCacheBase):
 
     def _initialize_gpkg(self):
         log.info('initializing Geopackage file %s', self.geopackage_file)
-        db = sqlite3.connect(self.geopackage_file)
+        db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)
 
         if self.wal:
             db.execute('PRAGMA journal_mode=wal')
