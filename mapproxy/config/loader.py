@@ -1884,7 +1884,6 @@ class LayerConfiguration(ConfigurationBase):
     def tile_layers(self, grid_name_as_path=False):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
-        from mapproxy.cache.file import FileCache
         sources = []
         fi_only_sources = []
         if 'tile_sources' in self.conf:
@@ -1929,10 +1928,10 @@ class LayerConfiguration(ConfigurationBase):
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
                 if disable_storage:
-                    supported_cache_class = DummyCache
+                    supports_dimensions = isinstance(cache_source.cache, DummyCache)
                 else:
-                    supported_cache_class = FileCache
-                if dimensions and not isinstance(cache_source.cache, supported_cache_class):
+                    supports_dimensions = cache_source.cache.supports_dimensions
+                if dimensions and not supports_dimensions:
                     # caching of dimension layers is not supported yet
                     raise ConfigurationError(
                         "caching of dimension layer (%s) is not supported yet."
