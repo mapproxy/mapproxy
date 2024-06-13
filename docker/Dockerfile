@@ -33,9 +33,9 @@ RUN pip install MapProxy==$MAPPROXY_VERSION && \
 
 COPY app.py .
 
-COPY start.sh .
+COPY entrypoint.sh .
 
-ENTRYPOINT ["bash", "-c", "./start.sh base"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 ###### development image ######
 
@@ -43,7 +43,7 @@ FROM base AS development
 
 EXPOSE 8080
 
-ENTRYPOINT ["bash", "-c", "./start.sh development"]
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mapproxy.yaml"]
 
 ##### nginx image ######
 
@@ -65,4 +65,4 @@ COPY nginx-default.conf /etc/nginx/sites-enabled/default
 
 EXPOSE 80
 
-ENTRYPOINT ["bash", "-c", "./start.sh nginx"]
+CMD ["/usr/local/bin/uwsgi", "--ini", "/mapproxy/uwsgi.conf", "&&", "/usr/sbin/nginx", "-g", "daemon off;"]
