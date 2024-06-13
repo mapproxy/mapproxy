@@ -1,8 +1,5 @@
 #!/bin/sh
 
-TARGET=$1
-done=0
-trap 'done=1' TERM INT
 cd /mapproxy
 
 addgroup -S mapproxy && \
@@ -16,17 +13,4 @@ if [ ! -f /mapproxy/config/mapproxy.yaml ]; then
   mapproxy-util create -t base-config config
 fi
 
-if [ "$TARGET" = "nginx" ]; then
-  su mapproxy -c "uwsgi --ini /mapproxy/uwsgi.conf --uid mapproxy &"
-  nginx &
-elif [ "$TARGET" = 'development' ]; then
-  su mapproxy -c "mapproxy-util serve-develop -b 0.0.0.0 /mapproxy/config/mapproxy.yaml &"
-else
-  echo "No-op container started. Overwrite ENTRYPOINT with needed mapproxy command."
-  su mapproxy -c "sleep infinity &"
-fi
-
-while [ $done = 0 ]; do
-  sleep 1 &
-  wait
-done
+su mapproxy -c "$@"

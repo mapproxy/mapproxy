@@ -18,16 +18,16 @@ WORKDIR /mapproxy
 
 COPY app.py .
 
-COPY start_alpine.sh /start_alpine.sh
+COPY entrypoint-alpine.sh .
 
-ENTRYPOINT ["sh", "-c", "/start_alpine.sh base"]
+ENTRYPOINT ["./entrypoint-alpine.sh"]
 
 ###### development image ######
 FROM base AS development
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "/start_alpine.sh development"]
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mapproxy.yaml"]
 
 ##### nginx image ######
 FROM base AS nginx
@@ -67,4 +67,4 @@ COPY nginx-alpine-default.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
-ENTRYPOINT ["sh", "-c", "/start_alpine.sh nginx"]
+CMD ["/usr/local/bin/uwsgi", "--ini", "/mapproxy/uwsgi.conf", "&&", "/usr/sbin/nginx", "-g", "daemon off;"]
