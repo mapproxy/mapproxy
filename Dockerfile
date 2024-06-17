@@ -1,3 +1,14 @@
+FROM python:3.10-slim-bookworm AS builder
+
+COPY . mapproxy/
+
+WORKDIR mapproxy
+
+RUN pip install -e .
+
+RUN python setup.py egg_info -b "" -D bdist_wheel
+
+
 FROM python:3.10-slim-bookworm AS base
 
 LABEL maintainer="mapproxy.org"
@@ -26,16 +37,23 @@ WORKDIR /mapproxy
 # fix potential issue finding correct shared library libproj (fixed in newer releases)
 RUN ln -s /usr/lib/`uname -m`-linux-gnu/libproj.so /usr/lib/`uname -m`-linux-gnu/liblibproj.so
 
-RUN pip install MapProxy==$MAPPROXY_VERSION && \
-    # temporary fix for v1.15.1
-    if [ "$MAPPROXY_VERSION" = '1.15.1' ]; then pip install six; fi && \
-    pip cache purge
+COPY --from=builder /mapproxy/dist/MapProxy-*.whl .
 
-COPY app.py .
+RUN ls
 
-COPY entrypoint.sh .
+RUN ls ./MapProxy-*.whl
+
+RUN pip install $(ls ./MapProxy-*.whl) && \
+    pip cache purge && \
+    rm MapProxy-*.whl
+
+COPY docker/app.py .
+
+COPY docker/entrypoint.sh .
 
 ENTRYPOINT ["./entrypoint.sh"]
+
+CMD ["echo", "no CMD given"]
 
 ###### development image ######
 
@@ -59,9 +77,9 @@ RUN apt-get -y --purge autoremove \
 RUN pip install uwsgi && \
     pip cache purge
 
-COPY uwsgi.conf .
+COPY docker/uwsgi.conf .
 
-COPY nginx-default.conf /etc/nginx/sites-enabled/default
+COPY docker/nginx-default.conf /etc/nginx/sites-enabled/default
 
 EXPOSE 80
 
