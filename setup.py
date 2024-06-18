@@ -7,7 +7,8 @@ from setuptools import setup, find_packages
 install_requires = [
     'PyYAML>=3.0',
     'future',
-    'pyproj>=2'
+    'pyproj>=2',
+    'boto3==1.34'
 ]
 
 
