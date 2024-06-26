@@ -9,7 +9,7 @@ trap 'done=1' TERM INT
 # run uswgi and nginx in parallel
 uwsgi --ini /mapproxy/uwsgi.conf &
 echo "uswgi started"
-nginx -g "daemon off;" &
+nginx &
 echo "nginx started"
 
 # check once a second if done is set
