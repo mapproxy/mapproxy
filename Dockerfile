@@ -1,21 +1,6 @@
-FROM python:3.10-slim-bookworm AS builder
-
-COPY . mapproxy/
-
-WORKDIR mapproxy
-
-RUN pip install -e .
-
-RUN python setup.py egg_info -b "" -D bdist_wheel
-
-
-FROM python:3.10-slim-bookworm AS base
+FROM python:3.10-slim-bookworm AS base-libs
 
 LABEL maintainer="mapproxy.org"
-
-# The MAPPROXY_VERSION argument can be used like this to overwrite the default:
-# docker build --build-arg MAPPROXY_VERSION=1.15.1 [--target base|development|nginx] -t mapproxy:1.15.1 .
-ARG MAPPROXY_VERSION=1.16.0
 
 RUN apt update && apt -y install --no-install-recommends \
   python3-pil \
@@ -25,27 +10,46 @@ RUN apt update && apt -y install --no-install-recommends \
   python3-lxml \
   libgdal-dev \
   python3-shapely \
-  libxml2-dev libxslt-dev && \
+  libxml2-dev \
+  libxslt-dev && \
   apt-get -y --purge autoremove && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
+
+FROM base-libs AS builder
+
+RUN mkdir mapproxy
+
+WORKDIR mapproxy
+
+COPY setup.py README.md CHANGES.txt MANIFEST.in ./
+COPY mapproxy mapproxy
+
+RUN rm -rf dist/*
+RUN pip wheel . -w dist
+
+
+FROM base-libs as base
+
 RUN mkdir /mapproxy
+
+RUN groupadd mapproxy && \
+    useradd --home-dir /mapproxy -s /bin/bash -g mapproxy mapproxy && \
+    chown -R mapproxy:mapproxy /mapproxy
+
+USER mapproxy:mapproxy
 
 WORKDIR /mapproxy
 
-# fix potential issue finding correct shared library libproj (fixed in newer releases)
-RUN ln -s /usr/lib/`uname -m`-linux-gnu/libproj.so /usr/lib/`uname -m`-linux-gnu/liblibproj.so
+ENV PATH="${PATH}:/mapproxy/.local/bin"
 
-COPY --from=builder /mapproxy/dist/MapProxy-*.whl .
+RUN mkdir mapproxy-dist
+COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
-RUN ls
-
-RUN ls ./MapProxy-*.whl
-
-RUN pip install $(ls ./MapProxy-*.whl) && \
-    pip cache purge && \
-    rm MapProxy-*.whl
+RUN pip install werkzeug==1.0.1 && \
+  pip install --find-links=./mapproxy-dist --no-index MapProxy && \
+  pip cache purge
 
 COPY docker/app.py .
 
@@ -67,12 +71,14 @@ CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mappro
 
 FROM base AS nginx
 
-RUN apt update && apt -y install --no-install-recommends nginx gcc
+USER root:root
 
-# cleanup
-RUN apt-get -y --purge autoremove \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt -y install --no-install-recommends nginx gcc \
+  && apt-get -y --purge autoremove \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+USER mapproxy:mapproxy
 
 RUN pip install uwsgi && \
     pip cache purge
@@ -81,6 +87,18 @@ COPY docker/uwsgi.conf .
 
 COPY docker/nginx-default.conf /etc/nginx/sites-enabled/default
 
+COPY docker/run-nginx.sh .
+
 EXPOSE 80
 
-CMD ["/usr/local/bin/uwsgi", "--ini", "/mapproxy/uwsgi.conf", "&&", "/usr/sbin/nginx", "-g", "daemon off;"]
+USER root:root
+
+RUN chown -R mapproxy:mapproxy /var/log/nginx \
+    && chown -R mapproxy:mapproxy /var/lib/nginx \
+    && chown -R mapproxy:mapproxy /etc/nginx/conf.d \
+    && touch /var/run/nginx.pid \
+    && chown -R mapproxy:mapproxy /var/run/nginx.pid
+
+USER mapproxy:mapproxy
+
+CMD ["./run-nginx.sh"]
