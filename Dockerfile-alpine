@@ -55,9 +55,9 @@ RUN pip install werkzeug==1.0.1 && \
 
 COPY docker/app.py .
 
-COPY docker/entrypoint-alpine.sh .
+COPY docker/entrypoint.sh .
 
-ENTRYPOINT ["./entrypoint-alpine.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["echo", "no CMD given"]
 
