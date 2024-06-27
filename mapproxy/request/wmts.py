@@ -144,8 +144,23 @@ class WMTS100TileRequest(WMTSRequest):
                       'tilematrix', 'tilerow', 'tilecol', 'format']
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
+        self.extra_params = self._get_extra_params(param)
         WMTSRequest.__init__(self, param=param, url=url, validate=validate,
                              non_strict=non_strict, **kw)
+
+    def _get_extra_params(self, param):
+        if param:
+            # All parameters that aren't standard WMTS parameters or dimensions
+            wmts_keys = list(self.fixed_params.keys()) + self.expected_param
+            keys = []
+            if isinstance(param, RequestParams):
+                keys = list(map(lambda k: k[0], param.iteritems()))
+            else:
+                keys = list(param.keys())
+            extra_keys = set(keys) - set(wmts_keys)
+            extra_params = dict([(key, param.get(key)) for key in extra_keys])
+            return extra_params
+        return {}
 
     def make_request(self):
         self.layer = self.params.layer
@@ -345,6 +360,7 @@ class WMTS100RestTileRequest(TileRequest):
         self.dimensions = {}
         self.req_vars = req_vars
         self.url_converter = url_converter
+        self.extra_params = self._get_extra_params(request.args)
 
     def make_request(self):
         """

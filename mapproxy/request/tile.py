@@ -50,6 +50,7 @@ class TileRequest(object):
         self.origin = self.http.args.get('origin')
         if self.origin not in ('sw', 'nw', None):
             self.origin = None
+        self.extra_params = self._get_extra_params(request.args)
 
     def _init_request(self):
         """
@@ -68,6 +69,13 @@ class TileRequest(object):
             self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
         if not self.format:
             self.format = match.group('format')
+
+    def _get_extra_params(self, param):
+        if param:
+            # Treat all query string parameters as extra_parameters
+            extra_params = dict((key, param.get(key)) for key in param.keys())
+            return extra_params
+        return {}
 
     @property
     def exception_handler(self):
@@ -106,6 +114,7 @@ class TMSRequest(TileRequest):
             self.request_handler_name = 'tms_root_resource'
         else:
             self._init_request()
+        self.extra_params = dict((key, request.args.get(key)) for key in request.args.keys())
 
     @property
     def exception_handler(self):
