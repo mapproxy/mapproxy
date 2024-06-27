@@ -7,7 +7,9 @@ from setuptools import setup, find_packages
 install_requires = [
     'PyYAML>=3.0',
     'future',
-    'pyproj>=2'
+    'pyproj>=2',
+    'jsonschema',
+    'importlib_resources'
 ]
 
 
@@ -75,7 +77,7 @@ setup(
             'mapproxy-util = mapproxy.script.util:main',
         ],
     },
-    package_data={'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
+    package_data={'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini', '*.json']},
     install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
