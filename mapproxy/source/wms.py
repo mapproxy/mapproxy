@@ -128,7 +128,8 @@ class WMSSource(MapLayer):
         size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
         if size[0] == 0 or size[1] == 0:
             raise BlankImage()
-        src_query = MapQuery(bbox, size, query.srs, format, dimensions=query.dimensions)
+        src_query = MapQuery(bbox, size, query.srs, format,
+                             dimensions=query.dimensions, extra_params=query.extra_params)
         resp = self.client.retrieve(src_query, format)
         return SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
 
@@ -147,7 +148,8 @@ class WMSSource(MapLayer):
         else:
             src_size = int(dst_size[1]*ratio + 0.5), dst_size[1]
 
-        src_query = MapQuery(src_bbox, src_size, src_srs, format, dimensions=query.dimensions)
+        src_query = MapQuery(src_bbox, src_size, src_srs, format,
+                             dimensions=query.dimensions, extra_params=query.extra_params)
 
         if self.coverage and not self.coverage.contains(src_bbox, src_srs):
             img = self._get_sub_query(src_query, format)

@@ -159,8 +159,11 @@ class MapQuery(object):
         info = self.__dict__
         serialized_dimensions = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.dimensions.items()])
         info["serialized_dimensions"] = serialized_dimensions
+        serialized_extra_params = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.extra_params.items()])
+        info["serialized_extra_params"] = serialized_extra_params
         return ("MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s,"
-                " dimensions={%(serialized_dimensions)s)}") % info
+                " dimensions={%(serialized_dimensions)s}"
+                " extra_params={%(serialized_extra_params)s})") % info
 
 
 class InfoQuery(object):
@@ -462,7 +465,8 @@ class CacheMapLayer(MapLayer):
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             if size[0] == 0 or size[1] == 0:
                 raise BlankImage()
-            src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
+            src_query = MapQuery(bbox, size, query.srs, query.format,
+                                 dimensions=query.dimensions, extra_params=query.extra_params)
             resp = self._image(src_query)
             result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
                                     cacheable=resp.cacheable)
