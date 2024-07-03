@@ -22,9 +22,9 @@ RUN apk -U upgrade --update \
 
 FROM base-libs AS builder
 
-RUN mkdir mapproxy
+RUN mkdir /mapproxy
 
-WORKDIR mapproxy
+WORKDIR /mapproxy
 
 COPY setup.py README.md CHANGES.txt MANIFEST.in ./
 COPY mapproxy mapproxy
