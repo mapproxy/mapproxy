@@ -15,8 +15,9 @@
 import itertools
 import json
 import os.path
-from typing import List, Dict, Set, Tuple, Union
+from typing import List, Dict, Set, Tuple, Union, Iterable
 
+from jsonschema.exceptions import ValidationError
 from jsonschema.validators import Draft202012Validator
 
 import mapproxy.config.defaults
@@ -36,14 +37,21 @@ TAGGED_SOURCE_TYPES = [
 ]
 
 
-def make_path_readable(json_path: str) -> str:
-    return json_path.replace('$', 'root')
+def get_error_messages(errors: Iterable[ValidationError]) -> List[str]:
+    msgs = []
+    for error in errors:
+        path = error.json_path.replace('$', 'root')
+        msg = f'{error.message} in {path}'
+        msgs.append(msg)
+        if error.context is not None:
+            msgs += get_error_messages(error.context)
+    return msgs
 
 
 def validate(conf_dict: Dict) -> List[str]:
     validator = Draft202012Validator(schema=schema)
     errors_iter = validator.iter_errors(conf_dict)
-    errors = [] if errors_iter is None else [f'{e.message} in {make_path_readable(e.json_path)}' for e in errors_iter]
+    errors = [] if errors_iter is None else get_error_messages(errors_iter)
 
     layers_conf = conf_dict.get('layers')
 

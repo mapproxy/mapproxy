@@ -50,6 +50,11 @@
                   "description": "The metadata config for the wms service",
                   "$ref": "#/$defs/metadata"
                 },
+                "inspire_md": {
+                  "title": "md",
+                  "description": "The inspire metadata config for the wms service",
+                  "type": "object"
+                },
                 "srs": {
                   "title": "srs",
                   "description": "Supported SRS of the WMS service",
@@ -600,7 +605,8 @@
           "title": "cache",
           "description": "Configure type of the cache"
         }
-      }
+      },
+      "required": ["sources"]
     },
 
     "metaSize": {
@@ -701,7 +707,14 @@
               "type": "string"
             },
             "postcode": {
-              "type": "integer"
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
             },
             "state": {
               "type": "string"

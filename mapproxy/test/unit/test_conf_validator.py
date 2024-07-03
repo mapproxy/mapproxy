@@ -127,6 +127,7 @@ class TestValidator(object):
             caches:
                 one_cache:
                     grids: [MYGRID_OTHERGRID]
+                    sources: []
             grids:
                 MYGRID:
                     base: GLOBAL_GEODETIC
