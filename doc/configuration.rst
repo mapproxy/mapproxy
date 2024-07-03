@@ -65,7 +65,7 @@ There are other optional sections:
 
 - ``base``
 
-  You can split a configuration into multiple files with the ``base`` option. 
+  You can split a configuration into multiple files with the ``base`` option.
 
   The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
@@ -93,7 +93,7 @@ There are other optional sections:
 
   .. code-block:: YAML
 
-    layers: 
+    layers:
       - name: lake
         sources: [cache_lake]
         # ...
@@ -103,7 +103,7 @@ There are other optional sections:
       - name: forest
         sources: [cache_forest]
         # ...
-    caches: 
+    caches:
       - cache_lake
         sources: ['src_mymap:lake']
       - cache_river
@@ -115,14 +115,14 @@ There are other optional sections:
 
   .. code-block:: YAML
 
-    layers: 
+    layers:
       - name: road
         sources: [cache_road]
         # ...
       - name: power_plant
         sources: [cache_power_plant]
         # ...
-    caches: 
+    caches:
       - cache_road
         sources: ['src_mymap:road']
       - cache_power_plant
@@ -141,13 +141,13 @@ There are other optional sections:
       sources:
         src_mymap:
         src_energy:
-      layers: 
+      layers:
         - name: lake
         - name: river
         - name: forest
         - name: road
         - name: power_plant
-      caches: 
+      caches:
         - cache_lake
         - cache_river
         - cache_forest
@@ -416,7 +416,7 @@ Available options are:
 ``sources``
 """""""""""
 
-A list of data sources for this cache. You can use sources defined in the ``sources`` and ``caches`` section. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
+A list of data sources for this cache. You can use sources defined in the ``sources`` and ``caches`` section. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk. If you want to use an existing cache without a source, set it to an empty array.
 
 ::
 
@@ -928,7 +928,7 @@ Here you can define some internals of MapProxy and default values that are used 
 ``background``
 """"""""""""""
 
-Configuration of the background displayed in the map viewer. This background map can be observed in the /demo service 
+Configuration of the background displayed in the map viewer. This background map can be observed in the /demo service
 of MapProxy, in any of the three types of service (WMS, WMTS and TMS).
 
 .. _background_url:
@@ -1057,7 +1057,7 @@ The following options define how tiles are created and stored. Most options can 
   With the following configuration, WMS requests for EPSG:25831 are served from a cache with EPSG:25832, if there is no cache for EPSG:25831.
 
     .. code-block:: yaml
-      
+
       srs:
         preferred_src_proj:
           'EPSG:25831': ['EPSG:25832', 'EPSG:3857']
@@ -1097,7 +1097,7 @@ The following options define how tiles are created and stored. Most options can 
   your SRS.:
 
   .. code-block:: yaml
-    
+
     srs:
       # for North/East ordering
       axis_order_ne: ['EPSG:9999', 'EPSG:9998']
