@@ -19,9 +19,9 @@ RUN apt update && apt -y install --no-install-recommends \
 
 FROM base-libs AS builder
 
-RUN mkdir mapproxy
+RUN mkdir /mapproxy
 
-WORKDIR mapproxy
+WORKDIR /mapproxy
 
 COPY setup.py README.md CHANGES.txt MANIFEST.in ./
 COPY mapproxy mapproxy
@@ -30,7 +30,7 @@ RUN rm -rf dist/*
 RUN pip wheel . -w dist
 
 
-FROM base-libs as base
+FROM base-libs AS base
 
 RUN mkdir /mapproxy
 
