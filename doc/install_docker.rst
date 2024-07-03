@@ -91,25 +91,26 @@ Afterwards, the `MapProxy` instance is running on http://localhost/mapproxy/demo
 Build your own image
 --------------------
 
-The Dockerfiles contain a setup that will build the current state of the software in a builder image
+The Dockerfiles contain a setup that will build the current state of the repository in a builder image.
+
 
 For the `plain` image without starting a webserver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target base -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0 .
+  docker build --target base -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0 .
 
 For the `dev` image
 ~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target development -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev .
+  docker build --target development -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev .
 
 For the `nginx` image
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target nginx -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx .
+  docker build --target nginx -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx .
