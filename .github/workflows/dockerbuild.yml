@@ -4,12 +4,6 @@ permissions:
   packages: write
 
 on:
-  workflow_dispatch:
-    inputs:
-      tags:
-        description: 'Manual supplied image tag like 1.16.0'
-        required: true
-        type: string
   push:
     tags:
       - "*.*.*"
@@ -24,6 +18,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            latest=false
           images: |
             ghcr.io/${{ github.repository }}/mapproxy
           tags: |
@@ -44,140 +40,54 @@ jobs:
 
       - name: Build and push base image
         uses: docker/build-push-action@v5
-        if: ${{ inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile
+          file: ./Dockerfile
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ inputs.tags }}
           target: base
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build and push base image
-        uses: docker/build-push-action@v5
-        if: ${{ !inputs.tags }}
-        with:
-          context: docker/
-          file: ./docker/Dockerfile
-          push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          target: base
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build and push base alpine image
-        uses: docker/build-push-action@v5
-        if: ${{ inputs.tags }}
-        with:
-          context: docker/
-          file: ./docker/Dockerfile-alpine
-          push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ inputs.tags }}
-          target: base
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-alpine
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build and push base alpine image
-        uses: docker/build-push-action@v5
-        if: ${{ !inputs.tags }}
-        with:
-          context: docker/
-          file: ./docker/Dockerfile-alpine
-          push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          target: base
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-alpine
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
         uses: docker/build-push-action@v5
-        if: ${{ inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile
+          file: ./Dockerfile
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ inputs.tags }}
           target: development
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-dev
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build and push development image
-        uses: docker/build-push-action@v5
-        if: ${{ !inputs.tags }}
-        with:
-          context: docker/
-          file: ./docker/Dockerfile
-          push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          target: development
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-dev
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
         uses: docker/build-push-action@v5
-        if: ${{ inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile
+          file: ./Dockerfile
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ inputs.tags }}
           target: nginx
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-nginx
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-nginx
           platforms: linux/amd64,linux/arm64
 
-      - name: Build and push nginx image
+      - name: Build and push base alpine image
         uses: docker/build-push-action@v5
-        if: ${{ !inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile
+          file: ./Dockerfile-alpine
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          target: nginx
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
+          target: base
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine
           platforms: linux/amd64,linux/arm64
 
-      - name: Build and push alpine based nginx image
+      - name: Build and push alpine development image
         uses: docker/build-push-action@v5
-        if: ${{ inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile-alpine
+          file: ./Dockerfile-alpine
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ inputs.tags }}
-          target: nginx
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-alpine-nginx
+          target: development
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push alpine based nginx image
         uses: docker/build-push-action@v5
-        if: ${{ !inputs.tags }}
         with:
-          context: docker/
-          file: ./docker/Dockerfile-alpine
+          file: ./Dockerfile-alpine
           push: true
-          build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: nginx
-          tags: |
-            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-alpine-nginx
+          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine-nginx
           platforms: linux/amd64,linux/arm64
