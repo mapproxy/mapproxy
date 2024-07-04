@@ -1,0 +1,36 @@
+name: Release
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  pypi-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/MapProxyTest
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt update
+          sudo apt -y install --no-install-recommends python3-pil python3-yaml python3-pyproj libgeos-dev python3-lxml libgdal-dev python3-shapely libxml2-dev libxslt-dev
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+
+      - name: Make wheel
+        run: |
+          python setup.py egg_info -b "" -D sdist
+          python setup.py egg_info -b "" -D bdist_wheel
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
