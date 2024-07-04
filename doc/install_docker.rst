@@ -60,7 +60,7 @@ Running the `plain` image without starting a webserver
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
+  docker run --rm --name "mapproxy" -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
 
 Afterwards, the `MapProxy` instance is idling and you can connect with the container via e.g.
 
@@ -71,7 +71,7 @@ Running the `dev` image
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 8080:8080 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
+  docker run --rm --name "mapproxy" -p 8080:8080 -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
 
 Afterwards, the `MapProxy` instance is running on http://localhost:8080/demo/
 
@@ -81,7 +81,7 @@ Running the `nginx` image
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 80:80 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
+  docker run --rm --name "mapproxy" -p 80:80 -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 
 Afterwards, the `MapProxy` instance is running on http://localhost/mapproxy/demo/
 
