@@ -23,7 +23,7 @@ RUN mkdir /mapproxy
 
 WORKDIR /mapproxy
 
-COPY setup.py README.md CHANGES.txt MANIFEST.in ./
+COPY setup.py MANIFEST.in README.md CHANGES.txt AUTHORS.txt COPYING.txt LICENSE.txt ./
 COPY mapproxy mapproxy
 
 RUN rm -rf dist/*
