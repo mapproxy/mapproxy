@@ -80,7 +80,7 @@ class GeoReference(object):
 
         model_type = 2 if self.srs.is_latlong else 1
         tags[TIFF_GEOKEYDIRECTORYTAG] = (
-            1, 1, 0, 4,  # {KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
+            1, 1, 0, 3,  # {KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
             1024, 0, 1, model_type,  # 1 projected, 2 geographic (lat/long)
             1025, 0, 1, 1,  # 1 RasterIsArea, 2 RasterIsPoint
             3072, 0, 1, get_epsg_num(self.srs.srs_code),

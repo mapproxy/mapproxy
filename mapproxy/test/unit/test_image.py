@@ -588,7 +588,7 @@ def assert_geotiff_tags(img, expected_origin, expected_pixel_res, srs, projected
         expected_pixel_res[0], expected_pixel_res[1], 0.0,
     ))
     assert len(tags[TIFF_GEOKEYDIRECTORYTAG]) == 4*4
-    assert tags[TIFF_GEOKEYDIRECTORYTAG][0*4+3] == 4
+    assert tags[TIFF_GEOKEYDIRECTORYTAG][0*4+3] == 3
     assert tags[TIFF_GEOKEYDIRECTORYTAG][1*4+3] == (1 if projected else 2)
     assert tags[TIFF_GEOKEYDIRECTORYTAG][3*4+3] == srs
 
