@@ -1957,6 +1957,7 @@ class LayerConfiguration(ConfigurationBase):
                         md=md,
                         tile_manager=cache_source,
                         dimensions=dimensions,
+                        legend='legendurl' in self.conf and 'wms' in self.context.services.conf
                     )
                 )
 
