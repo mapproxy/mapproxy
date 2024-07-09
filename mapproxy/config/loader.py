@@ -1950,6 +1950,12 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
                 md['extent'] = extent
+                legend_version = None
+                if 'legendurl' in self.conf:
+                    wms_conf = self.context.services.conf.get('wms', None)
+                    # GetLegendGraphic with legendurl does not seem to work in non 1.3.0 versions
+                    if wms_conf is not None and '1.3.0' in wms_conf.get('versions', ['1.3.0']):
+                        legend_version = '1.3.0'
                 tile_layers.append(
                     TileLayer(
                         self.conf['name'], self.conf['title'],
@@ -1957,7 +1963,7 @@ class LayerConfiguration(ConfigurationBase):
                         md=md,
                         tile_manager=cache_source,
                         dimensions=dimensions,
-                        legend='legendurl' in self.conf and 'wms' in self.context.services.conf
+                        legend_version=legend_version
                     )
                 )
 
