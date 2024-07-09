@@ -28,12 +28,14 @@ from mapproxy.request.wms import (
     WMS111LegendGraphicRequest,
     WMS130LegendGraphicRequest,
 )
+from mapproxy.request.wmts import WMTS100CapabilitiesRequest
 
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
 from mapproxy.test.system.test_wms import is_111_capa, assert_xpath_wms130, ns130
+from mapproxy.test.system.test_wmts import assert_xpath_wmts, ns_wmts
 
 
 @pytest.fixture(scope="module")
@@ -63,6 +65,10 @@ class TestWMSLegendgraphic(SysTest):
         self.common_lg_req_130 = WMS130LegendGraphicRequest(
             url="/service?",
             param=dict(format="image/png", layer="wms_legend", sld_version="1.1.0"),
+        )
+        self.common_wmts_cap_req = WMTS100CapabilitiesRequest(
+            url="/service?",
+            param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),
         )
 
     # test_00, test_01, test_02 need to run first in order to run the other tests properly
@@ -145,8 +151,8 @@ class TestWMSLegendgraphic(SysTest):
             xml.xpath("//Layer/Style/LegendURL/@height"),
         )
         assert legend_sizes == (
-            ["256", "256", "256", "256"],
-            ["512", "768", "256", "256"],
+            ["256", "256", "256", "256", "256"],
+            ["512", "768", "256", "256", "256"],
         )
         layer_urls = xml.xpath(
             "//Layer/Style/LegendURL/OnlineResource/@xlink:href", namespaces=ns130
@@ -306,3 +312,16 @@ class TestWMSLegendgraphic(SysTest):
             json_data = json.loads(json_str)
             assert json_data['Legend'][0]['layerName'] == 'foo'
             assert json_data['Legend'][1]['layerName'] == 'bar'
+
+    def test_wmts_legend_url(self, app):
+        resp = app.get(self.common_wmts_cap_req)
+        assert resp.content_type == "application/xml"
+        xml = resp.lxml
+        assert_xpath_wmts(
+            xml,
+            '//wmts:Layer[1]/wmts:Style/wmts:LegendURL/@xlink:href',
+            'http://localhost/service?service=WMS&request=GetLegendGraphic&version=1.3.0&format=image%2Fpng'
+            '&layer=wmts_layer_legendurl'
+        )
+        assert xml.xpath('count(//wmts:Layer)', namespaces=ns_wmts) == 2
+        assert xml.xpath('count(//wmts:LegendURL)', namespaces=ns_wmts) == 1

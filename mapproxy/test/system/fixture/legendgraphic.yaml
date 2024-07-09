@@ -27,6 +27,7 @@ services:
         email: info@example.org
       access_constraints:
         Here be dragons.
+  wmts:
 
 layers:
   - name: wms_legend
@@ -45,6 +46,13 @@ layers:
     title: Layer with a static LegendURL
     legendurl: http://localhost:42423/staticlegend_layer.png
     sources: [legendurl_static_2]
+  - name: wmts_layer_legendurl
+    title: WMTS Layer with a static LegendURL
+    legendurl: http://localhost:42423/staticlegend_layer.png
+    sources: [tile_cache]
+  - name: wmts_layer_no_legendurl
+    title: WMTS Layer without a static LegendURL
+    sources: [tile_cache]
 
 sources:
   legend_cache:
@@ -91,3 +99,9 @@ sources:
       url: http://localhost:42423/service
       layers: foo
 
+caches:
+  tile_cache:
+    cache:
+      type: file
+    grids: [GLOBAL_WEBMERCATOR]
+    sources: []
