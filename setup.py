@@ -92,5 +92,5 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",
     ],
-    zip_safe=False,
+    zip_safe=False
 )
