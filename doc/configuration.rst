@@ -499,7 +499,7 @@ You need to set the ``request_format`` to ``image/png`` when using ``mixed``-mod
 ``request_format``
 """"""""""""""""""
 
-MapProxy will try to use this format to request new tiles, if it is not set ``format`` is used. This option has no effect if the source does not support that format or the format of the source is set explicitly (see ``format`` for sources).
+MapProxy will try to use this format to request new tiles, if it is not set ``format`` is used. This option has no effect if the source does not support that format or the format of the cache is set explicitly (see ``format`` for caches or ``supported_formats`` for sources).
 
 
 .. _link_single_color_images:
