@@ -147,8 +147,7 @@ Start the test server
 
 To start a test server::
 
-    cd mymapproxy
-    mapproxy-util serve-develop mapproxy.yaml
+    mapproxy-util serve-develop mymapproxy/mapproxy.yaml
 
 There is already a test layer configured that obtains data from the `Omniscale OpenStreetMap WMS`_. Feel free to use this service for testing.
 
