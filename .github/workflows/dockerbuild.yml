@@ -34,17 +34,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          flavor: |
-            latest=false
-          images: |
-            ghcr.io/${{ github.repository }}/mapproxy
-          tags: |
-            type=semver,pattern={{version}}
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -62,7 +51,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile
-          push: false
+          push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}
           platforms: linux/amd64,linux/arm64
@@ -71,7 +60,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile
-          push: false
+          push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-dev
           platforms: linux/amd64,linux/arm64
@@ -80,31 +69,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile
-          push: false
+          push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
           platforms: linux/amd64,linux/arm64
-
-  run-trivy:
-    needs:
-      - get-version
-      - build-and-publish-ubuntu
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          format: 'table'
-          ignore-unfixed: true
-          image-ref: ${{ needs.get-version.outputs.version }}
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          vuln-type: 'os,library'
-
-#      - name: Upload Trivy scan results to GitHub Security tab
-#        uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: 'trivy-results.sarif'
 
   build-and-publish-alpine:
     needs: get-version
@@ -112,17 +80,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          flavor: |
-            latest=false
-          images: |
-            ghcr.io/${{ github.repository }}/mapproxy
-          tags: |
-            type=semver,pattern={{version}}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -141,7 +98,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile-alpine
-          push: false
+          push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}-alpine
           platforms: linux/amd64,linux/arm64
@@ -150,7 +107,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile-alpine
-          push: false
+          push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-alpine-dev
           platforms: linux/amd64,linux/arm64
@@ -159,7 +116,28 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ./Dockerfile-alpine
-          push: false
+          push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-alpine-nginx
           platforms: linux/amd64,linux/arm64
+
+  run-trivy:
+    needs:
+      - get-version
+      - build-and-publish-ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          format: 'table'
+          ignore-unfixed: true
+          image-ref: ${{ needs.get-version.outputs.version }}
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
