@@ -15,8 +15,6 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
-      with:
-        ref: upgrade-docs
 
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
