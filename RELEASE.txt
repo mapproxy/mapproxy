@@ -5,7 +5,9 @@ Preparation
 -----------
 
 - Update CHANGES.txt with all important changes. Verify version and date in header line.
-- Update version in `setup.py` and `doc/conf.py`.
+  - You can use the git compare function for that, e.g.:
+    - https://github.com/mapproxy/mapproxy/compare/2.0.2...master
+- Update version in `setup.py`.
 - Commit and push updates (`git commit -m 'dev: prepare 2.0.2 release'`, `git push`)
 - Create tag and push tag (`git tag 2.0.2`, `git push --tags`)
 
