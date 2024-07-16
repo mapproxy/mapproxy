@@ -7,7 +7,7 @@ This tutorial was created and tested with Debian and Ubuntu, if you're installin
 
 MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 2.7.9 or higher, you can install MapProxy with::
 
-  sudo python -m pip install MapProxy
+  python -m pip install MapProxy
 
 This is really, easy `but` we recommend to install MapProxy into a `virtual Python environment`_. A ``virtualenv`` is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don't need root permissions for the installation.
 
