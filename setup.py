@@ -8,8 +8,9 @@ install_requires = [
     'PyYAML>=3.0',
     'future',
     'pyproj>=2',
-    'jsonschema',
-    'importlib_resources'
+    'jsonschema>=4',
+    'importlib_resources',
+    'werkzeug==1.0.1'
 ]
 
 
