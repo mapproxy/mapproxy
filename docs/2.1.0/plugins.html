@@ -1,0 +1,696 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Writing plugins &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'plugins';</script>
+    <link rel="canonical" href="/mapproxy/plugins.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Development" href="development.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Writing plugins</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-add-a-plugin">How to add a plugin ?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-service">Adding a new service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-layer-metadata-in-yaml-configuration-file">Customizing layer metadata in YAML configuration file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-source">Adding a new source</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-the-demo-service">Customizing the demo service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-new-commands-to-mapproxy-util">Adding new commands to mapproxy-util</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#credits">Credits</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="writing-plugins">
+<h1>Writing plugins<a class="headerlink" href="#writing-plugins" title="Permalink to this heading">#</a></h1>
+<p>Since MapProxy 1.15, it is possible to write plugins for MapProxy that can
+add new sources, services or commands. This requires Python &gt;= 3.7</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h2>
+<p>The mapproxy_hips plugin at <a class="github reference external" href="https://github.com/rouault/mapproxy_hips">rouault/mapproxy_hips</a> is an
+example of a plugin, which adds a new source, service and customizes the demo
+service, demonstrating all the below points.</p>
+</section>
+<section id="how-to-add-a-plugin">
+<h2>How to add a plugin ?<a class="headerlink" href="#how-to-add-a-plugin" title="Permalink to this heading">#</a></h2>
+<p>A plugin should be written as a Python package whose setuptools <code class="docutils literal notranslate"><span class="pre">setup()</span></code>
+method has a <code class="docutils literal notranslate"><span class="pre">entry_points</span></code> keyword with a group <code class="docutils literal notranslate"><span class="pre">mapproxy</span></code> pointing to
+a module with a <code class="docutils literal notranslate"><span class="pre">plugin_entrypoint</span></code> method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">entry_points</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mapproxy&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;hips = mapproxy_hips.pluginmodule&quot;</span><span class="p">]},</span>
+</pre></div>
+</div>
+<p>In this example, the <code class="docutils literal notranslate"><span class="pre">mapproxy_hips/pluginmodule.py</span></code> file should have
+a <code class="docutils literal notranslate"><span class="pre">plugin_entrypoint</span></code> method taking no argument and returning nothing.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plugin_entrypoint</span><span class="p">():</span>
+    <span class="c1"># call different registration methods, like register_service_configuration(),</span>
+    <span class="c1"># register_source_configuration()</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>That method is in charge of registering the various registration methods
+detailed hereafter.</p>
+<p>Plugins will often by dependent on MapProxy internal classes. It is their
+responsibility to check the MapProxy version, in case the MapProxy internal
+API or behavior would change and make them incompatible.</p>
+</section>
+<section id="adding-a-new-service">
+<h2>Adding a new service<a class="headerlink" href="#adding-a-new-service" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">mapproxy.config.loader</span></code> module has a <code class="docutils literal notranslate"><span class="pre">register_service_configuration()</span></code>
+method to register a new service and specify the allowed keywords for it in
+the YAML configuration file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_service_configuration</span><span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="n">service_creator</span><span class="p">,</span>
+                                   <span class="n">yaml_spec_service_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yaml_spec_service_def</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new service.</span>
+
+<span class="sd">        :param config_name: Name of the service</span>
+<span class="sd">        :type config_name: str</span>
+<span class="sd">        :param service_creator: Creator method of the service</span>
+<span class="sd">        :type service_creator: method of type (serviceConfiguration: ServiceConfiguration, conf: dict) -&gt; Server</span>
+<span class="sd">        :param yaml_spec_service_name: Name of the service in the YAML configuration file</span>
+<span class="sd">        :type yaml_spec_service_name: str</span>
+<span class="sd">        :param yaml_spec_service_def: Definition of the service in the YAML configuration file</span>
+<span class="sd">        :type yaml_spec_service_def: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>This can for example by used like the following snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">register_service_configuration</span>
+<span class="kn">from</span> <span class="nn">mapproxy.service.base</span> <span class="kn">import</span> <span class="n">Server</span>
+
+<span class="k">class</span> <span class="nc">MyExtraServiceServer</span><span class="p">(</span><span class="n">Server</span><span class="p">):</span>
+    <span class="c1"># Look at classes at https://github.com/mapproxy/mapproxy/tree/master/mapproxy/service</span>
+    <span class="c1"># for a real implementation</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;my_extra_service&#39;</span><span class="p">,)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">my_extra_service_method</span><span class="p">(</span><span class="n">serviceConfiguration</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MyExtraServiceServer</span><span class="p">()</span>
+
+<span class="n">register_service_configuration</span><span class="p">(</span><span class="s1">&#39;my_extra_service&#39;</span><span class="p">,</span> <span class="n">my_extra_service_method</span><span class="p">,</span>
+                               <span class="s1">&#39;my_extra_service&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">()})</span>
+</pre></div>
+</div>
+<p>This allows the following declaration in the YAML mapproxy configuration file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">my_extra_service</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
+</pre></div>
+</div>
+<p>A real-world implementation can be found at <a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/service/hips.py">rouault/mapproxy_hips</a></p>
+</section>
+<section id="customizing-layer-metadata-in-yaml-configuration-file">
+<h2>Customizing layer metadata in YAML configuration file<a class="headerlink" href="#customizing-layer-metadata-in-yaml-configuration-file" title="Permalink to this heading">#</a></h2>
+<p>When implementing a new service, it might be useful to add per-layer metadata
+for it. The YAML validator needs to be updated to recognize the new keywords.
+The <code class="docutils literal notranslate"><span class="pre">add_subcategory_to_layer_md()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.config.spec</span></code> module
+can be used to do that.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_subcategory_to_layer_md</span><span class="p">(</span><span class="n">category_name</span><span class="p">,</span> <span class="n">category_def</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Add a new category to wms_130_layer_md.</span>
+<span class="sd">        Used by plugins</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>This can for example be used like in the following snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.spec</span> <span class="kn">import</span> <span class="n">add_subcategory_to_layer_md</span>
+
+<span class="c1"># Add a &#39;hips&#39; subcategory to layer spec to be able to define hips service</span>
+<span class="c1"># specific layer metadata</span>
+<span class="n">add_subcategory_to_layer_md</span><span class="p">(</span><span class="s1">&#39;hips&#39;</span><span class="p">,</span> <span class="n">anything</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-a-new-source">
+<h2>Adding a new source<a class="headerlink" href="#adding-a-new-source" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">mapproxy.config.loader</span></code> module has a <code class="docutils literal notranslate"><span class="pre">register_source_configuration()</span></code>
+method to register a new source and specify the allowed keywords for it in
+the YAML configuration file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_source_configuration</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">config_class</span><span class="p">,</span>
+                                  <span class="n">yaml_spec_source_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yaml_spec_source_def</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new source configuration.</span>
+
+<span class="sd">        :param config_name: Name of the source configuration</span>
+<span class="sd">        :type config_name: str</span>
+<span class="sd">        :param config_class: Class of the source configuration</span>
+<span class="sd">        :type config_name: SourceConfiguration</span>
+<span class="sd">        :param yaml_spec_source_name: Name of the source in the YAML configuration file</span>
+<span class="sd">        :type yaml_spec_source_name: str</span>
+<span class="sd">        :param yaml_spec_source_def: Definition of the source in the YAML configuration file</span>
+<span class="sd">        :type yaml_spec_source_def: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>This can for example by used like the following snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">register_source_configuration</span>
+<span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">SourceConfiguration</span>
+
+<span class="k">class</span> <span class="nc">my_source_configuration</span><span class="p">(</span><span class="n">SourceConfiguration</span><span class="p">):</span>
+    <span class="n">source_type</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;my_extra_source&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Look at classes at https://github.com/mapproxy/mapproxy/tree/master/mapproxy/source</span>
+        <span class="c1"># for a real implementation</span>
+        <span class="k">class</span> <span class="nc">MySource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">MySource</span><span class="p">()</span>
+
+<span class="n">register_source_configuration</span><span class="p">(</span><span class="s1">&#39;my_extra_source&#39;</span><span class="p">,</span> <span class="n">my_source_configuration</span><span class="p">,</span>
+                              <span class="s1">&#39;my_extra_source&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">()})</span>
+</pre></div>
+</div>
+<p>This allows the following declaration in the YAML mapproxy configuration file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">some_source_name</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_extra_source</span>
+<span class="w">        </span><span class="nt">foo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bar</span>
+</pre></div>
+</div>
+<p>A real-world implementation can be found at <a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/source/hips.py">rouault/mapproxy_hips</a></p>
+</section>
+<section id="customizing-the-demo-service">
+<h2>Customizing the demo service<a class="headerlink" href="#customizing-the-demo-service" title="Permalink to this heading">#</a></h2>
+<p>The <a class="reference internal" href="services.html#demo-service-label"><span class="std std-ref">MapProxy Demo Service</span></a> can be customized in two ways:</p>
+<ul>
+<li><p>Customizing the output of the <code class="docutils literal notranslate"><span class="pre">/demo</span></code> HTML output, typically by adding entries
+for new services. This is done with the <code class="docutils literal notranslate"><span class="pre">register_extra_demo_substitution_handler()</span></code>
+method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.service.demo</span></code> module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_extra_demo_substitution_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new handler for doing substitutions</span>
+<span class="sd">        to the HTML template used by the demo service.</span>
+<span class="sd">        The handler passed to this method is invoked by the DemoServer._render_template()</span>
+<span class="sd">        method. The handler may modify the passed substitutions dictionary</span>
+<span class="sd">        argument. Keys of particular interest are &#39;extra_services_html_beginning&#39;</span>
+<span class="sd">        and &#39;extra_services_html_end&#39; to add HTML content before/after built-in</span>
+<span class="sd">        services.</span>
+
+<span class="sd">        :param handler: New handler for incoming requests</span>
+<span class="sd">        :type handler: function that takes 3 arguments(DemoServer instance, req and a substitutions dictionary argument).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Handling new request paths under the <code class="docutils literal notranslate"><span class="pre">/demo/</span></code> hierarchy, typically to implement a new
+service. This is done with the <code class="docutils literal notranslate"><span class="pre">register_extra_demo_server_handler()</span></code>
+method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.service.demo</span></code> module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_extra_demo_server_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new handler for the demo service.</span>
+<span class="sd">        The handler passed to this method is invoked by the DemoServer.handle()</span>
+<span class="sd">        method when receiving an incoming request. This enables handlers to</span>
+<span class="sd">        process it, in case it is relevant to it.</span>
+
+<span class="sd">        :param handler: New handler for incoming requests</span>
+<span class="sd">        :type handler: function that takes 2 arguments (DemoServer instance and req) and</span>
+<span class="sd">                       returns a string with HTML content or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>This can for example be used like in the following snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.service.demo</span> <span class="kn">import</span> <span class="n">register_extra_demo_server_handler</span><span class="p">,</span> <span class="n">register_extra_demo_substitution_handler</span>
+
+<span class="k">def</span> <span class="nf">demo_server_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;my_service&#39;</span> <span class="ow">in</span> <span class="n">req</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;my_return&#39;</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">demo_substitution_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+    <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;h2&gt;My extra service&lt;/h2&gt;&#39;</span>
+    <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;a href=&quot;/demo?my_service&quot;&gt;My service&lt;/a&gt;&#39;</span>
+    <span class="n">substitutions</span><span class="p">[</span><span class="s1">&#39;extra_services_html_beginning&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">html</span>
+
+<span class="n">register_extra_demo_server_handler</span><span class="p">(</span><span class="n">demo_server_handler</span><span class="p">)</span>
+<span class="n">register_extra_demo_substitution_handler</span><span class="p">(</span><span class="n">demo_substitution_handler</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A real-world example can be found at <a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/service/demo_extra.py">rouault/mapproxy_hips</a></p>
+</section>
+<section id="adding-new-commands-to-mapproxy-util">
+<h2>Adding new commands to mapproxy-util<a class="headerlink" href="#adding-new-commands-to-mapproxy-util" title="Permalink to this heading">#</a></h2>
+<p>New commands can be added to <a class="reference internal" href="mapproxy_util.html#mapproxy-util"><span class="std std-ref">mapproxy-util</span></a> by using the
+<code class="docutils literal notranslate"><span class="pre">register_command()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.script.util</span></code> module</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_command</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">command_spec</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a command.</span>
+
+<span class="sd">        :param command_name: Name of the command</span>
+<span class="sd">        :type command_name: str</span>
+<span class="sd">        :param command_spec: Definition of the command. Dictionary with a &#39;func&#39; and &#39;help&#39; member</span>
+<span class="sd">        :type command_spec: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>This can for example be used like in the following snippet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">optparse</span>
+<span class="kn">from</span> <span class="nn">mapproxy.script.util</span> <span class="kn">import</span> <span class="n">register_command</span>
+
+<span class="k">def</span> <span class="nf">my_command</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">optparse</span><span class="o">.</span><span class="n">OptionParser</span><span class="p">(</span><span class="s2">&quot;%prog my_command [options] -f mapproxy_conf -l layer&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--mapproxy-conf&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;mapproxy_conf&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;MapProxy configuration.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;-l&quot;</span><span class="p">,</span> <span class="s2">&quot;--layer&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;layer&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Layer&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="c1"># remove script name</span>
+
+    <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">mapproxy_conf</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">layer</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Do something</span>
+
+
+<span class="n">register_command</span><span class="p">(</span><span class="s1">&#39;my_command&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s1">&#39;func&#39;</span><span class="p">:</span> <span class="n">my_command</span><span class="p">,</span>
+    <span class="s1">&#39;help&#39;</span><span class="p">:</span> <span class="s1">&#39;Do something.&#39;</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>A real-world example can be found at
+<a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/script/hipsallsky.py">rouault/mapproxy_hips</a>
+`</p>
+</section>
+<section id="credits">
+<h2>Credits<a class="headerlink" href="#credits" title="Permalink to this heading">#</a></h2>
+<p>The development of the plugin mechanism has been funded by
+Centre National d’Etudes Spatiales (CNES): <a class="reference external" href="https://cnes.fr">https://cnes.fr</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="development.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Development</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-add-a-plugin">How to add a plugin ?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-service">Adding a new service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-layer-metadata-in-yaml-configuration-file">Customizing layer metadata in YAML configuration file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-source">Adding a new source</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-the-demo-service">Customizing the demo service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-new-commands-to-mapproxy-util">Adding new commands to mapproxy-util</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#credits">Credits</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Jul 16, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

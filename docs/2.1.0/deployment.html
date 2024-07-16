@@ -1,0 +1,734 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Deployment &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'deployment';</script>
+    <link rel="canonical" href="/mapproxy/deployment.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration examples" href="configuration_examples.html" />
+    <link rel="prev" title="mapproxy-util autoconfig" href="mapproxy_util_autoconfig.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Deployment</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing">Testing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#production">Production</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#server-script">Server script</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apache-mod-wsgi">Apache mod_wsgi</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#behind-http-server-or-proxy">Behind HTTP server or proxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-http-server">Python HTTP Server</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#waitress">Waitress</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#uwsgi">uWSGI</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http-proxy">HTTP Proxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#nginx">nginx</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#apache">Apache</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-balancing-and-high-availability">Load Balancing and High Availability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#logging">Logging</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loggers">Loggers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enabling-logging">Enabling logging</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Server Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multimapproxy">MultiMapProxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Server Script</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="deployment">
+<h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this heading">#</a></h1>
+<p>MapProxy implements the Web Server Gateway Interface (WSGI) which is for Python what the Servlet API is for Java. There are different ways to deploy WSGI web applications.</p>
+<p>MapProxy comes with a simple HTTP server that is easy to start and sufficient for local testing, see <a class="reference internal" href="#deployment-testing"><span class="std std-ref">Testing</span></a>. For production and load testing it is recommended to choose one of the <a class="reference internal" href="#deployment-production"><span class="std std-ref">production setups</span></a>.</p>
+<section id="testing">
+<span id="deployment-testing"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">serve-develop</span></code> subcommand of <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code> starts an HTTP server for local testing. It takes an existing MapProxy configuration file as an argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>The server automatically reloads if the configuration or any code of MapProxy changes.</p>
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-serve-develop-bind">
+<span id="cmdoption-mapproxy-util-serve-develop-b"></span><span class="sig-name descname"><span class="pre">--bind</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-serve-develop-bind" title="Permalink to this definition">#</a></dt>
+<dd><p>Set the socket MapProxy should listen. Defaults to <code class="docutils literal notranslate"><span class="pre">localhost:8080</span></code>.
+Accepts either a port number or <code class="docutils literal notranslate"><span class="pre">hostname:portnumber</span></code>.</p>
+</dd></dl>
+
+<dl class="std cmdoption">
+<dt class="sig sig-object std" id="cmdoption-mapproxy-util-serve-develop-debug">
+<span class="sig-name descname"><span class="pre">--debug</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-mapproxy-util-serve-develop-debug" title="Permalink to this definition">#</a></dt>
+<dd><p>Start MapProxy in debug mode. If you have installed <a class="reference external" href="http://pypi.python.org/pypi/Werkzeug">Werkzeug</a>, you will get an interactive traceback in the web browser on any unhandled exception (internal error).</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This server is sufficient for local testing of the configuration, but it is <cite>not</cite> stable for production or load testing.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">serve-multiapp-develop</span></code> subcommand of <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code> works similar to <code class="docutils literal notranslate"><span class="pre">serve-develop</span></code> but takes a directory of MapProxy configurations. See <a class="reference internal" href="#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a>.</p>
+</section>
+<section id="production">
+<span id="deployment-production"></span><h2>Production<a class="headerlink" href="#production" title="Permalink to this heading">#</a></h2>
+<p>There are two common ways to deploy MapProxy in production.</p>
+<dl class="simple">
+<dt>Embedded in HTTP server</dt><dd><p>You can directly integrate MapProxy into your web server. Apache can integrate Python web services with the <code class="docutils literal notranslate"><span class="pre">mod_wsgi</span></code> extension for example.</p>
+</dd>
+<dt>Behind an HTTP server or proxy</dt><dd><p>You can run MapProxy as a separate local HTTP server behind an existing web server (<a class="reference external" href="http://nginx.org">nginx</a>, Apache, etc.) or an HTTP proxy (<a class="reference external" href="http://www.varnish-cache.org/">Varnish</a>, squid, etc).</p>
+</dd>
+</dl>
+<p>Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.</p>
+<section id="server-script">
+<span id="id1"></span><h3>Server script<a class="headerlink" href="#server-script" title="Permalink to this heading">#</a></h3>
+<p>You need a script that makes the configured MapProxy available for the Python WSGI servers.</p>
+<p>You can create a basic script with <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">create</span> <span class="o">-</span><span class="n">t</span> <span class="n">wsgi</span><span class="o">-</span><span class="n">app</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="n">config</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The script contains the following lines and makes the configured MapProxy available as <code class="docutils literal notranslate"><span class="pre">application</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;examples/minimal/etc/mapproxy.yaml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is sufficient for embedding MapProxy with <code class="docutils literal notranslate"><span class="pre">mod_wsgi</span></code> or for starting it with Python HTTP servers like <code class="docutils literal notranslate"><span class="pre">waitress</span></code> (see further below). You can extend this script to setup logging or to set environment variables.</p>
+<p>You can enable MapProxy to automatically reload the configuration if it changes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;examples/minimal/etc/mapproxy.yaml&#39;</span><span class="p">,</span> <span class="n">reloader</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="apache-mod-wsgi">
+<span id="index-0"></span><h2>Apache mod_wsgi<a class="headerlink" href="#apache-mod-wsgi" title="Permalink to this heading">#</a></h2>
+<p>The Apache HTTP server can directly integrate Python application with the <a class="reference external" href="http://www.modwsgi.org/">mod_wsgi</a> extension. The benefit is that you don’t have to start another server. Read <a class="reference external" href="https://modwsgi.readthedocs.io/en/latest/installation.html">mod_wsgi installation</a> for detailed instructions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mod_wsgi</span></code> requires a server script that defines the configured WSGI function as <code class="docutils literal notranslate"><span class="pre">application</span></code>. See <a class="reference internal" href="#server-script"><span class="std std-ref">above</span></a>.</p>
+<p>You need to modify your Apache <code class="docutils literal notranslate"><span class="pre">httpd.conf</span></code> as follows:</p>
+<div class="highlight-apache notranslate"><div class="highlight"><pre><span></span><span class="c"># if not loaded elsewhere</span>
+<span class="nb">LoadModule</span><span class="w"> </span>wsgi_module<span class="w"> </span>modules/mod_wsgi.so
+
+<span class="nb">WSGIScriptAlias</span><span class="w"> </span><span class="sx">/mapproxy</span><span class="w"> </span><span class="sx">/path/to/mapproxy/config.py</span>
+
+<span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/path/to/mapproxy/</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nb">Order</span><span class="w"> </span>deny,allow
+<span class="w">  </span><span class="nb">Allow</span><span class="w"> </span>from<span class="w"> </span><span class="k">all</span>
+<span class="nt">&lt;/Directory&gt;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mod_wsgi</span></code> has a lot of options for more fine tuning. <code class="docutils literal notranslate"><span class="pre">WSGIPythonHome</span></code> or <code class="docutils literal notranslate"><span class="pre">WSGIPythonPath</span></code> lets you configure your <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> and  <code class="docutils literal notranslate"><span class="pre">WSGIDaemonProcess</span></code>/<code class="docutils literal notranslate"><span class="pre">WSGIProcessGroup</span></code> allows you to start multiple processes. See the <a class="reference external" href="https://modwsgi.readthedocs.io/en/latest/user-guides/configuration-guidelines.html">mod_wsgi configuration directives documentation</a>. Using Mapnik also requires the <code class="docutils literal notranslate"><span class="pre">WSGIApplicationGroup</span></code> option.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>On Windows only the <code class="docutils literal notranslate"><span class="pre">WSGIPythonPath</span></code> option is supported. Linux/Unix supports <code class="docutils literal notranslate"><span class="pre">WSGIPythonPath</span></code> and <code class="docutils literal notranslate"><span class="pre">WSGIPythonHome</span></code>. See also the <a class="reference external" href="https://modwsgi.readthedocs.io/en/latest/user-guides/virtual-environments.html#virtual-environments">mod_wsgi documentation for virtualenv</a> for detailed information when using multiple virtualenvs.</p>
+</div>
+<p>A more complete configuration might look like:</p>
+<div class="highlight-apache notranslate"><div class="highlight"><pre><span></span><span class="c"># if not loaded elsewhere</span>
+<span class="nb">LoadModule</span><span class="w"> </span>wsgi_module<span class="w"> </span>modules/mod_wsgi.so
+
+<span class="nb">WSGIScriptAlias</span><span class="w"> </span><span class="sx">/mapproxy</span><span class="w"> </span><span class="sx">/path/to/mapproxy/config.py</span>
+<span class="nb">WSGIDaemonProcess</span><span class="w"> </span>mapproxy<span class="w"> </span><span class="k">user</span>=mapproxy<span class="w"> </span><span class="k">group</span>=mapproxy<span class="w"> </span>processes=8<span class="w"> </span>threads=25
+<span class="nb">WSGIProcessGroup</span><span class="w"> </span>mapproxy
+<span class="c"># WSGIPythonHome should contain the bin and lib dir of your virtualenv</span>
+<span class="nb">WSGIPythonHome</span><span class="w"> </span><span class="sx">/path/to/mapproxy/venv</span>
+<span class="nb">WSGIApplicationGroup</span><span class="w"> </span>%{GLOBAL}
+
+<span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/path/to/mapproxy/</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nb">Order</span><span class="w"> </span>deny,allow
+<span class="w">  </span><span class="c"># For Apache 2.4:</span>
+<span class="w">  </span><span class="nb">Require</span><span class="w"> </span><span class="k">all</span><span class="w"> </span>granted
+<span class="w">  </span><span class="c"># For Apache 2.2:</span>
+<span class="w">  </span><span class="c"># Allow from all</span>
+<span class="nt">&lt;/Directory&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="behind-http-server-or-proxy">
+<h2>Behind HTTP server or proxy<a class="headerlink" href="#behind-http-server-or-proxy" title="Permalink to this heading">#</a></h2>
+<p>There are Python HTTP servers available that can directly run MapProxy. Most of them are robust and efficient, but there are some odd HTTP clients out there that (mis)interpret the HTTP standard in various ways. It is therefor recommended to put a HTTP server or proxy in front that is mature and widely deployed (like <a class="reference external" href="http://httpd.apache.org/">Apache</a>, <a class="reference external" href="http://nginx.org">nginx</a>, etc.).</p>
+<section id="python-http-server">
+<h3>Python HTTP Server<a class="headerlink" href="#python-http-server" title="Permalink to this heading">#</a></h3>
+<p>You need start these servers in the background on start up. It is recommended to start it from systemd or upstart.</p>
+<section id="waitress">
+<h4>Waitress<a class="headerlink" href="#waitress" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://docs.pylonsproject.org/projects/waitress/en/stable/">Waitress</a> is a production-quality pure-Python WSGI server with very acceptable performance. It runs on Unix and Windows.</p>
+<p>You need a server script that creates the MapProxy application (see <a class="reference internal" href="#server-script"><span class="std std-ref">above</span></a>). The script needs to be in the directory from where you start <code class="docutils literal notranslate"><span class="pre">waitress</span></code> and it needs to end with <code class="docutils literal notranslate"><span class="pre">.py</span></code>.</p>
+<p>To start MapProxy with Waitress and our server script (without <code class="docutils literal notranslate"><span class="pre">.py</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">of</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="o">/</span>
+<span class="n">waitress</span> <span class="o">--</span><span class="n">listen</span> <span class="mf">127.0.0.1</span><span class="p">:</span><span class="mi">8080</span> <span class="n">config</span><span class="p">:</span><span class="n">application</span>
+</pre></div>
+</div>
+</section>
+<section id="uwsgi">
+<h4>uWSGI<a class="headerlink" href="#uwsgi" title="Permalink to this heading">#</a></h4>
+<p>uWSGI is another production-quality WSGI server. It is highly configurable and offers high performance (by running on multiple processors).</p>
+<p>The <a class="reference external" href="https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html">uWSGI documentation provides a quickstart</a>.</p>
+</section>
+</section>
+<section id="http-proxy">
+<h3>HTTP Proxy<a class="headerlink" href="#http-proxy" title="Permalink to this heading">#</a></h3>
+<p>You can either use a dedicated HTTP proxy like <a class="reference external" href="http://www.varnish-cache.org/">Varnish</a> or a general HTTP web server with proxy capabilities like Apache with <a class="reference external" href="http://httpd.apache.org/docs/current/mod/mod_proxy.html">mod_proxy</a> in front of MapProxy.</p>
+<p>You need to set some HTTP headers so that MapProxy can generate capability documents with the URL of the proxy, instead of the local URL of the MapProxy application.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Host</span></code> – is the hostname that clients use to access MapProxy (i.e. the proxy)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">X-Script-Name</span></code> – path of MapProxy when the URL is not <code class="docutils literal notranslate"><span class="pre">/</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">/mapproxy</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">X-Forwarded-Host</span></code> – alternative to <code class="docutils literal notranslate"><span class="pre">HOST</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">X-Forwarded-Proto</span></code> – should be <code class="docutils literal notranslate"><span class="pre">https</span></code> when the client connects with HTTPS</p></li>
+</ul>
+<section id="nginx">
+<h4>nginx<a class="headerlink" href="#nginx" title="Permalink to this heading">#</a></h4>
+<p>Here is an example for the <a class="reference external" href="http://nginx.org">nginx</a> webserver with the included proxy module. It forwards all requests to <code class="docutils literal notranslate"><span class="pre">example.org/mapproxy</span></code> to <code class="docutils literal notranslate"><span class="pre">localhost:8181/</span></code>:</p>
+<div class="highlight-nginx notranslate"><div class="highlight"><pre><span></span><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kn">server_name</span><span class="w"> </span><span class="s">example.org</span><span class="p">;</span>
+<span class="w">  </span><span class="kn">location</span><span class="w"> </span><span class="s">/mapproxy</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://localhost:8181</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$http_host</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Script-Name</span><span class="w"> </span><span class="s">/mapproxy</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="apache">
+<h4>Apache<a class="headerlink" href="#apache" title="Permalink to this heading">#</a></h4>
+<p>Here is an example for the <a class="reference external" href="http://httpd.apache.org/">Apache</a> webserver with the included <code class="docutils literal notranslate"><span class="pre">mod_proxy</span></code> and <code class="docutils literal notranslate"><span class="pre">mod_headers</span></code> modules. It forwards all requests to <code class="docutils literal notranslate"><span class="pre">example.org/mapproxy</span></code> to <code class="docutils literal notranslate"><span class="pre">localhost:8181/</span></code>:</p>
+<div class="highlight-apache notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;IfModule</span><span class="w"> </span><span class="s">mod_proxy.c</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;IfModule</span><span class="w"> </span><span class="s">mod_headers.c</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Location</span><span class="w"> </span><span class="s">/mapproxy</span><span class="nt">&gt;</span>
+<span class="w">                </span><span class="nb">ProxyPass</span><span class="w"> </span>http://localhost:8181
+<span class="w">                </span><span class="nb">ProxyPassReverse</span><span class="w">  </span>http://localhost:8181
+<span class="w">                </span><span class="nb">RequestHeader</span><span class="w"> </span>add<span class="w"> </span>X-Script-Name<span class="w"> </span><span class="s2">&quot;/mapproxy&quot;</span>
+<span class="w">        </span><span class="nt">&lt;/Location&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/IfModule&gt;</span>
+<span class="nt">&lt;/IfModule&gt;</span>
+</pre></div>
+</div>
+<p>You need to make sure that both modules are loaded. The <code class="docutils literal notranslate"><span class="pre">Host</span></code> is already set to the right value by default.</p>
+</section>
+</section>
+</section>
+<section id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this heading">#</a></h2>
+<p>Because of the way Python handles threads in computing heavy applications (like MapProxy WMS is), you should choose a server that uses multiple processes (pre-forking based) for best performance.</p>
+<p>The examples above are all minimal and you should read the documentation of your components to get the best performance with your setup.</p>
+</section>
+<section id="load-balancing-and-high-availability">
+<h2>Load Balancing and High Availability<a class="headerlink" href="#load-balancing-and-high-availability" title="Permalink to this heading">#</a></h2>
+<p>You can easily run multiple MapProxy instances in parallel and use a load balancer to distribute requests across all instances, but there are a few things to consider when the instances share the same tile cache with NFS or other network filesystems.</p>
+<p>MapProxy uses file locks to prevent that multiple processes will request the same image twice from a source. This would typically happen when two or more requests for missing tiles are processed in parallel by MapProxy and these tiles belong to the same meta tile. Without locking MapProxy would request the meta tile for each request. With locking, only the first process will get the lock and request the meta tile. The other processes will wait till the the first process releases the lock and will then use the new created tile.</p>
+<p>Since file locking doesn’t work well on most network filesystems you are likely to get errors when MapProxy writes these files on network filesystems. You should configure MapProxy to write all lock files on a local filesystem to prevent this. See <a class="reference internal" href="configuration.html#lock-dir"><span class="std std-ref">globals.cache.lock_dir</span></a> and <a class="reference internal" href="configuration.html#tile-lock-dir"><span class="std std-ref">globals.cache.tile_lock_dir</span></a>.</p>
+<p>With this setup the locking will only be effective when parallel requests for tiles of the same meta tile go to the same MapProxy instance. Since these requests are typically made from the same client you should enable <em>sticky sessions</em> in you load balancer when you offer tiled services (WMTS/TMS/KML).</p>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this heading">#</a></h2>
+<p>MapProxy uses the Python logging library for the reporting of runtime information, errors and warnings. You can configure the logging with Python code or with an ini-style configuration. Read the <a class="reference external" href="http://docs.python.org/howto/logging.html#configuring-logging">logging documentation for more information</a>.</p>
+<section id="loggers">
+<h3>Loggers<a class="headerlink" href="#loggers" title="Permalink to this heading">#</a></h3>
+<p>MapProxy uses multiple loggers for different parts of the system. The loggers build a hierarchy and are named in dotted-notation. <code class="docutils literal notranslate"><span class="pre">mapproxy</span></code> is the logger for everything, <code class="docutils literal notranslate"><span class="pre">mapproxy.source</span></code> is the logger for all sources, <code class="docutils literal notranslate"><span class="pre">mapproxy.source.wms</span></code> is the logger for all WMS sources, etc. If you configure on logger (e.g. <code class="docutils literal notranslate"><span class="pre">mapproxy</span></code>) then all sub-loggers will also use this configuration.</p>
+<p>Here are the most important loggers:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy.system</span></code></dt><dd><p>Logs information about the system and the installation (e.g. used projection library).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy.config</span></code></dt><dd><p>Logs information about the configuration.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy.source.XXX</span></code></dt><dd><p>Logs errors and warnings for service <code class="docutils literal notranslate"><span class="pre">XXX</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy.source.request</span></code></dt><dd><p>Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwidth is limited.</p>
+</dd>
+</dl>
+</section>
+<section id="enabling-logging">
+<h3>Enabling logging<a class="headerlink" href="#enabling-logging" title="Permalink to this heading">#</a></h3>
+<p>The <a class="reference internal" href="#deployment-testing"><span class="std std-ref">test server</span></a> is already configured to log all messages to the console (<code class="docutils literal notranslate"><span class="pre">stdout</span></code>). The other deployment options require a logging configuration.</p>
+<section id="id6">
+<h4>Server Script<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h4>
+<p>You can use the Python logging API or load an <code class="docutils literal notranslate"><span class="pre">.ini</span></code> configuration if you have a <a class="reference internal" href="#server-script"><span class="std std-ref">server script</span></a> for deployment.</p>
+<p>The example script created with <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">create</span> <span class="pre">-t</span> <span class="pre">wsgi-app</span></code> already contains code to load an <code class="docutils literal notranslate"><span class="pre">.ini</span></code> file. You just need to uncomment these lines and create a <code class="docutils literal notranslate"><span class="pre">log.ini</span></code> file. You can create an example <code class="docutils literal notranslate"><span class="pre">log.ini</span></code> with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">create</span> <span class="o">-</span><span class="n">t</span> <span class="n">log</span><span class="o">-</span><span class="n">ini</span> <span class="n">log</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="multimapproxy">
+<span id="index-1"></span><span id="id7"></span><h2>MultiMapProxy<a class="headerlink" href="#multimapproxy" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.2.0.</span></p>
+</div>
+<p>You can run multiple MapProxy instances (configurations) within one process with the MultiMapProxy application.</p>
+<p>MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: <code class="docutils literal notranslate"><span class="pre">conf/proj1.yaml</span></code> is available at <code class="docutils literal notranslate"><span class="pre">http://hostname/proj1/</span></code>.</p>
+<p>Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.</p>
+<p>MultiMapProxy as the following options:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">config_dir</span></code></dt><dd><p>The directory where MapProxy should look for configurations.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">allow_listing</span></code></dt><dd><p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will list all available configurations at the root URL of your MapProxy. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</dd>
+</dl>
+<section id="id8">
+<h3>Server Script<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<p>There is a <code class="docutils literal notranslate"><span class="pre">make_wsgi_app</span></code> function in the <code class="docutils literal notranslate"><span class="pre">mapproxy.multiapp</span></code> package that creates configured MultiMapProxy WSGI application. Replace the <code class="docutils literal notranslate"><span class="pre">application</span></code> definition in your script as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.multiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to.projects&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="mapproxy_util_autoconfig.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">mapproxy-util autoconfig</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="configuration_examples.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Configuration examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing">Testing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#production">Production</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#server-script">Server script</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apache-mod-wsgi">Apache mod_wsgi</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#behind-http-server-or-proxy">Behind HTTP server or proxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-http-server">Python HTTP Server</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#waitress">Waitress</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#uwsgi">uWSGI</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http-proxy">HTTP Proxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#nginx">nginx</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#apache">Apache</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-balancing-and-high-availability">Load Balancing and High Availability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#logging">Logging</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loggers">Loggers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enabling-logging">Enabling logging</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Server Script</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multimapproxy">MultiMapProxy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Server Script</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Jul 16, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,943 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tutorial &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorial';</script>
+    <link rel="canonical" href="/mapproxy/tutorial.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Installation via Docker" href="install_docker.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Tutorial</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-format">Configuration format</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comments">Comments</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numbers">Numbers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#strings">Strings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#booleans">Booleans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#list">List</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dictionaries">Dictionaries</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-layout">Configuration Layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuring-a-service">Configuring a Service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-source">Adding a Source</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-layer">Adding a Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-the-development-server">Starting the development server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-cache">Adding a Cache</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-cached-layer">Adding a cached Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-a-grid">Defining a Grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merging-multiple-layers">Merging Multiple Layers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coverages">Coverages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-tiles-and-meta-buffer">Meta Tiles and Meta Buffer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seeding">Seeding</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#start-seeding">Start Seeding</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-next">What’s next?</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading">#</a></h1>
+<p>This tutorial should give you a quick introduction to the MapProxy configuration.</p>
+<p>You should have a <a class="reference internal" href="install.html"><span class="doc">working MapProxy installation</span></a>, if you want to follow this tutorial.</p>
+<section id="configuration-format">
+<h2>Configuration format<a class="headerlink" href="#configuration-format" title="Permalink to this heading">#</a></h2>
+<p>The configuration of MapProxy uses the YAML format. YAML is a superset of JSON. That means every valid
+JSON is also valid YAML. MapProxy uses no advanced features of YAML, so you could
+even use JSON. YAML uses a more readable and user-friendly syntax. We encourage
+you to use it.</p>
+<p>If you are familiar with YAML you can skip to the next section.</p>
+<p>The YAML configuration consist of comments, dictionaries, lists, strings, numbers
+and booleans.</p>
+<section id="comments">
+<h3>Comments<a class="headerlink" href="#comments" title="Permalink to this heading">#</a></h3>
+<p>Everything after a hash character (<code class="docutils literal notranslate"><span class="pre">#</span></code>) is a comment and will be ignored.</p>
+</section>
+<section id="numbers">
+<h3>Numbers<a class="headerlink" href="#numbers" title="Permalink to this heading">#</a></h3>
+<p>Any numerical value like <code class="docutils literal notranslate"><span class="pre">12</span></code>, <code class="docutils literal notranslate"><span class="pre">-4</span></code>, <code class="docutils literal notranslate"><span class="pre">0</span></code>, and <code class="docutils literal notranslate"><span class="pre">3.1415</span></code>.</p>
+</section>
+<section id="strings">
+<h3>Strings<a class="headerlink" href="#strings" title="Permalink to this heading">#</a></h3>
+<p>Any string within single or double quotes. You can omit the quotes if the string
+has no other meaning in YAML syntax. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;foo&#39;</span>
+<span class="n">foo</span>
+<span class="s1">&#39;43&#39;</span> <span class="c1"># with quotes, otherwise it would be numeric</span>
+<span class="s1">&#39;[string, not a list]&#39;</span>
+<span class="n">A</span> <span class="n">string</span> <span class="k">with</span> <span class="n">spaces</span> <span class="ow">and</span> <span class="n">punctuation</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="booleans">
+<h3>Booleans<a class="headerlink" href="#booleans" title="Permalink to this heading">#</a></h3>
+<p>True or false values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">yes</span>
+<span class="n">true</span>
+<span class="kc">True</span>
+<span class="n">no</span>
+<span class="n">false</span>
+<span class="kc">False</span>
+</pre></div>
+</div>
+</section>
+<section id="list">
+<h3>List<a class="headerlink" href="#list" title="Permalink to this heading">#</a></h3>
+<p>A list is a collection of other valid objects. There are two formats. The condensed
+form uses square brackets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="p">[</span><span class="n">another</span> <span class="nb">list</span> <span class="k">with</span> <span class="n">a</span> <span class="n">string</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>The block form requires every list item on a separate line, starting with
+<code class="docutils literal notranslate"><span class="pre">-</span></code> (dash and a blank):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="mi">1</span>
+<span class="o">-</span> <span class="mi">2</span>
+<span class="o">-</span> <span class="mi">3</span>
+
+<span class="o">-</span> <span class="mi">42</span>
+<span class="o">-</span> <span class="n">string</span>
+<span class="o">-</span> <span class="p">[</span><span class="n">another</span> <span class="nb">list</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="dictionaries">
+<h3>Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this heading">#</a></h3>
+<p>A dictionary maps keys to values. Values itself can be any valid object.</p>
+<p>There are two formats. The condensed form uses braces:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">foo</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bar</span><span class="p">:</span> <span class="n">baz</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The block form requires every key value pair on a separate line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">foo</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">bar</span><span class="p">:</span> <span class="n">baz</span>
+</pre></div>
+</div>
+<p>You can also nest dictionaries. Each nested dictionary needs to be indented by one or more whitespaces. Tabs are <em>not</em> permitted and all keys to the same dictionary need to be indented by the same amount of spaces.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">baz</span><span class="p">:</span>
+  <span class="n">ham</span><span class="p">:</span> <span class="mi">2</span>
+  <span class="n">spam</span><span class="p">:</span>
+    <span class="n">bam</span><span class="p">:</span> <span class="kc">True</span>
+  <span class="n">inside_baz</span><span class="p">:</span> <span class="s1">&#39;yepp&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="configuration-layout">
+<h2>Configuration Layout<a class="headerlink" href="#configuration-layout" title="Permalink to this heading">#</a></h2>
+<p>The MapProxy configuration is a dictionary, each key configures a different aspect
+of MapProxy. There are the following keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">services</span></code>:  This is the place to activate and configure MapProxy’s services</dt><dd><p>like WMS and TMS.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">layers</span></code>: Configure the layers that MapProxy offers. Each layer can consist</dt><dd><p>of multiple sources and caches.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sources</span></code>:</dt><dd><p>Define where MapProxy can retrieve new data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">caches</span></code>:</dt><dd><p>Here you can configure the internal caches.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">grids</span></code>: MapProxy aligns all cached images (tiles) to a grid. Here you can define</dt><dd><p>that grid.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">globals</span></code>:  Here you can define some internals of MapProxy and default values</dt><dd><p>that are used in the other configuration directives.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>The order of the directives is not important, so you can organize it your way.</p>
+</section>
+<section id="example-configuration">
+<h2>Example Configuration<a class="headerlink" href="#example-configuration" title="Permalink to this heading">#</a></h2>
+<section id="configuring-a-service">
+<h3>Configuring a Service<a class="headerlink" href="#configuring-a-service" title="Permalink to this heading">#</a></h3>
+<p>At first we need to <a class="reference internal" href="services.html#services"><span class="std std-ref">configure at least one service</span></a>. To enable
+a service, you have to include its name as a key in the <cite>services</cite> dictionary.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">services</span><span class="p">:</span>
+  <span class="n">tms</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>Each service is a YAML dictionary, with the service type as the key. The dictionary
+can be empty, but you need to add the colon so that the configuration parser knows
+it’s a dictionary.</p>
+<p>A service might accept more configuration options. The WMS service, for example,
+takes a dictionary with metadata. This data is used in the capabilities documents.</p>
+<p>Here is an example with some contact information:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">services</span><span class="p">:</span>
+  <span class="n">wms</span><span class="p">:</span>
+    <span class="n">md</span><span class="p">:</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">MapProxy</span> <span class="n">WMS</span> <span class="n">Proxy</span>
+        <span class="n">abstract</span><span class="p">:</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">fantastic</span> <span class="n">MapProxy</span><span class="o">.</span>
+        <span class="n">online_resource</span><span class="p">:</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">org</span><span class="o">/</span>
+        <span class="n">contact</span><span class="p">:</span>
+            <span class="n">person</span><span class="p">:</span> <span class="n">Your</span> <span class="n">Name</span> <span class="n">Here</span>
+            <span class="n">position</span><span class="p">:</span> <span class="n">Technical</span> <span class="n">Director</span>
+            <span class="n">organization</span><span class="p">:</span> 
+            <span class="n">address</span><span class="p">:</span> <span class="n">Fakestreet</span> <span class="mi">123</span>
+            <span class="n">city</span><span class="p">:</span> <span class="n">Somewhere</span>
+            <span class="n">postcode</span><span class="p">:</span> <span class="mi">12345</span>
+            <span class="n">country</span><span class="p">:</span> <span class="n">Germany</span>
+            <span class="n">phone</span><span class="p">:</span> <span class="o">+</span><span class="mi">49</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="mi">000</span><span class="o">-</span><span class="mi">000000</span><span class="o">-</span><span class="mi">0</span>
+            <span class="n">fax</span><span class="p">:</span> <span class="o">+</span><span class="mi">49</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="mi">000</span><span class="o">-</span><span class="mi">000000</span><span class="o">-</span><span class="mi">0</span>
+            <span class="n">email</span><span class="p">:</span> <span class="n">email</span><span class="nd">@example</span><span class="o">.</span><span class="n">org</span>
+        <span class="n">access_constraints</span><span class="p">:</span>
+            <span class="n">This</span> <span class="n">service</span> <span class="ow">is</span> <span class="n">intended</span> <span class="k">for</span> <span class="n">private</span> <span class="ow">and</span>
+            <span class="n">evaluation</span> <span class="n">use</span> <span class="n">only</span><span class="o">.</span> <span class="n">The</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">licensed</span>
+            <span class="k">as</span> <span class="n">Creative</span> <span class="n">Commons</span> <span class="n">Attribution</span><span class="o">-</span><span class="n">Share</span> <span class="n">Alike</span> <span class="mf">2.0</span>
+            <span class="p">(</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">creativecommons</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">licenses</span><span class="o">/</span><span class="n">by</span><span class="o">-</span><span class="n">sa</span><span class="o">/</span><span class="mf">2.0</span><span class="o">/</span><span class="p">)</span>
+        <span class="n">fees</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span>
+</pre></div>
+</div>
+<p><cite>access_constraints</cite> demonstrates how you can write a string over multiple lines,
+just indent every line the same way as the first. And remember, YAML does not
+accept tab characters, you must use space.</p>
+<p>For this tutorial we add another service called <cite>demo</cite>. This is a demo service
+that lists all configured WMS and TMS layers. You can test each layer with a
+simple OpenLayers client. So our configuration file should look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">services</span><span class="p">:</span>
+  <span class="n">demo</span><span class="p">:</span>
+  <span class="n">wms</span><span class="p">:</span>
+    <span class="p">[</span><span class="n">rest</span> <span class="n">of</span> <span class="n">WMS</span> <span class="n">configuration</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-a-source">
+<h3>Adding a Source<a class="headerlink" href="#adding-a-source" title="Permalink to this heading">#</a></h3>
+<p>Next you need to <a class="reference internal" href="sources.html#sources"><span class="std std-ref">define the source</span></a> of your data. Every source has
+a name and a type. Let’s add a WMS source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sources:
+  test_wms:
+    type: wms
+    req:
+      url: http://example.org/service?
+      layers: osm
+</pre></div>
+</div>
+<p>In this example <cite>test_wms</cite> is the name of the source, you need this name later
+to reference it. Most sources take more parameters – some are optional, some are
+required. The type <cite>wms</cite> requires the <cite>req</cite> parameter that describes the WMS
+request. You need to define at least a URL and the layer names, but you can add
+more options like <cite>transparent</cite> or <cite>format</cite>.</p>
+</section>
+<section id="adding-a-layer">
+<h3>Adding a Layer<a class="headerlink" href="#adding-a-layer" title="Permalink to this heading">#</a></h3>
+<p>After defining a source we can use it to <a class="reference internal" href="configuration.html#layers-section"><span class="std std-ref">create a layer</span></a> for the
+MapProxy WMS.</p>
+<p>A layer requires a title, which will be used in the capabilities documents and
+a source. For this layer we want to use our <cite>test_wms</cite> data source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layers</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">cascaded_test</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">Cascaded</span> <span class="n">Test</span> <span class="n">Layer</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">test_wms</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now we have setuped MapProxy as cascading WMS. That means MapProxy only redirect
+requests to the WMS defined in <cite>test_wms</cite> data source.</p>
+</section>
+<section id="starting-the-development-server">
+<h3>Starting the development server<a class="headerlink" href="#starting-the-development-server" title="Permalink to this heading">#</a></h3>
+<p>That’s it for the first configuration, you can now <a class="reference internal" href="mapproxy_util.html#mapproxy-util"><span class="std std-ref">start MapProxy</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>You can <a class="reference download internal" download="" href="_downloads/04a4126d1fc8ac7d620bf8e7bd28530d/simple_conf.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">configuration</span></code></a>.</p>
+<p>When you type <cite>localhost:8080/demo/</cite> in the URL of your webbrowser you should
+see a demo site like shown below.</p>
+<img alt="_images/mapproxy-demo.png" src="_images/mapproxy-demo.png" />
+<p>Here you can see the capabilities of your configured service and watch it in action.</p>
+</section>
+<section id="adding-a-cache">
+<h3>Adding a Cache<a class="headerlink" href="#adding-a-cache" title="Permalink to this heading">#</a></h3>
+<p>To speed up the source with MapProxy we <a class="reference internal" href="configuration.html#caches"><span class="std std-ref">create a cache</span></a> for this
+source.</p>
+<p>Each cache needs to know where it can get new data and how it should be cached.
+We define our <cite>test_wms</cite> as source for the cache. MapProxy splits images in
+small tiles and these tiles will be aligned to a grid. It also caches images in
+different resolutions, like an image pyramid. You can define this image pyramid
+in detail but we start with one of the default grid definitions of MapProxy.
+<cite>GLOBAL_GEODETIC</cite> defines a grid that covers the whole world. It uses EPSG:4326
+as the spatial reference system and aligns with the default grid and resolutions that OpenLayers
+uses.</p>
+<p>Our cache configuration should now look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caches</span><span class="p">:</span>
+  <span class="n">test_wms_cache</span><span class="p">:</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">test_wms</span><span class="p">]</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_GEODETIC</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-a-cached-layer">
+<h3>Adding a cached Layer<a class="headerlink" href="#adding-a-cached-layer" title="Permalink to this heading">#</a></h3>
+<p>We can now use our defined cache as source for a layer. When the layer is
+requested by a client, MapProxy looks in the cache for the requested data and only if
+it hasn’t cached the data yet, it requests the <cite>test_wms</cite> data source.</p>
+<p>The layer configuration should now look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layers</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">test_wms_cache</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">Cached</span> <span class="n">Test</span> <span class="n">Layer</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">test_wms_cache</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You can <a class="reference download internal" download="" href="_downloads/8e8813ce17e2bfcd58bef94162776a1c/cache_conf.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">configuration</span></code></a>.</p>
+</section>
+<section id="defining-resolutions">
+<h3>Defining Resolutions<a class="headerlink" href="#defining-resolutions" title="Permalink to this heading">#</a></h3>
+<p>By default MapProxy caches traditional power-of-two image pyramids with a default
+number of cached resolutions of 20. The resolutions
+between each pyramid level doubles. If you want to change this, you can do so by
+<a class="reference internal" href="configuration.html#id6"><span class="std std-ref">defining your own grid</span></a>. Fortunately MapProxy grids provide the
+ability to inherit from an other grid. We let our grid inherit from the previously
+used <cite>GLOBAL_GEODETIC</cite> grid and add five fixed resolutions to it.</p>
+<p>The grid configuration should look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grids</span><span class="p">:</span>
+  <span class="n">res_grid</span><span class="p">:</span>
+    <span class="n">base</span><span class="p">:</span> <span class="n">GLOBAL_GEODETIC</span>
+    <span class="n">res</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.125</span><span class="p">,</span> <span class="mf">0.0625</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As you see, we used <cite>base</cite> to inherit from <cite>GLOBAL_GEODETIC</cite> and <cite>res</cite> to define
+our preferred resolutions. The resolutions are always in the unit of the SRS, in
+this case in degree per pixel. You can use the <a class="reference internal" href="mapproxy_util.html#mapproxy-util-scales"><span class="std std-ref">MapProxy scales util</span></a>
+to convert between scales and resolutions.</p>
+<p>Instead of defining fixed resolutions, we can also define a factor that is used
+to calculate the resolutions. The default value of this factor is 2, but you can
+set it to each value you want. Just change <cite>res</cite> with <cite>res_factor</cite> and add your
+preferred factor after it.</p>
+<p>A magical value of <cite>res_factor</cite> is <strong>sqrt2</strong>, the square root of two. It doubles
+the number of cached resolutions, so you have 40 instead of 20 available resolutions.
+Every second resolution is identical to the power-of-two resolutions, so you can
+use this layer not only in classic WMS clients with free zooming, but also in tile-based clients
+like OpenLayers which only request in these resolutions. Look at the <a class="reference internal" href="configuration_examples.html#cache-resolutions"><span class="std std-ref">configuration
+examples for vector data for more information</span></a>.</p>
+</section>
+<section id="defining-a-grid">
+<h3>Defining a Grid<a class="headerlink" href="#defining-a-grid" title="Permalink to this heading">#</a></h3>
+<p>In the previous section we saw how to extend a grid to provide self defined
+resolutions, but sometimes <cite>GLOBAL_GEODETIC</cite> grid is not useful because it covers
+the whole world and we want only a part of it. So let’s see how to <a class="reference internal" href="configuration.html#id6"><span class="std std-ref">define our own grid</span></a>.</p>
+<p>For this example we define a grid for Germany. We need a spatial reference system (<cite>srs</cite>)
+that match the region of Germany and a bounding box (<cite>bbox</cite>) around Germany to limit
+the requestable aera. To make the specification of the <cite>bbox</cite> a little bit easier,
+we put the <cite>bbox_srs</cite> parameter to the grid configuration. So we can define the
+<cite>bbox</cite> in EPSG:4326.</p>
+<p>The <cite>grids</cite> configuration is a dictionary and each grid configuration is identified
+by its name. We call our grid <cite>germany</cite> and its configuration should look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grids</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:25832&#39;</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mf">47.3</span><span class="p">,</span> <span class="mf">15.1</span><span class="p">,</span> <span class="mi">55</span><span class="p">]</span>
+    <span class="n">bbox_srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<p>We have to replace <cite>GLOBAL_GEODETIC</cite> in the cache configuration with our
+<cite>germany</cite> grid. After that MapProxy caches all data in UTM32.</p>
+<p>MapProxy request the source in the projection of the grid. You can configure
+<a class="reference internal" href="sources.html#supported-srs"><span class="std std-ref">the supported SRS for each WMS source</span></a> and MapProxy
+takes care of any transformations if the <cite>srs</cite> of our grid is
+different from the data source.</p>
+<p>You can <a class="reference download internal" download="" href="_downloads/d274e17bd626dc0631e76e4eacfef90f/grid_conf.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">configuration</span></code></a>.</p>
+</section>
+<section id="merging-multiple-layers">
+<h3>Merging Multiple Layers<a class="headerlink" href="#merging-multiple-layers" title="Permalink to this heading">#</a></h3>
+<p>If you have two WMS and want to offer a single layer with data from both server,
+you can combine these in one cache. MapProxy will combine the images before it stores
+the tiles on disk. The sources should be defined from bottom to top and
+all sources except the bottom need to be transparent.</p>
+<p>The code below is an example for configure MapProxy to combine two WMS in one
+cache and one layer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>services:
+  wms:
+  demo:
+    
+sources:
+  test_wms:
+    type: wms
+    req:
+      url: http://example.org/service?
+      layers: osm
+  roads_wms:
+    type: wms
+    req:
+      url: http://example.org/service?
+      layers: osm_roads
+      transparent: true
+
+caches:
+  combined_cache:
+    sources: [test_wms, roads_wms]
+    grids: [GLOBAL_GEODETIC]
+
+layers:
+  - name: cached_test_wms_with_roads
+    title: Cached Test WMS with Roads
+    sources: [combined_cache]
+</pre></div>
+</div>
+<p>You can <a class="reference download internal" download="" href="_downloads/e1afed5e650a1ca35ac675d19dc214f6/merged_conf.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">configuration</span></code></a>.</p>
+</section>
+<section id="coverages">
+<h3>Coverages<a class="headerlink" href="#coverages" title="Permalink to this heading">#</a></h3>
+<p>Sometimes you don’t want to provide the full data of a WMS in a layer. With
+MapProxy you can define areas where data is available or where data you are
+interested in is. MapProxy provides three ways to restrict the area of available
+data: Bounding boxes, polygons and OGR datasource. To keep it simple, we only
+discuss bounding boxes. For more information about the other methods take
+a look at <a class="reference internal" href="coverages.html#coverages"><span class="std std-ref">the coverages documentation</span></a>.
+To restrict the area with a bounding box, we have to define it in the coverage
+option of the data source. The listing below restricts the requestable area to
+Germany:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sources:
+  test_wms:
+    type: wms
+    req:
+      url: http://example.org/service?
+      layers: osm
+    coverage:
+      bbox: [5.5, 47.4, 15.2, 54.8]
+      bbox_srs: &#39;EPSG:4326&#39;
+</pre></div>
+</div>
+<p>As you see notation of a coverage bounding box is similar to the notation in the
+grid option.</p>
+</section>
+<section id="meta-tiles-and-meta-buffer">
+<h3>Meta Tiles and Meta Buffer<a class="headerlink" href="#meta-tiles-and-meta-buffer" title="Permalink to this heading">#</a></h3>
+<p>When you have experience with WMS in tiled clients you should know the problem
+of labeling issues. MapProxy can help to resolve these issues with two methods
+called <a class="reference internal" href="labeling.html#meta-tiles"><span class="std std-ref">Meta Tiling</span></a> and <a class="reference internal" href="labeling.html#meta-buffer"><span class="std std-ref">Meta Buffering</span></a>.</p>
+<p>There is a <a class="reference internal" href="labeling.html"><span class="doc">chapter on WMS labeling issues</span></a> that discusses these options.</p>
+</section>
+<section id="seeding">
+<h3>Seeding<a class="headerlink" href="#seeding" title="Permalink to this heading">#</a></h3>
+<section id="configuration">
+<h4>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h4>
+<p>MapProxy creates all tiles on demand. That means, only tiles requested once are
+cached. Fortunately MapProxy comes with a command line script for pre-generating
+all required tiles called <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code>. It has its own configuration file called
+<code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code> and a couple of options. We now create a config file for <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code>.</p>
+<p>As all MapProxy configuration files it’s notated in YAML. The mandatory option
+is <code class="docutils literal notranslate"><span class="pre">seeds</span></code>. Here you can create multiple seeding tasks that define what should be seeded.
+You can specify a list of caches for seeding with <code class="docutils literal notranslate"><span class="pre">caches</span></code> . The cache names
+should match the names in your MapProxy configuration. If you have specified
+multiple grids for one cache in your MapProxy configuration, you can select these
+caches to seed. They must also comply with the caches in your MapProxy configuration.
+Furthermore you can limit the levels that should be seeded. If you want to seed only
+a limited area, you can use the <code class="docutils literal notranslate"><span class="pre">coverages</span></code> option.</p>
+<p>In the example below, we configure <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> to seed our previously created
+cache <code class="docutils literal notranslate"><span class="pre">test_wms_cache</span></code> from level 6 to level 16. To show a different possibility to
+define a coverage, we use a polygon file to determine the area we want to seed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seeds</span><span class="p">:</span>
+  <span class="n">test_cache_seed</span><span class="p">:</span>
+    <span class="n">caches</span><span class="p">:</span> <span class="p">[</span><span class="n">test_wms_cache</span><span class="p">]</span>
+    <span class="n">levels</span><span class="p">:</span>
+      <span class="n">from</span><span class="p">:</span> <span class="mi">6</span>
+      <span class="n">to</span><span class="p">:</span> <span class="mi">16</span>
+    <span class="n">coverages</span><span class="p">:</span> <span class="p">[</span><span class="n">germany</span><span class="p">]</span>
+
+<span class="n">coverages</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">polygons</span><span class="p">:</span> <span class="o">./</span><span class="n">GM</span><span class="o">.</span><span class="n">txt</span>
+    <span class="n">polygons_srs</span><span class="p">:</span> <span class="n">EPSG</span><span class="p">:</span><span class="mi">900913</span>
+</pre></div>
+</div>
+<p>As you see in the <code class="docutils literal notranslate"><span class="pre">coverages</span></code> section the <code class="docutils literal notranslate"><span class="pre">polygons</span></code> option point to a
+text file. This text file contains polygons in Well-Known-Text (WKT) form. The third option tells
+<code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> the <code class="docutils literal notranslate"><span class="pre">srs</span></code> of the WKT polygons.</p>
+<p>You can <a class="reference download internal" download="" href="_downloads/56403ec86e5a7a23b29a02aee06d8f9e/seed.yaml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">the</span> <span class="pre">configuration</span></code></a> and the <a class="reference download internal" download="" href="_downloads/50b74501529be198a32fd20db21b283c/GM.txt"><code class="xref download docutils literal notranslate"><span class="pre">polygon</span> <span class="pre">file</span></code></a>.</p>
+</section>
+<section id="start-seeding">
+<h4>Start Seeding<a class="headerlink" href="#start-seeding" title="Permalink to this heading">#</a></h4>
+<p>Now it’s time to start seeding. <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> has a couple
+of options. We have to use options <code class="docutils literal notranslate"><span class="pre">-s</span></code> to define our <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">-f</span></code>
+for our MapProxy configuration file. We also use the <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> option to see what
+MapProxy would do, without making any actual requests to our sources. A mis-configured seeding
+can take days or weeks, so you should keep an eye on the tile numbers the dry-run prints out.</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">s</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>
+</pre></div>
+</div>
+<p>If you sure, that seeding works right, remove <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>.</p>
+</section>
+</section>
+<section id="what-s-next">
+<h3>What’s next?<a class="headerlink" href="#what-s-next" title="Permalink to this heading">#</a></h3>
+<p>You should read the <a class="reference internal" href="configuration_examples.html"><span class="doc">configuration examples</span></a> to get a few
+more ideas what MapProxy can do.</p>
+<p>MapProxy has lots of small features that might be useful for your projects, so it is a good idea
+to read the other chapters of the documentation after that.</p>
+<p>If you have any questions? We have a <a class="reference external" href="http://mapproxy.org/support">mailing list and IRC channel</a>
+where you can get support.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="install_docker.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation via Docker</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="configuration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Configuration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-format">Configuration format</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#comments">Comments</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numbers">Numbers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#strings">Strings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#booleans">Booleans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#list">List</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dictionaries">Dictionaries</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-layout">Configuration Layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuring-a-service">Configuring a Service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-source">Adding a Source</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-layer">Adding a Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#starting-the-development-server">Starting the development server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-cache">Adding a Cache</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-cached-layer">Adding a cached Layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-a-grid">Defining a Grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merging-multiple-layers">Merging Multiple Layers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coverages">Coverages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meta-tiles-and-meta-buffer">Meta Tiles and Meta Buffer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seeding">Seeding</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#start-seeding">Start Seeding</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-next">What’s next?</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Jul 16, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

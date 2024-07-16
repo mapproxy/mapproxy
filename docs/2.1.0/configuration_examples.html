@@ -1,0 +1,1354 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuration examples &#8212; MapProxy Docs 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'configuration_examples';</script>
+    <link rel="canonical" href="/mapproxy/configuration_examples.html" />
+    <link rel="icon" href="_static/mapproxy-favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="INSPIRE View Service" href="inspire.html" />
+    <link rel="prev" title="Deployment" href="deployment.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item"><div class="btn-group">
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span class="visually-hidden">toggle</span>
+    </button>
+    <ul id="versions-menu" class="dropdown-menu">
+    </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
+</div></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/mapproxy/mapproxy" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Configuration examples</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-multiple-layers">Merge multiple layers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-tile-sources">Merge tile sources</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-local-servers">Access local servers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-wms-from-existing-tile-server">Create WMS from existing tile server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service">Display custom background map in the map viewer of the demo service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">Overlay tiles with OpenStreetMap or Google Maps in OpenLayers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-existing-caches">Using existing caches</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reprojecting-tiles">Reprojecting Tiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-grayscale-images">Create grayscale images</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-raster-data">Cache raster data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mixed-mode">Mixed mode</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-vector-data">Cache vector data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-resolutions">Cache resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-method">Resampling method</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-sources-with-styled-layer-description-sld">WMS Sources with Styled Layer Description (SLD)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#add-highly-dynamic-layers">Add highly dynamic layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproject-wms-layers">Reproject WMS layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinformation">FeatureInformation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#concatenation">Concatenation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#html">HTML</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xml">XML</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xsl-transformations">XSL Transformations</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-service-with-dimensions">WMTS service with dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-layers-with-http-authentication">WMS layers with HTTP Authentication</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-sources-through-http-proxy">Access sources through HTTP proxy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cookie-management">Cookie Management</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiple-mapproxy-instances">Serve multiple MapProxy instances</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-static-quadkey-virtual-earth-cache-for-use-on-multitouch-table">Generate static quadkey / virtual earth cache for use on Multitouch table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-a-static-image-for-every-tile">Generate a static image for every tile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hq-retina-tiles">HQ/Retina tiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiple-caches-for-a-single-layer">Serve multiple caches for a single layer</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="configuration-examples">
+<span id="id1"></span><h1>Configuration examples<a class="headerlink" href="#configuration-examples" title="Permalink to this heading">#</a></h1>
+<p>This document will show you some usage scenarios of MapProxy and will explain some combinations of configuration options that might be useful for you.</p>
+<section id="merge-multiple-layers">
+<span id="merge-layers"></span><h2>Merge multiple layers<a class="headerlink" href="#merge-multiple-layers" title="Permalink to this heading">#</a></h2>
+<p>You have two WMS and want to offer a single layer with data from both servers. Each MapProxy cache can have more than one data source. MapProxy will combine the results from the sources before it stores the tiles on disk. These combined layers can also be requested via tiled services.</p>
+<p>The sources should be defined from bottom to top. All sources except the bottom source needs to be transparent.</p>
+<p>Example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">combined_layer</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Aerial image + roads overlay</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">combined_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">combined_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">base</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">aerial</span><span class="p p-Indicator">]</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">base</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">wms_opts</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">featureinfo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://one.example.org/mapserv/?map=/home/map/roads.map</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">roads</span>
+<span class="w">        </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">aerial</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://two.example.org/service?</span>
+<span class="w">        </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aerial</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the layers come from the same WMS server, then you can add them direct to the <code class="docutils literal notranslate"><span class="pre">layers</span></code> parameter. E.g. <code class="docutils literal notranslate"><span class="pre">layers:</span> <span class="pre">water,railroads,roads</span></code>.</p>
+</div>
+<section id="merge-tile-sources">
+<h3>Merge tile sources<a class="headerlink" href="#merge-tile-sources" title="Permalink to this heading">#</a></h3>
+<p>You can also merge multiple tile sources. You need to tell MapProxy that all overlay sources are transparent:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tileoverlay</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:8080/tile?x=%(x)s&amp;y=%(y)s&amp;z=%(z)s&amp;format=png</span>
+<span class="w">    </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="access-local-servers">
+<h2>Access local servers<a class="headerlink" href="#access-local-servers" title="Permalink to this heading">#</a></h2>
+<p>By default MapProxy will request data in the same format it uses to cache the data, if you cache files in PNG MapProxy will request all images from the source WMS in PNG. This encoding is quite CPU intensive for your WMS server but reduces the amount of data than needs to be transfered between you WMS and MapProxy. You can use uncompressed TIFF as the request format, if both servers are on the same host or if they are connected with high bandwidth.</p>
+<p>Example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fast_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost/mapserv/?map=/home/map/roads.map</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">roads</span>
+<span class="w">      </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/tiff</span>
+<span class="w">      </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+<section id="create-wms-from-existing-tile-server">
+<h2>Create WMS from existing tile server<a class="headerlink" href="#create-wms-from-existing-tile-server" title="Permalink to this heading">#</a></h2>
+<p>You can use MapProxy to create a WMS server with data from an existing tile server. That tile server could be a WMTS, TMS or any other tile service where you can access tiles by simple HTTP requests. You always need to configure a cache in MapProxy to get a WMS from a tile source, since the cache is the part that does the tile stitching and reprojection.</p>
+<p>Here is a minimal example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">code</span><span class="o">-</span><span class="n">block</span><span class="p">::</span> <span class="n">yaml</span>
+</pre></div>
+</div>
+<blockquote>
+<div><dl class="simple">
+<dt>layers:</dt><dd><ul class="simple">
+<li><p>name: my_layer
+title: WMS layer from tiles
+sources: [mycache]</p></li>
+</ul>
+</dd>
+<dt>caches:</dt><dd><dl class="simple">
+<dt>mycache:</dt><dd><p>grids: [GLOBAL_WEBMERCATOR]
+sources: [my_tile_source]</p>
+</dd>
+</dl>
+</dd>
+<dt>sources:</dt><dd><dl class="simple">
+<dt>my_tile_source:</dt><dd><p>type: tile
+url: <a class="reference external" href="http://tileserver/%(tms_path)s.png">http://tileserver/%(tms_path)s.png</a></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>You need to modify the <code class="docutils literal notranslate"><span class="pre">url</span></code> template parameter to match the URLs of your server. You can use <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code> variables in the template, but MapProxy also supports the <code class="docutils literal notranslate"><span class="pre">quadkey</span></code> variable for Bing compatible tile service and <code class="docutils literal notranslate"><span class="pre">bbox</span></code> for WMS-C services. See the <a class="reference internal" href="sources.html#tiles-label"><span class="std std-ref">tile source documentation</span></a> for all possible template values.</p>
+<p>Here is an example of a WMTS source:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_tile_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://tileserver/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;</span>
+<span class="w">       </span><span class="l l-Scalar l-Scalar-Plain">VERSION=1.0.0&amp;LAYER=layername&amp;TILEMATRIXSET=WEBMERCATOR&amp;</span>
+<span class="w">       </span><span class="l l-Scalar l-Scalar-Plain">TILEMATRIX=%(z)s&amp;TILEROW=%(y)s&amp;TILECOL=%(x)s&amp;FORMAT=image%%2Fpng</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You need to escape percent signs (<code class="docutils literal notranslate"><span class="pre">%</span></code>) in the URL by repeating them (<code class="docutils literal notranslate"><span class="pre">%%</span></code>).</p>
+</div>
+<p id="osm-tile-conf">You can use the <code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code> grid for OpenStreetMap or Google Maps compatible sources. Most TMS services should be compatible with the <code class="docutils literal notranslate"><span class="pre">GLOBAL_MERCATOR</span></code> definition that is similar to <code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code> but uses a different origin (south west (TMS) instead of north west (OSM/WMTS/Google Maps/etc.)).
+Other tile services might use different SRS, bounding boxes or resolutions. You need to check the capabilities of your service and <a class="reference internal" href="configuration.html#id6"><span class="std std-ref">configure a compatible grid</span></a>.</p>
+<p>You also need to create your own grid when you want to change the name of it, which will appear in the WMTS or TMS URL.</p>
+<p>Example configuration for an OpenStreetMap tile service:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_layer</span>
+<span class="w">     </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WMS layer from tiles</span>
+<span class="w">     </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mycache</span><span class="p p-Indicator">]</span>
+
+<span class="w"> </span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">mycache</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">webmercator</span><span class="p p-Indicator">]</span>
+<span class="w">     </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_tile_source</span><span class="p p-Indicator">]</span>
+
+<span class="w"> </span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">my_tile_source</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
+<span class="w">     </span><span class="nt">grid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GLOBAL_WEBMERCATOR</span>
+<span class="w">     </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png</span>
+
+<span class="nt">grids</span><span class="p">:</span>
+<span class="w"> </span><span class="nt">webmercator</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GLOBAL_WEBMERCATOR</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Tile_usage_policy">Tile Usage Prolicy</a>.</p>
+</div>
+</section>
+<section id="display-custom-background-map-in-the-map-viewer-of-the-demo-service">
+<span id="display-custom-background"></span><h2>Display custom background map in the map viewer of the demo service<a class="headerlink" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service" title="Permalink to this heading">#</a></h2>
+<p>In order to setup the background displayed in the map viewer of the /demo service of Mapproxy
+you need to add the service of the background map to <code class="docutils literal notranslate"><span class="pre">globals</span></code>.</p>
+<p>Here is a minimal example with the default configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">globals</span><span class="p">:</span>
+  <span class="c1"># background map of the demo service</span>
+  <span class="n">background</span><span class="p">:</span>
+    <span class="c1"># tile source in ZXY format</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s2">&quot;https://tile.openstreetmap.org/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>URL of the tile service MUST be in XYZ format. Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Tile_usage_policy">Tile Usage Prolicy</a>.</p>
+</div>
+</section>
+<section id="overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">
+<span id="overlay-tiles-osm-openlayers"></span><h2>Overlay tiles with OpenStreetMap or Google Maps in OpenLayers<a class="headerlink" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers" title="Permalink to this heading">#</a></h2>
+<p>You need to take care of a few options when you want to overlay your MapProxy tiles in OpenLayers with existing OpenStreetMap or Google Maps tiles.</p>
+<p>The basic configuration for this use-case with MapProxy may look like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">street_layer</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TMS layer with street data</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">street_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">street_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">street_tile_source</span><span class="p p-Indicator">]</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">street_tile_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/tiles/ \</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">1.0.0/osm_roads_EPSG900913/%(z)s/%(x)s/%(y)s.png</span>
+<span class="w">    </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<p>All you need to do now is to configure your OpenLayers client.
+The first example creates a simple OpenLayers map in webmercator projection, adds an OSM base layer and a TMS overlay layer with our MapProxy tile service.:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;http://openlayers.org/api/OpenLayers.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/javascript&quot;</span><span class="p">&gt;</span>
+<span class="w">  </span><span class="kd">var</span><span class="w"> </span><span class="nx">map</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">function</span><span class="w"> </span><span class="nx">init</span><span class="p">(){</span>
+<span class="w">      </span><span class="nx">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nb">Map</span><span class="p">(</span><span class="s1">&#39;map&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">projection</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nx">Projection</span><span class="p">(</span><span class="s2">&quot;EPSG:900913&quot;</span><span class="p">)</span>
+<span class="w">      </span><span class="p">});</span>
+
+<span class="w">      </span><span class="kd">var</span><span class="w"> </span><span class="nx">base_layer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nx">Layer</span><span class="p">.</span><span class="nx">OSM</span><span class="p">();</span>
+
+<span class="w">      </span><span class="kd">var</span><span class="w"> </span><span class="nx">overlay_layer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nx">Layer</span><span class="p">.</span><span class="nx">TMS</span><span class="p">(</span>
+<span class="w">          </span><span class="s1">&#39;TMS street_layer&#39;</span><span class="p">,</span>
+<span class="w">          </span><span class="s1">&#39;http://127.0.0.1:8080/tiles/&#39;</span><span class="p">,</span>
+<span class="w">          </span><span class="p">{</span><span class="nx">layername</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;street_layer_EPSG900913&#39;</span><span class="p">,</span>
+<span class="w">           </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;png&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">isBaseLayer</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">}</span>
+<span class="w">      </span><span class="p">);</span>
+
+<span class="w">      </span><span class="nx">map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">base_layer</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">map</span><span class="p">.</span><span class="nx">addLayer</span><span class="p">(</span><span class="nx">overlay_layer</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">map</span><span class="p">.</span><span class="nx">zoomToMaxExtent</span><span class="p">();</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Note that we used the <code class="docutils literal notranslate"><span class="pre">/tiles</span></code> service instead of <code class="docutils literal notranslate"><span class="pre">/tms</span></code> here. See <a class="reference internal" href="services.html#open-layers-label"><span class="std std-ref">the tile service documentation</span></a> for more information.</p>
+<p>Also remember that OpenStreetMap and Google Maps tiles have the origin in the upper left corner of the map, instead of the lower left corner as TMS does. Have a look at the <a class="reference internal" href="#osm-tile-conf"><span class="std std-ref">example configuration for OpenStreetMap tiles</span></a> for more information on that topic. The OpenLayers TMS and OSM layers already handle the difference.</p>
+<p>You can change how MapProxy calculates the origin of the tile coordinates, if you want to use your MapProxy tile service with the OpenLayers OSM layer class or if you want to use a client that does not have a TMS layer.</p>
+<p>The following example uses the class OpenLayers.Layer.OSM:</p>
+<blockquote>
+<div><div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span><span class="w"> </span><span class="nx">overlay_layer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nx">Layer</span><span class="p">.</span><span class="nx">OSM</span><span class="p">(</span><span class="s2">&quot;OSM osm_layer&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;http://example.org/tiles/ \</span>
+<span class="s2">    osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">{</span><span class="nx">isBaseLayer</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nx">tileOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">crossOriginKeyword</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">}}</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The origin parameter at the end of the URL tells MapProxy that the client expects the origin in the upper left corner (north/west).
+You can change the default origin of all MapProxy tile layers by using the <code class="docutils literal notranslate"><span class="pre">origin</span></code> option of the <code class="docutils literal notranslate"><span class="pre">tms</span></code> service. See the <a class="reference internal" href="services.html#google-maps-label"><span class="std std-ref">TMS standard tile origin</span></a> for more informations.</p>
+</section>
+<section id="using-existing-caches">
+<span id="id3"></span><h2>Using existing caches<a class="headerlink" href="#using-existing-caches" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>In some special use-cases you might want to use a cache as the source of another cache. For example, you might need to change the grid of an existing cache
+to cover a larger bounding box, or to support tile clients that expect a different grid, but you don’t want to seed the data again.</p>
+<p>Here is an example of a cache in UTM that uses data from an existing cache in web-mercator projection.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lyr1</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Layer using data from existing_cache</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">new_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">new_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">utm32n</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">existing_cache</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">existing_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_WEBMERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_source</span><span class="p p-Indicator">]</span>
+
+<span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">utm32n</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span>
+<span class="w">    </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">46</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">16</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">56</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox_srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;nw&#39;</span>
+<span class="w">    </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5700</span>
+</pre></div>
+</div>
+</section>
+<section id="reprojecting-tiles">
+<h2>Reprojecting Tiles<a class="headerlink" href="#reprojecting-tiles" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0.</span></p>
+</div>
+<p>When you need to access tiles in a projection that is different from your source tile server, then you can use the <em>cache as cache source</em> feature from above.
+Here is an example that uses OSM tiles as a source and offers them in UTM projection. The <cite>disable_storage</cite> option prevents MapProxy from building up two caches. The <cite>meta_size</cite> makes MapProxy to reproject multiple tiles at once.</p>
+<p>Here is an example that makes OSM tiles available as tiles in UTM. Note that reprojecting vector data results in quality loss. For better results you need to find similar resolutions between both grids.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">osm</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OSM in UTM</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">osm_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">utm32n</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_cache_in</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">osm_cache_in</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_WEBMERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">osm_source</span><span class="p p-Indicator">]</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">osm_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
+<span class="w">    </span><span class="nt">grid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GLOBAL_WEBMERCATOR</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png</span>
+
+<span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">utm32n</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span>
+<span class="w">    </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">46</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">16</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">56</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">bbox_srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;nw&#39;</span>
+<span class="w">    </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5700</span>
+</pre></div>
+</div>
+</section>
+<section id="create-grayscale-images">
+<h2>Create grayscale images<a class="headerlink" href="#create-grayscale-images" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.9.0.</span></p>
+</div>
+<p>You can create a grayscale layer from an existing source by creating a cache that merges multiple bands into a single band.
+The band sources can come from caches, but also from any direct source. You can <code class="docutils literal notranslate"><span class="pre">disable_storage</span></code> to make this conversion on-the-fly.
+The following example mixes the RGB bands of a source with factors that matches the intensity perception of most humans:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w"> </span><span class="nt">grayscale_cache</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">     </span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">l</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.21</span><span class="p p-Indicator">},</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.72</span><span class="p p-Indicator">},</span>
+<span class="w">             </span><span class="p p-Indicator">{</span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="nv">dop</span><span class="p p-Indicator">,</span><span class="nt"> band</span><span class="p">:</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="nt"> factor</span><span class="p">:</span><span class="w"> </span><span class="nv">0.07</span><span class="p p-Indicator">},</span>
+<span class="w">         </span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-raster-data">
+<h2>Cache raster data<a class="headerlink" href="#cache-raster-data" title="Permalink to this heading">#</a></h2>
+<p>You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very CPU intensive and thus the caching process itself takes longer. For aerial images the quality of loss-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.</p>
+<p>By default MapProxy uses <cite>bicubic</cite> resampling. This resampling method also sharpens the image which is important for vector images. Aerial images do not need this, so you can use <cite>bilinear</cite> or even Nearest Neighbor (<cite>nearest</cite>) resampling.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">aerial_images_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/jpeg</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">resampling_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nearest</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">aerial_images</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>You might also want to experiment with different compression levels of JPEG. A higher value of <code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code> results in better image quality at the cost of slower encoding and lager file sizes. See <a class="reference internal" href="configuration.html#jpeg-quality"><span class="std std-ref">mapproxy.yaml configuration</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">globals</span><span class="p">:</span>
+  <span class="n">jpeg_quality</span><span class="p">:</span> <span class="mi">80</span>
+</pre></div>
+</div>
+<section id="mixed-mode">
+<h3>Mixed mode<a class="headerlink" href="#mixed-mode" title="Permalink to this heading">#</a></h3>
+<p>You need to store images with transparency when you want to overlay them over other images, e.g. at the boundaries of your aerial image coverage. PNG supports transparency but it is not efficient with arial images, while JPEG is efficient for aerial images but doesn’t support transparency.</p>
+<p>MapProxy <a class="reference internal" href="configuration.html#mixed-image-format"><span class="std std-ref">has a mixed image format</span></a> for this case. With the <code class="docutils literal notranslate"><span class="pre">mixed</span></code> format, MapProxy stores tiles as either PNG or JPEG, depending on the transparency of each tile. Images with transparency will be stored as PNG, fully opaque images as JPEG.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The source of your cache must support transparent images and you need to set the corresponding options.</p>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mixed_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mixed</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">wms_source</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">request_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/png</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:42423/service</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aerial</span>
+<span class="w">      </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<p>You can now use the cache in all MapProxy services. WMS GetMap requests will return the image with the requested format.
+With TMS or WMTS you can only request PNG tiles, but the actual response image is either PNG or JPEG. The HTTP <cite>content-type</cite> header is set accordingly. This is supported by all web browsers.</p>
+</section>
+</section>
+<section id="cache-vector-data">
+<h2>Cache vector data<a class="headerlink" href="#cache-vector-data" title="Permalink to this heading">#</a></h2>
+<p>You have a WMS server that renders vector data like road maps.</p>
+<section id="cache-resolutions">
+<span id="id4"></span><h3>Cache resolutions<a class="headerlink" href="#cache-resolutions" title="Permalink to this heading">#</a></h3>
+<p>By default MapProxy caches traditional power-of-two image pyramids, the resolutions between each pyramid level doubles. For example if the first level has a resolution of 10km, it would also cache resolutions of 5km, 2.5km, 1.125km etc. Requests with a resolution of 7km would be generated from cached data with a resolution of 10km. The problem with this approach is, that everything needs to be scaled down, lines will get thin and text labels will become unreadable. The solution is simple: Just add more levels to the pyramid. There are three options to do this.</p>
+<p>You can set every cache resolution in the <code class="docutils literal notranslate"><span class="pre">res</span></code> option of a layer.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">custom_res_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">custom_res</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">vector_source</span><span class="p p-Indicator">]</span>
+
+<span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">custom_res_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:31467&#39;</span>
+<span class="w">    </span><span class="nt">res</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">10000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">7500</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">5000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">3500</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2500</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>You can specify a different factor that is used to calculate the resolutions. By default a factor of 2 is used (10, 5, 2.5,…) but you can set smaller values like 1.6 (10, 6.25, 3.9,…):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">custom_factor</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">res_factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.6</span>
+</pre></div>
+</div>
+<p>The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, which only request in these resolutions.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sqrt2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">res_factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqrt2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This does not improve the quality of aerial images or scanned maps, so you should avoid it for these images.</p>
+</div>
+</section>
+<section id="resampling-method">
+<h3>Resampling method<a class="headerlink" href="#resampling-method" title="Permalink to this heading">#</a></h3>
+<p>You can configure the method MapProxy uses for resampling when it scales or transforms data. For best results with vector data – from a viewers perspective – you should use bicubic resampling. You can configure this for each cache or in the globals section:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">vector_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">resampling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bicubic</span>
+<span class="w">    </span><span class="c1"># [...]</span>
+
+<span class="c1"># or</span>
+
+<span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resampling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bicubic</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="wms-sources-with-styled-layer-description-sld">
+<span id="sld-example"></span><h2>WMS Sources with Styled Layer Description (SLD)<a class="headerlink" href="#wms-sources-with-styled-layer-description-sld" title="Permalink to this heading">#</a></h2>
+<p>You can configure SLDs for your WMS sources.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sld_example</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/service?</span>
+<span class="w">      </span><span class="nt">sld</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.net/mysld.xml</span>
+</pre></div>
+</div>
+<p>MapProxy also supports local file URLs. MapProxy will use the content of the file as the <code class="docutils literal notranslate"><span class="pre">sld_body</span></code>.
+The path can either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">file:///path/to/sld.xml</span></code>) or relative (<code class="docutils literal notranslate"><span class="pre">file://path/to/sld.xml</span></code>) to the mapproxy.yaml file. The file should be UTF-8 encoded.</p>
+<p>You can also configure the raw SLD with the <code class="docutils literal notranslate"><span class="pre">sld_body</span></code> option. You need to indent whole SLD string.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sld_example</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/service?</span>
+<span class="w">      </span><span class="nt">sld_body</span><span class="p">:</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">&lt;sld:StyledLayerDescriptor version=&quot;1.0.0&quot;</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">[snip]</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">&lt;/sld:StyledLayerDescriptor&gt;</span>
+</pre></div>
+</div>
+<p>MapProxy will use HTTP POST requests in this case. You can change <code class="docutils literal notranslate"><span class="pre">http.method</span></code>, if you want to force GET requests.</p>
+</section>
+<section id="add-highly-dynamic-layers">
+<span id="direct-source"></span><h2>Add highly dynamic layers<a class="headerlink" href="#add-highly-dynamic-layers" title="Permalink to this heading">#</a></h2>
+<p>You have dynamic layers that change constantly and you do not want to cache these. You can use a direct source. See next example.</p>
+</section>
+<section id="reproject-wms-layers">
+<h2>Reproject WMS layers<a class="headerlink" href="#reproject-wms-layers" title="Permalink to this heading">#</a></h2>
+<p>If you do not want to cache data but still want to use MapProxy’s ability to reproject WMS layers on the fly, you can use a direct layer. Add your source directly to your layer instead of a cache.</p>
+<p>You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct_layer</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">direct_wms</span><span class="p p-Indicator">]</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">direct_wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">supported_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;EPSG:4326&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;EPSG:25832&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://wms.example.org/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer0,layer1</span>
+</pre></div>
+</div>
+</section>
+<section id="featureinformation">
+<span id="fi-xslt"></span><h2>FeatureInformation<a class="headerlink" href="#featureinformation" title="Permalink to this heading">#</a></h2>
+<p>MapProxy can pass-through FeatureInformation requests to your WMS sources. You need to enable each source:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fi_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">wms_opts</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">featureinfo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer0</span>
+</pre></div>
+</div>
+<p>MapProxy will mark all layers that use this source as <code class="docutils literal notranslate"><span class="pre">queryable</span></code>. It also works for sources that are used with caching.</p>
+<p>FeatureInfo support is enabled by default for WMS. For <a class="reference internal" href="services.html#wmts-feature-info"><span class="std std-ref">WMTS you need to enable FeatureInfo queries by configuring the supported formats</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The more advanced features <a class="reference internal" href="install.html#lxml-install"><span class="std std-ref">require the lxml library</span></a>.</p>
+</div>
+<section id="concatenation">
+<h3>Concatenation<a class="headerlink" href="#concatenation" title="Permalink to this heading">#</a></h3>
+<p>Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation when <a class="reference internal" href="install.html#lxml-install"><span class="std std-ref">lxml</span></a> is available.</p>
+<section id="html">
+<h4>HTML<a class="headerlink" href="#html" title="Permalink to this heading">#</a></h4>
+<p>Multiple HTML documents are put into the HTML <code class="docutils literal notranslate"><span class="pre">body</span></code> of the first document.
+MapProxy creates the HTML skeleton if it is missing.</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>FI1<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>FI2<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>will result in:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>FI1<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>FI2<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+ <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="xml">
+<h4>XML<a class="headerlink" href="#xml" title="Permalink to this heading">#</a></h4>
+<p>Multiple XML documents are put in the root of the first document.</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;root&gt;</span>
+<span class="w">  </span><span class="nt">&lt;a&gt;</span>FI1<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/root&gt;</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;other_root&gt;</span>
+<span class="w">  </span><span class="nt">&lt;b&gt;</span>FI2<span class="nt">&lt;/b&gt;</span>
+<span class="nt">&lt;/other_root&gt;</span>
+</pre></div>
+</div>
+<p>will result in:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;root&gt;</span>
+<span class="w">  </span><span class="nt">&lt;a&gt;</span>FI1<span class="nt">&lt;/a&gt;</span>
+<span class="w">  </span><span class="nt">&lt;b&gt;</span>FI2<span class="nt">&lt;/b&gt;</span>
+<span class="nt">&lt;/root&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="xsl-transformations">
+<h3>XSL Transformations<a class="headerlink" href="#xsl-transformations" title="Permalink to this heading">#</a></h3>
+<p>MapProxy supports XSL transformations for more control over feature information. This also requires <a class="reference internal" href="install.html#lxml-install"><span class="std std-ref">lxml</span></a>. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).</p>
+<p>You can use XSLT for sources to convert all incoming documents to a single, uniform format and then use outgoing XSLT scripts to transform this format to either HTML or XML/GML output.</p>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h4>
+<p>Lets assume we have two WMS sources where we have no control over the format of the feature info responses.</p>
+<p>One source only offers HTML feature information. The XSLT script extracts data from a table. We force the WMS <code class="docutils literal notranslate"><span class="pre">INFO_FORMAT</span></code> to HTML with the <code class="docutils literal notranslate"><span class="pre">featureinfo_format</span></code> option, so that MapProxy will not query another format. The XSLT script returns XML and not HTML. We configure this with the <code class="docutils literal notranslate"><span class="pre">featureinfo_out_format</span></code> option.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">fi_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">  </span><span class="nt">wms_opts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">featureinfo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">featureinfo_xslt</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./html_in.xslt</span>
+<span class="w">    </span><span class="nt">featureinfo_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html</span>
+<span class="w">    </span><span class="nt">featureinfo_out_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/xml</span>
+<span class="w">  </span><span class="nt">req</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>The second source supports XML feature information. The script converts the XML data to the same format as the HTML script. This service uses WMS 1.3.0 and the format is <code class="docutils literal notranslate"><span class="pre">text/xml</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">fi_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">  </span><span class="nt">wms_opts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.3.0</span>
+<span class="w">    </span><span class="nt">featureinfo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">featureinfo_xslt</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./xml_in.xslt</span>
+<span class="w">    </span><span class="nt">featureinfo_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/xml</span>
+<span class="w">  </span><span class="nt">req</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>We then define two outgoing XSLT scripts that transform our intermediate format to the final result. We can define scripts for different formats. MapProxy chooses the right script depending on the WMS version and the <code class="docutils literal notranslate"><span class="pre">INFO_FORMAT</span></code> of the request.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">wms</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">featureinfo_xslt</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">html</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./html_out.xslt</span>
+<span class="w">    </span><span class="nt">xml</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./xml_out.xslt</span>
+<span class="w">  </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="wmts-service-with-dimensions">
+<span id="wmts-dimensions"></span><h2>WMTS service with dimensions<a class="headerlink" href="#wmts-service-with-dimensions" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.6.0.</span></p>
+</div>
+<p>The dimension support in MapProxy is still limited, but you can use it to create a WMTS front-end for a multi-dimensional WMS service.</p>
+<p>First you need to add the WMS source and configure all dimensions that MapProxy should forward to the service:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">temperature_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">  </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/service?</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">temperature</span>
+<span class="w">  </span><span class="nt">forward_req_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;time&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;elevation&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>We need to create a cache since we want to access the source from a tiled service (WMTS). Actual caching is not possible at the moment, so it is necessary to disable it with <code class="docutils literal notranslate"><span class="pre">disable_storage:</span> <span class="pre">true</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">temperature</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">temperature_source</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">meta_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">meta_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</pre></div>
+</div>
+<p>Then we can add a layer with all available dimensions:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">temperature</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Temperature</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">temperature</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">time</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-12T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-13T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-14T00:00:00&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2012-11-15T00:00:00&quot;</span>
+<span class="w">      </span><span class="nt">elevation</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</pre></div>
+</div>
+<p>You can now access this layer with the elevation and time dimensions via the WMTS KVP service.
+The RESTful service requires a custom URL template that contains the dimensions. For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wmts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">restful_template</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/{Layer}/{Time}/{Elevation}/{TileMatrixSet}</span>
+<span class="w">        </span><span class="s">/{TileMatrix}/{TileCol}/{TileRow}.{Format}&#39;</span>
+</pre></div>
+</div>
+<p>Tiles are then available at <code class="docutils literal notranslate"><span class="pre">/wmts/temperature/GLOBAL_MERCATOR/1000/2012-11-12T00:00Z/6/33/22.png</span></code>.
+You can use <code class="docutils literal notranslate"><span class="pre">default</span></code> for missing dimensions, e.g. <code class="docutils literal notranslate"><span class="pre">/wmts/map/GLOBAL_MERCATOR/default/default/6/33/22.png</span></code>.</p>
+</section>
+<section id="wms-layers-with-http-authentication">
+<h2>WMS layers with HTTP Authentication<a class="headerlink" href="#wms-layers-with-http-authentication" title="Permalink to this heading">#</a></h2>
+<p>You have a WMS source that requires authentication. MapProxy has support for HTTP Basic
+Authentication and HTTP Digest Authentication. You just need to add the username and password to the URL. Since the Basic and Digest authentication
+are not really secure, you should use this feature in combination with HTTPS.
+You need to configure the SSL certificates to allow MapProxy to verify the HTTPS connection. See <a class="reference internal" href="configuration.html#http-ssl"><span class="std std-ref">HTTPS configuration for more information</span></a>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">secure_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">  </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://username:mypassword@example.org/service?</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">securelayer</span>
+</pre></div>
+</div>
+<p>MapProxy removes the username and password before the URL gets logged or inserted into service exceptions.</p>
+<p>You can disable the certificate verification if you you don’t need it.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">secure_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">  </span><span class="nt">http</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ssl_no_cert_checks</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">  </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://username:mypassword@example.org/service?</span>
+<span class="w">    </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">securelayer</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the source requires session handling through cookies, have a look at the <code class="docutils literal notranslate"><span class="pre">manage_cookies</span></code> configuration option.</p>
+</div>
+</section>
+<section id="access-sources-through-http-proxy">
+<span id="http-proxy"></span><h2>Access sources through HTTP proxy<a class="headerlink" href="#access-sources-through-http-proxy" title="Permalink to this heading">#</a></h2>
+<p>MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the <code class="docutils literal notranslate"><span class="pre">http_proxy</span></code> and <code class="docutils literal notranslate"><span class="pre">https_proxy</span></code> environment variable to the proxy URL. This also applies if you install MapProxy with <code class="docutils literal notranslate"><span class="pre">pip</span></code>.</p>
+<p>On Linux/Unix:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export http_proxy=&quot;http://example.com:3128&quot; https_proxy=&quot;http://example.com:3128&quot;
+$ mapproxy-util serve-develop mapproxy.yaml
+</pre></div>
+</div>
+<p>On Windows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="p">:</span>\<span class="o">&gt;</span> <span class="nb">set</span> <span class="n">http_proxy</span><span class="o">=</span><span class="s2">&quot;http://example.com:3128&quot;</span> <span class="n">https_proxy</span><span class="o">=</span><span class="s2">&quot;http://example.com:3128&quot;</span>
+<span class="n">c</span><span class="p">:</span>\<span class="o">&gt;</span> <span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>You can also set this in your <a class="reference internal" href="deployment.html#server-script"><span class="std std-ref">server script</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;http_proxy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;http://example.com:3128&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;https_proxy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;http://example.com:3128&quot;</span>
+</pre></div>
+</div>
+<p>Add a username and password to the URL if your HTTP proxy requires authentication. For example <code class="docutils literal notranslate"><span class="pre">http://username:password&#64;example.com:3128</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the source requires session handling through cookies, have a look at the <code class="docutils literal notranslate"><span class="pre">manage_cookies</span></code> configuration option.</p>
+</div>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">no_proxy</span></code> environment variable if you need to bypass the proxy for some hosts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export no_proxy=&quot;localhost,127.0.0.1,196.168.1.99&quot;
+</pre></div>
+</div>
+</section>
+<section id="cookie-management">
+<h2>Cookie Management<a class="headerlink" href="#cookie-management" title="Permalink to this heading">#</a></h2>
+<p>MapProxy can handle server cookies of HTTP sources, like browsers do. That is, MapProxy accepts cookies and passes them back
+on subsequent calls. This is useful for sources that use cookie for session management or rate-limiting for example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">wms_with_session_management</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">http</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">manage_cookies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/service?</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">layer0</span>
+</pre></div>
+</div>
+</section>
+<section id="serve-multiple-mapproxy-instances">
+<span id="paster-urlmap"></span><h2>Serve multiple MapProxy instances<a class="headerlink" href="#serve-multiple-mapproxy-instances" title="Permalink to this heading">#</a></h2>
+<p>It is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. <a class="footnote-reference brackets" href="#f1" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>  You can use <a class="reference internal" href="deployment.html#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a> to load multiple MapProxy configurations on-demand.</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">config.py</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.multiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to/projects&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The MapProxy configuration from <code class="docutils literal notranslate"><span class="pre">/path/to/projects/app.yaml</span></code> is then available at <code class="docutils literal notranslate"><span class="pre">/app</span></code>.</p>
+<p>You can reuse parts of the MapProxy configuration with the <cite>base</cite> option. You can put all common options into a single base configuration and reference that file in the actual configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">base</span><span class="p">:</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">layers</span><span class="p">:</span>
+   <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">1</a><span class="fn-bracket">]</span></span>
+<p>This does not apply to <cite>srs.proj_data_dir</cite>, because it affects the proj4 library directly.</p>
+</aside>
+</aside>
+</section>
+<section id="generate-static-quadkey-virtual-earth-cache-for-use-on-multitouch-table">
+<span id="quadkey-cache"></span><h2>Generate static quadkey / virtual earth cache for use on Multitouch table<a class="headerlink" href="#generate-static-quadkey-virtual-earth-cache-for-use-on-multitouch-table" title="Permalink to this heading">#</a></h2>
+<p>Some software running on Microsoft multitouch tables need a static quadkey generated cache. Mapproxy understands quadkey both as a client and as a cache option.</p>
+<p>Example part of <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code> to generate a quadkey cache:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caches</span><span class="p">:</span>
+  <span class="n">osm_cache</span><span class="p">:</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_WEBMERCATOR</span><span class="p">]</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">osm_wms</span><span class="p">]</span>
+    <span class="n">cache</span><span class="p">:</span>
+      <span class="nb">type</span><span class="p">:</span> <span class="n">file</span>
+      <span class="n">directory_layout</span><span class="p">:</span> <span class="n">quadkey</span>
+</pre></div>
+</div>
+</section>
+<section id="generate-a-static-image-for-every-tile">
+<span id="static-tile-source"></span><h2>Generate a static image for every tile<a class="headerlink" href="#generate-a-static-image-for-every-tile" title="Permalink to this heading">#</a></h2>
+<p>In order to display a static message on every tile, you can configure a tile source URL that is a local file.</p>
+<p>Example part of <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code> to generate a static tile source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sources</span><span class="p">:</span>
+  <span class="n">tile_source</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">tile</span>
+    <span class="n">url</span><span class="p">:</span> <span class="n">file</span><span class="p">:</span><span class="o">///</span><span class="n">path</span><span class="o">/</span><span class="n">service</span><span class="o">-</span><span class="n">suspended</span><span class="o">.</span><span class="n">png</span>
+</pre></div>
+</div>
+</section>
+<section id="hq-retina-tiles">
+<span id="hq-tiles"></span><h2>HQ/Retina tiles<a class="headerlink" href="#hq-retina-tiles" title="Permalink to this heading">#</a></h2>
+<p>MapProxy has no native support for delivering high-resolution tiles, but you can create a second tile layer with HQ tiles, if your source supports rendering with different scale-factor or DPI.</p>
+<p>At first you need two grids. One regular grid and one with half the resolution but twice the tile size. The following example configures two webmercator compatible grids:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">grids</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">webmercator</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EPSG:3857&quot;</span>
+<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nw</span>
+<span class="w">    </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">156543.03392804097</span>
+<span class="w">  </span><span class="nt">webmercator_hq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EPSG:3857&quot;</span>
+<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nw</span>
+<span class="w">    </span><span class="nt">min_res</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">78271.51696402048</span>
+<span class="w">    </span><span class="nt">tile_size</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">512</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">512</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Then you need two layers and two caches:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Regular map</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">map_cache</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map_hq</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HQ map</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">map_hq_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">map_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">webmercator</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">map_source</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">map_hq_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">webmercator_hq</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">map_hq_source</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>And finally two sources. The source for the HQ tiles needs to render images with a higher scale/DPI setting. The <code class="docutils literal notranslate"><span class="pre">mapnik</span></code> source supports this with the <code class="docutils literal notranslate"><span class="pre">scale_factor</span></code> option. MapServer for example supports a <code class="docutils literal notranslate"><span class="pre">map_resolution</span></code> request parameter.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">map_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mapnik</span>
+<span class="w">    </span><span class="nt">mapfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./mapnik.xml</span>
+<span class="w">    </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="nt">map_hq_source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mapnik</span>
+<span class="w">    </span><span class="nt">mapfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./mapnik.xml</span>
+<span class="w">    </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">scale_factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+</pre></div>
+</div>
+<p>With that configuration <code class="docutils literal notranslate"><span class="pre">/wmts/mapnik/webmercator/0/0/0.png</span></code> returns a regular webmercator tile:</p>
+<img alt="_images/mapnik-webmerc.png" src="_images/mapnik-webmerc.png" />
+<p><code class="docutils literal notranslate"><span class="pre">/wmts/mapnik_hq/webmercator_hq/0/0/0.png</span></code> returns the same tile with 512x512 pixel:</p>
+<img alt="_images/mapnik-webmerc-hq.png" src="_images/mapnik-webmerc-hq.png" />
+</section>
+<section id="serve-multiple-caches-for-a-single-layer">
+<h2>Serve multiple caches for a single layer<a class="headerlink" href="#serve-multiple-caches-for-a-single-layer" title="Permalink to this heading">#</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.8.2.</span></p>
+</div>
+<p>You have a data set that you need to serve with different grids (i.e. WMTS tile matrix sets).</p>
+<p>You can create a cache with multiple grids and use this as a layers source:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Layer with multiple grids</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">full_grid</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">sub_grid</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>This <cite>map</cite> layer is available in WMS and in tile services. The grids are available as separate tile matrix sets in the WMTS.
+However, this is limited to a single cache for each layer. You can’t reuse the tiles from the <cite>full_grid</cite> for the <cite>sub_grid</cite>.</p>
+<p>You need to use <code class="docutils literal notranslate"><span class="pre">tile_sources</span></code> to make multiple caches available as a single layer.
+<code class="docutils literal notranslate"><span class="pre">tile_sources</span></code> allows you to override <code class="docutils literal notranslate"><span class="pre">sources</span></code> for tile services. This allows you to <a class="reference external" href="using_existing_caches">use caches that build up on other caches</a>.</p>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">map</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Layer with sources for tile services and for WMS</span>
+<span class="w">    </span><span class="nt">tile_sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">full_cache</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">inspire_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">full_cache</span><span class="p p-Indicator">]</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">full_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">full_grid</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">inspire_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sub_grid</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">full_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="deployment.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Deployment</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="inspire.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">INSPIRE View Service</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-multiple-layers">Merge multiple layers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-tile-sources">Merge tile sources</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-local-servers">Access local servers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-wms-from-existing-tile-server">Create WMS from existing tile server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service">Display custom background map in the map viewer of the demo service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">Overlay tiles with OpenStreetMap or Google Maps in OpenLayers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-existing-caches">Using existing caches</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reprojecting-tiles">Reprojecting Tiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-grayscale-images">Create grayscale images</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-raster-data">Cache raster data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mixed-mode">Mixed mode</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-vector-data">Cache vector data</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cache-resolutions">Cache resolutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-method">Resampling method</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-sources-with-styled-layer-description-sld">WMS Sources with Styled Layer Description (SLD)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#add-highly-dynamic-layers">Add highly dynamic layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproject-wms-layers">Reproject WMS layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#featureinformation">FeatureInformation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#concatenation">Concatenation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#html">HTML</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xml">XML</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xsl-transformations">XSL Transformations</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-service-with-dimensions">WMTS service with dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-layers-with-http-authentication">WMS layers with HTTP Authentication</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-sources-through-http-proxy">Access sources through HTTP proxy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cookie-management">Cookie Management</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiple-mapproxy-instances">Serve multiple MapProxy instances</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-static-quadkey-virtual-earth-cache-for-use-on-multitouch-table">Generate static quadkey / virtual earth cache for use on Multitouch table</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-a-static-image-for-every-tile">Generate a static image for every tile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hq-retina-tiles">HQ/Retina tiles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serve-multiple-caches-for-a-single-layer">Serve multiple caches for a single layer</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on Jul 16, 2024.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
