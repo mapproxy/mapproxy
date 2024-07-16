@@ -17,6 +17,7 @@ RUN apk -U upgrade --update \
       proj-util \
       geos \
       geos-dev \
+      libffi-dev \
     && rm -rf /var/cache/apk/*
 
 
