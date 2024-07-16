@@ -21,17 +21,17 @@ Create a new virtual environment
 
 ``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation.html>`_.
 
-To create a new environment with the name ``mapproxy`` call::
+To create a new environment with the name ``venv`` call::
 
-    virtualenv --system-site-packages mapproxy
+    virtualenv --system-site-packages venv
 
-You should now have a Python installation under ``mapproxy/bin/python``.
+You should now have a Python installation under ``venv/bin/python``.
 
 .. note:: Virtualenv will use your Python system packages (like ``python-imaging`` or ``python-yaml``) only when the virtualenv was created with the ``--system-site-packages`` option.
 
-You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
+You need to either prefix all commands with ``venv/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
 
-    source mapproxy/bin/activate
+    source venv/bin/activate
 
 This will change the ``PATH`` for your `current` session.
 
@@ -147,8 +147,7 @@ Start the test server
 
 To start a test server::
 
-    cd mymapproxy
-    mapproxy-util serve-develop mapproxy.yaml
+    mapproxy-util serve-develop mymapproxy/mapproxy.yaml
 
 There is already a test layer configured that obtains data from the `Omniscale OpenStreetMap WMS`_. Feel free to use this service for testing.
 

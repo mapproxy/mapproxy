@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.1</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -362,17 +362,17 @@ document.write(`
 <section id="create-a-new-virtual-environment">
 <h2>Create a new virtual environment<a class="headerlink" href="#create-a-new-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> is available as <code class="docutils literal notranslate"><span class="pre">python-virtualenv</span></code> on most Linux systems. You can also <a class="reference external" href="https://virtualenv.pypa.io/en/latest/installation.html">install Virtualenv from source</a>.</p>
-<p>To create a new environment with the name <code class="docutils literal notranslate"><span class="pre">mapproxy</span></code> call:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">mapproxy</span>
+<p>To create a new environment with the name <code class="docutils literal notranslate"><span class="pre">venv</span></code> call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">venv</span>
 </pre></div>
 </div>
-<p>You should now have a Python installation under <code class="docutils literal notranslate"><span class="pre">mapproxy/bin/python</span></code>.</p>
+<p>You should now have a Python installation under <code class="docutils literal notranslate"><span class="pre">venv/bin/python</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Virtualenv will use your Python system packages (like <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code> or <code class="docutils literal notranslate"><span class="pre">python-yaml</span></code>) only when the virtualenv was created with the <code class="docutils literal notranslate"><span class="pre">--system-site-packages</span></code> option.</p>
 </div>
-<p>You need to either prefix all commands with <code class="docutils literal notranslate"><span class="pre">mapproxy/bin</span></code>, set your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> variable to include the bin directory or <cite>activate</cite> the virtualenv with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">mapproxy</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<p>You need to either prefix all commands with <code class="docutils literal notranslate"><span class="pre">venv/bin</span></code>, set your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> variable to include the bin directory or <cite>activate</cite> the virtualenv with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
 </pre></div>
 </div>
 <p>This will change the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> for your <cite>current</cite> session.</p>
@@ -462,8 +462,7 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 <section id="start-the-test-server">
 <h2>Start the test server<a class="headerlink" href="#start-the-test-server" title="Permalink to this heading">#</a></h2>
 <p>To start a test server:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">mymapproxy</span>
-<span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mymapproxy</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
 </pre></div>
 </div>
 <p>There is already a test layer configured that obtains data from the <a class="reference external" href="https://maps.omniscale.com/">Omniscale OpenStreetMap WMS</a>. Feel free to use this service for testing.</p>
