@@ -5,13 +5,14 @@ on:
       - "*.*.*"
 
 jobs:
-  pypi-publish:
+  build-publish-release:
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/project/MapProxy
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write  # this permission is needed for trusted publishing on pypi
+      contents: write # this is needed to create the github release
 
     steps:
       - name: Install packages
@@ -31,3 +32,9 @@ jobs:
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create a GitHub release page
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          artifacts: "dist/*.whl"
