@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
+    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -318,10 +318,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
@@ -374,7 +371,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-and-max-res"><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stretch-factor"><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shrink-factor"><code class="docutils literal notranslate"><span class="pre">max_shrink_factor</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-grids-configuration">Example <code class="docutils literal notranslate"><span class="pre">grids</span></code> configuration</a></li>
 </ul>
@@ -382,9 +379,9 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http"><code class="docutils literal notranslate"><span class="pre">http</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#secure-http-connections-https">Secure HTTP Connections (HTTPS)</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#client-timeout"><code class="docutils literal notranslate"><span class="pre">client_timeout</span></code></a></li>
@@ -459,19 +456,20 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <p class="admonition-title">Note</p>
 <p>The indentation is significant and shall only contain space characters. Tabulators are <strong>not</strong> permitted for indentation.</p>
 </div>
-<p>There is another optional section:</p>
+<p>There are other optional sections:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">parts</span></code></p>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.6.0.</span></p>
 </div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">parts</span></code>: YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the <code class="docutils literal notranslate"><span class="pre">parts</span></code> section.</p></li>
-</ul>
+<p>YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the <code class="docutils literal notranslate"><span class="pre">parts</span></code> section.</p>
 <p>For example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">parts</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">coverages</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">mycoverage</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;mycoverage</span>
 <span class="w">        </span><span class="nt">bbox</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">srs</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EPSG:4326&#39;</span>
+
 <span class="nt">sources</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">mysource1</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">coverage</span><span class="p">:</span><span class="w"> </span><span class="nv">*mycoverage</span>
@@ -481,19 +479,93 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </pre></div>
 </div>
-<section id="base">
-<h3><code class="docutils literal notranslate"><span class="pre">base</span></code><a class="headerlink" href="#base" title="Permalink to this heading">#</a></h3>
-<p>You can split a configuration into multiple files with the <code class="docutils literal notranslate"><span class="pre">base</span></code> option. The <code class="docutils literal notranslate"><span class="pre">base</span></code> option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.</p>
-<p>For example:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrids.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mycaches_sources.yaml</span><span class="p p-Indicator">]</span>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">base</span></code></p>
+<p>You can split a configuration into multiple files with the <code class="docutils literal notranslate"><span class="pre">base</span></code> option.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">base</span></code> option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.</p>
+<p>For example, to externalize <code class="docutils literal notranslate"><span class="pre">grids</span></code> and <code class="docutils literal notranslate"><span class="pre">caches``sections,</span> <span class="pre">we</span> <span class="pre">will</span> <span class="pre">have</span> <span class="pre">in</span> <span class="pre">``mappproxy.yaml</span></code>:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrids.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mycaches_sources.yaml</span><span class="p p-Indicator">]</span>
 <span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>Also in more complex configurations (with many layers, caches, sources, etc.), the <code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code> can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in <code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code>:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">nature.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">artificial_building.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">topography.yaml</span><span class="p p-Indicator">]</span>
+<span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">src_mymap</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>And we could have in <code class="docutils literal notranslate"><span class="pre">nature.yaml</span></code>:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lake</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache_lake</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">river</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache_river</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forest</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache_forest</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_lake</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">sources</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;src_mymap:lake&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_river</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">sources</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;src_mymap:river&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_forest</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">sources</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;src_mymap:forest&#39;</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>The same for <code class="docutils literal notranslate"><span class="pre">artificial_building.yaml</span></code>:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">road</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache_road</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">power_plant</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache_power_plant</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_road</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">sources</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;src_mymap:road&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_power_plant</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">sources</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;src_energy:power_plant&#39;</span><span class="p p-Indicator">]</span>
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">src_energy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>Finally, when all the configuration files are merged together, we will obtain:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">src_mymap</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">src_energy</span><span class="p">:</span>
+<span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lake</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">river</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">forest</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">road</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">power_plant</span>
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_lake</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_river</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_forest</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_road</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cache_power_plant</span>
 </pre></div>
 </div>
 <div class="versionchanged">
 <p><span class="versionmodified changed">Changed in version 1.4.0: </span>Support for recursive imports and for multiple files.</p>
 </div>
-</section>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.16.0: </span>Improved support of splat configuration files</p>
+</div>
+</li>
+</ul>
 </section>
 <section id="services">
 <span id="index-1"></span><h2>services<a class="headerlink" href="#services" title="Permalink to this heading">#</a></h2>
@@ -688,7 +760,7 @@ Each dimension is another dictionary with a list of <code class="docutils litera
 Available options are:</p>
 <section id="id4">
 <h3><code class="docutils literal notranslate"><span class="pre">sources</span></code><a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
-<p>A list of data sources for this cache. You can use sources defined in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> and <code class="docutils literal notranslate"><span class="pre">caches</span></code> section. This parameter is <cite>required</cite>. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.</p>
+<p>A list of data sources for this cache. You can use sources defined in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> and <code class="docutils literal notranslate"><span class="pre">caches</span></code> section. This parameter is <cite>required</cite>. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk. If you want to use an existing cache without a source, set it to an empty array.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caches</span><span class="p">:</span>
   <span class="n">my_cache</span><span class="p">:</span>
     <span class="n">sources</span><span class="p">:</span> <span class="p">[</span><span class="n">background_wms</span><span class="p">,</span> <span class="n">overlay_wms</span><span class="p">]</span>
@@ -1034,8 +1106,8 @@ that MapProxy will shrink images.</p>
 <p>Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
 resolution will get a result, requests with 5km will get a blank response.</p>
 </section>
-<section id="id9">
-<h3><code class="docutils literal notranslate"><span class="pre">base</span></code><a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<section id="base">
+<h3><code class="docutils literal notranslate"><span class="pre">base</span></code><a class="headerlink" href="#base" title="Permalink to this heading">#</a></h3>
 <p>With this option, you can base the grid on the options of another grid you already defined.</p>
 </section>
 <section id="defining-resolutions">
@@ -1065,7 +1137,7 @@ resolution will get a result, requests with 5km will get a blank response.</p>
 </section>
 </section>
 <section id="sources-conf-label">
-<span id="index-10"></span><span id="id10"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Permalink to this heading">#</a></h2>
+<span id="index-10"></span><span id="id9"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Permalink to this heading">#</a></h2>
 <p>A sources defines where MapProxy can request new data. Each source has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and all other options are dependent to this type.</p>
 <p>See <a class="reference internal" href="sources.html"><span class="doc">Sources</span></a> for the documentation of all available sources.</p>
 <p>An example:</p>
@@ -1093,8 +1165,8 @@ of MapProxy, in any of the three types of service (WMS, WMTS and TMS).</p>
 </dd>
 </dl>
 </section>
-<section id="id11">
-<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
+<section id="id10">
+<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
 <p>Here you can define some options that affect the way MapProxy generates image results.</p>
 <dl id="image-resampling-method">
 <dt><code class="docutils literal notranslate"><span class="pre">resampling_method</span></code></dt><dd><p>The resampling method used when results need to be rescaled or transformed.
@@ -1126,7 +1198,7 @@ Bicubic enhances the contrast at edges and should be used for vector images.</p>
 </dl>
 </section>
 <section id="globals-cache">
-<span id="id12"></span><h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#globals-cache" title="Permalink to this heading">#</a></h3>
+<span id="id11"></span><h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#globals-cache" title="Permalink to this heading">#</a></h3>
 <p>The following options define how tiles are created and stored. Most options can be set individually for each cache as well.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.6.0: </span><code class="docutils literal notranslate"><span class="pre">tile_lock_dir</span></code></p>
@@ -1138,7 +1210,7 @@ Bicubic enhances the contrast at edges and should be used for vector images.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <cite>bulk_meta_tiles</cite>.</p>
 </dd>
 </dl>
-<dl class="simple" id="id13">
+<dl class="simple" id="id12">
 <dt><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></dt><dd><p>Enables meta-tile handling for caches with tile sources.
 If set to <cite>true</cite>, MapProxy will request neighboring tiles from the source even if only one tile is requested from the cache. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how many tiles should be requested in one step and <code class="docutils literal notranslate"><span class="pre">concurrent_tile_creators</span></code> defines how many requests are made in parallel. This option improves the performance for caches that allow to store multiple tiles with one request, like SQLite/MBTiles but not the <code class="docutils literal notranslate"><span class="pre">file</span></code> cache.</p>
 </dd>
@@ -1175,8 +1247,8 @@ mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span
 </dd>
 </dl>
 </section>
-<section id="id14">
-<h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<section id="id13">
+<h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
 <dl>
 <dt><code class="docutils literal notranslate"><span class="pre">preferred_src_proj</span></code></dt><dd><p>This option allows you to control which source projection MapProxy should use
 when it needs to reproject an image.</p>
@@ -1492,10 +1564,7 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
@@ -1548,7 +1617,7 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-and-max-res"><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stretch-factor"><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#max-shrink-factor"><code class="docutils literal notranslate"><span class="pre">max_shrink_factor</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#base"><code class="docutils literal notranslate"><span class="pre">base</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-resolutions">Defining Resolutions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-grids-configuration">Example <code class="docutils literal notranslate"><span class="pre">grids</span></code> configuration</a></li>
 </ul>
@@ -1556,9 +1625,9 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#http"><code class="docutils literal notranslate"><span class="pre">http</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#secure-http-connections-https">Secure HTTP Connections (HTTPS)</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#client-timeout"><code class="docutils literal notranslate"><span class="pre">client_timeout</span></code></a></li>
@@ -1626,7 +1695,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Mar 13, 2024.
+  Last updated on Jul 16, 2024.
   <br/>
 </p>
   </div>

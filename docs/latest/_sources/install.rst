@@ -83,11 +83,6 @@ You can install a new version of Pillow from source with::
   pip install Pillow
 
 
-YAML
-~~~~
-
-MapProxy uses YAML for the configuration parsing. It is available as ``python-yaml``, but you can also install it as a Python package with ``pip install PyYAML``.
-
 Shapely and GEOS *(optional)*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.8) version of Shapely.
