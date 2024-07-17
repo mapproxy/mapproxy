@@ -31,6 +31,7 @@ import hashlib
 import warnings
 from copy import deepcopy, copy
 from functools import partial
+from packaging.version import Version
 
 import logging
 from urllib.parse import urlparse
@@ -1952,10 +1953,11 @@ class LayerConfiguration(ConfigurationBase):
                 md['extent'] = extent
                 legend_version = None
                 if 'legendurl' in self.conf:
-                    wms_conf = self.context.services.conf.get('wms', None)
-                    # GetLegendGraphic with legendurl does not seem to work in non 1.3.0 versions
-                    if wms_conf is not None and '1.3.0' in wms_conf.get('versions', ['1.3.0']):
-                        legend_version = '1.3.0'
+                    wms_conf = self.context.services.conf.get('wms')
+                    if wms_conf is not None:
+                        versions = wms_conf.get('versions', ['1.3.0'])
+                        versions.sort(key=Version)
+                        legend_version = versions[-1]
                 tile_layers.append(
                     TileLayer(
                         self.conf['name'], self.conf['title'],
