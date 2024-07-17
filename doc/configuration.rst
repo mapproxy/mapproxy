@@ -304,7 +304,7 @@ Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sc
 ``legendurl``
 """""""""""""
 
-Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
+Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here. If WMS and WMTS are enabled the address to the WMS `GetLegendGraphic` endpoint will be included in the WMTS capabilities as the legend url.
 
 .. _layer_metadata:
 

@@ -31,6 +31,7 @@ import hashlib
 import warnings
 from copy import deepcopy, copy
 from functools import partial
+from packaging.version import Version
 
 import logging
 from urllib.parse import urlparse
@@ -1950,6 +1951,13 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
                 md['extent'] = extent
+                legend_version = None
+                if 'legendurl' in self.conf:
+                    wms_conf = self.context.services.conf.get('wms')
+                    if wms_conf is not None:
+                        versions = wms_conf.get('versions', ['1.3.0'])
+                        versions.sort(key=Version)
+                        legend_version = versions[-1]
                 tile_layers.append(
                     TileLayer(
                         self.conf['name'], self.conf['title'],
@@ -1957,6 +1965,7 @@ class LayerConfiguration(ConfigurationBase):
                         md=md,
                         tile_manager=cache_source,
                         dimensions=dimensions,
+                        legend_version=legend_version
                     )
                 )
 

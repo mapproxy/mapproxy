@@ -18,6 +18,7 @@ WMS service handler
 """
 from __future__ import print_function
 
+import re
 from functools import partial
 
 from mapproxy.request.wmts import (
@@ -273,11 +274,13 @@ class Capabilities(object):
         return self._render_template(_map_request.capabilities_template)
 
     def template_context(self):
-        return dict(service=bunch(default='', **self.service),
+        service = bunch(default='', **self.service)
+        return dict(service=service,
                     restful=False,
                     layers=self.layers,
                     info_formats=self.info_formats,
-                    tile_matrix_sets=self.matrix_sets)
+                    tile_matrix_sets=self.matrix_sets,
+                    wms_service_url=service.url)
 
     def _render_template(self, template):
         template = get_template(template)
@@ -294,7 +297,8 @@ class RestfulCapabilities(Capabilities):
         self.fi_url_converter = fi_url_converter
 
     def template_context(self):
-        return dict(service=bunch(default='', **self.service),
+        service = bunch(default='', **self.service)
+        return dict(service=service,
                     restful=True,
                     layers=self.layers,
                     info_formats=self.info_formats,
@@ -306,6 +310,7 @@ class RestfulCapabilities(Capabilities):
                     dimension_keys=dict((k.lower(), k) for k in self.url_converter.dimensions),
                     format_resource_template=format_resource_template,
                     format_info_resource_template=format_info_resource_template,
+                    wms_service_url=re.sub(r'wmts$', 'service', service.url)
                     )
 
 
