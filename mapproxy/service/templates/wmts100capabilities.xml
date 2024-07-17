@@ -100,7 +100,7 @@
         {{if layer.legend_version}}
         <LegendURL
           format="image/png"
-          xlink:href="{{service.url}}?service=WMS&amp;request=GetLegendGraphic&amp;version={{layer.legend_version}}&amp;format=image%2Fpng&amp;layer={{layer.name}}"
+          xlink:href="{{wms_service_url}}?service=WMS&amp;request=GetLegendGraphic&amp;version={{layer.legend_version}}&amp;format=image%2Fpng&amp;layer={{layer.name}}"
         />
         {{endif}}
       </Style>

@@ -28,6 +28,8 @@ services:
       access_constraints:
         Here be dragons.
   wmts:
+    restful: true
+    kvp: true
 
 layers:
   - name: wms_legend

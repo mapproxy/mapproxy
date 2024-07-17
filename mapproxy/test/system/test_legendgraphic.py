@@ -21,6 +21,7 @@ import pytest
 import json
 
 from mapproxy.compat.image import Image
+from mapproxy.request.base import BaseRequest
 from mapproxy.request.wms import (
     WMS111MapRequest,
     WMS111CapabilitiesRequest,
@@ -69,6 +70,9 @@ class TestWMSLegendgraphic(SysTest):
         self.common_wmts_cap_req = WMTS100CapabilitiesRequest(
             url="/service?",
             param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),
+        )
+        self.common_wmts_rest_cap_req = BaseRequest(
+            url="/wmts/1.0.0/WMTSCapabilities.xml"
         )
 
     # test_00, test_01, test_02 need to run first in order to run the other tests properly
@@ -315,6 +319,19 @@ class TestWMSLegendgraphic(SysTest):
 
     def test_wmts_legend_url(self, app):
         resp = app.get(self.common_wmts_cap_req)
+        assert resp.content_type == "application/xml"
+        xml = resp.lxml
+        assert_xpath_wmts(
+            xml,
+            '//wmts:Layer[1]/wmts:Style/wmts:LegendURL/@xlink:href',
+            'http://localhost/service?service=WMS&request=GetLegendGraphic&version=1.3.0&format=image%2Fpng'
+            '&layer=wmts_layer_legendurl'
+        )
+        assert xml.xpath('count(//wmts:Layer)', namespaces=ns_wmts) == 2
+        assert xml.xpath('count(//wmts:LegendURL)', namespaces=ns_wmts) == 1
+
+    def test_wmts_rest_legend_url(self, app):
+        resp = app.get(self.common_wmts_rest_cap_req)
         assert resp.content_type == "application/xml"
         xml = resp.lxml
         assert_xpath_wmts(
