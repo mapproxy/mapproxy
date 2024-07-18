@@ -1,5 +1,39 @@
-Nightly
-~~~~~~~~~~~~~~~~~
+2.1.1 2024-07-16
+~~~~~~~~~~~~~~~~
+Fixes:
+
+  - Fix version of jsonschema in setup.py
+  - Fix alpine docker build
+  - Fix doc generation workflow
+
+
+2.1.0 2024-07-16
+~~~~~~~~~~~~~~~~
+Improvements:
+
+  - Configuration files can no be splitted into multiple files
+  - Added jsonschema to validate configuration files
+  - New theme for documentation, overall improvement of the documentation and github workflow for automatic creation
+  - Improved docker images with better entrypoint and workflow to build docker images with a builder image
+  - Added release workflow for automatic publishing on pypi and github
+
+Maintenance:
+
+  - Dependency updates
+  - Remove python 2 compatibility functions
+  - Added flake8 linting
+  - setup.py contains now required libraries
+  - Remove depracated `pkg_resources` in favor of `importlib_resources`
+  - Addressed shapely deprecations
+
+Fixes:
+
+  - Ensure make_app always returns MapProxyApp instance
+  - Allow feature info responses of combined sources to be empty
+  - Fix broken TMS demo
+  - Fix problem with dimensions in load_tile_metadata
+  - Fix GeoTIFF Headers
+
 
 2.0.2 2024-01-10
 ~~~~~~~~~~~~~~~~

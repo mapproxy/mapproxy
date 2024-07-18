@@ -1,4 +1,0 @@
-WebTest==3.0.0
-pytest==7.4.3
-WebOb==1.8.7
-requests==2.28.2

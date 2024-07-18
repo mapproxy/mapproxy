@@ -31,6 +31,7 @@ import hashlib
 import warnings
 from copy import deepcopy, copy
 from functools import partial
+from packaging.version import Version
 
 import logging
 from urllib.parse import urlparse
@@ -1887,7 +1888,6 @@ class LayerConfiguration(ConfigurationBase):
     def tile_layers(self, grid_name_as_path=False):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
-        from mapproxy.cache.file import FileCache
         sources = []
         fi_only_sources = []
         if 'tile_sources' in self.conf:
@@ -1932,10 +1932,10 @@ class LayerConfiguration(ConfigurationBase):
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
                 if disable_storage:
-                    supported_cache_class = DummyCache
+                    supports_dimensions = isinstance(cache_source.cache, DummyCache)
                 else:
-                    supported_cache_class = FileCache
-                if dimensions and not isinstance(cache_source.cache, supported_cache_class):
+                    supports_dimensions = cache_source.cache.supports_dimensions
+                if dimensions and not supports_dimensions:
                     # caching of dimension layers is not supported yet
                     raise ConfigurationError(
                         "caching of dimension layer (%s) is not supported yet."
@@ -1954,6 +1954,13 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
                 md['extent'] = extent
+                legend_version = None
+                if 'legendurl' in self.conf:
+                    wms_conf = self.context.services.conf.get('wms')
+                    if wms_conf is not None:
+                        versions = wms_conf.get('versions', ['1.3.0'])
+                        versions.sort(key=Version)
+                        legend_version = versions[-1]
                 tile_layers.append(
                     TileLayer(
                         self.conf['name'], self.conf['title'],
@@ -1961,6 +1968,7 @@ class LayerConfiguration(ConfigurationBase):
                         md=md,
                         tile_manager=cache_source,
                         dimensions=dimensions,
+                        legend_version=legend_version
                     )
                 )
 

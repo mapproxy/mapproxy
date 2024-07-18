@@ -56,6 +56,12 @@ Adds an attribution (copyright) line to all WMS requests.
 
   ``keyword_list``
 
+.. _wms_inpire_md:
+
+``inspire_md``
+""""""""""""""
+``inspire_md`` is for inspire metadata. See :ref:`inspire`
+
 .. _wms_srs:
 
 ``srs``

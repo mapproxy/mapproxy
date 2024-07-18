@@ -7,7 +7,10 @@ from setuptools import setup, find_packages
 install_requires = [
     'PyYAML>=3.0',
     'future',
-    'pyproj>=2'
+    'pyproj>=2',
+    'jsonschema>=4',
+    'importlib_resources',
+    'werkzeug==1.0.1'
 ]
 
 
@@ -60,7 +63,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="2.0.2",
+    version="2.1.1",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
@@ -75,7 +78,7 @@ setup(
             'mapproxy-util = mapproxy.script.util:main',
         ],
     },
-    package_data={'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
+    package_data={'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini', '*.json']},
     install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -90,5 +93,5 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",
     ],
-    zip_safe=False,
+    zip_safe=False
 )
