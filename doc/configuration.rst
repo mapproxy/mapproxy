@@ -5,7 +5,7 @@ There are two configuration files used by MapProxy.
 
 ``mapproxy.yaml``
     This is the main configuration of MapProxy. It configures all aspects of the server:
-    Which servers should be started, where comes the data from, what should be cached,
+    which servers should be started, where comes the data from, what should be cached,
     etc..
 
 ``seed.yaml``
@@ -31,7 +31,7 @@ The MapProxy configuration is grouped into sections, each configures a different
 
 - ``layers``: Configure the layers that MapProxy offers. Each layer can consist of multiple sources and caches.
 
-- ``grids``: Define the grids that MapProxy uses to aligns cached images.
+- ``grids``: Define the grids that MapProxy uses to align cached images.
 
 The order of the sections is not important, so you can organize it your way.
 
@@ -69,7 +69,6 @@ There are other optional sections:
 
   The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
-  For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mapproxy.yaml``:
   For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mapproxy.yaml``:
 
   .. code-block:: YAML
