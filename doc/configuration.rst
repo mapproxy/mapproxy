@@ -3,7 +3,7 @@ Configuration
 
 There are two configuration files used by MapProxy.
 
-``mappproxy.yaml``
+``mapproxy.yaml``
     This is the main configuration of MapProxy. It configures all aspects of the server:
     Which servers should be started, where comes the data from, what should be cached,
     etc..
@@ -70,6 +70,7 @@ There are other optional sections:
   The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
   For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mapproxy.yaml``:
+  For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mapproxy.yaml``:
 
   .. code-block:: YAML
 
@@ -77,7 +78,7 @@ There are other optional sections:
     service: ...
     layers: ...
 
-  Also in more complex configurations (with many layers, caches, sources, etc.), the ``mappproxy.yaml`` can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in ``mappproxy.yaml``:
+  Also in more complex configurations (with many layers, caches, sources, etc.), the ``mapproxy.yaml`` can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in ``mapproxy.yaml``:
 
   .. code-block:: YAML
 
