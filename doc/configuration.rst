@@ -69,7 +69,7 @@ There are other optional sections:
 
   The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
-  For example, to externalize ``grids`` and ``caches``sections, we will have in ``mappproxy.yaml``:
+  For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mappproxy.yaml``:
 
   .. code-block:: YAML
 
