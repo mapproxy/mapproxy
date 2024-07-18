@@ -18,7 +18,10 @@ Demo service handler
 """
 from __future__ import division
 
-import importlib_resources
+try:
+    from importlib import resources as importlib_resources
+except ImportError:
+    import importlib_resources
 import os
 import mimetypes
 from collections import defaultdict

@@ -17,7 +17,10 @@ from __future__ import division
 
 import logging
 import os
-import importlib_resources
+try:
+    from importlib import resources as importlib_resources
+except ImportError:
+    import importlib_resources
 
 from mapproxy.config import base_config, abspath
 from mapproxy.compat.image import Image, ImageColor, ImageDraw, ImageFont
