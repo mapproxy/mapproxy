@@ -291,10 +291,10 @@ class odict(dict):
                 self[key] = val
 
     def values(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
     def itervalues(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
     def index(self, item):
         return self._keys.index(item)
