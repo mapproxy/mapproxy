@@ -281,8 +281,8 @@ class Capabilities(object):
             if layer.md['wmts_kvp_legendurl'] is not None:
                 legendurls[layer.name] = (
                     layer.md['wmts_kvp_legendurl']
-                        .replace('{base_url}', base_url)
-                        .replace('{layer_name}', layer.name)
+                    .replace('{base_url}', base_url)
+                    .replace('{layer_name}', layer.name)
                 )
             else:
                 legendurls[layer.name] = None
@@ -316,8 +316,8 @@ class RestfulCapabilities(Capabilities):
             if layer.md['wmts_rest_legendurl'] is not None:
                 legendurls[layer.name] = (
                     layer.md['wmts_rest_legendurl']
-                        .replace('{base_url}', base_url)
-                        .replace('{layer_name}', layer.name)
+                    .replace('{base_url}', base_url)
+                    .replace('{layer_name}', layer.name)
                 )
             else:
                 legendurls[layer.name] = None
