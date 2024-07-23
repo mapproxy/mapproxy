@@ -3,9 +3,9 @@ Configuration
 
 There are two configuration files used by MapProxy.
 
-``mappproxy.yaml``
+``mapproxy.yaml``
     This is the main configuration of MapProxy. It configures all aspects of the server:
-    Which servers should be started, where comes the data from, what should be cached,
+    which servers should be started, where comes the data from, what should be cached,
     etc..
 
 ``seed.yaml``
@@ -31,7 +31,7 @@ The MapProxy configuration is grouped into sections, each configures a different
 
 - ``layers``: Configure the layers that MapProxy offers. Each layer can consist of multiple sources and caches.
 
-- ``grids``: Define the grids that MapProxy uses to aligns cached images.
+- ``grids``: Define the grids that MapProxy uses to align cached images.
 
 The order of the sections is not important, so you can organize it your way.
 
@@ -69,7 +69,7 @@ There are other optional sections:
 
   The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
 
-  For example, to externalize ``grids`` and ``caches``sections, we will have in ``mappproxy.yaml``:
+  For example, to externalize ``grids`` and ``caches`` sections, we will have in ``mapproxy.yaml``:
 
   .. code-block:: YAML
 
@@ -77,7 +77,7 @@ There are other optional sections:
     service: ...
     layers: ...
 
-  Also in more complex configurations (with many layers, caches, sources, etc.), the ``mappproxy.yaml`` can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in ``mappproxy.yaml``:
+  Also in more complex configurations (with many layers, caches, sources, etc.), the ``mapproxy.yaml`` can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in ``mapproxy.yaml``:
 
   .. code-block:: YAML
 
@@ -499,7 +499,7 @@ You need to set the ``request_format`` to ``image/png`` when using ``mixed``-mod
 ``request_format``
 """"""""""""""""""
 
-MapProxy will try to use this format to request new tiles, if it is not set ``format`` is used. This option has no effect if the source does not support that format or the format of the source is set explicitly (see ``suported_format`` or ``format`` for sources).
+MapProxy will try to use this format to request new tiles, if it is not set ``format`` is used. This option has no effect if the source does not support that format or the format of the cache is set explicitly (see ``format`` for caches or ``supported_formats`` for sources).
 
 
 .. _link_single_color_images:
@@ -989,7 +989,7 @@ The following options define how tiles are created and stored. Most options can 
 .. _meta_size:
 
 ``meta_size``
-  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with `bulk_meta_tiles`.
+  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with ``bulk_meta_tiles``.
 
 
 .. _bulk_meta_tiles:
