@@ -395,16 +395,17 @@ Each dimension is another dictionary with a list of ``values`` and an optional `
 ``wmts_kvp_legendurl`` and ``wmts_rest_legendurl``
 """"""""""""""""""""""""""""""""""""""""""""""""""
 
-It is possible which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be inserted as a
-``LegendURL`` tag into the capabilities document. These URLs support two template variables ``{base_url}`` which is the
-base url of MapProxy and ``{layer_name}`` which is the name of the layer.
+It is possible to configure which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be
+inserted as a ``LegendURL`` tag into the capabilities document. These URLs support two template variables ``{base_url}``
+which is the base url of MapProxy and ``{layer_name}`` which is the name of the layer.
 
 .. code-block:: yaml
 
   layers:
     - name: legend_layer
       tile_sources: [cache]
-      wmts_rest_legendurl: "{base_url}/legend/{layer_name}.png" # would become "http://127.0.0.1/legend/osm.png" on localhost
+      wmts_rest_legendurl: "{base_url}/legend/{layer_name}.png" # would become "http://127.0.0.1/legend/legend_layer.png" on localhost
+      wmts_kvp_legendurl: "http://external-service/fixed-name.png" # would be used as a fixed URL
 
 
 .. ``attribution``
