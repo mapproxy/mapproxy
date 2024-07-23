@@ -1135,7 +1135,7 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
 
 .. versionadded:: 1.11.0
 
-  MapProxy uses the systems CA files by default, if you use Python >=2.7.9 or >=3.4.
+  MapProxy uses the systems CA files by default.
 
 
 .. note::

@@ -40,7 +40,6 @@ def config_file():
     return "mapserver.yaml"
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestMapServerCGI(SysTest):
 
     @pytest.fixture(scope="class")
