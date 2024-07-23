@@ -11,7 +11,7 @@ Virtualenv
 
 To create a new virtual environment for your MapProxy installation and to activate it go to the command line and call::
 
- C:\Python27\python path\to\virtualenv.py c:\mapproxy_venv
+ C:\Python38\python path\to\virtualenv.py c:\mapproxy_venv
  C:\mapproxy_venv\Scripts\activate.bat
 
 .. note::
@@ -30,11 +30,9 @@ This might take a minute. You can skip the next step.
 PIP
 ---
 
-MapProxy and most dependencies can be installed with the ``pip`` command. ``pip`` is already installed if you are using Python >=2.7.9, or Python >=3.4. `Read the pip documentation for more information <https://pip.pypa.io/en/stable/installing/>`_.
+MapProxy and most dependencies can be installed with the ``pip`` command. `Read the pip documentation for more information <https://pip.pypa.io/en/stable/installing/>`_.
 
-After that you can install MapProxy with::
-
-    c:\Python27\Scripts\pip install MapProxy
+    c:\Python38\Scripts\pip install MapProxy
 
 This might take a minute.
 
@@ -90,7 +88,7 @@ Platform dependent packages
 
 ``pip`` downloads all packages from https://pypi.org/, but not all platform combinations might be available as a binary package, especially if you run a 64bit version of Python.
 
-If you run into trouble during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_. This is a reliable site for binary packages for Python. You need to download the right package: The ``cpxx`` code refers to the Python version (e.g. ``cp27`` for Python 2.7); ``win32`` for 32bit Python installations and ``amd64`` for 64bit.
+If you run into trouble during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_. This is a reliable site for binary packages for Python. You need to download the right package: The ``cpxx`` code refers to the Python version (e.g. ``cp38`` for Python 3.8); ``win32`` for 32bit Python installations and ``amd64`` for 64bit.
 
 You can install the ``.whl``, ``.zip`` or ``.exe`` packages with ``pip``::
 

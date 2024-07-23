@@ -15,7 +15,6 @@
 
 
 import os
-import sys
 import time
 
 import pytest
@@ -51,7 +50,6 @@ class TestHTTPClient(object):
                                               {'status': '200', 'body': b''})]):
             self.client.open(TESTSERVER_URL + '/service', data=b"foo=bar")
 
-    @pytest.mark.skipif(sys.version_info < (3,), reason='HEAD request not supported by BaseHTTPRequestHandler in Py 2')
     def test_head(self):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service', 'method': 'HEAD'},
                                               {'status': '200'})]):
