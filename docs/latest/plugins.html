@@ -52,7 +52,7 @@
     <link rel="prev" title="Development" href="development.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+    <meta name="docbuild:last-update" content="Jul 24, 2024"/>
   </head>
   
   
@@ -114,7 +114,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.2.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -324,6 +324,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-source">Adding a new source</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-the-demo-service">Customizing the demo service</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-new-commands-to-mapproxy-util">Adding new commands to mapproxy-util</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intercepting-request">Intercepting request</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#credits">Credits</a></li>
 </ul>
             </nav>
@@ -582,9 +583,26 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 <span class="p">})</span>
 </pre></div>
 </div>
-<p>A real-world example can be found at
-<a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/script/hipsallsky.py">rouault/mapproxy_hips</a>
-`</p>
+<p>A real-world example can be found at <a class="github reference external" href="https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/script/hipsallsky.py">rouault/mapproxy_hips</a></p>
+</section>
+<section id="intercepting-request">
+<h2>Intercepting request<a class="headerlink" href="#intercepting-request" title="Permalink to this heading">#</a></h2>
+<p>It is possible to intercept any request in a plugin with <cite>register_request_interceptor</cite>. The provided function will be called on any request and should
+always return a request, either the original one or a new one.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">register_request_interceptor</span>
+
+<span class="k">def</span> <span class="nf">interceptor</span><span class="p">(</span><span class="n">req</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;service&#39;</span><span class="p">):</span>
+        <span class="n">environ</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Request</span><span class="p">(</span><span class="n">environ</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">req</span>
+
+<span class="n">register_request_interceptor</span><span class="p">(</span><span class="n">interceptor</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A real world example can be found at <a class="github reference external" href="https://github.com/mapproxy/wmts-rest-legend-plugin">mapproxy/wmts-rest-legend-plugin</a></p>
 </section>
 <section id="credits">
 <h2>Credits<a class="headerlink" href="#credits" title="Permalink to this heading">#</a></h2>
@@ -635,6 +653,7 @@ Centre National d’Etudes Spatiales (CNES): <a class="reference external" href=
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-a-new-source">Adding a new source</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#customizing-the-demo-service">Customizing the demo service</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-new-commands-to-mapproxy-util">Adding new commands to mapproxy-util</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intercepting-request">Intercepting request</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#credits">Credits</a></li>
 </ul>
   </nav></div>
@@ -669,7 +688,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 16, 2024.
+  Last updated on Jul 24, 2024.
   <br/>
 </p>
   </div>

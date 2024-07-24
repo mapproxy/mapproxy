@@ -292,9 +292,33 @@ This can for example be used like in the following snippet:
     })
 
 
-A real-world example can be found at
-https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/script/hipsallsky.py
-`
+A real-world example can be found at https://github.com/rouault/mapproxy_hips/blob/master/mapproxy_hips/script/hipsallsky.py
+
+
+Intercepting request
+--------------------
+
+It is possible to intercept any request in a plugin with `register_request_interceptor`. The provided function will be called on any request and should
+always return a request, either the original one or a new one.
+
+Example:
+
+.. code-block:: python
+
+    from mapproxy.wsgiapp import register_request_interceptor
+
+    def interceptor(req):
+        if req.path.startswith('service'):
+            environ = req.environ.copy()
+            environ['QUERY_STRING'] = environ['QUERY_STRING'].replace('foo', 'bar')
+            return Request(environ)
+        return req
+
+    register_request_interceptor(interceptor)
+
+
+A real world example can be found at https://github.com/mapproxy/wmts-rest-legend-plugin
+
 
 Credits
 -------

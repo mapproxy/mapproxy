@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+    <meta name="docbuild:last-update" content="Jul 24, 2024"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.2.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -330,6 +330,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-kvp-legendurl-and-wmts-rest-legendurl"><code class="docutils literal notranslate"><span class="pre">wmts_kvp_legendurl</span></code> and <code class="docutils literal notranslate"><span class="pre">wmts_rest_legendurl</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a><ul class="nav section-nav flex-column">
@@ -431,8 +432,8 @@ document.write(`
 <h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h1>
 <p>There are two configuration files used by MapProxy.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code></dt><dd><p>This is the main configuration of MapProxy. It configures all aspects of the server:
-Which servers should be started, where comes the data from, what should be cached,
+<dt><code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code></dt><dd><p>This is the main configuration of MapProxy. It configures all aspects of the server:
+which servers should be started, where comes the data from, what should be cached,
 etc..</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code></dt><dd><p>This file is the configuration for the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool. See <a class="reference internal" href="seed.html"><span class="doc">seeding documentation</span></a> for more information.</p>
@@ -449,7 +450,7 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sources</span></code>: Define where MapProxy can retrieve new data.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">caches</span></code>: Configure the internal caches.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">layers</span></code>: Configure the layers that MapProxy offers. Each layer can consist of multiple sources and caches.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">grids</span></code>: Define the grids that MapProxy uses to aligns cached images.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">grids</span></code>: Define the grids that MapProxy uses to align cached images.</p></li>
 </ul>
 <p>The order of the sections is not important, so you can organize it your way.</p>
 <div class="admonition note">
@@ -483,13 +484,13 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">base</span></code></p>
 <p>You can split a configuration into multiple files with the <code class="docutils literal notranslate"><span class="pre">base</span></code> option.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">base</span></code> option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.</p>
-<p>For example, to externalize <code class="docutils literal notranslate"><span class="pre">grids</span></code> and <code class="docutils literal notranslate"><span class="pre">caches``sections,</span> <span class="pre">we</span> <span class="pre">will</span> <span class="pre">have</span> <span class="pre">in</span> <span class="pre">``mappproxy.yaml</span></code>:</p>
+<p>For example, to externalize <code class="docutils literal notranslate"><span class="pre">grids</span></code> and <code class="docutils literal notranslate"><span class="pre">caches</span></code> sections, we will have in <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
 <div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">mygrids.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mycaches_sources.yaml</span><span class="p p-Indicator">]</span>
 <span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </pre></div>
 </div>
-<p>Also in more complex configurations (with many layers, caches, sources, etc.), the <code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code> can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in <code class="docutils literal notranslate"><span class="pre">mappproxy.yaml</span></code>:</p>
+<p>Also in more complex configurations (with many layers, caches, sources, etc.), the <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code> can become too big to be easily modified. One solution could be to split layers, caches, sources, etc. by themes: for example, nature (with layers for lakes, rivers, forests), artificial building (with roads, buildings, power plants layers), topography, etc. We could have in <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
 <div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">base</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">nature.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">artificial_building.yaml</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">topography.yaml</span><span class="p p-Indicator">]</span>
 <span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">sources</span><span class="p">:</span>
@@ -670,7 +671,7 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 </section>
 <section id="legendurl">
 <h3><code class="docutils literal notranslate"><span class="pre">legendurl</span></code><a class="headerlink" href="#legendurl" title="Permalink to this heading">#</a></h3>
-<p>Configure a URL to an image that should be returned as the legend for this layer. Local URLs (<code class="docutils literal notranslate"><span class="pre">file://</span></code>) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> here.</p>
+<p>Configure a URL to an image that should be returned as the legend for this layer. Local URLs (<code class="docutils literal notranslate"><span class="pre">file://</span></code>) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> here. If WMS and WMTS are enabled the address to the WMS <cite>GetLegendGraphic</cite> endpoint will be included in the WMTS capabilities as the legend url.</p>
 </section>
 <section id="md">
 <span id="layer-metadata"></span><h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#md" title="Permalink to this heading">#</a></h3>
@@ -750,6 +751,19 @@ Each dimension is another dictionary with a list of <code class="docutils litera
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</pre></div>
+</div>
+</section>
+<section id="wmts-kvp-legendurl-and-wmts-rest-legendurl">
+<h3><code class="docutils literal notranslate"><span class="pre">wmts_kvp_legendurl</span></code> and <code class="docutils literal notranslate"><span class="pre">wmts_rest_legendurl</span></code><a class="headerlink" href="#wmts-kvp-legendurl-and-wmts-rest-legendurl" title="Permalink to this heading">#</a></h3>
+<p>It is possible to configure which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be
+inserted as a <code class="docutils literal notranslate"><span class="pre">LegendURL</span></code> tag into the capabilities document. These URLs support two template variables <code class="docutils literal notranslate"><span class="pre">{base_url}</span></code>
+which is the base url of MapProxy and <code class="docutils literal notranslate"><span class="pre">{layer_name}</span></code> which is the name of the layer.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">legend_layer</span>
+<span class="w">    </span><span class="nt">tile_sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">wmts_rest_legendurl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{base_url}/legend/{layer_name}.png&quot;</span><span class="w"> </span><span class="c1"># would become &quot;http://127.0.0.1/legend/legend_layer.png&quot; on localhost</span>
+<span class="w">    </span><span class="nt">wmts_kvp_legendurl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://external-service/fixed-name.png&quot;</span><span class="w"> </span><span class="c1"># would be used as a fixed URL</span>
 </pre></div>
 </div>
 </section>
@@ -835,7 +849,7 @@ You need to set the <code class="docutils literal notranslate"><span class="pre"
 </section>
 <section id="request-format">
 <h3><code class="docutils literal notranslate"><span class="pre">request_format</span></code><a class="headerlink" href="#request-format" title="Permalink to this heading">#</a></h3>
-<p>MapProxy will try to use this format to request new tiles, if it is not set <code class="docutils literal notranslate"><span class="pre">format</span></code> is used. This option has no effect if the source does not support that format or the format of the source is set explicitly (see <code class="docutils literal notranslate"><span class="pre">suported_format</span></code> or <code class="docutils literal notranslate"><span class="pre">format</span></code> for sources).</p>
+<p>MapProxy will try to use this format to request new tiles, if it is not set <code class="docutils literal notranslate"><span class="pre">format</span></code> is used. This option has no effect if the source does not support that format or the format of the cache is set explicitly (see <code class="docutils literal notranslate"><span class="pre">format</span></code> for caches or <code class="docutils literal notranslate"><span class="pre">supported_formats</span></code> for sources).</p>
 </section>
 <section id="link-single-color-images">
 <span id="id5"></span><h3><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code><a class="headerlink" href="#link-single-color-images" title="Permalink to this heading">#</a></h3>
@@ -1207,7 +1221,7 @@ Bicubic enhances the contrast at edges and should be used for vector images.</p>
 <p><span class="versionmodified added">New in version 1.10.0: </span><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></p>
 </div>
 <dl class="simple" id="meta-size">
-<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <cite>bulk_meta_tiles</cite>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code>.</p>
 </dd>
 </dl>
 <dl class="simple" id="id12">
@@ -1320,7 +1334,7 @@ See the <a class="reference external" href="http://docs.python.org/dev/library/s
 </pre></div>
 </div>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.11.0: </span>MapProxy uses the systems CA files by default, if you use Python &gt;=2.7.9 or &gt;=3.4.</p>
+<p><span class="versionmodified added">New in version 1.11.0: </span>MapProxy uses the systems CA files by default.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1576,6 +1590,7 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-kvp-legendurl-and-wmts-rest-legendurl"><code class="docutils literal notranslate"><span class="pre">wmts_kvp_legendurl</span></code> and <code class="docutils literal notranslate"><span class="pre">wmts_rest_legendurl</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#caches">caches</a><ul class="nav section-nav flex-column">
@@ -1695,7 +1710,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 16, 2024.
+  Last updated on Jul 24, 2024.
   <br/>
 </p>
   </div>

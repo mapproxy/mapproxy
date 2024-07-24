@@ -53,7 +53,7 @@
     <link rel="prev" title="Installation on OSGeo4W" href="install_osgeo4w.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jul 16, 2024"/>
+    <meta name="docbuild:last-update" content="Jul 24, 2024"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.2.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -348,7 +348,7 @@ document.write(`
 <p><em>If</em> you are using your Python installation for other applications as well, then we advise you to install MapProxy into a virtual Python environment to avoid any conflicts with different dependencies. <em>You can skip this if you only use the Python installation for MapProxy.</em>
 <a class="reference external" href="https://virtualenv.pypa.io/en/latest/">Read about virtualenv</a> if you want to know more about the benefits.</p>
 <p>To create a new virtual environment for your MapProxy installation and to activate it go to the command line and call:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Python27</span>\<span class="n">python</span> <span class="n">path</span>\<span class="n">to</span>\<span class="n">virtualenv</span><span class="o">.</span><span class="n">py</span> <span class="n">c</span><span class="p">:</span>\<span class="n">mapproxy_venv</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Python38</span>\<span class="n">python</span> <span class="n">path</span>\<span class="n">to</span>\<span class="n">virtualenv</span><span class="o">.</span><span class="n">py</span> <span class="n">c</span><span class="p">:</span>\<span class="n">mapproxy_venv</span>
 <span class="n">C</span><span class="p">:</span>\<span class="n">mapproxy_venv</span>\<span class="n">Scripts</span>\<span class="n">activate</span><span class="o">.</span><span class="n">bat</span>
 </pre></div>
 </div>
@@ -369,11 +369,10 @@ To install MapProxy with most dependencies call:</p>
 </section>
 <section id="pip">
 <h2>PIP<a class="headerlink" href="#pip" title="Permalink to this heading">#</a></h2>
-<p>MapProxy and most dependencies can be installed with the <code class="docutils literal notranslate"><span class="pre">pip</span></code> command. <code class="docutils literal notranslate"><span class="pre">pip</span></code> is already installed if you are using Python &gt;=2.7.9, or Python &gt;=3.4. <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">Read the pip documentation for more information</a>.</p>
-<p>After that you can install MapProxy with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="p">:</span>\<span class="n">Python27</span>\<span class="n">Scripts</span>\<span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
-</pre></div>
-</div>
+<p>MapProxy and most dependencies can be installed with the <code class="docutils literal notranslate"><span class="pre">pip</span></code> command. <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">Read the pip documentation for more information</a>.</p>
+<blockquote>
+<div><p>c:Python38Scriptspip install MapProxy</p>
+</div></blockquote>
 <p>This might take a minute.</p>
 </section>
 <section id="dependencies">
@@ -413,7 +412,7 @@ You can set the variable temporary on the command line (spaces in the filename n
 <section id="platform-dependent-packages">
 <span id="win-platform-packages"></span><h2>Platform dependent packages<a class="headerlink" href="#platform-dependent-packages" title="Permalink to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span></code> downloads all packages from <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>, but not all platform combinations might be available as a binary package, especially if you run a 64bit version of Python.</p>
-<p>If you run into trouble during installation, because it is trying to compile something (e.g. complaining about <code class="docutils literal notranslate"><span class="pre">vcvarsall.bat</span></code>), you should look at Christoph Gohlke’s <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">Unofficial Windows Binaries for Python Extension Packages</a>. This is a reliable site for binary packages for Python. You need to download the right package: The <code class="docutils literal notranslate"><span class="pre">cpxx</span></code> code refers to the Python version (e.g. <code class="docutils literal notranslate"><span class="pre">cp27</span></code> for Python 2.7); <code class="docutils literal notranslate"><span class="pre">win32</span></code> for 32bit Python installations and <code class="docutils literal notranslate"><span class="pre">amd64</span></code> for 64bit.</p>
+<p>If you run into trouble during installation, because it is trying to compile something (e.g. complaining about <code class="docutils literal notranslate"><span class="pre">vcvarsall.bat</span></code>), you should look at Christoph Gohlke’s <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">Unofficial Windows Binaries for Python Extension Packages</a>. This is a reliable site for binary packages for Python. You need to download the right package: The <code class="docutils literal notranslate"><span class="pre">cpxx</span></code> code refers to the Python version (e.g. <code class="docutils literal notranslate"><span class="pre">cp38</span></code> for Python 3.8); <code class="docutils literal notranslate"><span class="pre">win32</span></code> for 32bit Python installations and <code class="docutils literal notranslate"><span class="pre">amd64</span></code> for 64bit.</p>
 <p>You can install the <code class="docutils literal notranslate"><span class="pre">.whl</span></code>, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> or <code class="docutils literal notranslate"><span class="pre">.exe</span></code> packages with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">path</span>\<span class="n">to</span>\<span class="n">package</span><span class="o">-</span><span class="n">xxx</span><span class="o">.</span><span class="n">whl</span>
 </pre></div>
@@ -517,7 +516,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 16, 2024.
+  Last updated on Jul 24, 2024.
   <br/>
 </p>
   </div>

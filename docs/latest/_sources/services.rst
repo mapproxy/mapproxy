@@ -137,7 +137,7 @@ You can define XSLT scripts to transform outgoing feature information. You can d
 ``xml``
   Define a script for ``INFO_FORMAT=application/vnd.ogc.gml`` and ``INFO_FORMAT=text/xml`` requests.
 
-See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
+See :ref:`FeatureInformation for more information <fi_xslt>`.
 
 ``strict``
 """"""""""
