@@ -615,6 +615,8 @@ mapproxy_yaml_spec = {
             'name': str(),
             required('title'): str,
             'legendurl': str(),
+            'wmts_rest_legendurl': str(),
+            'wmts_kvp_legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,
             'dimensions': {

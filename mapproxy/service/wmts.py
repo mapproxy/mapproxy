@@ -275,12 +275,24 @@ class Capabilities(object):
 
     def template_context(self):
         service = bunch(default='', **self.service)
+        base_url = re.sub(r'/service$', '', service.url)
+        legendurls = {}
+        for layer in self.layers:
+            if layer.md['wmts_kvp_legendurl'] is not None:
+                legendurls[layer.name] = (
+                    layer.md['wmts_kvp_legendurl']
+                    .replace('{base_url}', base_url)
+                    .replace('{layer_name}', layer.name)
+                )
+            else:
+                legendurls[layer.name] = None
+
         return dict(service=service,
                     restful=False,
                     layers=self.layers,
                     info_formats=self.info_formats,
                     tile_matrix_sets=self.matrix_sets,
-                    wms_service_url=service.url)
+                    legendurls=legendurls)
 
     def _render_template(self, template):
         template = get_template(template)
@@ -298,6 +310,18 @@ class RestfulCapabilities(Capabilities):
 
     def template_context(self):
         service = bunch(default='', **self.service)
+        base_url = re.sub(r'/wmts$', '', service.url)
+        legendurls = {}
+        for layer in self.layers:
+            if layer.md['wmts_rest_legendurl'] is not None:
+                legendurls[layer.name] = (
+                    layer.md['wmts_rest_legendurl']
+                    .replace('{base_url}', base_url)
+                    .replace('{layer_name}', layer.name)
+                )
+            else:
+                legendurls[layer.name] = None
+
         return dict(service=service,
                     restful=True,
                     layers=self.layers,
@@ -310,7 +334,7 @@ class RestfulCapabilities(Capabilities):
                     dimension_keys=dict((k.lower(), k) for k in self.url_converter.dimensions),
                     format_resource_template=format_resource_template,
                     format_info_resource_template=format_info_resource_template,
-                    wms_service_url=re.sub(r'wmts$', 'service', service.url)
+                    legendurls=legendurls
                     )
 
 

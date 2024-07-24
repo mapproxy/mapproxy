@@ -97,10 +97,10 @@
       <ows:Identifier>{{layer.name}}</ows:Identifier>
       <Style>
         <ows:Identifier>default</ows:Identifier>
-        {{if layer.legend_version}}
+        {{if legendurls[layer.name]}}
         <LegendURL
           format="image/png"
-          xlink:href="{{wms_service_url}}?service=WMS&amp;request=GetLegendGraphic&amp;version={{layer.legend_version}}&amp;format=image%2Fpng&amp;layer={{layer.name}}"
+          xlink:href="{{legendurls[layer.name]}}"
         />
         {{endif}}
       </Style>
