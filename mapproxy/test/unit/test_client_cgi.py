@@ -26,7 +26,6 @@ from mapproxy.client.http import HTTPClientError
 from mapproxy.source import SourceError
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestSplitHTTPResponse(object):
     def test_n(self):
         assert split_cgi_response(b'header1: foo\nheader2: bar\n\ncontent\n\ncontent') == \
@@ -67,7 +66,6 @@ if not os.path.exists('testfile'):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason="tests not ported to windows")
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestCGIClient(object):
     def setup_method(self):
         self.script_dir = tempfile.mkdtemp()

@@ -5,7 +5,7 @@ This tutorial guides you to the MapProxy installation process on Unix systems. F
 
 This tutorial was created and tested with Debian and Ubuntu, if you're installing MapProxy on a different system you might need to change some package names.
 
-MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 2.7.9 or higher, you can install MapProxy with::
+MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 3.8 or higher, you can install MapProxy with::
 
   python -m pip install MapProxy
 
