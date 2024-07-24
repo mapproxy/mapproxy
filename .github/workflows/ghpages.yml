@@ -43,7 +43,7 @@ jobs:
         | sort -V \
         | uniq \
         | jq -R -s -c 'split("\n")[:-1]' \
-        > docs/config/versions.json
+        > config/versions.json
 
     - name: Deploy config folder to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0
