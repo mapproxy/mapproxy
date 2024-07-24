@@ -31,7 +31,6 @@ import hashlib
 import warnings
 from copy import deepcopy, copy
 from functools import partial
-from packaging.version import Version
 
 import logging
 from urllib.parse import urlparse
@@ -1957,7 +1956,7 @@ class LayerConfiguration(ConfigurationBase):
                     wms_conf = self.context.services.conf.get('wms')
                     if wms_conf is not None:
                         versions = wms_conf.get('versions', ['1.3.0'])
-                        versions.sort(key=Version)
+                        versions.sort(key=lambda s: [int(u) for u in s.split('.')])
                         legendurl = (f'{{base_url}}/service?service=WMS&amp;request=GetLegendGraphic&amp;'
                                      f'version={versions[-1]}&amp;format=image%2Fpng&amp;layer={{layer_name}}')
                         if md['wmts_kvp_legendurl'] is None:
