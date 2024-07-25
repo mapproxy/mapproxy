@@ -685,7 +685,7 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 """""""""""""
 
 Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. ``cachename_EPSG1234``).
-See :ref:`directory option<cache_file_directory>` on how configure a complete path.
+See :ref:`directory option<cache_file_directory>` on how to configure a complete path.
 
 ``cache``
 """""""""
