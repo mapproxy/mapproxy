@@ -8,8 +8,9 @@ install_requires = [
     'PyYAML>=3.0',
     'future',
     'pyproj>=2',
-    'jsonschema',
-    'importlib_resources'
+    'jsonschema>=4',
+    'importlib_resources;python_version<="3.8"',
+    'werkzeug==1.0.1'
 ]
 
 
@@ -62,7 +63,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="2.0.2",
+    version="2.2.0",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',

@@ -304,7 +304,7 @@ Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sc
 ``legendurl``
 """""""""""""
 
-Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
+Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here. If WMS and WMTS are enabled the address to the WMS `GetLegendGraphic` endpoint will be included in the WMTS capabilities as the legend url.
 
 .. _layer_metadata:
 
@@ -391,6 +391,21 @@ Each dimension is another dictionary with a list of ``values`` and an optional `
             - 0
             - 1000
             - 3000
+
+``wmts_kvp_legendurl`` and ``wmts_rest_legendurl``
+""""""""""""""""""""""""""""""""""""""""""""""""""
+
+It is possible to configure which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be
+inserted as a ``LegendURL`` tag into the capabilities document. These URLs support two template variables ``{base_url}``
+which is the base url of MapProxy and ``{layer_name}`` which is the name of the layer.
+
+.. code-block:: yaml
+
+  layers:
+    - name: legend_layer
+      tile_sources: [cache]
+      wmts_rest_legendurl: "{base_url}/legend/{layer_name}.png" # would become "http://127.0.0.1/legend/legend_layer.png" on localhost
+      wmts_kvp_legendurl: "http://external-service/fixed-name.png" # would be used as a fixed URL
 
 
 .. ``attribution``
@@ -1135,7 +1150,7 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
 
 .. versionadded:: 1.11.0
 
-  MapProxy uses the systems CA files by default, if you use Python >=2.7.9 or >=3.4.
+  MapProxy uses the systems CA files by default.
 
 
 .. note::

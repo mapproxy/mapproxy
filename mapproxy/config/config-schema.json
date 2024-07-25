@@ -392,6 +392,14 @@
           "description": "URL to an image used as a legend for this layer",
           "type": "string"
         },
+        "wmts_rest_legendurl": {
+          "description": "A static legendurl for the wmts rest capabilites",
+          "type": "string"
+        },
+        "wmts_kvp_legendurl": {
+          "description": "A static legendurl for the wmts kvp capabilites",
+          "type": "string"
+        },
         "md": {
           "title": "md",
           "description": "Additional metadata for this layer",

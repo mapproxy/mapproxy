@@ -15,8 +15,6 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
-      with:
-        ref: upgrade-docs
 
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
@@ -40,8 +38,12 @@ jobs:
       # read existing versions from gh-pages branch, add new version, sort, dedupe and write results to config/versions.json
       run: |
         mkdir config
-        echo -e "${{ github.ref_name }}\n$(git show gh-pages:config/versions.json | jq -r '.[]')" \
-        | sort -V | uniq | jq -R -s -c 'split("\n")[:-1]' > config/versions.json
+        git show gh-pages:docs/config/versions.json \
+        | jq -r '(. + ["${{ github.ref_name }}"])[]' \
+        | sort -V \
+        | uniq \
+        | jq -R -s -c 'split("\n")[:-1]' \
+        > docs/config/versions.json
 
     - name: Deploy config folder to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0

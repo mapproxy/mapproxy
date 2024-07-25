@@ -204,7 +204,7 @@ class TileServer(Server):
 
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager, info_sources=[], dimensions=None):
+    def __init__(self, name, title, md, tile_manager, info_sources=[], dimensions=None, legend_version=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -220,6 +220,7 @@ class TileLayer(object):
         self._empty_tile = None
         self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
         self.empty_response_as_png = True
+        self.legend_version = legend_version
 
     @property
     def bbox(self):

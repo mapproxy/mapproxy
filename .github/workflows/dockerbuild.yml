@@ -8,8 +8,10 @@ on:
     tags:
       - "*.*.*"
 jobs:
-  build-and-publish:
+  get-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,6 +26,13 @@ jobs:
             ghcr.io/${{ github.repository }}/mapproxy
           tags: |
             type=semver,pattern={{version}}
+
+  build-and-publish-ubuntu:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -44,7 +53,7 @@ jobs:
           file: ./Dockerfile
           push: true
           target: base
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          tags: ${{ needs.get-version.outputs.version }}
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
@@ -53,7 +62,7 @@ jobs:
           file: ./Dockerfile
           push: true
           target: development
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-dev
+          tags: ${{ needs.get-version.outputs.version }}-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
@@ -62,8 +71,28 @@ jobs:
           file: ./Dockerfile
           push: true
           target: nginx
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-nginx
+          tags: ${{ needs.get-version.outputs.version }}-nginx
           platforms: linux/amd64,linux/arm64
+
+  build-and-publish-alpine:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push base alpine image
         uses: docker/build-push-action@v5
@@ -71,7 +100,7 @@ jobs:
           file: ./Dockerfile-alpine
           push: true
           target: base
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine
+          tags: ${{ needs.get-version.outputs.version }}-alpine
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push alpine development image
@@ -80,7 +109,7 @@ jobs:
           file: ./Dockerfile-alpine
           push: true
           target: development
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine-dev
+          tags: ${{ needs.get-version.outputs.version }}-alpine-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push alpine based nginx image
@@ -89,15 +118,21 @@ jobs:
           file: ./Dockerfile-alpine
           push: true
           target: nginx
-          tags: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}-alpine-nginx
+          tags: ${{ needs.get-version.outputs.version }}-alpine-nginx
           platforms: linux/amd64,linux/arm64
 
+  run-trivy:
+    needs:
+      - get-version
+      - build-and-publish-ubuntu
+    runs-on: ubuntu-latest
+    steps:
       - name: Run trivy
         uses: aquasecurity/trivy-action@master
         with:
           format: 'table'
           ignore-unfixed: true
-          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          image-ref: ${{ needs.get-version.outputs.version }}
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           vuln-type: 'os,library'
