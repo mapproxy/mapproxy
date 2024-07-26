@@ -664,13 +664,13 @@ Example:
 
 .. code-block:: yaml
 
-   caches:
-     osm_cache:
-     grids: ['osm_grid']
-     sources: [OSM]
-     disable_storage: false
-     refresh_before:
-       days: 1
+  caches:
+    osm_cache:
+      grids: ['osm_grid']
+      sources: [OSM]
+      disable_storage: false
+      refresh_before:
+        days: 1
 
 
 ``disable_storage``
