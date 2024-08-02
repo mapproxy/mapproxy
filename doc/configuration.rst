@@ -664,13 +664,13 @@ Example:
 
 .. code-block:: yaml
 
-   caches:
-     osm_cache:
-     grids: ['osm_grid']
-     sources: [OSM]
-     disable_storage: false
-     refresh_before:
-       days: 1
+  caches:
+    osm_cache:
+      grids: ['osm_grid']
+      sources: [OSM]
+      disable_storage: false
+      refresh_before:
+        days: 1
 
 
 ``disable_storage``
@@ -685,7 +685,7 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 """""""""""""
 
 Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. ``cachename_EPSG1234``).
-See :ref:`directory option<cache_file_directory>` on how configure a complete path.
+See :ref:`directory option<cache_file_directory>` on how to configure a complete path.
 
 ``cache``
 """""""""
@@ -1004,7 +1004,7 @@ The following options define how tiles are created and stored. Most options can 
 .. _meta_size:
 
 ``meta_size``
-  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with ``bulk_meta_tiles``.
+  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 and 0 ``meta_buffer``, this will result in 1024x1024 requests to the source. (Note that the default value for ``meta_buffer`` is 80.) Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with ``bulk_meta_tiles``.
 
 
 .. _bulk_meta_tiles:
@@ -1017,7 +1017,7 @@ The following options define how tiles are created and stored. Most options can 
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
   pixels in each direction. This can solve cases where labels are cut-off at
-  the edge of tiles.
+  the edge of tiles. Defaults to 80.
 
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
