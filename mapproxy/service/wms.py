@@ -84,7 +84,8 @@ class WMSServer(Server):
         self.check_map_request(map_request)
 
         params = map_request.params
-        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
+        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions,
+                         extra_params=map_request.extra_params)
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -102,7 +103,9 @@ class WMSServer(Server):
                     img = BlankImageSource(size=params.size, image_opts=img_opts, cacheable=True)
                     return Response(img.as_buffer(), content_type=img_opts.format.mime_type)
                 sub_size, offset, sub_bbox = bbox_position_in_image(params.bbox, params.size, limited_extent.bbox)
-                query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format)
+                query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format,
+                                 dimensions=map_request.dimensions,
+                                 extra_params=map_request.extra_params)
 
         actual_layers = odict()
         for layer_name in map_request.params.layers:
@@ -207,7 +210,8 @@ class WMSServer(Server):
         p = request.params
         query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
                           p['info_format'], format=request.params.format or None,
-                          feature_count=p.get('feature_count'))
+                          feature_count=p.get('feature_count'),
+                          extra_params=request.extra_params)
 
         actual_layers = odict()
 
@@ -754,7 +758,7 @@ class WMSLayer(WMSLayerBase):
 
     def legend(self, request):
         p = request.params
-        query = LegendQuery(p.format, p.scale)
+        query = LegendQuery(p.format, p.scale, extra_params=request.extra_params)
 
         for lyr in self.legend_layers:
             yield lyr.get_legend(query)
