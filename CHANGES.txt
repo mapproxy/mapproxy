@@ -1,3 +1,25 @@
+2.2.0 2024-07-24
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+  - Add timeout to SQLite connect for geopackages. This helps against locking exceptions
+  - Improvement of documentation, typos, wrong cli commands, old python2 stuff
+  - The WMTS capabilites will now advertise the WMS GetLegendGraphic as a LegendURL if both services are active
+  - It is possible now to configure LegendURLs that should be shown in the WMTS capabilities
+  - A new method for plugins to intercept and modify requests made to MapProxy was added.
+
+Maintenance:
+
+  - Removal of debian package information
+  - Fix docs workflow
+
+Fixes:
+
+  - Remove import of the packaging library that does not appear in the `install_requires`
+  - Only install and use `importlib_resources` in python 3.8
+
+
 2.1.1 2024-07-16
 ~~~~~~~~~~~~~~~~
 Fixes:

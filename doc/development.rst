@@ -28,7 +28,7 @@ __ fork_
 Documentation
 -------------
 
-This is the documentation you are reading right now. The raw files can be found in ``doc/``. The HTML version user documentation is build with `Sphinx`_. To rebuild this documentation install Sphinx with ``pip install sphinx sphinx-bootstrap-theme`` and call ``python setup.py build_sphinx``. The output appears in ``build/sphinx/html``. The latest documentation can be found at ``http://mapproxy.org/docs/lates/``.
+This is the documentation you are reading right now. The raw files can be found in ``doc/``. The HTML version user documentation is build with `Sphinx`_. To rebuild this documentation install Sphinx with ``pip install sphinx sphinx-bootstrap-theme`` and call ``sphinx-build doc/ docs``. The output appears in ``docs``. The latest documentation can be found at ``https://mapproxy.github.io/mapproxy/latest/``.
 
 .. _`Epydoc`: http://epydoc.sourceforge.net/
 .. _`Sphinx`: http://sphinx.pocoo.org/

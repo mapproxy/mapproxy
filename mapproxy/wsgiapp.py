@@ -111,6 +111,13 @@ def wrap_wsgi_debug(app, conf):
     return app
 
 
+request_interceptors = set()
+
+
+def register_request_interceptor(interceptor):
+    request_interceptors.add(interceptor)
+
+
 class MapProxyApp(object):
     """
     The MapProxy WSGI application.
@@ -128,6 +135,9 @@ class MapProxyApp(object):
     def __call__(self, environ, start_response):
         resp = None
         req = Request(environ)
+
+        for interceptor in request_interceptors:
+            req = interceptor(req)
 
         if self.cors_origin:
             orig_start_response = start_response
