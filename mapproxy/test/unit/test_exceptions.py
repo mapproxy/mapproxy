@@ -39,6 +39,7 @@ REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A900913
 BBOX=8,4,9,5&WIDTH=150&HEIGHT=100""".replace('\n', ''))
         self.req = req
 
+
 class TestWMS111ExceptionHandler(Mocker):
     def test_render(self):
         req = self.mock(WMSMapRequest)
@@ -169,14 +170,15 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 
     def test_missing_service_request(self):
         reqString = "REQUEST=GetCapabilities"
-        conf = {'QUERY_STRING': reqString,
-           'wsgi.url_scheme': 'http',
-           'HTTP_HOST': 'localhost',
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
         }
         req = Request(conf)
         ows_services = []
-        server = OWSServer(ows_services);
-        response = server.handle(req);
+        server = OWSServer(ows_services)
+        response = server.handle(req)
 
         expected_resp = """
 <?xml version="1.0"?>
@@ -198,14 +200,15 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 
     def test_invalid_service_request(self):
         reqString = "REQUEST=GetCapabilities&SERVICE=wms"
-        conf = {'QUERY_STRING': reqString,
-           'wsgi.url_scheme': 'http',
-           'HTTP_HOST': 'localhost',
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
         }
         req = Request(conf)
         ows_services = []
-        server = OWSServer(ows_services);
-        response = server.handle(req);
+        server = OWSServer(ows_services)
+        response = server.handle(req)
 
         expected_resp = """
 <?xml version="1.0"?>
@@ -227,19 +230,24 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 
     def test_valid_service_request(self):
         reqString = "REQUEST=GetCapabilities&SERVICE=wms"
-        conf = {'QUERY_STRING': reqString,
-           'wsgi.url_scheme': 'http',
-           'HTTP_HOST': 'localhost',
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
         }
         req = Request(conf)
+
         class Service(object):
+
             def __init__(self, service):
                 self.service = service
-            def handle(a,b):
+
+            def handle():
                 return 'all good'
+
         ows_services = [Service('wms')]
-        server = OWSServer(ows_services);
-        response = server.handle(req);
+        server = OWSServer(ows_services)
+        response = server.handle(req)
 
         expected_resp = 'all good'
         assert expected_resp == response

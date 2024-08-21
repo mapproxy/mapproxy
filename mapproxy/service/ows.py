@@ -18,6 +18,7 @@ Wrapper service handler for all OWS services (/service?).
 """
 from mapproxy.exception import OWSExceptionHandler, RequestError
 
+
 class OWSServer(object):
     """
     Wraps all OWS services (/service?, /ows?, /wms?, /wmts?) and dispatches requests
@@ -44,10 +45,10 @@ class OWSServer(object):
 
         service = service.lower()
         if service not in self.services:
-          # returning a WMS 1.3.0 Exception as fallback
-          req.exception_handler = OWSExceptionHandler()
-          error = RequestError('The value of the service parameter "' + str(service) + '" is invalid',
+            # returning a WMS 1.3.0 Exception as fallback
+            req.exception_handler = OWSExceptionHandler()
+            error = RequestError('The value of the service parameter "' + str(service) + '" is invalid',
                         code='InvalidParameterValue', request=req, locator='service')
-          return error.render()
+            return error.render()
 
         return self.services[service].handle(req)
