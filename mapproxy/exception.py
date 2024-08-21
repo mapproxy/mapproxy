@@ -23,6 +23,7 @@ from mapproxy.template import template_loader
 import mapproxy.service
 get_template = template_loader(mapproxy.service.__package__, 'templates')
 
+
 class RequestError(Exception):
     """
     Exception for all request related errors.
