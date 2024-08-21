@@ -93,7 +93,7 @@ class XMLExceptionHandler(ExceptionHandler):
     The content_type is sent as defined here.
     """
 
-    status_code = 200
+    status_code = 400
     """
     The HTTP status code.
     """

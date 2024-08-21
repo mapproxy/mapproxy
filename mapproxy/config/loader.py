@@ -24,6 +24,7 @@ from mapproxy.util.py import memoize
 from mapproxy.config.spec import validate_options, add_source_to_mapproxy_yaml_spec, add_service_to_mapproxy_yaml_spec
 from mapproxy.config.validator import validate
 from mapproxy.config import load_default_config, finish_base_config, defaults
+from mapproxy.service.ows import OWSServer
 
 import os
 import sys
@@ -2063,9 +2064,7 @@ class ServiceConfiguration(ConfigurationBase):
                 else:
                     services.append(new_service)
 
-        if ows_services:
-            from mapproxy.service.ows import OWSServer
-            services.append(OWSServer(ows_services))
+        services.append(OWSServer(ows_services))
         return services
 
     def tile_layers(self, conf, use_grid_names=False):
