@@ -35,20 +35,23 @@ class OWSServer(object):
 
     def handle(self, req):
         service = req.args.get('service')
+        wmtver = req.args.get('wmtver')
         if not service:
-            # returning a WMS 1.3.0 Exception as fallback
-            req.exception_handler = OWSExceptionHandler()
+            if wmtver == '1.0.0':
+                # WMS version 1.0.0 did not have a mandatory service parameter
+                service = 'wms'
+            else:
+                req.exception_handler = OWSExceptionHandler()
 
-            error = RequestError('The service parameter is missing',
-                        code='MissingParameterValue', request=req, locator='service')
-            return req.exception_handler.render(error)
+                error = RequestError('The service parameter is missing',
+                        code='MissingParameterValue', request=req, locator='service', status=400)
+                return req.exception_handler.render(error)
 
         service = service.lower()
         if service not in self.services:
-            # returning a WMS 1.3.0 Exception as fallback
             req.exception_handler = OWSExceptionHandler()
             error = RequestError('The value of the service parameter "' + str(service) + '" is invalid',
-                        code='InvalidParameterValue', request=req, locator='service')
+                        code='InvalidParameterValue', request=req, locator='service', status=400)
             return error.render()
 
         return self.services[service].handle(req)

@@ -97,7 +97,7 @@ class XMLExceptionHandler(ExceptionHandler):
     The content_type is sent as defined here.
     """
 
-    status_code = 400
+    status_code = 500
     """
     The HTTP status code.
     """
@@ -126,7 +126,11 @@ class XMLExceptionHandler(ExceptionHandler):
 
         :type request_error: `RequestError`
         """
-        status_code = self.status_codes.get(request_error.code, self.status_code)
+        if request_error.status is not None:
+            status_code = request_error.status
+        else:
+            status_code = self.status_codes.get(request_error.code, self.status_code)
+
         # escape &<> in error message (e.g. URL params)
         msg = escape(request_error.msg)
         result = self.template.substitute(exception=msg,
@@ -157,7 +161,11 @@ class OWSExceptionHandler(XMLExceptionHandler):
 
         :type request_error: `RequestError`
         """
-        status_code = self.status_codes.get(request_error.code, self.status_code)
+        if request_error.status is not None:
+            status_code = request_error.status
+        else:
+            status_code = self.status_codes.get(request_error.code, self.status_code)
+
         # escape &<> in error message (e.g. URL params)
         msg = escape(request_error.msg)
         result = self.template.substitute(exception=msg,

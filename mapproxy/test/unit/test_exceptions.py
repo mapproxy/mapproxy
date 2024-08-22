@@ -242,7 +242,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
             def __init__(self, service):
                 self.service = service
 
-            def handle():
+            def handle(self, req):
                 return 'all good'
 
         ows_services = [Service('wms')]
