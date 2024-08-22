@@ -179,14 +179,14 @@ class TestWMS111(SysTest):
 
         with mock_single_req_httpd(("localhost", 42423), req_handler):
             self.common_map_req.params["bbox"] = "0,0,9,9"
-            resp = app.get(self.common_map_req)
+            resp = app.get(self.common_map_req, expect_errors=True)
 
             assert resp.content_type == "application/vnd.ogc.se_xml"
             is_111_exception(resp.lxml, re_msg="Error from renderd: barf")
 
     def test_get_map_connection_error(self, app):
         self.common_map_req.params["bbox"] = "0,0,9,9"
-        resp = app.get(self.common_map_req)
+        resp = app.get(self.common_map_req, expect_errors=True)
 
         assert resp.content_type == "application/vnd.ogc.se_xml"
         is_111_exception(resp.lxml, re_msg="Error while communicating with renderd:")
@@ -210,7 +210,7 @@ class TestWMS111(SysTest):
 
         with mock_single_req_httpd(("localhost", 42423), req_handler):
             self.common_map_req.params["bbox"] = "0,0,9,9"
-            resp = app.get(self.common_map_req)
+            resp = app.get(self.common_map_req, expect_errors=True)
 
         assert resp.content_type == "application/vnd.ogc.se_xml"
         is_111_exception(

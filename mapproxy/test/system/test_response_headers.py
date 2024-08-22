@@ -46,7 +46,7 @@ class TestResponseHeaders(SysTest):
         assert resp.vary == ('X-Script-Name', 'X-Forwarded-Host', 'X-Forwarded-Proto')
 
     def test_no_endpoint(self, app):
-        resp = app.get('http://localhost/service?')
+        resp = app.get('http://localhost/service?', expect_errors=True)
         assert resp.vary == ('X-Script-Name', 'X-Forwarded-Host', 'X-Forwarded-Proto')
 
     def test_image_response(self, app):

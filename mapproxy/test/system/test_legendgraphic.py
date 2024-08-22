@@ -212,7 +212,7 @@ class TestWMSLegendgraphic(SysTest):
 
     def test_get_legendgraphic_no_legend_111(self, app):
         self.common_lg_req_111.params["layer"] = "wms_no_legend"
-        resp = app.get(self.common_lg_req_111)
+        resp = app.get(self.common_lg_req_111, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
         xml = resp.lxml
         assert (
@@ -227,7 +227,7 @@ class TestWMSLegendgraphic(SysTest):
             .replace("sld_version", "invalid")
             .replace("format", "invalid")
         )
-        resp = app.get(req)
+        resp = app.get(req, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
         xml = resp.lxml
         assert "missing parameters" in xml.xpath("//ServiceException/text()")[0]
@@ -237,7 +237,7 @@ class TestWMSLegendgraphic(SysTest):
         req = str(self.common_lg_req_111).replace(
             "sld_version=1.1.0", "sld_version=1.0.0"
         )
-        resp = app.get(req)
+        resp = app.get(req, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
         xml = resp.lxml
         assert "invalid sld_version" in xml.xpath("//ServiceException/text()")[0]
@@ -245,7 +245,7 @@ class TestWMSLegendgraphic(SysTest):
 
     def test_get_legendgraphic_no_legend_130(self, app):
         self.common_lg_req_130.params["layer"] = "wms_no_legend"
-        resp = app.get(self.common_lg_req_130)
+        resp = app.get(self.common_lg_req_130, expect_errors=True)
         assert resp.content_type == "text/xml"
         xml = resp.lxml
         assert_xpath_wms130(xml, "/ogc:ServiceExceptionReport/@version", "1.3.0")
@@ -258,7 +258,7 @@ class TestWMSLegendgraphic(SysTest):
 
     def test_get_legendgraphic_missing_params_130(self, app):
         req = str(self.common_lg_req_130).replace("format", "invalid")
-        resp = app.get(req)
+        resp = app.get(req, expect_errors=True)
         assert resp.content_type == "text/xml"
         xml = resp.lxml
         assert_xpath_wms130(xml, "/ogc:ServiceExceptionReport/@version", "1.3.0")
@@ -271,7 +271,7 @@ class TestWMSLegendgraphic(SysTest):
         req = str(self.common_lg_req_130).replace(
             "sld_version=1.1.0", "sld_version=1.0.0"
         )
-        resp = app.get(req)
+        resp = app.get(req, expect_errors=True)
         assert resp.content_type == "text/xml"
         xml = resp.lxml
         assert_xpath_wms130(xml, "/ogc:ServiceExceptionReport/@version", "1.3.0")
