@@ -18,6 +18,7 @@ from io import BytesIO
 from mapproxy.compat.image import Image
 from mapproxy.exception import RequestError
 from mapproxy.request import url_decode
+from mapproxy.request.base import Request
 from mapproxy.request.wms import WMSMapRequest
 from mapproxy.request.wms.exception import (
     WMS100ExceptionHandler,
@@ -25,6 +26,7 @@ from mapproxy.request.wms.exception import (
     WMS130ExceptionHandler,
     WMS110ExceptionHandler,
 )
+from mapproxy.service.ows import OWSServer
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png
 
@@ -165,6 +167,90 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 """
         assert expected_resp.strip() == response.data
         assert validate_with_xsd(response.data, 'wms/1.3.0/exceptions_1_3_0.xsd')
+
+    def test_missing_service_request(self):
+        reqString = "REQUEST=GetCapabilities"
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
+        }
+        req = Request(conf)
+        ows_services = []
+        server = OWSServer(ows_services)
+        response = server.handle(req)
+
+        expected_resp = """
+<?xml version="1.0"?>
+<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opengis.net/ows/1.1 http://schemas.opengis.net/ows/1.1.0/owsExceptionReport.xsd"
+  version="1.0.0" xml:lang="en">
+  <ows:Exception exceptionCode="MissingParameterValue"
+      locator="service">
+    <ows:ExceptionText>The service parameter is missing</ows:ExceptionText>
+  </ows:Exception>
+</ows:ExceptionReport>
+"""
+
+        assert expected_resp.strip() == response.response.strip()
+        assert response.content_type == 'text/xml; charset=utf-8'
+        assert response.status == '400 Bad Request'
+        assert validate_with_xsd(response.response, 'ows/1.1.0/owsExceptionReport.xsd')
+
+    def test_invalid_service_request(self):
+        reqString = "REQUEST=GetCapabilities&SERVICE=wms"
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
+        }
+        req = Request(conf)
+        ows_services = []
+        server = OWSServer(ows_services)
+        response = server.handle(req)
+
+        expected_resp = """
+<?xml version="1.0"?>
+<ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opengis.net/ows/1.1 http://schemas.opengis.net/ows/1.1.0/owsExceptionReport.xsd"
+  version="1.0.0" xml:lang="en">
+  <ows:Exception exceptionCode="InvalidParameterValue"
+      locator="service">
+    <ows:ExceptionText>The value of the service parameter &quot;wms&quot; is invalid</ows:ExceptionText>
+  </ows:Exception>
+</ows:ExceptionReport>
+"""
+
+        assert expected_resp.strip() == response.response
+        assert response.content_type == 'text/xml; charset=utf-8'
+        assert response.status == '400 Bad Request'
+        assert validate_with_xsd(response.response, 'ows/1.1.0/owsExceptionReport.xsd')
+
+    def test_valid_service_request(self):
+        reqString = "REQUEST=GetCapabilities&SERVICE=wms"
+        conf = {
+            'QUERY_STRING': reqString,
+            'wsgi.url_scheme': 'http',
+            'HTTP_HOST': 'localhost',
+        }
+        req = Request(conf)
+
+        class Service(object):
+
+            def __init__(self, service):
+                self.service = service
+
+            def handle(self, req):
+                return 'all good'
+
+        ows_services = [Service('wms')]
+        server = OWSServer(ows_services)
+        response = server.handle(req)
+
+        expected_resp = 'all good'
+        assert expected_resp == response
 
 
 class TestWMS100ExceptionHandler(Mocker):

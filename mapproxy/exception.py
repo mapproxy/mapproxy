@@ -19,6 +19,9 @@ Service exception handling (WMS exceptions, XML, in_image, etc.).
 from html import escape
 
 from mapproxy.response import Response
+from mapproxy.template import template_loader
+import mapproxy.service
+get_template = template_loader(mapproxy.service.__package__, 'templates')
 
 
 class RequestError(Exception):
@@ -29,13 +32,14 @@ class RequestError(Exception):
                     was valid (e.g. the source server is unreachable
     """
 
-    def __init__(self, message, code=None, request=None, internal=False, status=None):
+    def __init__(self, message, code=None, request=None, internal=False, status=None, locator=None):
         Exception.__init__(self, message)
         self.msg = message
         self.code = code
         self.request = request
         self.internal = internal
         self.status = status
+        self.locator = locator
 
     def render(self):
         """
@@ -93,7 +97,7 @@ class XMLExceptionHandler(ExceptionHandler):
     The content_type is sent as defined here.
     """
 
-    status_code = 200
+    status_code = 500
     """
     The HTTP status code.
     """
@@ -122,7 +126,11 @@ class XMLExceptionHandler(ExceptionHandler):
 
         :type request_error: `RequestError`
         """
-        status_code = self.status_codes.get(request_error.code, self.status_code)
+        if request_error.status is not None:
+            status_code = request_error.status
+        else:
+            status_code = self.status_codes.get(request_error.code, self.status_code)
+
         # escape &<> in error message (e.g. URL params)
         msg = escape(request_error.msg)
         result = self.template.substitute(exception=msg,
@@ -136,6 +144,34 @@ class XMLExceptionHandler(ExceptionHandler):
         The template for this ExceptionHandler.
         """
         return self.template_func(self.template_file)
+
+
+class OWSExceptionHandler(XMLExceptionHandler):
+    """
+    Exception handler for generic OWS ServiceExceptionReports
+    """
+    template_file = 'ows_exception.xml'
+    template_func = get_template
+    mimetype = 'text/xml'
+
+    def render(self, request_error):
+        """
+        Render the template of this exception handler. Passes the
+        ``request_error.msg``, ``request_error.locator`` and ``request_error.code`` to the template.
+
+        :type request_error: `RequestError`
+        """
+        if request_error.status is not None:
+            status_code = request_error.status
+        else:
+            status_code = self.status_codes.get(request_error.code, self.status_code)
+
+        # escape &<> in error message (e.g. URL params)
+        msg = escape(request_error.msg)
+        result = self.template.substitute(exception=msg,
+                                          code=request_error.code, locator=request_error.locator)
+        return Response(result, mimetype=self.mimetype, content_type=self.content_type,
+                        status=status_code)
 
 
 class PlainExceptionHandler(ExceptionHandler):

@@ -129,7 +129,7 @@ class TestWMS(SysTest):
 
     def test_all_offline(self, app):
         self.common_map_req.params.layers = "all_offline"
-        resp = app.get(self.common_map_req)
+        resp = app.get(self.common_map_req, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
         is_111_exception(resp.lxml, re_msg="no response from url")
 
@@ -175,12 +175,12 @@ class TestWMSRaise(SysTest):
 
         with mock_httpd(("localhost", 42423), expected_req):
             self.common_map_req.params.layers = "mixed"
-            resp = app.get(self.common_map_req)
+            resp = app.get(self.common_map_req, expect_errors=True)
             is_111_exception(resp.lxml, re_msg="no response from url")
 
     def test_all_offline(self, app):
         self.common_map_req.params.layers = "all_offline"
-        resp = app.get(self.common_map_req)
+        resp = app.get(self.common_map_req, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
         is_111_exception(resp.lxml, re_msg="no response from url")
 
@@ -268,7 +268,7 @@ class TestTileErrors(SysTest):
         ]
 
         with mock_httpd(("localhost", 42423), expected_req):
-            resp = app.get(self.common_map_req)
+            resp = app.get(self.common_map_req, expect_errors=True)
             assert_no_cache(resp)
             assert resp.content_type == "application/vnd.ogc.se_xml"
             assert b"500" in resp.body
