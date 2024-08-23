@@ -29,6 +29,11 @@ seeds:
     refresh_before:
       days: 1
 
+  sqlite_cache:
+    caches: [sqlite_cache]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0]
+
   with_empty_coverage:
     caches: [mbtile_cache]
     grids: [GLOBAL_GEODETIC]
@@ -58,7 +63,7 @@ cleanups:
     levels: [1]
     remove_all: true
 
-  sqlite_cache:
+  cleanup_sqlite_cache:
     caches: [sqlite_cache]
     grids: [GLOBAL_GEODETIC]
     levels: [3]
