@@ -108,6 +108,7 @@ class TestHTTPClient(object):
             assert False, 'expected HTTPClientError'
 
     @pytest.mark.online
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_https_untrusted_root(self):
         self.client = HTTPClient('https://untrusted-root.badssl.com/')
         try:
@@ -116,12 +117,14 @@ class TestHTTPClient(object):
             assert_re(e.args[0], r'Could not verify connection to URL')
 
     @pytest.mark.online
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_https_insecure(self):
         self.client = HTTPClient(
             'https://untrusted-root.badssl.com/', insecure=True)
         self.client.open('https://untrusted-root.badssl.com/')
 
     @pytest.mark.online
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_https_valid_ca_cert_file(self):
         # verify with fixed ca_certs file
         cert_file = '/etc/ssl/certs/ca-certificates.crt'
@@ -136,11 +139,13 @@ class TestHTTPClient(object):
                 self.client.open('https://www.google.com/')
 
     @pytest.mark.online
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_https_valid_default_cert(self):
         self.client = HTTPClient('https://www.google.com/')
         self.client.open('https://www.google.com/')
 
     @pytest.mark.online
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_https_invalid_cert(self):
         # load 'wrong' root cert
         with TempFile() as tmp:
