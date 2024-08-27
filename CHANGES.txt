@@ -1,3 +1,12 @@
+3.0.1 2024-08-27
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+  - Fix capabilities links in demo page and config template
+  - Trivy report format
+
+
 3.0.0 2024-08-27
 ~~~~~~~~~~~~~~~~
 
