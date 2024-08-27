@@ -10,7 +10,7 @@
 # Demo:
 #     http://localhost:8080/demo
 # WMS:
-#     capabilities: http://localhost:8080/service?REQUEST=GetCapabilities
+#     capabilities: http://localhost:8080/service?REQUEST=GetCapabilities&SERVICE=WMS
 # WMTS:
 #     capabilities: http://localhost:8080/wmts/1.0.0/WMTSCapabilities.xml
 #     first tile: http://localhost:8080/wmts/osm/webmercator/0/0/0.png

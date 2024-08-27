@@ -138,7 +138,7 @@ class DemoServer(Server):
         elif 'wmts_layer' in req.args:
             demo = self._render_wmts_template('demo/wmts_demo.html', req)
         elif 'wms_capabilities' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities' % (req.server_script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMS' % (req.server_script_url)
             if 'type' in req.args and req.args['type'] == 'external':
                 url = internal_url.replace(req.server_script_url, req.script_url)
             else:
@@ -146,7 +146,7 @@ class DemoServer(Server):
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities&tiled=true' % (req.server_script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMS&tiled=true' % (req.server_script_url)
             if 'type' in req.args and req.args['type'] == 'external':
                 url = internal_url.replace(req.server_script_url, req.script_url)
             else:
