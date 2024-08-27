@@ -128,9 +128,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
-          format: 'table'
+          format: 'sarif'
           ignore-unfixed: true
           image-ref: ${{ needs.get-version.outputs.version }}
           output: 'trivy-results.sarif'
