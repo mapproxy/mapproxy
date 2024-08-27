@@ -64,7 +64,7 @@ six==1.16.0
 soupsieve==2.0.1
 sshpubkeys==3.3.1
 toml==0.10.2
-urllib3==1.26.18
+urllib3==1.26.19
 waitress==2.1.2
 websocket-client==1.7.0
 wrapt==1.16.0
