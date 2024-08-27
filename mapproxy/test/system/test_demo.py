@@ -29,8 +29,8 @@ class TestDemo(SysTest):
     def test_basic(self, app):
         resp = app.get("/demo/", status=200)
         assert resp.content_type == "text/html"
-        assert 'href="../service?REQUEST=GetCapabilities"' in resp
-        assert 'href="../service?REQUEST=GetCapabilities&tiled=true"' in resp
+        assert 'href="../service?REQUEST=GetCapabilities&SERVICE=WMS"' in resp
+        assert 'href="../service?REQUEST=GetCapabilities&SERVICE=WMS&tiled=true"' in resp
         assert 'href="../demo/?wmts_layer=wms_cache&format=jpeg&srs=EPSG%3A900913"' in resp
         assert 'href="../demo/?tms_layer=wms_cache&format=jpeg&srs=EPSG%3A900913"' in resp
 
