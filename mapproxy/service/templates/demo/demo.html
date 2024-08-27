@@ -35,7 +35,7 @@ jscript_openlayers=None
             {{if 'wms' in services}}
             <div class="capabilities">
                 <span>Capabilities document</span>
-                <span><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
+                <span><a href="../service?REQUEST=GetCapabilities&SERVICE=WMS">(download as xml)</a></span>
                 <span><a href="../demo/?wms_capabilities">(view as html, internal)</a></span>
                 <span><a href="../demo/?wms_capabilities&type=external">(view as html, external)</a></span>
             </div>
@@ -83,7 +83,7 @@ jscript_openlayers=None
             {{if 'wms' in services}}
             <div class="capabilities">
                 <span>Capabilities document</span>
-                <span><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
+                <span><a href="../service?REQUEST=GetCapabilities&SERVICE=WMS&tiled=true">(download as xml)</a></span>
                 <span><a href="../demo/?wmsc_capabilities">(view as html, internal)</a></span>
                 <span><a href="../demo/?wmsc_capabilities&type=external">(view as html, external)</a></span>
             </div>
