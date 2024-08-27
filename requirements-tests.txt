@@ -13,7 +13,7 @@ beautifulsoup4==4.12.2
 boto3==1.34.4
 boto==2.49.0
 botocore==1.34.17
-certifi==2023.11.17
+certifi==2024.7.4
 cffi==1.16.0;
 cfn-lint==0.80.3
 chardet==5.2.0
