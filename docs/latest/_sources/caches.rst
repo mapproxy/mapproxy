@@ -513,7 +513,7 @@ Available options:
   When set to ``true``, requests to S3 ``GetObject`` will be fetched via urllib2 instead of boto, which decreases response times. Defaults to ``false``.
 
 .. note::
-  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
+  The hierarchical ``directory_layouts`` can hit limitations of AWS S3 if you are routinely processing 3500 or more requests per second. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
 
 Example
 -------

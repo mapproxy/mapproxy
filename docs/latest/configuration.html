@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jul 24, 2024"/>
+    <meta name="docbuild:last-update" content="Aug 27, 2024"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.2.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">3.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -959,11 +959,11 @@ The validity conditions are the same as for seeding:</p>
 <p>Example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">osm_cache</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;osm_grid&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">OSM</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">refresh_before</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;osm_grid&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">OSM</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 </section>
@@ -979,7 +979,7 @@ even if the there are matching tiles in the cache. See <a class="reference inter
 <section id="cache-dir">
 <h3><code class="docutils literal notranslate"><span class="pre">cache_dir</span></code><a class="headerlink" href="#cache-dir" title="Permalink to this heading">#</a></h3>
 <p>Directory where MapProxy should store tiles for this cache. Uses the value of <code class="docutils literal notranslate"><span class="pre">globals.cache.base_dir</span></code> by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. <code class="docutils literal notranslate"><span class="pre">cachename_EPSG1234</span></code>).
-See <a class="reference internal" href="caches.html#cache-file-directory"><span class="std std-ref">directory option</span></a> on how configure a complete path.</p>
+See <a class="reference internal" href="caches.html#cache-file-directory"><span class="std std-ref">directory option</span></a> on how to configure a complete path.</p>
 </section>
 <section id="cache">
 <h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Permalink to this heading">#</a></h3>
@@ -1221,7 +1221,7 @@ Bicubic enhances the contrast at edges and should be used for vector images.</p>
 <p><span class="versionmodified added">New in version 1.10.0: </span><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></p>
 </div>
 <dl class="simple" id="meta-size">
-<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 and 0 <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code>, this will result in 1024x1024 requests to the source. (Note that the default value for <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code> is 80.) Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code>.</p>
 </dd>
 </dl>
 <dl class="simple" id="id12">
@@ -1230,7 +1230,7 @@ If set to <cite>true</cite>, MapProxy will request neighboring tiles from the so
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code></dt><dd><p>MapProxy will increase the size of each meta-tile request by this number of
 pixels in each direction. This can solve cases where labels are cut-off at
-the edge of tiles.</p>
+the edge of tiles. Defaults to 80.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">base_dir</span></code></dt><dd><p>The base directory where all cached tiles will be stored. The path can
 either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/var/mapproxy/cache</span></code>) or relative to the
@@ -1710,7 +1710,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 24, 2024.
+  Last updated on Aug 27, 2024.
   <br/>
 </p>
   </div>
