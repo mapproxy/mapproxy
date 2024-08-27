@@ -1,3 +1,26 @@
+3.0.0 2024-08-27
+~~~~~~~~~~~~~~~~
+
+Breaking:
+
+  - Add proper XML Exception when service parameter disabled / invalid or missing
+    In the past MapProxy returned WMS Capabilities when no explicit service parameter was given in
+    GetCapabilities requests. With this change, an OGC exception will be returned instead.
+    Invalid service types now also return a proper exception instead of an `internal error`.
+    Besides, the status code of exception responses now have a 400 or 500 code instead of 200
+    for better conformity.
+
+Maintenance:
+
+  - Add test for seeding sqlite cache
+  - Documentation updates and clarifications
+  - Dependency updates
+
+Fixes:
+
+  - Fix gh-pages workflow
+
+
 2.2.0 2024-07-24
 ~~~~~~~~~~~~~~~~
 
