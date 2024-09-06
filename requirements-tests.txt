@@ -69,4 +69,4 @@ waitress==2.1.2
 websocket-client==1.8.0
 wrapt==1.16.0
 xmltodict==0.13.0
-zipp==3.19.1
+zipp==3.20.1
