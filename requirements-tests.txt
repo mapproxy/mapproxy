@@ -20,7 +20,7 @@ chardet==5.2.0
 cryptography==43.0.1
 decorator==5.1.1
 docker==7.0.0
-docutils==0.20.1
+docutils==0.21.2
 ecdsa==0.18.0
 flake8==7.0.0
 idna==2.9
