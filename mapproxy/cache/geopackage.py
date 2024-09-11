@@ -39,13 +39,16 @@ class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
     def __init__(
-            self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None):
+            self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None,
+            directory_permissions=None, file_permissions=None):
         super(GeopackageCache, self).__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
         md5 = hashlib.new('md5', geopackage_file.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'gpkg' + md5.hexdigest()
         self.geopackage_file = geopackage_file
+        self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
 
         if coverage:
             self.bbox = coverage.transform_to(self.tile_grid.srs).bbox
@@ -107,12 +110,12 @@ class GeopackageCache(TileCacheBase):
     def ensure_gpkg(self):
         if not os.path.isfile(self.geopackage_file):
             with FileLock(self.geopackage_file + '.init.lck',
-                          remove_on_unlock=REMOVE_ON_UNLOCK):
-                ensure_directory(self.geopackage_file)
+                          remove_on_unlock=REMOVE_ON_UNLOCK, directory_permissions=self.directory_permissions):
+                ensure_directory(self.geopackage_file, self.directory_permissions)
                 self._initialize_gpkg()
         else:
             if not self.check_gpkg():
-                ensure_directory(self.geopackage_file)
+                ensure_directory(self.geopackage_file, self.directory_permissions)
                 self._initialize_gpkg()
 
     def check_gpkg(self):
@@ -193,7 +196,7 @@ class GeopackageCache(TileCacheBase):
 
     def _initialize_gpkg(self):
         log.info('initializing Geopackage file %s', self.geopackage_file)
-        db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)
+        db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)#TODO handle file_permissions?!
 
         if self.wal:
             db.execute('PRAGMA journal_mode=wal')
@@ -522,7 +525,8 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
 class GeopackageLevelCache(TileCacheBase):
 
-    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None):
+    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None,
+                 directory_permissions=None, file_permissions=None):
         super(GeopackageLevelCache, self).__init__(coverage)
         md5 = hashlib.new('md5', geopackage_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'gpkg-' + md5.hexdigest()
@@ -533,6 +537,8 @@ class GeopackageLevelCache(TileCacheBase):
         self.wal = wal
         self._geopackage = {}
         self._geopackage_lock = threading.Lock()
+        self.directory_permissions = directory_permissions
+        self.file_premissions = file_permissions
 
     def _get_level(self, level):
         if level in self._geopackage:
@@ -548,7 +554,9 @@ class GeopackageLevelCache(TileCacheBase):
                     with_timestamps=False,
                     timeout=self.timeout,
                     wal=self.wal,
-                    coverage=self.coverage
+                    coverage=self.coverage,
+                    directory_permissions=self.directory_permissions,
+                    file_permissions=self.file_premissions
                 )
 
         return self._geopackage[level]
