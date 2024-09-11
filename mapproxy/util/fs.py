@@ -106,14 +106,37 @@ def remove_dir_if_emtpy(directory):
             raise
 
 
-def ensure_directory(file_name):
+def ensure_directory(file_name, directory_permissions=None):
     """
     Create directory if it does not exist, else do nothing.
     """
     dir_name = os.path.dirname(file_name)
-    if not os.path.exists(dir_name):
+    if not os.path.isdir(dir_name):
         try:
-            os.makedirs(dir_name)
+            if directory_permissions:
+                allDirectories = []
+                while 1:
+                    parts = os.path.split(dir_name)
+                    if parts[0] == dir_name:  # sentinel for absolute paths
+                        allDirectories.insert(0, os.path.join(dir_name, parts[1]))
+                        break
+                    elif parts[1] == dir_name: # sentinel for relative paths
+                        allDirectories.insert(0, os.path.join(dir_name, parts[1]))
+                        break
+                    else:
+                        dir_name = parts[0]
+                        allDirectories.insert(0, os.path.join(dir_name, parts[1]))
+
+                for dir in allDirectories:
+                    if not os.path.exists(dir):
+                        #print("create dir" + dir + "with permission" + directory_permissions)
+                        os.mkdir(dir)
+                        permission = int(str(directory_permissions), base=8)
+                        os.chmod(dir, permission)
+            else:
+                #print("Called without permissions")
+                os.makedirs(dir_name)
+
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise e

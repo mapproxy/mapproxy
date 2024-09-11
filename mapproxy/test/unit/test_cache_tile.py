@@ -109,6 +109,30 @@ class TileCacheTestBase(object):
             assert self.cache.load_tile(tile) is True
             assert not tile.is_missing()
 
+    def test_store_tiles_no_permissions(self):
+        tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
+        tiles[0].stored = True
+
+        if isinstance(self.cache, FileCache):
+            # reinit cache with permission props
+            TileCacheTestBase.teardown_method(self)
+            self.cache = FileCache(self.cache_dir, 'png', directory_permissions=555)
+            try:
+                self.cache.store_tiles(tiles, dimensions=None)
+            except Exception as e:
+                assert 'Permission denied' == e.args[1]
+            else:
+                assert False, 'no PermissionError raised'
+        elif isinstance(self.cache, MBTilesCache):
+            # reinit cache with permission props
+            self.cache.cleanup()
+            TileCacheTestBase.teardown_method(self)
+            self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'), directory_permissions=755, file_permissions=555)
+            success = self.cache.store_tiles(tiles, dimensions=None)
+            assert success == False
+            self.cache.cleanup()
+        TileCacheTestBase.teardown_method(self)
+
     def test_load_tiles_cached(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 1, 1)))

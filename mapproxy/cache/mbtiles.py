@@ -45,11 +45,14 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0, coverage=None):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0, coverage=None,
+                 directory_permissions=None, file_permissions=None):
         super(MBTilesCache, self).__init__(coverage)
         md5 = hashlib.new('md5', mbtile_file.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'mbtiles-' + md5.hexdigest()
         self.mbtile_file = mbtile_file
+        self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
         self.supports_timestamp = with_timestamps
         self.ttl = with_timestamps and ttl or 0
         self.timeout = timeout
@@ -75,14 +78,18 @@ class MBTilesCache(TileCacheBase):
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
             with FileLock(self.mbtile_file + '.init.lck',
-                          remove_on_unlock=REMOVE_ON_UNLOCK):
+                          remove_on_unlock=REMOVE_ON_UNLOCK, directory_permissions=self.directory_permissions):
                 if not os.path.exists(self.mbtile_file):
-                    ensure_directory(self.mbtile_file)
+                    ensure_directory(self.mbtile_file, self.directory_permissions)
                     self._initialize_mbtile()
 
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
         db = sqlite3.connect(self.mbtile_file)
+        if self.file_permissions:
+            permission = int(str(self.file_permissions), base=8)
+            log.info("setting file permissions on MBTile file: ", permission)
+            os.chmod(self.mbtile_file, permission)
 
         if self.wal:
             db.execute('PRAGMA journal_mode=wal')
@@ -311,11 +318,14 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage=None):
+    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage=None,
+                 directory_permissions=None, file_permissions=None):
         super(MBTilesLevelCache, self).__init__(coverage)
         md5 = hashlib.new('md5', mbtiles_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'sqlite-' + md5.hexdigest()
         self.cache_dir = mbtiles_dir
+        self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
         self._mbtiles = {}
         self.timeout = timeout
         self.wal = wal
@@ -335,7 +345,9 @@ class MBTilesLevelCache(TileCacheBase):
                     timeout=self.timeout,
                     wal=self.wal,
                     ttl=self.ttl,
-                    coverage=self.coverage
+                    coverage=self.coverage,
+                    directory_permissions=self.directory_permissions,
+                    file_permissions=self.file_permissions
                 )
 
         return self._mbtiles[level]
