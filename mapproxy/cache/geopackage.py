@@ -196,7 +196,12 @@ class GeopackageCache(TileCacheBase):
 
     def _initialize_gpkg(self):
         log.info('initializing Geopackage file %s', self.geopackage_file)
-        db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)#TODO handle file_permissions?!
+        db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)
+
+        if self.file_permissions:
+            permission = int(str(self.file_permissions), base=8)
+            log.info("setting file permissions on Geopackage file: ", permission)
+            os.chmod(self.geopackage_file, permission)
 
         if self.wal:
             db.execute('PRAGMA journal_mode=wal')
