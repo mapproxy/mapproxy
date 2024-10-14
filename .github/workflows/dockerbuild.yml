@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run trivy
-        uses: aquasecurity/trivy-action@v0.24.0
+        uses: aquasecurity/trivy-action@0.27.0
         with:
           format: 'sarif'
           ignore-unfixed: true
