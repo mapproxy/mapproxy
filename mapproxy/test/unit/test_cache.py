@@ -435,10 +435,10 @@ class TestTileManagerLocking(object):
     @pytest.fixture
     def file_cache(self, tmpdir):
         return RecordFileCache(tmpdir.strpath, 'png')
-    
+
     @pytest.fixture
     def file_cache_permissive(self, tmpdir):
-        return RecordFileCache(tmpdir.strpath, 'png', directory_permissions=775)
+        return RecordFileCache(tmpdir.strpath, 'png', directory_permissions='775')
 
     @pytest.fixture
     def tile_mgr(self, file_cache, slow_source, tile_locker):
