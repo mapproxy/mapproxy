@@ -165,7 +165,7 @@ class GeopackageCache(TileCacheBase):
             return True
 
     def _verify_tile_size(self):
-        with (self.uncached_db() as db):
+        with self.uncached_db() as db:
             cur = db.execute(
                 """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
                 (self.table_name,))
