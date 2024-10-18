@@ -733,12 +733,18 @@ class WMSSourceConfiguration(SourceConfiguration):
             url = prefix + context.globals.abspath(url[7:])
         lg_client = WMSLegendURLClient(url)
 
-        global_permissions=context.globals.get_value('directory_permissions', None,
+        global_directory_permissions=context.globals.get_value('directory_permissions', None,
                                                      global_key='cache.directory_permissions')
-        if global_permissions:
-            log.info(f'Using global directory permission configuration for static legend source: {global_permissions}')
+        if global_directory_permissions:
+            log.info(f'Using global directory permission configuration for static legend source: {global_directory_permissions}')
 
-        legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_permissions)
+        global_file_permissions=context.globals.get_value('file_permissions', None,
+                                                               global_key='cache.file_permissions')
+        if global_file_permissions:
+            log.info(f'Using global file permission configuration for static legend source: {global_file_permissions}')
+
+        legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
+                                   file_permissions=global_file_permissions)
         return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
@@ -889,7 +895,19 @@ class WMSSourceConfiguration(SourceConfiguration):
                 http_client, lg_request.url = self.http_client(lg_request.url)
                 lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)
-            legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=CacheConfiguration.directory_permissions())
+
+            global_directory_permissions=self.context.globals.get_value('directory_permissions', self.conf,
+                                                                   global_key='cache.directory_permissions')
+            if global_directory_permissions:
+                log.info(f'Using global directory permission configuration for static legend source: {global_directory_permissions}')
+
+            global_file_permissions=self.context.globals.get_value('file_permissions', self.conf,
+                                                              global_key='cache.file_permissions')
+            if global_file_permissions:
+                log.info(f'Using global file permission configuration for static legend source: {global_file_permissions}')
+
+            legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
+                                       file_permissions=global_file_permissions)
             lg_source = WMSLegendSource(lg_clients, legend_cache)
         return lg_source
 
