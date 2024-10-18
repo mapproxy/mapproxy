@@ -58,14 +58,18 @@ class GeopackageCache(TileCacheBase):
         self.supports_timestamp = with_timestamps
         self.timeout = timeout
         self.wal = wal
-        self._db_conn_cache = threading.local()
         self.ensure_gpkg()
+        self._db_conn_cache = threading.local()
 
     @property
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
+            self.ensure_gpkg()
             self._db_conn_cache.db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)
         return self._db_conn_cache.db
+
+    def uncached_db(self):
+        return sqlite3.connect(self.geopackage_file, timeout=self.timeout)
 
     def cleanup(self):
         """
@@ -127,68 +131,71 @@ class GeopackageCache(TileCacheBase):
         return True
 
     def _verify_table(self):
-        cur = self.db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name=?""",
-                         (self.table_name,))
-        content = cur.fetchone()
-        if not content:
-            # Table doesn't exist _initialize_gpkg will create a new one.
-            return False
-        return True
-
-    def _verify_gpkg_contents(self):
-        cur = self.db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?""", (self.table_name,))
-
-        results = cur.fetchone()
-        if not results:
-            # Table doesn't exist in gpkg_contents _initialize_gpkg will add it.
-            return False
-        gpkg_data_type = results[1]
-        gpkg_srs_id = results[9]
-        cur = self.db.execute("""SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = ?""", (gpkg_srs_id,))
-
-        gpkg_coordsys_id = cur.fetchone()[3]
-        if gpkg_data_type.lower() != "tiles":
-            log.info("The geopackage table name already exists for a data type other than tiles.")
-            raise ValueError("table_name is improperly configured.")
-        if gpkg_coordsys_id != get_epsg_num(self.tile_grid.srs.srs_code):
-            log.info(
-                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has an SRS of"
-                f" {gpkg_coordsys_id}, which does not match the configured Mapproxy SRS of"
-                f" {get_epsg_num(self.tile_grid.srs.srs_code)}.")
-            raise ValueError("srs is improperly configured.")
-        return True
-
-    def _verify_tile_size(self):
-        cur = self.db.execute(
-            """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
-            (self.table_name,))
-
-        results = cur.fetchall()
-        results = results[0]
-        tile_size = self.tile_grid.tile_size
-
-        if not results:
-            # There is no tile conflict. Return to allow the creation of new tiles.
+        with self.uncached_db() as db:
+            cur = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name=?""",
+                             (self.table_name,))
+            content = cur.fetchone()
+            if not content:
+                # Table doesn't exist _initialize_gpkg will create a new one.
+                return False
             return True
 
-        gpkg_table_name, gpkg_zoom_level, gpkg_matrix_width, gpkg_matrix_height, gpkg_tile_width, gpkg_tile_height, \
-            gpkg_pixel_x_size, gpkg_pixel_y_size = results
-        resolution = self.tile_grid.resolution(gpkg_zoom_level)
-        if gpkg_tile_width != tile_size[0] or gpkg_tile_height != tile_size[1]:
-            log.info(
-                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has tile sizes"
-                f" of ({gpkg_tile_width},{gpkg_tile_height}) which is different than the configure tile sizes of"
-                f" ({tile_size[0]},{tile_size[1]}).")
-            log.info("The current mapproxy configuration is invalid for this geopackage.")
-            raise ValueError("tile_size is improperly configured.")
-        if not is_close(gpkg_pixel_x_size, resolution) or not is_close(gpkg_pixel_y_size, resolution):
-            log.info(
-                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and level"
-                f" {gpkg_zoom_level} a resolution of ({gpkg_pixel_x_size:.13f},{gpkg_pixel_y_size:.13f})"
-                f" which is different than the configured resolution of ({resolution:.13f},{resolution:.13f}).")
-            log.info("The current mapproxy configuration is invalid for this geopackage.")
-            raise ValueError("res is improperly configured.")
-        return True
+    def _verify_gpkg_contents(self):
+        with self.uncached_db() as db:
+            cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?""", (self.table_name,))
+
+            results = cur.fetchone()
+            if not results:
+                # Table doesn't exist in gpkg_contents _initialize_gpkg will add it.
+                return False
+            gpkg_data_type = results[1]
+            gpkg_srs_id = results[9]
+            cur = db.execute("""SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = ?""", (gpkg_srs_id,))
+
+            gpkg_coordsys_id = cur.fetchone()[3]
+            if gpkg_data_type.lower() != "tiles":
+                log.info("The geopackage table name already exists for a data type other than tiles.")
+                raise ValueError("table_name is improperly configured.")
+            if gpkg_coordsys_id != get_epsg_num(self.tile_grid.srs.srs_code):
+                log.info(
+                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has an SRS of"
+                    f" {gpkg_coordsys_id}, which does not match the configured Mapproxy SRS of"
+                    f" {get_epsg_num(self.tile_grid.srs.srs_code)}.")
+                raise ValueError("srs is improperly configured.")
+            return True
+
+    def _verify_tile_size(self):
+        with self.uncached_db() as db:
+            cur = db.execute(
+                """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
+                (self.table_name,))
+
+            results = cur.fetchall()
+            results = results[0]
+            tile_size = self.tile_grid.tile_size
+
+            if not results:
+                # There is no tile conflict. Return to allow the creation of new tiles.
+                return True
+
+            gpkg_table_name, gpkg_zoom_level, gpkg_matrix_width, gpkg_matrix_height, gpkg_tile_width, gpkg_tile_height, \
+                gpkg_pixel_x_size, gpkg_pixel_y_size = results
+            resolution = self.tile_grid.resolution(gpkg_zoom_level)
+            if gpkg_tile_width != tile_size[0] or gpkg_tile_height != tile_size[1]:
+                log.info(
+                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has tile sizes"
+                    f" of ({gpkg_tile_width},{gpkg_tile_height}) which is different than the configure tile sizes of"
+                    f" ({tile_size[0]},{tile_size[1]}).")
+                log.info("The current mapproxy configuration is invalid for this geopackage.")
+                raise ValueError("tile_size is improperly configured.")
+            if not is_close(gpkg_pixel_x_size, resolution) or not is_close(gpkg_pixel_y_size, resolution):
+                log.info(
+                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and level"
+                    f" {gpkg_zoom_level} a resolution of ({gpkg_pixel_x_size:.13f},{gpkg_pixel_y_size:.13f})"
+                    f" which is different than the configured resolution of ({resolution:.13f},{resolution:.13f}).")
+                log.info("The current mapproxy configuration is invalid for this geopackage.")
+                raise ValueError("res is improperly configured.")
+            return True
 
     def _initialize_gpkg(self):
         log.info('initializing Geopackage file %s', self.geopackage_file)
@@ -294,7 +301,7 @@ class GeopackageCache(TileCacheBase):
             db.commit()
 
         if self.file_permissions is not None:
-            permission = int(str(self.file_permissions), base=8)
+            permission = int(self.file_permissions, base=8)
             log.info("setting file permissions on GeoPackage: ", permission)
             os.chmod(self.geopackage_file, permission)
 

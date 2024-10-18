@@ -736,13 +736,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         global_directory_permissions = context.globals.get_value('directory_permissions', None,
                                                      global_key='cache.directory_permissions')
         if global_directory_permissions:
-            log.info(f'Using global directory permission configuration for static legend source:'
+            log.info(f'Using global directory permission configuration for static legend cache:'
                      f' {global_directory_permissions}')
 
         global_file_permissions = context.globals.get_value(
             'file_permissions', None, global_key='cache.file_permissions')
         if global_file_permissions:
-            log.info(f'Using global file permission configuration for static legend source: {global_file_permissions}')
+            log.info(f'Using global file permission configuration for static legend cache: {global_file_permissions}')
 
         legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
                                    file_permissions=global_file_permissions)
@@ -900,13 +900,13 @@ class WMSSourceConfiguration(SourceConfiguration):
             global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
                                                                    global_key='cache.directory_permissions')
             if global_directory_permissions:
-                log.info(f'Using global directory permission configuration for static legend source:'
+                log.info(f'Using global directory permission configuration for legend cache:'
                          f' {global_directory_permissions}')
 
             global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
                                                               global_key='cache.file_permissions')
             if global_file_permissions:
-                log.info(f'Using global file permission configuration for static legend source:'
+                log.info(f'Using global file permission configuration for legend cache:'
                          f' {global_file_permissions}')
 
             legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
@@ -1755,9 +1755,15 @@ class CacheConfiguration(ConfigurationBase):
                 if not lock_dir:
                     lock_dir = os.path.join(cache_dir, 'tile_locks')
 
+                global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                         global_key='cache.directory_permissions')
+                if global_directory_permissions:
+                    log.info(f'Using global directory permission configuration for tile locks:'
+                             f' {global_directory_permissions}')
+
                 lock_timeout = self.context.globals.get_value('http.client_timeout', {})
                 locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd',
-                                    CacheConfiguration.directory_permissions())
+                                    global_directory_permissions)
                 # TODO band_merger
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                                              priority=priority, tile_locker=locker)
@@ -1769,11 +1775,17 @@ class CacheConfiguration(ConfigurationBase):
             if isinstance(cache, DummyCache):
                 locker = DummyLocker()
             else:
+                global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                              global_key='cache.directory_permissions')
+                if global_directory_permissions:
+                    log.info(f'Using global directory permission configuration for tile locks:'
+                             f' {global_directory_permissions}')
+
                 locker = TileLocker(
                     lock_dir=self.lock_dir(),
                     lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                     lock_cache_id=cache.lock_cache_id,
-                    directory_permissions=CacheConfiguration.directory_permissions(self)
+                    directory_permissions=global_directory_permissions
                 )
 
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
