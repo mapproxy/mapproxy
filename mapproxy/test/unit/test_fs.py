@@ -1,6 +1,6 @@
 import os
 
-from mapproxy.test.helper import TempDir, assert_files_in_dir, ChangeWorkingDir
+from mapproxy.test.helper import TempDir, assert_files_in_dir, ChangeWorkingDir, assert_permissions
 from mapproxy.util.fs import ensure_directory
 
 
@@ -27,6 +27,4 @@ class TestFs:
             desired_permissions = '700'
             ensure_directory(file_path, directory_permissions=desired_permissions)
             assert_files_in_dir(dir_name, ['a'])
-            actual_permissions = oct(os.stat(os.path.join(dir_name, 'a')).st_mode & 0o777)
-            desired_oct_permissions = oct(int(desired_permissions, base=8))
-            assert actual_permissions == desired_oct_permissions, f'{actual_permissions} ~= {desired_oct_permissions}'
+            assert_permissions(os.path.join(dir_name, 'a'), desired_permissions)
