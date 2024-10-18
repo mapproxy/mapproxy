@@ -234,7 +234,7 @@ class GeopackageCache(TileCacheBase):
 
             for wkt_entry in wkt_entries:
                 try:
-                    db.execute(wkt_statement, (wkt_entry[0], wkt_entry[1], wkt_entry[2], wkt_entry[3], wkt_entry[4]))
+                    db.execute(wkt_statement, wkt_entry)
                 except sqlite3.IntegrityError:
                     log.info("srs_id already exists.")
             db.commit()
