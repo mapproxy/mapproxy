@@ -48,10 +48,11 @@ def legend_hash(identifier, scale):
 
 
 class LegendCache(object):
-    def __init__(self, cache_dir=None, file_ext='png', directory_permissions=None):
+    def __init__(self, cache_dir=None, file_ext='png', directory_permissions=None, file_permissions=None):
         self.cache_dir = cache_dir
         self.file_ext = file_ext
         self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
 
     def store(self, legend):
         if legend.stored:
@@ -66,6 +67,10 @@ class LegendCache(object):
         data.seek(0)
         log.debug('writing to %s' % (legend.location))
         write_atomic(legend.location, data.read())
+        if self.file_permissions:
+            permission = int(self.file_permissions, base=8)
+            log.info("setting file permissions on compact cache file: " + self.file_permissions)
+            os.chmod(legend.location, permission)
         data.seek(0)
         legend.stored = True
 
