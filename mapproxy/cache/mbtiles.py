@@ -63,7 +63,6 @@ class MBTilesCache(TileCacheBase):
     @property
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
-            self.ensure_mbtile()
             self._db_conn_cache.db = sqlite3.connect(self.mbtile_file, self.timeout)
         return self._db_conn_cache.db
 
@@ -85,55 +84,53 @@ class MBTilesCache(TileCacheBase):
 
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
-        db = sqlite3.connect(self.mbtile_file)
+        with sqlite3.connect(self.mbtile_file) as db:
+            if self.wal:
+                db.execute('PRAGMA journal_mode=wal')
+
+            stmt = """
+                CREATE TABLE tiles (
+                    zoom_level integer,
+                    tile_column integer,
+                    tile_row integer,
+                    tile_data blob
+            """
+
+            if self.supports_timestamp:
+                stmt += """
+                    , last_modified datetime DEFAULT (datetime('now','localtime'))
+                """
+            stmt += """
+                );
+            """
+            db.execute(stmt)
+
+            db.execute("""
+                CREATE TABLE metadata (name text, value text);
+            """)
+            db.execute("""
+                CREATE UNIQUE INDEX idx_tile on tiles
+                    (zoom_level, tile_column, tile_row);
+            """)
+            db.commit()
+
         if self.file_permissions:
             permission = int(self.file_permissions, base=8)
             log.info("setting file permissions on MBTile file: ", permission)
             os.chmod(self.mbtile_file, permission)
 
-        if self.wal:
-            db.execute('PRAGMA journal_mode=wal')
-
-        stmt = """
-            CREATE TABLE tiles (
-                zoom_level integer,
-                tile_column integer,
-                tile_row integer,
-                tile_data blob
-        """
-
-        if self.supports_timestamp:
-            stmt += """
-                , last_modified datetime DEFAULT (datetime('now','localtime'))
-            """
-        stmt += """
-            );
-        """
-        db.execute(stmt)
-
-        db.execute("""
-            CREATE TABLE metadata (name text, value text);
-        """)
-        db.execute("""
-            CREATE UNIQUE INDEX idx_tile on tiles
-                (zoom_level, tile_column, tile_row);
-        """)
-        db.commit()
-        db.close()
-
     def update_metadata(self, name='', description='', version=1, overlay=True, format='png'):
-        db = sqlite3.connect(self.mbtile_file)
-        db.execute("""
+        self.db.execute("""
             CREATE TABLE IF NOT EXISTS metadata (name text, value text);
         """)
-        db.execute("""DELETE FROM metadata;""")
+        self.db.execute("""DELETE FROM metadata;""")
 
         if overlay:
             layer_type = 'overlay'
         else:
             layer_type = 'baselayer'
 
-        db.executemany("""
+        self.db.executemany("""
             INSERT INTO metadata (name, value) VALUES (?,?)
             """,
                        (
@@ -144,8 +141,7 @@ class MBTilesCache(TileCacheBase):
                            ('format', format),
                        )
                        )
-        db.commit()
-        db.close()
+        self.db.commit()
 
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
