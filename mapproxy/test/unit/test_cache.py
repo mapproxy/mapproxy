@@ -161,17 +161,21 @@ def create_cached_tile(tile, cache, timestamp=None):
 def file_cache(tmpdir):
     return FileCache(cache_dir=tmpdir.join('cache').strpath, file_ext='png')
 
+
 @pytest.fixture
 def tile_locker(tmpdir):
     return TileLocker(tmpdir.join('lock').strpath, 10, "id")
+
 
 @pytest.fixture
 def tile_locker_restricted(tmpdir):
     return TileLocker(tmpdir.join('lock').strpath, 10, "id", 666)
 
+
 @pytest.fixture
 def tile_locker_permissive(tmpdir):
     return TileLocker(tmpdir.join('lock').strpath, 10, "id", 775)
+
 
 @pytest.fixture
 def mock_tile_client():

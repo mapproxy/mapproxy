@@ -119,7 +119,7 @@ def ensure_directory(file_name, directory_permissions=None):
             # call ensure_directory recursively
             ensure_directory(dir_name, directory_permissions)
 
-            #print("create dir" + dir + "with permission" + directory_permissions)
+            # print("create dir" + dir + "with permission" + directory_permissions)
             os.mkdir(dir_name)
             if directory_permissions:
                 permission = int(directory_permissions, base=8)
