@@ -158,14 +158,14 @@ class GeopackageCache(TileCacheBase):
                 raise ValueError("table_name is improperly configured.")
             if gpkg_coordsys_id != get_epsg_num(self.tile_grid.srs.srs_code):
                 log.info(
-                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has an SRS of"
-                    f" {gpkg_coordsys_id}, which does not match the configured Mapproxy SRS of"
+                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has an SRS"
+                    f" of {gpkg_coordsys_id}, which does not match the configured Mapproxy SRS of"
                     f" {get_epsg_num(self.tile_grid.srs.srs_code)}.")
                 raise ValueError("srs is improperly configured.")
             return True
 
     def _verify_tile_size(self):
-        with self.uncached_db() as db:
+        with (self.uncached_db() as db):
             cur = db.execute(
                 """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
                 (self.table_name,))
@@ -178,14 +178,14 @@ class GeopackageCache(TileCacheBase):
                 # There is no tile conflict. Return to allow the creation of new tiles.
                 return True
 
-            gpkg_table_name, gpkg_zoom_level, gpkg_matrix_width, gpkg_matrix_height, gpkg_tile_width, gpkg_tile_height, \
-                gpkg_pixel_x_size, gpkg_pixel_y_size = results
+            gpkg_table_name, gpkg_zoom_level, gpkg_matrix_width, gpkg_matrix_height, gpkg_tile_width, \
+                gpkg_tile_height, gpkg_pixel_x_size, gpkg_pixel_y_size = results
             resolution = self.tile_grid.resolution(gpkg_zoom_level)
             if gpkg_tile_width != tile_size[0] or gpkg_tile_height != tile_size[1]:
                 log.info(
-                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has tile sizes"
-                    f" of ({gpkg_tile_width},{gpkg_tile_height}) which is different than the configure tile sizes of"
-                    f" ({tile_size[0]},{tile_size[1]}).")
+                    f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has tile"
+                    f" sizes of ({gpkg_tile_width},{gpkg_tile_height}) which is different than the configure tile sizes"
+                    f" of ({tile_size[0]},{tile_size[1]}).")
                 log.info("The current mapproxy configuration is invalid for this geopackage.")
                 raise ValueError("tile_size is improperly configured.")
             if not is_close(gpkg_pixel_x_size, resolution) or not is_close(gpkg_pixel_y_size, resolution):
