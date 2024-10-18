@@ -58,8 +58,8 @@ class GeopackageCache(TileCacheBase):
         self.supports_timestamp = with_timestamps
         self.timeout = timeout
         self.wal = wal
-        self.ensure_gpkg()
         self._db_conn_cache = threading.local()
+        self.ensure_gpkg()
 
     @property
     def db(self):
