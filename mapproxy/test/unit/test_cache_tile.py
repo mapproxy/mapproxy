@@ -17,10 +17,8 @@ import calendar
 import datetime
 import os
 import shutil
-import sqlite3
 import sys
 import tempfile
-import threading
 import time
 
 from io import BytesIO
@@ -30,11 +28,10 @@ import pytest
 from PIL import Image
 
 from mapproxy.cache.file import FileCache
-from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
+from mapproxy.cache.mbtiles import MBTilesCache
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.test.helper import assert_files_in_dir
 from mapproxy.test.image import create_tmp_image_buf, is_png
 
 
@@ -378,56 +375,6 @@ class TestFileTileCache(TileCacheTestBase):
             cache.level_location(0)
 
 
-class TestMBTileCache(TileCacheTestBase):
-    def setup_method(self):
-        TileCacheTestBase.setup_method(self)
-        self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
-
-    def teardown_method(self):
-        if self.cache:
-            self.cache.cleanup()
-        TileCacheTestBase.teardown_method(self)
-
-    def test_default_coverage(self):
-        assert self.cache.coverage is None
-
-    def test_load_empty_tileset(self):
-        assert self.cache.load_tiles([Tile(None)]) is True
-        assert self.cache.load_tiles([Tile(None), Tile(None), Tile(None)]) is True
-
-    def test_load_more_than_2000_tiles(self):
-        # prepare data
-        for i in range(0, 2010):
-            assert self.cache.store_tile(Tile((i, 0, 10),  ImageSource(BytesIO(b'foo'))))
-
-        tiles = [Tile((i, 0, 10)) for i in range(0, 2010)]
-        assert self.cache.load_tiles(tiles)
-
-    def test_timeouts(self):
-        self.cache._db_conn_cache.db = sqlite3.connect(self.cache.mbtile_file, timeout=0.05)
-
-        def block():
-            # block database by delaying the commit
-            db = sqlite3.connect(self.cache.mbtile_file)
-            cur = db.cursor()
-            stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-            cur.execute(stmt, (3, 1, 1, '1234'))
-            time.sleep(0.2)
-            db.commit()
-
-        try:
-            assert self.cache.store_tile(self.create_tile((0, 0, 1))) is True
-
-            t = threading.Thread(target=block)
-            t.start()
-            time.sleep(0.05)
-            assert self.cache.store_tile(self.create_tile((0, 0, 1))) is False
-        finally:
-            t.join()
-
-        assert self.cache.store_tile(self.create_tile((0, 0, 1))) is True
-
-
 class TestQuadkeyFileTileCache(TileCacheTestBase):
     def setup_method(self):
         TileCacheTestBase.setup_method(self)
@@ -441,61 +388,3 @@ class TestQuadkeyFileTileCache(TileCacheTestBase):
         self.cache.store_tile(tile)
         tile_location = os.path.join(self.cache_dir, '11.png')
         assert os.path.exists(tile_location), tile_location
-
-
-class TestMBTileLevelCache(TileCacheTestBase):
-    always_loads_metadata = True
-
-    def setup_method(self):
-        TileCacheTestBase.setup_method(self)
-        self.cache = MBTilesLevelCache(self.cache_dir)
-
-    def test_default_coverage(self):
-        assert self.cache.coverage is None
-
-    def test_level_files(self):
-        assert_files_in_dir(self.cache_dir, [])
-
-        self.cache.store_tile(self.create_tile((0, 0, 1)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile'], glob='*.mbtile')
-
-        self.cache.store_tile(self.create_tile((0, 0, 5)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '5.mbtile'], glob='*.mbtile')
-
-    def test_remove_level_files(self):
-        self.cache.store_tile(self.create_tile((0, 0, 1)))
-        self.cache.store_tile(self.create_tile((0, 0, 2)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
-
-        self.cache.remove_level_tiles_before(1, timestamp=0)
-        assert_files_in_dir(self.cache_dir, ['2.mbtile'], glob='*.mbtile')
-
-    def test_remove_level_tiles_before(self):
-        self.cache.store_tile(self.create_tile((0, 0, 1)))
-        self.cache.store_tile(self.create_tile((0, 0, 2)))
-
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
-        assert self.cache.is_cached(Tile((0, 0, 1)))
-
-        self.cache.remove_level_tiles_before(1, timestamp=time.time() - 60)
-        assert self.cache.is_cached(Tile((0, 0, 1)))
-
-        self.cache.remove_level_tiles_before(1, timestamp=time.time() + 60)
-        assert not self.cache.is_cached(Tile((0, 0, 1)))
-
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
-        assert self.cache.is_cached(Tile((0, 0, 2)))
-
-    def test_bulk_store_tiles_with_different_levels(self):
-        self.cache.store_tiles([
-            self.create_tile((0, 0, 1)),
-            self.create_tile((0, 0, 2)),
-            self.create_tile((1, 0, 2)),
-            self.create_tile((1, 0, 1)),
-        ], dimensions=None)
-
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
-        assert self.cache.is_cached(Tile((0, 0, 1)))
-        assert self.cache.is_cached(Tile((1, 0, 1)))
-        assert self.cache.is_cached(Tile((0, 0, 2)))
-        assert self.cache.is_cached(Tile((1, 0, 2)))
