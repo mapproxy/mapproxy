@@ -55,7 +55,7 @@ class FileLock(object):
 
     def lock(self):
         ensure_directory(self.lock_file, self.directory_permissions)
-        
+
         current_time = time.time()
         stop_time = current_time + self.timeout
 

@@ -278,6 +278,7 @@ def capture(bytes=False):
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
 
+
 def assert_permissions(file_path, permissions):
     actual_permissions = oct(os.stat(file_path).st_mode & 0o777)
     desired_permissions = oct(int(permissions, base=8))

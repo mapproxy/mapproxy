@@ -124,9 +124,10 @@ class TileCacheTestBase(object):
             # reinit cache with permission props
             self.cache.cleanup()
             TileCacheTestBase.teardown_method(self)
-            self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'), directory_permissions='755', file_permissions='555')
+            self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'),
+                                      directory_permissions='755', file_permissions='555')
             success = self.cache.store_tiles(tiles, dimensions=None)
-            assert success == False
+            assert not success
             self.cache.cleanup()
         TileCacheTestBase.teardown_method(self)
 

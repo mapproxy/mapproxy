@@ -56,8 +56,8 @@ class CompactCacheBase(TileCacheBase):
 
     def _get_bundle(self, tile_coord):
         bundle_fname, offset = self._get_bundle_fname_and_offset(tile_coord)
-        return self.bundle_class(bundle_fname, offset=offset,
-                                 file_permissions=self.file_permissions, directory_permissions=self.directory_permissions)
+        return self.bundle_class(bundle_fname, offset=offset, file_permissions=self.file_permissions,
+                                 directory_permissions=self.directory_permissions)
 
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
@@ -156,7 +156,8 @@ class BundleV1(object):
         )
 
     def data(self):
-        return BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset, self.directory_permissions, self.file_permissions)
+        return BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset,
+                            self.directory_permissions, self.file_permissions)
 
     def index(self):
         return BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT, self.directory_permissions, self.file_permissions)
@@ -691,4 +692,3 @@ class CompactCacheV1(CompactCacheBase):
 
 class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
-

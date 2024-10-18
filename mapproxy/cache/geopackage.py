@@ -290,7 +290,7 @@ class GeopackageCache(TileCacheBase):
                     INSERT OR REPLACE INTO gpkg_tile_matrix (table_name, zoom_level, matrix_width,
                         matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-                    """,(self.table_name, level, grid[0], grid[1], tile_size[0], tile_size[1], resolution, resolution))
+                    """, (self.table_name, level, grid[0], grid[1], tile_size[0], tile_size[1], resolution, resolution))
             db.commit()
 
         if self.file_permissions is not None:

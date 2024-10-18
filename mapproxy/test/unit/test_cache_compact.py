@@ -354,4 +354,3 @@ class TestDefragmentationV1(DefragmentationTestBase):
 
 class TestDefragmentationV2(DefragmentationTestBase):
     cache_class = CompactCacheV2
-
