@@ -23,6 +23,7 @@ import os
 import errno
 
 from mapproxy.util.ext.lockfile import LockFile, LockError
+from mapproxy.util.fs import ensure_directory
 
 import logging
 log = logging.getLogger(__name__)
@@ -35,12 +36,13 @@ class LockTimeout(Exception):
 
 
 class FileLock(object):
-    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False):
+    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False, directory_permissions=None):
         self.lock_file = lock_file
         self.timeout = timeout
         self.step = step
         self.remove_on_unlock = remove_on_unlock
         self._locked = False
+        self.directory_permissions = directory_permissions
 
     def __enter__(self):
         self.lock()
@@ -48,19 +50,12 @@ class FileLock(object):
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.unlock()
 
-    def _make_lockdir(self):
-        if not os.path.exists(os.path.dirname(self.lock_file)):
-            try:
-                os.makedirs(os.path.dirname(self.lock_file))
-            except OSError as e:
-                if e.errno is not errno.EEXIST:
-                    raise e
-
     def _try_lock(self):
         return LockFile(self.lock_file)
 
     def lock(self):
-        self._make_lockdir()
+        ensure_directory(self.lock_file, self.directory_permissions)
+
         current_time = time.time()
         stop_time = current_time + self.timeout
 
@@ -121,10 +116,11 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
         try:
             if os.path.isfile(name) and name.endswith(suffix):
                 if os.path.getmtime(name) < expire_time:
-                    try:
-                        os.unlink(name)
-                    except IOError as ex:
-                        log.warning('could not remove old lock file %s: %s', name, ex)
+                    if os.stat(name).st_uid == os.getuid():
+                        try:
+                            os.unlink(name)
+                        except IOError as ex:
+                            log.warning('could not remove old lock file %s: %s', name, ex)
         except OSError as e:
             # some one might have removed the file (ENOENT)
             # or we don't have permissions to remove it (EACCES)

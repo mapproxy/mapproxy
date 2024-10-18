@@ -28,6 +28,7 @@ from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.script.defrag import defrag_compact_cache
+from mapproxy.test.helper import assert_permissions
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 
@@ -130,6 +131,22 @@ class TestCompactCacheV1(TileCacheTestBase):
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
 
 
+class TestCompactCacheV1Permissions(TileCacheTestBase):
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
+        self.cache = CompactCacheV1(
+            cache_dir=self.cache_dir,
+            file_permissions='700'
+        )
+
+    def test_permission(self):
+        coord = (0, 0, 0)
+        self.cache.store_tile(self.create_tile(coord=coord))
+        bundle = self.cache._get_bundle(coord)
+        assert_permissions(bundle.data().filename, '700')
+        assert_permissions(bundle.index().filename, '700')
+
+
 class TestCompactCacheV2(TileCacheTestBase):
 
     always_loads_metadata = True
@@ -212,6 +229,21 @@ class TestCompactCacheV2(TileCacheTestBase):
         t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
+
+
+class TestCompactCacheV2Permissions(TileCacheTestBase):
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
+        self.cache = CompactCacheV2(
+            cache_dir=self.cache_dir,
+            file_permissions='700'
+        )
+
+    def test_permission(self):
+        coord = (0, 0, 0)
+        self.cache.store_tile(self.create_tile(coord=coord))
+        bundle = self.cache._get_bundle(coord)
+        assert_permissions(bundle.filename, '700')
 
 
 class mockProgressLog(object):

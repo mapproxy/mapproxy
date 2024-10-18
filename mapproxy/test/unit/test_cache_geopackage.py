@@ -28,7 +28,7 @@ from mapproxy.grid import tile_grid, TileGrid
 from mapproxy.image import ImageSource
 from mapproxy.layer import MapExtent
 from mapproxy.srs import SRS
-from mapproxy.test.helper import assert_files_in_dir
+from mapproxy.test.helper import assert_files_in_dir, assert_permissions
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 from mapproxy.util.coverage import coverage
 
@@ -254,3 +254,27 @@ class TestGeopackageCacheInitErrors(object):
         except ValueError as ve:
             error_msg = ve
         assert "res is improperly configured." in str(error_msg)
+
+
+class TestGeopackageCachePermissions(TileCacheTestBase):
+
+    always_loads_metadata = True
+
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
+        self.gpkg_file = os.path.join(self.cache_dir, 'tmp.gpkg')
+        self.table_name = 'test_tiles'
+        self.cache = GeopackageCache(
+            self.gpkg_file,
+            tile_grid=tile_grid(3857, name='global-webmarcator'),
+            table_name=self.table_name,
+            file_permissions='700'
+        )
+
+    def teardown_method(self):
+        if self.cache:
+            self.cache.cleanup()
+        TileCacheTestBase.teardown_method(self)
+
+    def test_permissions(self):
+        assert_permissions(self.gpkg_file, '700')

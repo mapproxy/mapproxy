@@ -117,7 +117,10 @@ class LockFile:
 
     def __init__(self, path):
         self._path = path
-        fp = open(path, 'w+')
+        try:
+            fp = open(path, 'w+')
+        except IOError:
+            raise Exception('Could not create Lock-file, wrong permissions on lock directory?')
 
         try:
             _lock_file(fp)

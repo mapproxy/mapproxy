@@ -21,6 +21,7 @@ import shutil
 import tempfile
 import threading
 import time
+import stat
 
 from io import BytesIO
 from collections import defaultdict
@@ -126,6 +127,7 @@ class RecordFileCache(FileCache):
         self.stored_tiles = set()
         self.loaded_tiles = counting_set([])
         self.is_cached_call_count = 0
+        self.directory_permissions = kw.get('directory_permissions')
 
     def store_tile(self, tile, dimensions=None):
         assert tile.coord not in self.stored_tiles
@@ -163,6 +165,16 @@ def file_cache(tmpdir):
 @pytest.fixture
 def tile_locker(tmpdir):
     return TileLocker(tmpdir.join('lock').strpath, 10, "id")
+
+
+@pytest.fixture
+def tile_locker_restricted(tmpdir):
+    return TileLocker(tmpdir.join('lock').strpath, 10, "id", '666')
+
+
+@pytest.fixture
+def tile_locker_permissive(tmpdir):
+    return TileLocker(tmpdir.join('lock').strpath, 10, "id", '775')
 
 
 @pytest.fixture
@@ -429,12 +441,34 @@ class TestTileManagerLocking(object):
         return RecordFileCache(tmpdir.strpath, 'png')
 
     @pytest.fixture
+    def file_cache_permissive(self, tmpdir):
+        return RecordFileCache(tmpdir.strpath, 'png', directory_permissions='775')
+
+    @pytest.fixture
     def tile_mgr(self, file_cache, slow_source, tile_locker):
         grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         image_opts = ImageOptions(format='image/png')
         return TileManager(grid, file_cache, [slow_source], 'png',
                            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
                            locker=tile_locker,
+                           )
+
+    @pytest.fixture
+    def tile_mgr_restricted(self, file_cache, slow_source, tile_locker_restricted):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, file_cache, [slow_source], 'png',
+                           meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+                           locker=tile_locker_restricted,
+                           )
+
+    @pytest.fixture
+    def tile_mgr_permissive(self, file_cache_permissive, slow_source, tile_locker_permissive):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, file_cache_permissive, [slow_source], 'png',
+                           meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+                           locker=tile_locker_permissive,
                            )
 
     def test_get_single(self, tile_mgr, file_cache, slow_source):
@@ -457,6 +491,23 @@ class TestTileManagerLocking(object):
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
         assert os.path.exists(file_cache.tile_location(Tile((0, 0, 1))))
+
+    def test_insufficient_permissions_on_dir(self, tile_mgr_restricted):
+        # TileLocker has restrictive permissions set for creating directories
+        try:
+            tile_mgr_restricted.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        except Exception as e:
+            assert 'Could not create Lock-file, wrong permissions on lock directory?' in e.args[0]
+        else:
+            assert False, 'no PermissionError raised'
+
+    def test_permissive_grants(self, tile_mgr_permissive, file_cache_permissive):
+        tile_mgr_permissive.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        location = file_cache_permissive.tile_location(Tile((0, 0, 1)))
+        assert os.path.exists(location)
+        dir = os.path.dirname(location)
+        mode = os.stat(dir).st_mode
+        assert stat.filemode(mode) == 'drwxrwxr-x'
 
 
 class TestTileManagerMultipleSources(object):

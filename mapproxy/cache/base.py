@@ -98,10 +98,11 @@ if sys.platform == 'win32':
 
 
 class TileLocker(object):
-    def __init__(self, lock_dir, lock_timeout, lock_cache_id):
+    def __init__(self, lock_dir, lock_timeout, lock_cache_id, directory_permissions=None):
         self.lock_dir = lock_dir
         self.lock_timeout = lock_timeout
         self.lock_cache_id = lock_cache_id
+        self.directory_permissions = directory_permissions
 
     def lock_filename(self, tile):
         return os.path.join(self.lock_dir, self.lock_cache_id + '-' +
@@ -117,4 +118,4 @@ class TileLocker(object):
         cleanup_lockdir(self.lock_dir, max_lock_time=self.lock_timeout + 10,
                         force=False)
         return FileLock(lock_filename, timeout=self.lock_timeout,
-                        remove_on_unlock=REMOVE_ON_UNLOCK)
+                        remove_on_unlock=REMOVE_ON_UNLOCK, directory_permissions=self.directory_permissions)
