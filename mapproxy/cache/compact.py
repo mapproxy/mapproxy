@@ -296,6 +296,10 @@ class BundleIndexV1(object):
             buf.write(INT64LE.pack((i*4)+BUNDLE_V1_HEADER_SIZE)[:5])
         buf.write(BUNDLEX_V1_FOOTER)
         write_atomic(self.filename, buf.getvalue())
+        if self.file_permissions:
+            permission = int(self.file_permissions, base=8)
+            log.info("setting file permissions on compact cache file: " + self.file_permissions)
+            os.chmod(self.filename, permission)
 
     def _tile_index_offset(self, x, y):
         return BUNDLEX_V1_HEADER_SIZE + (x * BUNDLEX_V1_GRID_HEIGHT + y) * 5
@@ -391,6 +395,10 @@ class BundleDataV1(object):
                      struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header) +
                      # zero-size entry for each tile
                      (b'\x00' * (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4)))
+        if self.file_permissions:
+            permission = int(self.file_permissions, base=8)
+            log.info("setting file permissions on compact cache file: " + self.file_permissions)
+            os.chmod(self.filename, permission)
 
     @contextlib.contextmanager
     def readonly(self):
@@ -402,10 +410,6 @@ class BundleDataV1(object):
     @contextlib.contextmanager
     def readwrite(self):
         with open(self.filename, 'r+b') as fh:
-            if self.file_permissions:
-                permission = int(self.file_permissions, base=8)
-                log.info("setting file permissions on compact cache file: " + self.file_permissions)
-                os.chmod(self.filename, permission)
             b = BundleDataV1(self.filename, self.tile_offsets, self.directory_permissions, self.file_permissions)
             b._fh = fh
             yield b
@@ -503,6 +507,10 @@ class BundleV2(object):
         # Empty index (ArcGIS stores an offset of 4 and size of 0 for missing tiles)
         buf.write(struct.pack('<%dQ' % BUNDLE_V2_TILES, *(4, ) * BUNDLE_V2_TILES))
         write_atomic(self.filename, buf.getvalue())
+        if self.file_permissions:
+            permission = int(self.file_permissions, base=8)
+            log.info("setting file permissions on compact cache file: " + self.file_permissions)
+            os.chmod(self.filename, permission)
 
     def _tile_idx_offset(self, x, y):
         return BUNDLE_V2_HEADER_SIZE + (x + BUNDLE_V2_GRID_HEIGHT * y) * 8
@@ -674,10 +682,6 @@ class BundleV2(object):
     def _readwrite(self):
         self._init_index()
         with open(self.filename, 'r+b') as fh:
-            if self.file_permissions:
-                permission = int(self.file_permissions, base=8)
-                log.info("setting file permissions on compact cache file: " + self.file_permissions)
-                os.chmod(self.filename, permission)
             yield fh
 
 
@@ -687,3 +691,4 @@ class CompactCacheV1(CompactCacheBase):
 
 class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
+
