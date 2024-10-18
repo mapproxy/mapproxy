@@ -89,6 +89,11 @@ This is the default cache type and it uses a single file for each tile. Availabl
 
   .. versionadded:: 2.0.0
 
+``directory_permissions``, ``file_permissions``:
+  Permissions that MapProxy will set when creating files and directories. Must given as strings containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``.
+
+  .. versionadded:: 3.1.0
+
 .. _cache_mbtiles:
 
 ``mbtiles``
@@ -125,6 +130,11 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
   Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
 The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
+
+``directory_permissions``, ``file_permissions``:
+  Permissions that MapProxy will set when creating files and directories. Must given as strings containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``.
+
+  .. versionadded:: 3.1.0
 
 .. _cache_sqlite:
 
@@ -175,6 +185,11 @@ Available options:
         cache:
           type: sqlite
           directory: /path/to/cache
+
+``directory_permissions``, ``file_permissions``:
+  Permissions that MapProxy will set when creating files and directories. Must given as strings containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``.
+
+  .. versionadded:: 3.1.0
 
 .. _cache_couchdb:
 
@@ -273,7 +288,7 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 
 
 .. code-block:: json
-  
+
 
   {
       "_attachments": {
@@ -650,6 +665,11 @@ Available options:
 
 ``version``:
   The version of the ArcGIS compact cache format. This option is required. Either ``1`` or ``2``.
+
+``directory_permissions``, ``file_permissions``:
+  Permissions that MapProxy will set when creating files and directories. Must given as strings containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``.
+
+  .. versionadded:: 3.1.0
 
 
 You can set the ``sources`` to an empty list, if you use an existing compact cache files and do not have a source.
