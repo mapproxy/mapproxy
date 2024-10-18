@@ -732,7 +732,13 @@ class WMSSourceConfiguration(SourceConfiguration):
             prefix = 'file://'
             url = prefix + context.globals.abspath(url[7:])
         lg_client = WMSLegendURLClient(url)
-        legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=CacheConfiguration.directory_permissions())
+
+        global_permissions=context.globals.get_value('directory_permissions', None,
+                                                     global_key='cache.directory_permissions')
+        if global_permissions:
+            log.info(f'Using global directory permission configuration for static legend source: {global_permissions}')
+
+        legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_permissions)
         return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
