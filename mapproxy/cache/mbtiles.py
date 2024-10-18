@@ -63,6 +63,7 @@ class MBTilesCache(TileCacheBase):
     @property
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
+            self.ensure_mbtile()
             self._db_conn_cache.db = sqlite3.connect(self.mbtile_file, self.timeout)
         return self._db_conn_cache.db
 
