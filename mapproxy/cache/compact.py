@@ -342,8 +342,8 @@ class BundleIndexV1(object):
         self._init_index()
         with open(self.filename, 'r+b') as fh:
             if self.file_permissions:
-                permission = int(str(self.file_permissions), base=8)
-                log.info("setting file permissions on compact cache file: " + str(self.file_permissions))
+                permission = int(self.file_permissions, base=8)
+                log.info("setting file permissions on compact cache file: " + self.file_permissions)
                 os.chmod(self.filename, permission)
             b = BundleIndexV1(self.filename)
             b._fh = fh
@@ -403,8 +403,8 @@ class BundleDataV1(object):
     def readwrite(self):
         with open(self.filename, 'r+b') as fh:
             if self.file_permissions:
-                permission = int(str(self.file_permissions), base=8)
-                log.info("setting file permissions on compact cache file: " + str(self.file_permissions))
+                permission = int(self.file_permissions, base=8)
+                log.info("setting file permissions on compact cache file: " + self.file_permissions)
                 os.chmod(self.filename, permission)
             b = BundleDataV1(self.filename, self.tile_offsets, self.directory_permissions, self.file_permissions)
             b._fh = fh
@@ -675,8 +675,8 @@ class BundleV2(object):
         self._init_index()
         with open(self.filename, 'r+b') as fh:
             if self.file_permissions:
-                permission = int(str(self.file_permissions), base=8)
-                log.info("setting file permissions on compact cache file: " + str(self.file_permissions))
+                permission = int(self.file_permissions, base=8)
+                log.info("setting file permissions on compact cache file: " + self.file_permissions)
                 os.chmod(self.filename, permission)
             yield fh
 

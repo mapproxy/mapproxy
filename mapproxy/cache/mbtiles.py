@@ -87,7 +87,7 @@ class MBTilesCache(TileCacheBase):
         log.info('initializing MBTile file %s', self.mbtile_file)
         db = sqlite3.connect(self.mbtile_file)
         if self.file_permissions:
-            permission = int(str(self.file_permissions), base=8)
+            permission = int(self.file_permissions, base=8)
             log.info("setting file permissions on MBTile file: ", permission)
             os.chmod(self.mbtile_file, permission)
 
