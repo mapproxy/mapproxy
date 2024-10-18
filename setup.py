@@ -10,7 +10,7 @@ install_requires = [
     'pyproj>=2',
     'jsonschema>=4',
     'importlib_resources;python_version<="3.8"',
-    'werkzeug==1.0.1'
+    'werkzeug'
 ]
 
 
