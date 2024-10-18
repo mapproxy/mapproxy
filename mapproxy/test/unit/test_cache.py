@@ -169,12 +169,12 @@ def tile_locker(tmpdir):
 
 @pytest.fixture
 def tile_locker_restricted(tmpdir):
-    return TileLocker(tmpdir.join('lock').strpath, 10, "id", 666)
+    return TileLocker(tmpdir.join('lock').strpath, 10, "id", '666')
 
 
 @pytest.fixture
 def tile_locker_permissive(tmpdir):
-    return TileLocker(tmpdir.join('lock').strpath, 10, "id", 775)
+    return TileLocker(tmpdir.join('lock').strpath, 10, "id", '775')
 
 
 @pytest.fixture
