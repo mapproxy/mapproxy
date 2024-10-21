@@ -42,7 +42,7 @@ jscript_functions=None
         // Define TMS as specialized XYZ service: origin lower-left and may have custom grid
         const source = new ol.source.XYZ({
             url: '../tms/1.0.0/{{"/".join(layer.md["name_path"])}}/{z}/{x}/{-y}.' + format,
-            opaque: transparent,
+            opaque: !transparent,
             projection: "{{srs}}",
             maxResolution: {{resolutions[0]}},
             tileGrid: new  ol.tilegrid.TileGrid({
