@@ -1056,7 +1056,7 @@ The following options define how tiles are created and stored. Most options can 
   Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.
 
 ``directory_permissions``, ``file_permissions``:
-  Permissions that MapProxy will set when creating files and directories. Must given as strings containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``.
+  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
 
   .. versionadded:: 3.1.0
 
