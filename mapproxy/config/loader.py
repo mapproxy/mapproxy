@@ -732,7 +732,20 @@ class WMSSourceConfiguration(SourceConfiguration):
             prefix = 'file://'
             url = prefix + context.globals.abspath(url[7:])
         lg_client = WMSLegendURLClient(url)
-        legend_cache = LegendCache(cache_dir=cache_dir)
+
+        global_directory_permissions = context.globals.get_value('directory_permissions', None,
+                                                     global_key='cache.directory_permissions')
+        if global_directory_permissions:
+            log.info(f'Using global directory permission configuration for static legend cache:'
+                     f' {global_directory_permissions}')
+
+        global_file_permissions = context.globals.get_value(
+            'file_permissions', None, global_key='cache.file_permissions')
+        if global_file_permissions:
+            log.info(f'Using global file permission configuration for static legend cache: {global_file_permissions}')
+
+        legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
+                                   file_permissions=global_file_permissions)
         return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
@@ -883,7 +896,21 @@ class WMSSourceConfiguration(SourceConfiguration):
                 http_client, lg_request.url = self.http_client(lg_request.url)
                 lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)
-            legend_cache = LegendCache(cache_dir=cache_dir)
+
+            global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                   global_key='cache.directory_permissions')
+            if global_directory_permissions:
+                log.info(f'Using global directory permission configuration for legend cache:'
+                         f' {global_directory_permissions}')
+
+            global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                                                              global_key='cache.file_permissions')
+            if global_file_permissions:
+                log.info(f'Using global file permission configuration for legend cache:'
+                         f' {global_file_permissions}')
+
+            legend_cache = LegendCache(cache_dir=cache_dir, directory_permissions=global_directory_permissions,
+                                       file_permissions=global_file_permissions)
             lg_source = WMSLegendSource(lg_clients, legend_cache)
         return lg_source
 
@@ -1091,6 +1118,36 @@ class CacheConfiguration(ConfigurationBase):
                                              global_key='cache.base_dir')
 
     @memoize
+    def directory_permissions(self):
+        directory_permissions = self.conf.get('cache', {}).get('directory_permissions')
+        if directory_permissions:
+            log.info('Using cache specific directory permission configuration for %s: %s',
+                     self.conf['name'], directory_permissions)
+            return directory_permissions
+
+        global_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                global_key='cache.directory_permissions')
+        if global_permissions:
+            log.info('Using global directory permission configuration for %s: %s',
+                 self.conf['name'], global_permissions)
+        return global_permissions
+
+    @memoize
+    def file_permissions(self):
+        file_permissions = self.conf.get('cache', {}).get('file_permissions')
+        if file_permissions:
+            log.info('Using cache specific file permission configuration for %s: %s',
+                     self.conf['name'], file_permissions)
+            return file_permissions
+
+        global_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                global_key='cache.file_permissions')
+        if global_permissions:
+            log.info('Using global file permission configuration for %s: %s',
+                 self.conf['name'], global_permissions)
+        return global_permissions
+
+    @memoize
     def has_multiple_grids(self):
         return len(self.grid_confs()) > 1
 
@@ -1132,7 +1189,9 @@ class CacheConfiguration(ConfigurationBase):
             image_opts=image_opts,
             directory_layout=directory_layout,
             link_single_color_images=link_single_color_images,
-            coverage=coverage
+            coverage=coverage,
+            directory_permissions=self.directory_permissions(),
+            file_permissions=self.file_permissions()
         )
 
     def _mbtiles_cache(self, grid_conf, image_opts):
@@ -1155,7 +1214,9 @@ class CacheConfiguration(ConfigurationBase):
             mbfile_path,
             timeout=sqlite_timeout,
             wal=wal,
-            coverage=coverage
+            coverage=coverage,
+            directory_permissions=self.directory_permissions(),
+            file_permissions=self.file_permissions()
         )
 
     def _geopackage_cache(self, grid_conf, image_opts):
@@ -1190,11 +1251,21 @@ class CacheConfiguration(ConfigurationBase):
 
         if levels:
             return GeopackageLevelCache(
-                cache_dir, grid_conf.tile_grid(), table_name, coverage=coverage
+                cache_dir,
+                grid_conf.tile_grid(),
+                table_name,
+                coverage=coverage,
+                directory_permissions=self.directory_permissions(),
+                file_permissions=self.file_permissions()
             )
         else:
             return GeopackageCache(
-                gpkg_file_path, grid_conf.tile_grid(), table_name, coverage=coverage
+                gpkg_file_path,
+                grid_conf.tile_grid(),
+                table_name,
+                coverage=coverage,
+                directory_permissions=self.directory_permissions(),
+                file_permissions=self.file_permissions()
             )
 
     def _azureblob_cache(self, grid_conf, image_opts):
@@ -1299,7 +1370,9 @@ class CacheConfiguration(ConfigurationBase):
             timeout=sqlite_timeout,
             wal=wal,
             ttl=self.conf.get('cache', {}).get('ttl', 0),
-            coverage=coverage
+            coverage=coverage,
+            directory_permissions=self.directory_permissions(),
+            file_permissions=self.file_permissions()
         )
 
     def _couchdb_cache(self, grid_conf, image_opts):
@@ -1318,9 +1391,15 @@ class CacheConfiguration(ConfigurationBase):
         tile_id = self.conf['cache'].get('tile_id')
         coverage = self.coverage()
 
-        return CouchDBCache(url=url, db_name=db_name,
-                            file_ext=image_opts.format.ext, tile_grid=grid_conf.tile_grid(),
-                            md_template=md_template, tile_id_template=tile_id, coverage=coverage)
+        return CouchDBCache(
+            url=url,
+            db_name=db_name,
+            file_ext=image_opts.format.ext,
+            tile_grid=grid_conf.tile_grid(),
+            md_template=md_template,
+            tile_id_template=tile_id,
+            coverage=coverage
+        )
 
     def _riak_cache(self, grid_conf, image_opts):
         from mapproxy.cache.riak import RiakCache
@@ -1404,9 +1483,19 @@ class CacheConfiguration(ConfigurationBase):
 
         version = self.conf['cache']['version']
         if version == 1:
-            return CompactCacheV1(cache_dir=cache_dir, coverage=coverage)
+            return CompactCacheV1(
+                cache_dir=cache_dir,
+                coverage=coverage,
+                directory_permissions=self.directory_permissions(),
+                file_permissions=self.file_permissions()
+            )
         elif version == 2:
-            return CompactCacheV2(cache_dir=cache_dir, coverage=coverage)
+            return CompactCacheV2(
+                cache_dir=cache_dir,
+                coverage=coverage,
+                directory_permissions=self.directory_permissions(),
+                file_permissions=self.file_permissions()
+            )
 
         raise ConfigurationError("compact cache only supports version 1 or 2")
 
@@ -1666,8 +1755,15 @@ class CacheConfiguration(ConfigurationBase):
                 if not lock_dir:
                     lock_dir = os.path.join(cache_dir, 'tile_locks')
 
+                global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                         global_key='cache.directory_permissions')
+                if global_directory_permissions:
+                    log.info(f'Using global directory permission configuration for tile locks:'
+                             f' {global_directory_permissions}')
+
                 lock_timeout = self.context.globals.get_value('http.client_timeout', {})
-                locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd')
+                locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd',
+                                    global_directory_permissions)
                 # TODO band_merger
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                                              priority=priority, tile_locker=locker)
@@ -1679,10 +1775,17 @@ class CacheConfiguration(ConfigurationBase):
             if isinstance(cache, DummyCache):
                 locker = DummyLocker()
             else:
+                global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                              global_key='cache.directory_permissions')
+                if global_directory_permissions:
+                    log.info(f'Using global directory permission configuration for tile locks:'
+                             f' {global_directory_permissions}')
+
                 locker = TileLocker(
                     lock_dir=self.lock_dir(),
                     lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                     lock_cache_id=cache.lock_cache_id,
+                    directory_permissions=global_directory_permissions
                 )
 
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,

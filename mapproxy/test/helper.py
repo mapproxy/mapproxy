@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+import shutil
 import tempfile
 import os
 import re
@@ -109,6 +110,28 @@ class TempFile(TempFiles):
         return TempFiles.__enter__(self)[0]
 
 
+class TempDir:
+    def __enter__(self):
+        self.tmp_dir = tempfile.mkdtemp()
+        return self.tmp_dir
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if os.path.exists(self.tmp_dir):
+            shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+
+class ChangeWorkingDir:
+    def __init__(self, new_dir):
+        self.new_dir = new_dir
+
+    def __enter__(self):
+        self.old_dir = os.getcwd()
+        os.chdir(self.new_dir)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        os.chdir(self.old_dir)
+
+
 class LogMock(object):
     log_methods = ('info', 'debug', 'warn', 'error', 'fail')
 
@@ -163,7 +186,8 @@ def assert_files_in_dir(dir, expected, glob=None):
     else:
         files = os.listdir(dir)
     files.sort()
-    assert sorted(expected) == files
+    sorted_expected = sorted(expected)
+    assert sorted_expected == files, f'{", ".join(sorted_expected)} ~= {", ".join(files)}'
 
 
 def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
@@ -253,3 +277,9 @@ def capture(bytes=False):
     finally:
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
+
+
+def assert_permissions(file_path, permissions):
+    actual_permissions = oct(os.stat(file_path).st_mode & 0o777)
+    desired_permissions = oct(int(permissions, base=8))
+    assert actual_permissions == desired_permissions, f'{actual_permissions} ~= {desired_permissions}'
