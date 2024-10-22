@@ -4,7 +4,7 @@
 Improvements:
 
   - Add new config parameters `file_permissions` and `directory_permissions` to set file and directory
-  permissions on newly created cache files and directories.
+    permissions on newly created cache files and directories.
 
 Maintenance:
 
@@ -13,6 +13,7 @@ Maintenance:
 Fixes:
 
   - Fix transparency in TMS demo page.
+
 
 3.0.1 2024-08-27
 ~~~~~~~~~~~~~~~~
