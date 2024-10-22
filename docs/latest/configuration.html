@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Aug 27, 2024"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2024"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">3.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">3.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -1256,8 +1256,13 @@ mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span
 <dt><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code></dt><dd><p>Enables the <code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code> option for all caches if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">symlink</span></code> or <code class="docutils literal notranslate"><span class="pre">hardlink</span></code>. See <a class="reference internal" href="#link-single-color-images"><span class="std std-ref">link_single_color_images</span></a>.</p>
 </dd>
 </dl>
-<dl class="simple" id="max-tile-limit">
+<dl id="max-tile-limit">
 <dt><code class="docutils literal notranslate"><span class="pre">max_tile_limit</span></code></dt><dd><p>Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 3.1.0.</span></p>
+</div>
 </dd>
 </dl>
 </section>
@@ -1710,7 +1715,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 27, 2024.
+  Last updated on Oct 22, 2024.
   <br/>
 </p>
   </div>
