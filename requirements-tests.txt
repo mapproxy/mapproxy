@@ -37,7 +37,7 @@ lxml==5.3.0
 mock==5.1.0
 more-itertools==10.1.0
 moto==5.0.13
-networkx==3.1
+networkx==3.4.2
 numpy==1.26.0;python_version>="3.9"
 numpy==1.24.0;python_version=="3.8"
 packaging==23.2
