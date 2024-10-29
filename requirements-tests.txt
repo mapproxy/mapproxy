@@ -65,7 +65,7 @@ soupsieve==2.6
 sshpubkeys==3.3.1
 toml==0.10.2
 urllib3==1.26.19
-waitress==2.1.2
+waitress==3.0.1
 websocket-client==1.8.0
 wrapt==1.16.0
 xmltodict==0.13.0
