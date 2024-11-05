@@ -4,7 +4,7 @@ Making a new MapProxy release
 Preparation
 -----------
 
-- Checkout `master`, pull all changes and stash changes (`git stash && git checkout master && git pull`)
+- Stash changes, checkout `master` and pull all changes (`git stash && git checkout master && git pull`)
 - Update CHANGES.txt with all important changes. Verify version and date in header line.
   IMPORTANT: Be careful to have the proper amount of blank lines.
   You can use the git compare function for that, e.g.: https://github.com/mapproxy/mapproxy/compare/2.0.2...master
