@@ -40,7 +40,7 @@ moto==5.0.13
 networkx==3.1
 numpy==1.26.0;python_version>="3.9"
 numpy==1.24.0;python_version=="3.8"
-packaging==23.2
+packaging==24.2
 pluggy==1.5.0
 py==1.11.0
 pyasn1==0.5.1
