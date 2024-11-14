@@ -163,6 +163,8 @@ class SeedingConfiguration(object):
             raise SeedConfigurationError("invalid geometry in coverage '%s'. %s" % (name, ex))
         except EmptyGeometryError as ex:
             raise EmptyCoverageError("coverage '%s' contains no geometries. %s" % (name, ex))
+        except Exception:
+            raise Exception(f"can't load coverage '{name}'")
 
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
