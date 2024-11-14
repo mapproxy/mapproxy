@@ -36,13 +36,15 @@ class LockTimeout(Exception):
 
 
 class FileLock(object):
-    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False, directory_permissions=None):
+    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False, directory_permissions=None,
+                 file_permissions=None):
         self.lock_file = lock_file
         self.timeout = timeout
         self.step = step
         self.remove_on_unlock = remove_on_unlock
         self._locked = False
         self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
 
     def __enter__(self):
         self.lock()
@@ -51,7 +53,7 @@ class FileLock(object):
         self.unlock()
 
     def _try_lock(self):
-        return LockFile(self.lock_file)
+        return LockFile(self.lock_file, self.file_permissions)
 
     def lock(self):
         ensure_directory(self.lock_file, self.directory_permissions)
@@ -136,8 +138,9 @@ class SemLock(FileLock):
     File-lock-based counting semaphore (i.e. this lock can be locked n-times).
     """
 
-    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
+    def __init__(self, lock_file, n, timeout=60.0, step=0.01, directory_permissions=None, file_permissions=None):
+        FileLock.__init__(self, lock_file, timeout=timeout, step=step, directory_permissions=directory_permissions,
+                          file_permissions=file_permissions)
         self.n = n
 
     def _try_lock(self):
@@ -146,7 +149,7 @@ class SemLock(FileLock):
         while True:
             tries += 1
             try:
-                return LockFile(self.lock_file + str(i))
+                return LockFile(self.lock_file + str(i), self.file_permissions)
             except LockError:
                 if tries >= self.n:
                     raise
