@@ -32,8 +32,7 @@ from mapproxy.util.fs import (
 )
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.times import timestamp_before
-from mapproxy.test.helper import Mocker
-
+from mapproxy.test.helper import Mocker, assert_permissions
 
 is_win = sys.platform == "win32"
 
@@ -155,6 +154,35 @@ class TestFileLock(Mocker):
             # ignore removed lock
             x.unlock()
             assert not os.path.exists(self.lock_file)
+
+    def test_file_lock_permissions(self):
+        file_permissions = '775'
+
+        # Test a lock that becomes free during a waiting lock() call.
+        class Lock(threading.Thread):
+
+            def __init__(self, lock_file):
+                threading.Thread.__init__(self)
+                self.lock_file = lock_file
+                self.lock = FileLock(self.lock_file, file_permissions=file_permissions)
+
+            def run(self):
+                self.lock.lock()
+                time.sleep(0.2)
+                self.lock.unlock()
+
+        lock_thread = Lock(self.lock_file)
+        lock_thread.start()
+
+        # wait until thread got the locked
+        while not lock_thread.lock._locked:
+            time.sleep(0.001)
+
+        # one lock that times out
+        assert_locked(self.lock_file)
+        assert_permissions(self.lock_file, file_permissions)
+
+        lock_thread.join()
 
     def _create_lock(self):
         lock = FileLock(self.lock_file)

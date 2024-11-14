@@ -192,7 +192,8 @@ class BundleV1(object):
                 data = buf.read()
             tiles_data.append((t.coord, data))
 
-        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions, remove_on_unlock=True):
+        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions,
+                      file_permissions=self.file_permissions, remove_on_unlock=True):
             with self.data().readwrite() as bundle:
                 with self.index().readwrite() as idx:
                     for tile_coord, data in tiles_data:
@@ -236,7 +237,8 @@ class BundleV1(object):
         if tile.coord is None:
             return True
 
-        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions, remove_on_unlock=True):
+        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions,
+                      file_permissions=self.file_permissions, remove_on_unlock=True):
             with self.index().readwrite() as idx:
                 x, y = self._rel_tile_coord(tile.coord)
                 idx.remove_tile_offset(x, y)
@@ -634,7 +636,8 @@ class BundleV2(object):
                 data = buf.read()
             tiles_data.append((t.coord, data))
 
-        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions, remove_on_unlock=True):
+        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions,
+                      file_permissions=self.file_permissions, remove_on_unlock=True):
             with self._readwrite() as fh:
                 for tile_coord, data in tiles_data:
                     self._store_tile(fh, tile_coord, data, dimensions=dimensions)
@@ -646,7 +649,8 @@ class BundleV2(object):
             return True
 
         self._init_index()
-        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions, remove_on_unlock=True):
+        with FileLock(self.lock_filename, directory_permissions=self.directory_permissions,
+                      file_permissions=self.file_permissions, remove_on_unlock=True):
             with self._readwrite() as fh:
                 x, y = self._rel_tile_coord(tile.coord)
                 self._update_tile_offset(fh, x, y, 0, 0)

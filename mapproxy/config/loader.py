@@ -802,9 +802,24 @@ class WMSSourceConfiguration(SourceConfiguration):
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
             lock_timeout = self.context.globals.get_value('http.client_timeout', self.conf)
             url = urlparse(self.conf['req']['url'])
+
+            global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                          global_key='cache.directory_permissions')
+            if global_directory_permissions:
+                log.info(f'Using global directory permission configuration for concurrent file locks:'
+                         f' {global_directory_permissions}')
+
+            global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                                                                     global_key='cache.file_permissions')
+            if global_file_permissions:
+                log.info(f'Using global file permission configuration for concurrent file locks:'
+                         f' {global_file_permissions}')
+
             md5 = hashlib.new('md5', url.netloc.encode('ascii'), usedforsecurity=False)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, concurrent_requests, timeout=lock_timeout)  # noqa
+            lock = lambda: SemLock(lock_file, concurrent_requests, timeout=lock_timeout,  # noqa
+                                   directory_permissions=global_directory_permissions,
+                                   file_permissions=global_file_permissions)
 
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
@@ -963,9 +978,24 @@ class MapnikSourceConfiguration(SourceConfiguration):
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
             mapfile = self.conf['mapfile']
+
+            global_directory_permissions = self.context.globals.get_value('directory_permissions', self.conf,
+                                                                          global_key='cache.directory_permissions')
+            if global_directory_permissions:
+                log.info(f'Using global directory permission configuration for concurrent file locks:'
+                         f' {global_directory_permissions}')
+
+            global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                                                                     global_key='cache.file_permissions')
+            if global_file_permissions:
+                log.info(f'Using global file permission configuration for concurrent file locks:'
+                         f' {global_file_permissions}')
+
             md5 = hashlib.new('md5', mapfile.encode('utf-8'), usedforsecurity=False)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, concurrent_requests)  # noqa
+            lock = lambda: SemLock(lock_file, concurrent_requests, # noqa
+                                   directory_permissions=global_directory_permissions,
+                                   file_permissions=global_file_permissions)
 
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
@@ -1761,9 +1791,16 @@ class CacheConfiguration(ConfigurationBase):
                     log.info(f'Using global directory permission configuration for tile locks:'
                              f' {global_directory_permissions}')
 
+                global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                                                                         global_key='cache.file_permissions')
+                if global_file_permissions:
+                    log.info(f'Using global file permission configuration for tile locks:'
+                             f' {global_file_permissions}')
+
                 lock_timeout = self.context.globals.get_value('http.client_timeout', {})
                 locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd',
-                                    global_directory_permissions)
+                                    directory_permissions=global_directory_permissions,
+                                    file_permissions=global_file_permissions)
                 # TODO band_merger
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                                              priority=priority, tile_locker=locker)
@@ -1781,11 +1818,18 @@ class CacheConfiguration(ConfigurationBase):
                     log.info(f'Using global directory permission configuration for tile locks:'
                              f' {global_directory_permissions}')
 
+                global_file_permissions = self.context.globals.get_value('file_permissions', self.conf,
+                                                                         global_key='cache.file_permissions')
+                if global_file_permissions:
+                    log.info(f'Using global file permission configuration for tile locks:'
+                             f' {global_file_permissions}')
+
                 locker = TileLocker(
                     lock_dir=self.lock_dir(),
                     lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                     lock_cache_id=cache.lock_cache_id,
-                    directory_permissions=global_directory_permissions
+                    directory_permissions=global_directory_permissions,
+                    file_permissions=global_file_permissions
                 )
 
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
