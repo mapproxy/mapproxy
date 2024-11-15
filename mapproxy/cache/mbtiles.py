@@ -77,8 +77,8 @@ class MBTilesCache(TileCacheBase):
 
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
-            with FileLock(self.mbtile_file + '.init.lck',
-                          remove_on_unlock=REMOVE_ON_UNLOCK, directory_permissions=self.directory_permissions):
+            with FileLock(self.mbtile_file + '.init.lck', remove_on_unlock=REMOVE_ON_UNLOCK,
+                          directory_permissions=self.directory_permissions, file_permissions=self.file_permissions):
                 if not os.path.exists(self.mbtile_file):
                     ensure_directory(self.mbtile_file, self.directory_permissions)
                     self._initialize_mbtile()

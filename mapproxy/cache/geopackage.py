@@ -112,8 +112,8 @@ class GeopackageCache(TileCacheBase):
 
     def ensure_gpkg(self):
         if not os.path.isfile(self.geopackage_file):
-            with FileLock(self.geopackage_file + '.init.lck',
-                          remove_on_unlock=REMOVE_ON_UNLOCK, directory_permissions=self.directory_permissions):
+            with FileLock(self.geopackage_file + '.init.lck', remove_on_unlock=REMOVE_ON_UNLOCK,
+                          directory_permissions=self.directory_permissions, file_permissions=self.file_permissions):
                 ensure_directory(self.geopackage_file, self.directory_permissions)
                 self._initialize_gpkg()
         else:
