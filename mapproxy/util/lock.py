@@ -118,11 +118,10 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
         try:
             if os.path.isfile(name) and name.endswith(suffix):
                 if os.path.getmtime(name) < expire_time:
-                    if os.stat(name).st_uid == os.getuid():
-                        try:
-                            os.unlink(name)
-                        except IOError as ex:
-                            log.warning('could not remove old lock file %s: %s', name, ex)
+                    try:
+                        os.unlink(name)
+                    except IOError as ex:
+                        log.warning('could not remove old lock file %s: %s', name, ex)
         except OSError as e:
             # some one might have removed the file (ENOENT)
             # or we don't have permissions to remove it (EACCES)
