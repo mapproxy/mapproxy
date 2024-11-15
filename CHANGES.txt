@@ -1,3 +1,15 @@
+3.1.1 2024-11-15
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Werkzeug version is no longer pinned and can be chosen freely.
+
+Fixes:
+
+  - The permission handling for file locks now also sets permissions on the files not just on the directories.
+
+
 3.1.0 2024-10-22
 ~~~~~~~~~~~~~~~~
 
