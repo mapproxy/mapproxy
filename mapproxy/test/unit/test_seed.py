@@ -287,7 +287,7 @@ class TestProgressStore(object):
             assert store.status == {}
 
 
-class TestRemovebreforeTimetamp(object):
+class TestRemoveBeforeTimetamp(object):
 
     def test_from_time(self):
         ts = before_timestamp_from_options({"time": "2010-12-01T20:12:00"})

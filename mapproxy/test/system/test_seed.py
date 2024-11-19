@@ -190,6 +190,31 @@ class TestSeed(SeedTestBase):
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
                             ['00', '02', '03'])
 
+    def test_cleanup_remove_all_with_coverage(self):
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['remove_all_with_coverage'])
+
+        self.make_tile((0, 0, 0))
+        self.make_tile((0, 0, 1))
+        self.make_tile((1, 0, 1))
+        self.make_tile((0, 1, 1))
+        self.make_tile((1, 1, 1))
+        self.make_tile((0, 0, 2))
+        self.make_tile((0, 0, 3))
+
+        assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
+                            ['00', '01', '02', '03'])
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        assert self.tile_exists((0, 0, 0))
+        assert not self.tile_exists((0, 0, 1))
+        assert not self.tile_exists((1, 0, 1))
+        assert self.tile_exists((0, 1, 1))  # east
+        assert self.tile_exists((1, 1, 1))  # east
+        assert not self.tile_exists((0, 0, 1))
+        assert self.tile_exists((0, 0, 2))
+        assert self.tile_exists((0, 0, 3))
+
     def test_cleanup_coverage(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['with_coverage'])
@@ -250,7 +275,8 @@ class TestSeed(SeedTestBase):
 
     def test_reseed_mbtiles_with_refresh(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, _ = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        tasks = seed_conf.seeds(['mbtile_cache_refresh'])
+        seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile())

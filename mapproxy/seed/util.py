@@ -230,11 +230,11 @@ def format_seed_task(task):
         info.append('   Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
 
-    if task.refresh_timestamp:
+    if task.refresh_all:
+        info.append('    Overwriting: all tiles')
+    elif task.refresh_timestamp:
         info.append('    Overwriting: tiles older than %s' %
                     datetime.fromtimestamp(task.refresh_timestamp))
-    elif task.refresh_timestamp == 0:
-        info.append('    Overwriting: all tiles')
     else:
         info.append('    Overwriting: no tiles')
 
@@ -257,10 +257,11 @@ def format_cleanup_task(task):
         info.append('    Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
 
-    if task.remove_timestamp:
+    if task.remove_all:
+        info.append('    Remove: all tiles')
+    else:
         info.append('    Remove: tiles older than %s' %
                     datetime.fromtimestamp(task.remove_timestamp))
-    else:
-        info.append('    Remove: all tiles')
+
 
     return '\n'.join(info)

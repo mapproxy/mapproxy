@@ -64,10 +64,10 @@ def _force_rename_dir(src_dir, dst_dir):
             break  # on success
 
 
-def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
+def cleanup_directory(directory, before_timestamp, remove_all=False, remove_empty_dirs=True,
                       file_handler=None):
     if file_handler is None:
-        if before_timestamp == 0 and remove_empty_dirs is True and os.path.exists(directory):
+        if remove_empty_dirs is True and os.path.exists(directory):
             shutil.rmtree(directory, ignore_errors=True)
             return
 
@@ -83,9 +83,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
             for filename in filenames:
                 filename = os.path.join(dirpath, filename)
                 try:
-                    if before_timestamp == 0:
-                        file_handler(filename)
-                    if os.lstat(filename).st_mtime < before_timestamp:
+                    if remove_all or os.lstat(filename).st_mtime < before_timestamp:
                         file_handler(filename)
                 except OSError as ex:
                     if ex.errno != errno.ENOENT:
