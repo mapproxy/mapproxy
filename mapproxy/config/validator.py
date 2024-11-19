@@ -172,7 +172,7 @@ def _validate_tagged_layer_source(
         name: str, supported_layers: Union[str, List[str]], requested_layers: List[str]) -> List[str]:
     errors = []
     if isinstance(supported_layers, str):
-        supported_layers = [supported_layers]
+        supported_layers = supported_layers.split(',')
     if not set(requested_layers).issubset(set(supported_layers)):
         return [
             f"Supported layers for source '{name}' are '{', '.join(supported_layers)}' but tagged source requested"
