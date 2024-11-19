@@ -213,9 +213,12 @@ class SeedConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
 
+        self.refresh_all = False
         self.refresh_timestamp = None
         if 'refresh_before' in self.conf:
             self.refresh_timestamp = before_timestamp_from_options(self.conf['refresh_before'])
+        else:
+            self.refresh_all = True
 
     def seed_tasks(self):
         for grid_name in self.grids:
@@ -241,9 +244,7 @@ class SeedConfiguration(ConfigurationBase):
                     levels = list(range(0, grid.levels))
 
                 if not tile_manager.cache.supports_timestamp:
-                    if self.refresh_timestamp:
-                        # remove everything
-                        self.refresh_timestamp = 0
+                    self.refresh_all = True
 
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
 
@@ -251,9 +252,9 @@ class SeedConfiguration(ConfigurationBase):
                     if tile_manager.rescale_tiles > 0:
                         levels = levels[::-1]
                     for level in levels:
-                        yield SeedTask(md, tile_manager, [level], self.refresh_timestamp, coverage)
+                        yield SeedTask(md, tile_manager, [level], self.refresh_timestamp, self.refresh_all, coverage)
                 else:
-                    yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
+                    yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, self.refresh_all, coverage)
 
 
 class CleanupConfiguration(ConfigurationBase):
@@ -261,14 +262,14 @@ class CleanupConfiguration(ConfigurationBase):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         self.init_time = time.time()
 
+        self.remove_all = False
+        self.remove_timestamp = self.init_time # this should not remove
+        # fresh seeded tiles, since this should be configured before seeding
+
         if self.conf.get('remove_all') is True:
-            self.remove_timestamp = 0
+            self.remove_all = True
         elif 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
-        else:
-            # use now as remove_before date. this should not remove
-            # fresh seeded tiles, since this should be configured before seeding
-            self.remove_timestamp = self.init_time
 
     def cleanup_tasks(self):
         for grid_name in self.grids:
@@ -298,15 +299,15 @@ class CleanupConfiguration(ConfigurationBase):
 
                 if not tile_manager.cache.supports_timestamp:
                     # for caches without timestamp support (like MBTiles)
-                    if self.remove_timestamp is self.init_time or self.remove_timestamp == 0:
+                    if self.remove_timestamp is self.init_time:
                         # remove everything
-                        self.remove_timestamp = 0
+                        self.remove_all = True
                     else:
                         raise SeedConfigurationError(
                             "cleanup does not support remove_before for '%s'"
                             " because cache '%s' does not support timestamps" % (self.name, cache_name))
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
-                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp,
+                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, remove_all=self.remove_all,
                                   coverage=coverage, complete_extent=complete_extent)
 
 

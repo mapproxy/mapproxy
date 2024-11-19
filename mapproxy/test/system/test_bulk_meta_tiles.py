@@ -16,6 +16,7 @@
 import pytest
 
 from mapproxy.request.wms import WMS111MapRequest
+from mapproxy.test.helper import assert_files_in_dir
 from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
@@ -72,9 +73,10 @@ class TestCacheSource(SysTest):
 
     def test_get_tile(self, app, cache_dir):
         expected_reqs = []
+        tiles = [(4, 3, 5), (5, 3, 5), (4, 2, 5), (5, 2, 5)]
         with tmp_image((256, 256), format="jpeg") as img:
             # bulk_cache has meta_size of [2, 2]
-            for tile in [(4, 3, 5), (5, 3, 5), (4, 2, 5), (5, 2, 5)]:
+            for tile in tiles:
                 expected_reqs.append(
                     (
                         {
