@@ -165,6 +165,9 @@ class FileCache(TileCacheBase):
         with tile_buffer(tile) as buf:
             log.debug('writing %r to %s' % (tile.coord, location))
             write_atomic(location, buf.read())
+            if self.file_permissions:
+                permission = int(self.file_permissions, base=8)
+                os.chmod(location, permission)
 
     def _store_single_color_tile(self, tile, tile_loc, color):
         real_tile_loc = self._single_color_tile_location(color, create_dir=True)
