@@ -769,6 +769,26 @@
               }
             }
           }
+        },
+        "metadata": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "format": {
+                "type": "string"
+              }
+            },
+            "required": ["url", "type", "format"]
+          }
         }
       }
     },
