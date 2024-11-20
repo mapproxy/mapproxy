@@ -28,7 +28,6 @@ from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.script.defrag import defrag_compact_cache
-from mapproxy.seed.util import timestamp
 from mapproxy.test.helper import assert_permissions
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 

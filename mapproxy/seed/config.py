@@ -17,7 +17,6 @@ from __future__ import print_function
 import logging
 
 import os
-import sys
 import time
 import operator
 from functools import reduce
@@ -26,10 +25,10 @@ from mapproxy.cache.dummy import DummyCache
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
-from mapproxy.srs import SRS, TransformationError
+from mapproxy.srs import TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
-from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
+from mapproxy.util.coverage import MultiCoverage, BBOXCoverage
 from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
@@ -263,7 +262,7 @@ class CleanupConfiguration(ConfigurationBase):
         self.init_time = time.time()
 
         self.remove_all = False
-        self.remove_timestamp = self.init_time # this should not remove
+        self.remove_timestamp = self.init_time  # this should not remove
         # fresh seeded tiles, since this should be configured before seeding
 
         if self.conf.get('remove_all') is True:
