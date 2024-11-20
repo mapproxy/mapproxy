@@ -83,14 +83,14 @@ class TestSeeder(object):
         md = dict(name="", cache_name="", grid_name="")
         coverage = BBOXCoverage(bbox, srs)
         return SeedTask(
-            md, self.tile_mgr, levels, refresh_timestamp=None, coverage=coverage
+            md, self.tile_mgr, levels, refresh_timestamp=None, refresh_all=False, coverage=coverage
         )
 
     def make_geom_task(self, geom, srs, levels):
         md = dict(name="", cache_name="", grid_name="")
         coverage = GeomCoverage(geom, srs)
         return SeedTask(
-            md, self.tile_mgr, levels, refresh_timestamp=None, coverage=coverage
+            md, self.tile_mgr, levels, refresh_timestamp=None, refresh_all=False, coverage=coverage
         )
 
     def test_seed_full_bbox(self):

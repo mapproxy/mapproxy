@@ -300,9 +300,9 @@ class TestSeed(SeedTestBase):
 
     def test_cleanup_sqlite(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['cleanup_sqlite_cache'])
+        cleanup_task = seed_conf.cleanups(['cleanup_sqlite_cache'])[0]
 
-        cache = cleanup_tasks[0].tile_manager.cache
+        cache = cleanup_task.tile_manager.cache
         cache.store_tile(self.create_tile((0, 0, 2)))
         cache.store_tile(self.create_tile((0, 0, 3)))
         assert cache.is_cached(Tile((0, 0, 2)))
@@ -312,7 +312,12 @@ class TestSeed(SeedTestBase):
                             ['2.mbtile', '3.mbtile'],
                             glob='*.mbtile')
 
-        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        # simulate that cleanup was called after creation of tiles
+        time.sleep(1)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_task = seed_conf.cleanups(['cleanup_sqlite_cache'])[0]
+
+        cleanup([cleanup_task], verbose=False, dry_run=False)
 
         # 3.mbtile file is still there
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),

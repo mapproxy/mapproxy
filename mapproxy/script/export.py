@@ -30,6 +30,7 @@ from mapproxy.config.loader import (
     CacheConfiguration, GridConfiguration,
     ProxyConfiguration
 )
+from mapproxy.test.unit.test_image_mask import coverage
 from mapproxy.util.coverage import BBOXCoverage
 from mapproxy.seed.util import ProgressLog, format_bbox
 from mapproxy.seed.seeder import SeedTask, seed_task
@@ -324,7 +325,7 @@ def export_command(args=None):
         print('WARN: grids are incompatible. needs to scale/reproject tiles for export.', file=sys.stderr)
 
     md = dict(name='export', cache_name='cache', grid_name=options.grid, dest=options.dest)
-    task = SeedTask(md, mgr, levels, 1, seed_coverage)
+    task = SeedTask(md, mgr, levels, refresh_timestamp=None, refresh_all=True, coverage=seed_coverage)
 
     print(format_export_task(task, custom_grid=custom_grid))
 
