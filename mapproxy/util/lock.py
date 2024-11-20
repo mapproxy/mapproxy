@@ -23,6 +23,7 @@ import os
 import errno
 
 from mapproxy.util.ext.lockfile import LockFile, LockError
+from mapproxy.util.fs import ensure_directory
 
 import logging
 log = logging.getLogger(__name__)
@@ -35,12 +36,15 @@ class LockTimeout(Exception):
 
 
 class FileLock(object):
-    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False):
+    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False, directory_permissions=None,
+                 file_permissions=None):
         self.lock_file = lock_file
         self.timeout = timeout
         self.step = step
         self.remove_on_unlock = remove_on_unlock
         self._locked = False
+        self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
 
     def __enter__(self):
         self.lock()
@@ -48,19 +52,12 @@ class FileLock(object):
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.unlock()
 
-    def _make_lockdir(self):
-        if not os.path.exists(os.path.dirname(self.lock_file)):
-            try:
-                os.makedirs(os.path.dirname(self.lock_file))
-            except OSError as e:
-                if e.errno is not errno.EEXIST:
-                    raise e
-
     def _try_lock(self):
-        return LockFile(self.lock_file)
+        return LockFile(self.lock_file, self.file_permissions)
 
     def lock(self):
-        self._make_lockdir()
+        ensure_directory(self.lock_file, self.directory_permissions)
+
         current_time = time.time()
         stop_time = current_time + self.timeout
 
@@ -140,8 +137,9 @@ class SemLock(FileLock):
     File-lock-based counting semaphore (i.e. this lock can be locked n-times).
     """
 
-    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
+    def __init__(self, lock_file, n, timeout=60.0, step=0.01, directory_permissions=None, file_permissions=None):
+        FileLock.__init__(self, lock_file, timeout=timeout, step=step, directory_permissions=directory_permissions,
+                          file_permissions=file_permissions)
         self.n = n
 
     def _try_lock(self):
@@ -150,7 +148,7 @@ class SemLock(FileLock):
         while True:
             tries += 1
             try:
-                return LockFile(self.lock_file + str(i))
+                return LockFile(self.lock_file + str(i), self.file_permissions)
             except LockError:
                 if tries >= self.n:
                     raise

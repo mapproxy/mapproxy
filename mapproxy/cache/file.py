@@ -33,7 +33,8 @@ class FileCache(TileCacheBase):
     supports_dimensions = True
 
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False, coverage=None, image_opts=None):
+                 link_single_color_images=False, coverage=None, image_opts=None,
+                 directory_permissions=None, file_permissions=None):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
@@ -46,6 +47,8 @@ class FileCache(TileCacheBase):
         self.file_ext = file_ext
         self.image_opts = image_opts
         self.link_single_color_images = link_single_color_images
+        self.directory_permissions = directory_permissions
+        self.file_permissions = file_permissions
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
         if self._level_location is None:
             self.level_location = None  # disable level based clean-ups
@@ -57,7 +60,8 @@ class FileCache(TileCacheBase):
             dimensions_str = ['{key}-{value}'.format(key=i, value=dimensions[i].replace('/', '_')) for i in items]
             # todo: cache_dir is not used. should it get returned or removed?
             cache_dir = os.path.join(self.cache_dir, '_'.join(dimensions_str))  # noqa
-        return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir, dimensions=dimensions)
+        return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir, dimensions=dimensions,
+                                   directory_permissions=self.directory_permissions)
 
     def level_location(self, level, dimensions=None):
         """
@@ -82,7 +86,7 @@ class FileCache(TileCacheBase):
         )
         location = os.path.join(*parts)
         if create_dir:
-            ensure_directory(location)
+            ensure_directory(location, self.directory_permissions)
         return location
 
     def load_tile_metadata(self, tile, dimensions=None):
@@ -161,6 +165,9 @@ class FileCache(TileCacheBase):
         with tile_buffer(tile) as buf:
             log.debug('writing %r to %s' % (tile.coord, location))
             write_atomic(location, buf.read())
+            if self.file_permissions:
+                permission = int(self.file_permissions, base=8)
+                os.chmod(location, permission)
 
     def _store_single_color_tile(self, tile, tile_loc, color):
         real_tile_loc = self._single_color_tile_location(color, create_dir=True)

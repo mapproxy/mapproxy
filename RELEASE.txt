@@ -4,16 +4,16 @@ Making a new MapProxy release
 Preparation
 -----------
 
+- Stash changes, checkout `master` and pull all changes (`git stash && git checkout master && git pull`)
 - Update CHANGES.txt with all important changes. Verify version and date in header line.
-  - You can use the git compare function for that, e.g.:
-    - https://github.com/mapproxy/mapproxy/compare/2.0.2...master
+  IMPORTANT: Be careful to have the proper amount of blank lines.
+  You can use the git compare function for that, e.g.: https://github.com/mapproxy/mapproxy/compare/2.0.2...master
 - Update version in `setup.py`.
-- Commit and push updates (`git commit -m 'dev: prepare 2.0.2 release'`, `git push`)
-- Create tag and push tag (`git tag 2.0.2`, `git push --tags`)
+- Commit and push updates (`git add -A && git commit -m 'dev: prepare 2.0.2 release' && git push`)
+- Create tag and push tag (`git tag 2.0.2 && git push --tags`)
 
 
 Build and upload
 ----------------
 
 - The release on PyPI and the docker images will be created automatically.
-

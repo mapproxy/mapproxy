@@ -163,6 +163,8 @@ class SeedingConfiguration(object):
             raise SeedConfigurationError("invalid geometry in coverage '%s'. %s" % (name, ex))
         except EmptyGeometryError as ex:
             raise EmptyCoverageError("coverage '%s' contains no geometries. %s" % (name, ex))
+        except Exception:
+            raise Exception(f"can't load coverage '{name}'")
 
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
@@ -262,7 +264,7 @@ class ConfigurationBase(object):
         else:
             # check that all caches have the same grids configured
             last = []
-            for cache_grids in {cache.keys() for cache in caches.values()}:
+            for cache_grids in [cache.keys() for cache in caches.values()]:
                 if not last:
                     last = cache_grids
                 else:

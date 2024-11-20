@@ -10,7 +10,7 @@ install_requires = [
     'pyproj>=2',
     'jsonschema>=4',
     'importlib_resources;python_version<="3.8"',
-    'werkzeug==1.0.1'
+    'werkzeug<4'
 ]
 
 
@@ -63,11 +63,14 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="3.0.1",
+    version="3.1.1",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
+    long_description_content_type='text/x-rst',
     author='Oliver Tonnhofer',
     author_email='olt@omniscale.de',
+    maintainer='terrestris GmbH & Co. KG',
+    maintainer_email='info@terrestris.de',
     url='https://mapproxy.org',
     license='Apache Software License 2.0',
     packages=find_packages(),
