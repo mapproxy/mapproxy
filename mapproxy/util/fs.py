@@ -178,7 +178,3 @@ def find_exec(executable):
         p += '.exe'
         if os.path.exists(p):
             return p
-
-
-def is_empty_dir(directory):
-    return

@@ -72,10 +72,9 @@ class TestCacheSource(SysTest):
 
     def test_get_tile(self, app, cache_dir):
         expected_reqs = []
-        tiles = [(4, 3, 5), (5, 3, 5), (4, 2, 5), (5, 2, 5)]
         with tmp_image((256, 256), format="jpeg") as img:
             # bulk_cache has meta_size of [2, 2]
-            for tile in tiles:
+            for tile in [(4, 3, 5), (5, 3, 5), (4, 2, 5), (5, 2, 5)]:
                 expected_reqs.append(
                     (
                         {
