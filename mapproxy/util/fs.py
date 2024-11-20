@@ -66,42 +66,51 @@ def _force_rename_dir(src_dir, dst_dir):
 
 def cleanup_directory(directory, before_timestamp, remove_all=False, remove_empty_dirs=True,
                       file_handler=None):
+    if not os.path.exists(directory):
+        return
+
     if file_handler is None:
-        if remove_empty_dirs is True and os.path.exists(directory):
+        if remove_all:
             shutil.rmtree(directory, ignore_errors=True)
             return
 
+        if remove_empty_dirs:
+            if remove_dir_if_empty(directory):
+                return
+
         file_handler = os.remove
 
-    if os.path.exists(directory):
-        for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
-            if not filenames:
-                if (remove_empty_dirs and not os.listdir(dirpath)
-                        and dirpath != directory):
-                    os.rmdir(dirpath)
-                continue
-            for filename in filenames:
-                filename = os.path.join(dirpath, filename)
-                try:
-                    if remove_all or os.lstat(filename).st_mtime < before_timestamp:
-                        file_handler(filename)
-                except OSError as ex:
-                    if ex.errno != errno.ENOENT:
-                        raise
 
-            if remove_empty_dirs:
-                remove_dir_if_emtpy(dirpath)
+    for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
+        if not filenames:
+            if (remove_empty_dirs and not os.listdir(dirpath)
+                    and dirpath != directory):
+                os.rmdir(dirpath)
+            continue
+        for filename in filenames:
+            filename = os.path.join(dirpath, filename)
+            try:
+                if remove_all or os.lstat(filename).st_mtime < before_timestamp:
+                    file_handler(filename)
+            except OSError as ex:
+                if ex.errno != errno.ENOENT:
+                    raise
 
         if remove_empty_dirs:
-            remove_dir_if_emtpy(directory)
+            remove_dir_if_empty(dirpath)
+
+    if remove_empty_dirs:
+        remove_dir_if_empty(directory)
 
 
-def remove_dir_if_emtpy(directory):
+def remove_dir_if_empty(directory):
     try:
         os.rmdir(directory)
+        return True
     except OSError as ex:
         if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY:
             raise
+        return False
 
 
 def ensure_directory(file_name, directory_permissions=None):
@@ -170,3 +179,7 @@ def find_exec(executable):
         p += '.exe'
         if os.path.exists(p):
             return p
+
+
+def is_empty_dir(directory):
+    return
