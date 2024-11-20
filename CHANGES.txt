@@ -1,3 +1,18 @@
+3.1.2 2024-11-20
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Several dependencies for the tests and github actions have been updated
+
+Fixes:
+
+  - Metadata URLs are now required to have a `url`, `type` and `format`
+  - The layers of a wms `req` are now correctly splitted at `,` for validation
+  - The validation for seeding configs is fixed
+  - Single color tiles are now created with configured file_permissions
+
+
 3.1.1 2024-11-15
 ~~~~~~~~~~~~~~~~
 
