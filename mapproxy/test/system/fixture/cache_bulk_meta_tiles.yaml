@@ -21,7 +21,3 @@ sources:
   tms_source:
     type: tile
     url: http://localhost:42423/tiles/%(tc_path)s.png
-
-globals:
-  http:
-    hide_error_details: false
