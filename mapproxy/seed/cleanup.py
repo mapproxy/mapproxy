@@ -96,7 +96,7 @@ def cache_cleanup(task, dry_run, progress_logger=None):
         if progress_logger:
             progress_logger.log_message('removing old tiles for level %s' % level)
         if not dry_run:
-            task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp)
+            task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp, task.remove_all)
             task.tile_manager.cleanup()
 
 
