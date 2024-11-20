@@ -80,7 +80,6 @@ def cleanup_directory(directory, before_timestamp, remove_all=False, remove_empt
 
         file_handler = os.remove
 
-
     for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
         if not filenames:
             if (remove_empty_dirs and not os.listdir(dirpath)

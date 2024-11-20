@@ -546,7 +546,8 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     handle_all = task.refresh_all
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=handle_uncached, handle_stale=handle_stale,
                              handle_all=handle_all, skip_geoms_for_last_levels=skip_geoms_for_last_levels,
-                             progress_logger=progress_logger, seed_progress=seed_progress, work_on_metatiles=work_on_metatiles,
+                             progress_logger=progress_logger, seed_progress=seed_progress,
+                             work_on_metatiles=work_on_metatiles,
                              )
     try:
         tile_walker.walk()

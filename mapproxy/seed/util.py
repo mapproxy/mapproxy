@@ -263,5 +263,4 @@ def format_cleanup_task(task):
         info.append('    Remove: tiles older than %s' %
                     datetime.fromtimestamp(task.remove_timestamp))
 
-
     return '\n'.join(info)

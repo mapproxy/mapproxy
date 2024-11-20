@@ -30,7 +30,6 @@ from mapproxy.config.loader import (
     CacheConfiguration, GridConfiguration,
     ProxyConfiguration
 )
-from mapproxy.test.unit.test_image_mask import coverage
 from mapproxy.util.coverage import BBOXCoverage
 from mapproxy.seed.util import ProgressLog, format_bbox
 from mapproxy.seed.seeder import SeedTask, seed_task
