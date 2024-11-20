@@ -129,8 +129,8 @@ class CompactCacheBase(TileCacheBase):
         if self.load_tile(tile, dimensions=dimensions):
             tile.timestamp = -1
 
-    def remove_level_tiles_before(self, level, timestamp):
-        if timestamp == 0:
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
+        if remove_all:
             level_dir = os.path.join(self.cache_dir, 'L%02d' % level)
             shutil.rmtree(level_dir, ignore_errors=True)
             return True

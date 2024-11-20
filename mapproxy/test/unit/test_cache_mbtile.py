@@ -119,7 +119,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
         self.cache.store_tile(self.create_tile((0, 0, 2)))
         assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
 
-        self.cache.remove_level_tiles_before(1, timestamp=0)
+        self.cache.remove_level_tiles_before(1, remove_all=True)
         assert_files_in_dir(self.cache_dir, ['2.mbtile'], glob='*.mbtile')
 
     def test_remove_level_tiles_before(self):
