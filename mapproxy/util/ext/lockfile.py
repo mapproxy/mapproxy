@@ -117,13 +117,15 @@ class LockFile:
 
     def __init__(self, path, file_permissions):
         self._path = path
+        set_permissions = file_permissions and not os.path.exists(path)
         try:
             fp = open(path, 'w+')
-            if file_permissions:
-                permission = int(file_permissions, base=8)
-                os.chmod(path, permission)
         except IOError:
             raise Exception('Could not create Lock-file, wrong permissions on lock directory?')
+
+        if set_permissions:
+            permission = int(file_permissions, base=8)
+            os.chmod(path, permission)
 
         try:
             _lock_file(fp)

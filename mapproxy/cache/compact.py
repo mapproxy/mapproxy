@@ -347,8 +347,9 @@ class BundleIndexV1(object):
     @contextlib.contextmanager
     def readwrite(self):
         self._init_index()
+        set_permissions = self.file_permissions and not os.path.exists(self.filename)
         with open(self.filename, 'r+b') as fh:
-            if self.file_permissions:
+            if set_permissions:
                 permission = int(self.file_permissions, base=8)
                 log.info("setting file permissions on compact cache file: " + self.file_permissions)
                 os.chmod(self.filename, permission)
