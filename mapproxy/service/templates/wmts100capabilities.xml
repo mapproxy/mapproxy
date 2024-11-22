@@ -34,6 +34,7 @@
         <ows:Address>
           <ows:DeliveryPoint>{{service.contact.organization}}</ows:DeliveryPoint>
           <ows:City>{{service.contact.city}}</ows:City>
+          <ows:AdministrativeArea>{{service.contact.city}}</ows:AdministrativeArea>
           <ows:PostalCode>{{service.contact.postcode}}</ows:PostalCode>
           <ows:Country>{{service.contact.country}}</ows:Country>
           <ows:ElectronicMailAddress>{{service.contact.email}}</ows:ElectronicMailAddress>
