@@ -65,9 +65,10 @@ class LegendCache(object):
 
         data = legend.source.as_buffer(ImageOptions(format='image/' + self.file_ext), seekable=True)
         data.seek(0)
+        set_permissions = self.file_permissions and not os.path.exists(legend.location)
         log.debug('writing to %s' % (legend.location))
         write_atomic(legend.location, data.read())
-        if self.file_permissions:
+        if set_permissions:
             permission = int(self.file_permissions, base=8)
             log.info("setting file permissions on compact cache file: " + self.file_permissions)
             os.chmod(legend.location, permission)
