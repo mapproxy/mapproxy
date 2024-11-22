@@ -71,7 +71,7 @@ def image_mask_from_geom(size, bbox, polygons):
 
         if buffered.geom_type == 'MultiPolygon':
             # negative buffer can turn polygon into multipolygon
-            for p in buffered:
+            for p in buffered.geoms:
                 draw_polygon(p)
         else:
             draw_polygon(buffered)
