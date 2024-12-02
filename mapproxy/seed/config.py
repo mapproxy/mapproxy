@@ -17,7 +17,6 @@ from __future__ import print_function
 import logging
 
 import os
-import sys
 import time
 import operator
 from functools import reduce
@@ -26,10 +25,10 @@ from mapproxy.cache.dummy import DummyCache
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
-from mapproxy.srs import SRS, TransformationError
+from mapproxy.srs import TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
-from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
+from mapproxy.util.coverage import MultiCoverage, BBOXCoverage
 from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
@@ -55,8 +54,7 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
         raise SeedConfigurationError(ex)
 
     if 'views' in conf:
-        # TODO: deprecate old config
-        seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
+        raise Exception('The old seeding config style is no longer supported. Please refer to the documentation.')
     else:
         errors, informal_only = validate_seed_conf(conf)
         for error in errors:
@@ -65,81 +63,6 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
             raise SeedConfigurationError('invalid configuration')
         seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
     return seed_conf
-
-
-class LegacySeedingConfiguration(object):
-    """
-    Read old seed.yaml configuration (with seed and views).
-    """
-
-    def __init__(self, seed_conf, mapproxy_conf):
-        self.conf = seed_conf
-        self.mapproxy_conf = mapproxy_conf
-        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in self.mapproxy_conf.grids.items())
-        self.seed_tasks = []
-        self.cleanup_tasks = []
-        self._init_tasks()
-
-    def _init_tasks(self):
-        for cache_name, options in self.conf['seeds'].items():
-            remove_before = None
-            if 'remove_before' in options:
-                remove_before = before_timestamp_from_options(options['remove_before'])
-            try:
-                caches = self.mapproxy_conf.caches[cache_name].caches()
-            except KeyError:
-                print('error: cache %s not found. available caches: %s' % (
-                    cache_name, ','.join(self.mapproxy_conf.caches.keys())), file=sys.stderr)
-                return
-            caches = dict((grid, tile_mgr) for grid, extent, tile_mgr in caches)
-            for view in options['views']:
-                view_conf = self.conf['views'][view]
-                coverage = load_coverage(view_conf)
-
-                cache_srs = view_conf.get('srs', None)
-                if cache_srs is not None:
-                    cache_srs = [SRS(s) for s in cache_srs]
-
-                level = view_conf.get('level', None)
-                assert len(level) == 2
-
-                for grid, tile_mgr in caches.items():
-                    if cache_srs and grid.srs not in cache_srs:
-                        continue
-                    md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
-                    levels = list(range(level[0], level[1]+1))
-                    if coverage:
-                        if isinstance(coverage, GeomCoverage) and coverage.geom.is_empty:
-                            continue
-                        seed_coverage = coverage.transform_to(grid.srs)
-                    else:
-                        seed_coverage = BBOXCoverage(grid.bbox, grid.srs)
-
-                    self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
-
-                    if remove_before:
-                        levels = list(range(grid.levels))
-                        complete_extent = bool(coverage)
-                        self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before,
-                                                              seed_coverage, complete_extent=complete_extent))
-
-    def seed_tasks_names(self):
-        return self.conf['seeds'].keys()
-
-    def cleanup_tasks_names(self):
-        return self.conf['seeds'].keys()
-
-    def seeds(self, names=None):
-        if names is None:
-            return self.seed_tasks
-        else:
-            return [t for t in self.seed_tasks if t.md['name'] in names]
-
-    def cleanups(self, names=None):
-        if names is None:
-            return self.cleanup_tasks
-        else:
-            return [t for t in self.cleanup_tasks if t.md['name'] in names]
 
 
 class SeedingConfiguration(object):
@@ -289,9 +212,12 @@ class SeedConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
 
+        self.refresh_all = False
         self.refresh_timestamp = None
         if 'refresh_before' in self.conf:
             self.refresh_timestamp = before_timestamp_from_options(self.conf['refresh_before'])
+        else:
+            self.refresh_all = True
 
     def seed_tasks(self):
         for grid_name in self.grids:
@@ -317,9 +243,7 @@ class SeedConfiguration(ConfigurationBase):
                     levels = list(range(0, grid.levels))
 
                 if not tile_manager.cache.supports_timestamp:
-                    if self.refresh_timestamp:
-                        # remove everything
-                        self.refresh_timestamp = 0
+                    self.refresh_all = True
 
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
 
@@ -327,9 +251,9 @@ class SeedConfiguration(ConfigurationBase):
                     if tile_manager.rescale_tiles > 0:
                         levels = levels[::-1]
                     for level in levels:
-                        yield SeedTask(md, tile_manager, [level], self.refresh_timestamp, coverage)
+                        yield SeedTask(md, tile_manager, [level], self.refresh_timestamp, self.refresh_all, coverage)
                 else:
-                    yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
+                    yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, self.refresh_all, coverage)
 
 
 class CleanupConfiguration(ConfigurationBase):
@@ -337,14 +261,14 @@ class CleanupConfiguration(ConfigurationBase):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         self.init_time = time.time()
 
+        self.remove_all = False
+        self.remove_timestamp = self.init_time  # this should not remove
+        # fresh seeded tiles, since this should be configured before seeding
+
         if self.conf.get('remove_all') is True:
-            self.remove_timestamp = 0
+            self.remove_all = True
         elif 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
-        else:
-            # use now as remove_before date. this should not remove
-            # fresh seeded tiles, since this should be configured before seeding
-            self.remove_timestamp = self.init_time
 
     def cleanup_tasks(self):
         for grid_name in self.grids:
@@ -374,15 +298,15 @@ class CleanupConfiguration(ConfigurationBase):
 
                 if not tile_manager.cache.supports_timestamp:
                     # for caches without timestamp support (like MBTiles)
-                    if self.remove_timestamp is self.init_time or self.remove_timestamp == 0:
+                    if self.remove_timestamp is self.init_time:
                         # remove everything
-                        self.remove_timestamp = 0
+                        self.remove_all = True
                     else:
                         raise SeedConfigurationError(
                             "cleanup does not support remove_before for '%s'"
                             " because cache '%s' does not support timestamps" % (self.name, cache_name))
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
-                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp,
+                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, remove_all=self.remove_all,
                                   coverage=coverage, complete_extent=complete_extent)
 
 
