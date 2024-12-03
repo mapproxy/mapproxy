@@ -63,7 +63,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="3.1.2",
+    version="3.1.3",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     long_description_content_type='text/x-rst',

@@ -1,3 +1,17 @@
+3.1.3 2024-11-26
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Several dependencies for the tests and GitHub actions have been updated
+  - Spelling and grammar mistakes in the documentation corrected
+
+Fixes:
+
+  - The chmod to update file permissions is now only called if the file was freshly created
+  - A bug with clipping polygons that become multi polygons due to the clipping is now fixed
+
+
 3.1.2 2024-11-20
 ~~~~~~~~~~~~~~~~
 
