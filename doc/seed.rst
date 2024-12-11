@@ -93,20 +93,20 @@ Options
 
 .. option:: --seed=<task1,task2,..>
 
-  Only seed the named seeding tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--seed`` option multiple times.
+  Only seed the named seeding tasks. You can select multiple tasks with a list of comma separated  names, or you can use the ``--seed`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all cleanup tasks unless you also use the ``--cleanup`` option.
 
 .. option:: --cleanup=<task1,task2,..>
 
-  Only cleanup the named tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--cleanup`` option multiple times.
+  Only cleanup the named tasks. You can select multiple tasks with a list of comma separated  names, or you can use the ``--cleanup`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all seeding tasks unless you also use the ``--seed`` option.
 
 
 .. option:: --continue
 
-  Continue an interrupted seed progress. MapProxy will start the seeding progress at the begining if the progress file (``--progress-file``) was not found.  MapProxy can only continue if the previous seed was started with the ``--progress-file`` or ``--continue`` option.
+  Continue an interrupted seed progress. MapProxy will start the seeding progress at the beginning if the progress file (``--progress-file``) was not found.  MapProxy can only continue if the previous seed was started with the ``--progress-file`` or ``--continue`` option.
 
 .. option:: --progress-file
 
@@ -123,7 +123,7 @@ Options
 
 .. option:: --reseed-interval
 
-  Only start seeding if ``--reseed-file`` is older then this duration.
+  Only start seeding if ``--reseed-file`` is older than this duration.
   This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
   Use this option in combination with ``--continue`` to be able to resume the seeding. By default,
 
@@ -369,7 +369,7 @@ Examples:
 A list with coverage names. Limits the cleanup area to the coverages. By default, the whole coverage of the grids will be cleaned up.
 
 .. note:: Be careful when cleaning up caches with large coverages and levels with lots of tiles (>14).
-  Without ``coverages``, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With ``coverages``, the seed tool traverses the whole tile pyramid and needs to check every posible tile if it exists and if it should be removed. This is much slower.
+  Without ``coverages``, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With ``coverages``, the seed tool traverses the whole tile pyramid and needs to check every possible tile if it exists and if it should be removed. This is much slower.
 
 ``remove_all``
 ~~~~~~~~~~~~~~
@@ -474,7 +474,7 @@ Example progress log::
 
 
 The output starts with the current time and ends with the number of tiles it has seeded or removed so far. The third value is the current progress in percent. The progress can make large jumps, if the seeding detects that a tile and all its subtiles are outside of the seeding coverage.
-The second and fourth value show the level and bounding box of where the seeding tool is in this moment. Keep in mind, that it does not seed level by level. This is described in :ref:`seeding method <seed_method>`.
+The second and fourth value show the level and bounding box of where the seeding tool is at this moment. Keep in mind that it does not seed level by level. This is described in :ref:`seeding method <seed_method>`.
 
 
 
@@ -485,10 +485,10 @@ Example: Background seeding
 
 .. versionadded:: 1.10.0 Works on Linux and Unix only
 
-The ``--duration`` option allows you run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process at a later time.
+The ``--duration`` option allows you to run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process later.
 You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
 
-However, this will restart the seeding process from the beginning every time the is seeding completed.
+However, this will restart the seeding process from the beginning every time the seeding is completed.
 You can prevent this with the ``--reeseed-interval`` and ``--reseed-file`` option.
 The following example starts seeding for six hours. It will seed for another six hours, every time you call this command again. Once all seed and cleanup tasks were processed the command will exit immediately every time you call it within 14 days after the first call. After 14 days, the modification time of the ``reseed.time`` file will be updated and the re-seeding process starts again.
 
@@ -538,7 +538,7 @@ Contains a dictionary with layer/view mapping.:
     If present, recreate tiles if they are older than the date or time delta. At the
     end of the seeding process all tiles that are older will be removed.
 
-    You can either define a fixed time or a time delta. The `time` is a ISO-like date
+    You can either define a fixed time or a time delta. The `time` is an ISO-like date
     string (no time-zones, no abbreviations). To define time delta use one or more
     `seconds`, `minutes`, `hours`, `days` or `weeks` entries.
 
