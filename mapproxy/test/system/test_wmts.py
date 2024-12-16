@@ -210,7 +210,7 @@ class TestWMTS(SysTest):
         data = BytesIO(resp.body)
         assert is_jpeg(data)
 
-    def test_get_tile_flipped_axis(self, app, cache_dir, fixture_cache_data):
+    def test_get_tile_flipped_axis(self, app, cache_dir):
         # test default tile lock directory
         tiles_lock_dir = cache_dir.join("tile_locks")
         assert not tiles_lock_dir.check()

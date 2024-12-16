@@ -22,8 +22,8 @@ class TileClient(object):
         self.http_client = http_client
         self.grid = grid
 
-    def get_tile(self, tile_coord, format=None):
-        url = self.url_template.substitute(tile_coord, format, self.grid)
+    def get_tile(self, tile_coord, format=None, extra_params=None):
+        url = self.url_template.substitute(tile_coord, format, self.grid, extra_params)
         if self.http_client:
             return self.http_client.open_image(url)
         else:
@@ -66,7 +66,7 @@ class TileURLTemplate(object):
         self.with_arcgiscache_path = True if '%(arcgiscache_path)' in template else False
         self.with_bbox = True if '%(bbox)' in template else False
 
-    def substitute(self, tile_coord, format=None, grid=None):
+    def substitute(self, tile_coord, format=None, grid=None, extra_params=None):
         x, y, z = tile_coord
         data = dict(x=x, y=y, z=z)
         data['format'] = format or self.format
@@ -80,6 +80,8 @@ class TileURLTemplate(object):
             data['arcgiscache_path'] = arcgiscache_path(tile_coord)
         if self.with_bbox:
             data['bbox'] = bbox(tile_coord, grid)
+        if extra_params:
+            data.update(extra_params)
 
         return self.template % data
 
