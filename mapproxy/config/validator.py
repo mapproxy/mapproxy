@@ -15,10 +15,12 @@
 import itertools
 import json
 import os.path
-from typing import List, Dict, Set, Tuple, Union, Iterable
+from typing import List, Dict, Set, Tuple, Union, Iterable, Any
 
 from jsonschema.exceptions import ValidationError
-from jsonschema.validators import Draft202012Validator
+from jsonschema.protocols import Validator
+from jsonschema.validators import Draft202012Validator, extend
+from referencing.jsonschema import Schema
 
 import mapproxy.config.defaults
 
@@ -37,19 +39,48 @@ TAGGED_SOURCE_TYPES = [
 ]
 
 
+def caused_by_deprecation(error: ValidationError) -> bool:
+    if isinstance(error, DeprecationError):
+        return True
+    elif error.context is not None:
+        errs = [caused_by_deprecation(e) for e in error.context]
+        return False if len(errs) == 0 else all(errs)
+    return False
+
+
 def get_error_messages(errors: Iterable[ValidationError]) -> List[str]:
     msgs = []
     for error in errors:
         path = error.json_path.replace('$', 'root')
         msg = f'{error.message} in {path}'
+        if caused_by_deprecation(error):
+            msg = f'DEPRECATION: {msg}'
         msgs.append(msg)
         if error.context is not None:
-            msgs += get_error_messages(error.context)
+            msgs.extend(get_error_messages(error.context))
+
     return msgs
 
 
+class DeprecationError(ValidationError):
+    pass
+
+
+def deprecated(validator: Validator, value: Any, instance: Any, schema: Schema):
+    yield DeprecationError(
+        f"Value '{instance}' conforming to schema {schema} is deprecated",
+        validator=validator,
+        validator_value=value,
+        instance=instance,
+        schema=schema,
+    )
+
+
+CustomValidator = extend(Draft202012Validator, validators={'deprecated': deprecated})
+
+
 def validate(conf_dict: Dict) -> List[str]:
-    validator = Draft202012Validator(schema=schema)
+    validator = CustomValidator(schema=schema)
     errors_iter = validator.iter_errors(conf_dict)
     errors = [] if errors_iter is None else get_error_messages(errors_iter)
 
