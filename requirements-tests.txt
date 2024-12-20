@@ -48,7 +48,8 @@ py==1.11.0
 pyasn1==0.5.1
 pycparser==2.22
 pyparsing==3.1.1
-pyproj==3.7.0
+pyproj==3.7.0;python_version>"3.9"
+pyproj==3.6.1;python_version<="3.9"
 pyrsistent==0.20.0
 pytest==8.3.2
 pytest-rerunfailures==13.0
