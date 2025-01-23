@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import sys
 import random
 from urllib.parse import urlparse
 
@@ -30,7 +29,6 @@ tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
 
-@pytest.mark.skipif(sys.version_info > (3, 7), reason="riak is not compatible with this Python version")
 class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
 

@@ -15,8 +15,6 @@
 
 from __future__ import division
 
-import sys
-
 from io import BytesIO
 
 from mapproxy.request.wms import WMS111MapRequest
@@ -50,10 +48,6 @@ def s3_buckets():
 
 
 @pytest.mark.skipif(not (boto3 and mock_s3), reason="boto3 and moto required")
-@pytest.mark.xfail(
-    sys.version_info[:2] in ((3, 4), (3, 5)),
-    reason="moto tests unreliable with Python 3.4/3.5",
-)
 @pytest.mark.usefixtures("s3_buckets")
 class TestS3Cache(SysTest):
 

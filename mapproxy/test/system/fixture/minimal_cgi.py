@@ -6,10 +6,7 @@ CGI script that returns a red 256x256 PNG file.
 
 if __name__ == '__main__':
     import sys
-    if sys.version_info[0] == 2:
-        w = sys.stdout.write
-    else:
-        w = sys.stdout.buffer.write
+    w = sys.stdout.buffer.write
     w(b"Content-type: image/png\r\n")
     w(b"\r\n")
 
