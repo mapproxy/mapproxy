@@ -91,12 +91,12 @@ class TestCompactCacheV1(TileCacheTestBase):
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
 
         # not removed with timestamp
-        self.cache.remove_level_tiles_before(12, time.time())
+        self.cache.remove_level_tiles_before(12, timestamp=time.time())
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
 
-        # removed with timestamp=0 (remove_all:true in seed.yaml)
-        self.cache.remove_level_tiles_before(12, 0)
+        # removed with remove_all
+        self.cache.remove_level_tiles_before(12, remove_all=True)
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
     def test_bundle_header(self):
@@ -196,11 +196,11 @@ class TestCompactCacheV2(TileCacheTestBase):
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
 
         # not removed with timestamp
-        self.cache.remove_level_tiles_before(12, time.time())
+        self.cache.remove_level_tiles_before(12, timestamp=time.time())
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
 
-        # removed with timestamp=0 (remove_all:true in seed.yaml)
-        self.cache.remove_level_tiles_before(12, 0)
+        # removed with remove_all
+        self.cache.remove_level_tiles_before(12, remove_all=True)
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
     def test_bundle_header(self):

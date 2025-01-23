@@ -414,8 +414,8 @@ class GeopackageCache(TileCacheBase):
             return True
         return False
 
-    def remove_level_tiles_before(self, level, timestamp):
-        if timestamp == 0:
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
+        if remove_all:
             cursor = self.db.cursor()
             cursor.execute(
                 "DELETE FROM [{0}] WHERE (zoom_level = ?)".format(self.table_name), (level,))
@@ -528,9 +528,9 @@ class GeopackageLevelCache(TileCacheBase):
 
         return self._get_level(tile.coord[2]).remove_tile(tile, dimensions=dimensions)
 
-    def remove_level_tiles_before(self, level, timestamp):
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
         level_cache = self._get_level(level)
-        if timestamp == 0:
+        if remove_all:
             level_cache.cleanup()
             os.unlink(level_cache.geopackage_file)
             return True

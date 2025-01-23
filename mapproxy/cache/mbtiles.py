@@ -282,8 +282,8 @@ class MBTilesCache(TileCacheBase):
             return True
         return False
 
-    def remove_level_tiles_before(self, level, timestamp):
-        if timestamp == 0:
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
+        if remove_all:
             cursor = self.db.cursor()
             cursor.execute(
                 "DELETE FROM tiles WHERE (zoom_level = ?)",
@@ -408,9 +408,9 @@ class MBTilesLevelCache(TileCacheBase):
     def load_tile_metadata(self, tile, dimensions=None):
         self.load_tile(tile, dimensions=dimensions)
 
-    def remove_level_tiles_before(self, level, timestamp):
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
         level_cache = self._get_level(level)
-        if timestamp == 0:
+        if remove_all:
             level_cache.cleanup()
             os.unlink(level_cache.mbtile_file)
             for file in glob.glob("%s-*" % glob.escape(level_cache.mbtile_file)):

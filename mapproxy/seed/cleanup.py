@@ -87,7 +87,7 @@ def simple_cleanup(task, dry_run, progress_logger=None, cleanup_progress=None):
                 )
                 progress_logger.progress_store.write()
 
-        cleanup_directory(level_dir, task.remove_timestamp,
+        cleanup_directory(level_dir, task.remove_timestamp, task.remove_all,
                           file_handler=file_handler, remove_empty_dirs=True)
 
 
@@ -96,7 +96,7 @@ def cache_cleanup(task, dry_run, progress_logger=None):
         if progress_logger:
             progress_logger.log_message('removing old tiles for level %s' % level)
         if not dry_run:
-            task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp)
+            task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp, task.remove_all)
             task.tile_manager.cleanup()
 
 
@@ -117,11 +117,16 @@ def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels,
     """
     Cleanup tiles with tile traversal.
     """
-    task.tile_manager._expire_timestamp = task.remove_timestamp
+    if task.remove_all:
+        handle_all = True
+    else:
+        task.tile_manager._expire_timestamp = task.remove_timestamp
+        handle_all = False
+
     task.tile_manager.minimize_meta_requests = False
     tile_worker_pool = TileWorkerPool(task, TileCleanupWorker, progress_logger=progress_logger,
                                       dry_run=dry_run, size=concurrency)
-    tile_walker = TileWalker(task, tile_worker_pool, handle_stale=True,
+    tile_walker = TileWalker(task, tile_worker_pool, handle_stale=True, handle_all=handle_all,
                              work_on_metatiles=False, progress_logger=progress_logger,
                              skip_geoms_for_last_levels=skip_geoms_for_last_levels,
                              seed_progress=seed_progress)

@@ -134,35 +134,6 @@ class SeedTestBase(SeedTestEnvironment):
             cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
 
-class TestSeedOldConfiguration(SeedTestBase):
-    seed_conf_name = 'seed_old.yaml'
-    mapproxy_conf_name = 'seed_mapproxy.yaml'
-    empty_ogrdata = 'empty_ogrdata.geojson'
-
-    def test_reseed_remove_before(self):
-        # tile already there but too old
-        t000 = self.make_tile((0, 0, 0), timestamp=time.time() - (60*60*25))
-        # old tile outside the seed view (should be removed)
-        t001 = self.make_tile((0, 0, 1), timestamp=time.time() - (60*60*25))
-        assert os.path.exists(t000)
-        assert os.path.exists(t001)
-        with tmp_image((256, 256), format='png') as img:
-            img_data = img.read()
-            expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                             '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                             '&width=256&height=128&srs=EPSG:4326'},
-                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-                tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
-                seed(tasks, dry_run=False)
-                cleanup(cleanup_tasks, verbose=False, dry_run=False)
-
-        assert os.path.exists(t000)
-        assert os.path.getmtime(t000) - 5 < time.time() < os.path.getmtime(t000) + 5
-        assert not os.path.exists(t001)
-
-
 tile_image_buf = create_tmp_image_buf((256, 256), color='blue')
 tile_image = create_tmp_image((256, 256), color='blue')
 
@@ -218,6 +189,31 @@ class TestSeed(SeedTestBase):
         # remove_all should remove the whole directory
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
                             ['00', '02', '03'])
+
+    def test_cleanup_remove_all_with_coverage(self):
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['remove_all_with_coverage'])
+
+        self.make_tile((0, 0, 0))
+        self.make_tile((0, 0, 1))
+        self.make_tile((1, 0, 1))
+        self.make_tile((0, 1, 1))
+        self.make_tile((1, 1, 1))
+        self.make_tile((0, 0, 2))
+        self.make_tile((0, 0, 3))
+
+        assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
+                            ['00', '01', '02', '03'])
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        assert self.tile_exists((0, 0, 0))
+        assert not self.tile_exists((0, 0, 1))
+        assert not self.tile_exists((1, 0, 1))
+        assert self.tile_exists((0, 1, 1))  # east
+        assert self.tile_exists((1, 1, 1))  # east
+        assert not self.tile_exists((0, 0, 1))
+        assert self.tile_exists((0, 0, 2))
+        assert self.tile_exists((0, 0, 3))
 
     def test_cleanup_coverage(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
@@ -279,7 +275,8 @@ class TestSeed(SeedTestBase):
 
     def test_reseed_mbtiles_with_refresh(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, _ = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        tasks = seed_conf.seeds(['mbtile_cache_refresh'])
+        seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile())
@@ -303,9 +300,9 @@ class TestSeed(SeedTestBase):
 
     def test_cleanup_sqlite(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['cleanup_sqlite_cache'])
+        cleanup_task = seed_conf.cleanups(['cleanup_sqlite_cache'])[0]
 
-        cache = cleanup_tasks[0].tile_manager.cache
+        cache = cleanup_task.tile_manager.cache
         cache.store_tile(self.create_tile((0, 0, 2)))
         cache.store_tile(self.create_tile((0, 0, 3)))
         assert cache.is_cached(Tile((0, 0, 2)))
@@ -315,7 +312,12 @@ class TestSeed(SeedTestBase):
                             ['2.mbtile', '3.mbtile'],
                             glob='*.mbtile')
 
-        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        # simulate that cleanup was called after creation of tiles
+        time.sleep(1)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_task = seed_conf.cleanups(['cleanup_sqlite_cache'])[0]
+
+        cleanup([cleanup_task], verbose=False, dry_run=False)
 
         # 3.mbtile file is still there
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),

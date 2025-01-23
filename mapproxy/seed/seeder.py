@@ -282,12 +282,13 @@ class TileWalker(object):
     allowing to determine if all subtiles should be seeded or skipped.
     """
 
-    def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
+    def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False, handle_all=False,
                  work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None,
                  seed_progress=None):
         self.tile_mgr = task.tile_manager
         self.task = task
         self.worker_pool = worker_pool
+        self.handle_all = handle_all
         self.handle_stale = handle_stale
         self.handle_uncached = handle_uncached
         self.work_on_metatiles = work_on_metatiles
@@ -397,7 +398,10 @@ class TileWalker(object):
             else:
                 handle_tiles = [subtile]
 
-            if self.handle_uncached:
+            if self.handle_all:
+                handle_tiles = [t for t in handle_tiles if
+                                t is not None]
+            elif self.handle_uncached:
                 handle_tiles = [t for t in handle_tiles if
                                 t is not None and
                                 not self.tile_mgr.is_cached(t)]
@@ -444,12 +448,13 @@ class TileWalker(object):
 
 
 class SeedTask(object):
-    def __init__(self, md, tile_manager, levels, refresh_timestamp, coverage):
+    def __init__(self, md, tile_manager, levels, refresh_timestamp, refresh_all, coverage):
         self.md = md
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.levels = levels
         self.refresh_timestamp = refresh_timestamp
+        self.refresh_all = refresh_all
         self.coverage = coverage
 
     @property
@@ -470,12 +475,13 @@ class CleanupTask(object):
     :param complete_extent: ``True`` if `coverage` equals the extent of the grid
     """
 
-    def __init__(self, md, tile_manager, levels, remove_timestamp, coverage, complete_extent=False):
+    def __init__(self, md, tile_manager, levels, remove_timestamp, remove_all, coverage, complete_extent=False):
         self.md = md
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.levels = levels
         self.remove_timestamp = remove_timestamp
+        self.remove_all = remove_all
         self.coverage = coverage
         self.complete_extent = complete_extent
 
@@ -537,9 +543,10 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     # tile walker parameters shall be adapted
     handle_stale = skip_uncached
     handle_uncached = not skip_uncached
+    handle_all = task.refresh_all
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=handle_uncached, handle_stale=handle_stale,
-                             skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
-                             seed_progress=seed_progress,
+                             handle_all=handle_all, skip_geoms_for_last_levels=skip_geoms_for_last_levels,
+                             progress_logger=progress_logger, seed_progress=seed_progress,
                              work_on_metatiles=work_on_metatiles,
                              )
     try:
