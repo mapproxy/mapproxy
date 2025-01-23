@@ -189,12 +189,6 @@ class MockerTestCase(unittest.TestCase):
 
         super(MockerTestCase, self).__init__(methodName)
 
-    def __call__(self, *args, **kwargs):
-        # This is necessary for Python 2.3 only, because it didn't use run(),
-        # which is supported above.
-        super(MockerTestCase, self).__call__(*args, **kwargs)
-
-
     def __cleanup(self):
         for path in self.__cleanup_paths:
             if os.path.isfile(path):
