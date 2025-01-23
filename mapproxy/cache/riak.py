@@ -23,14 +23,7 @@ from mapproxy.image import ImageSource
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 
-try:
-    import riak
-except ImportError:
-    riak = None
-except TypeError:
-    import warnings
-    warnings.warn("riak version not compatible with this Python version")
-    riak = None
+import riak
 
 import logging
 log = logging.getLogger(__name__)
@@ -43,9 +36,6 @@ class UnexpectedResponse(CacheBackendError):
 class RiakCache(TileCacheBase):
     def __init__(self, nodes, protocol, bucket, tile_grid, use_secondary_index=False, timeout=60, coverage=None):
         super(RiakCache, self).__init__(coverage)
-
-        if riak is None:
-            raise ImportError("Riak backend requires 'riak' package.")
 
         self.nodes = nodes
         self.protocol = protocol
