@@ -47,7 +47,7 @@ ENV PATH="${PATH}:/mapproxy/.local/bin"
 RUN mkdir mapproxy-dist
 COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
-RUN pip install requests riak redis boto3 azure-storage-blob Shapely && \
+RUN pip install requests redis boto3 azure-storage-blob Shapely && \
   pip install --find-links=./mapproxy-dist --no-index MapProxy && \
   pip cache purge
 

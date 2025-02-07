@@ -21,11 +21,6 @@ jobs:
         image: couchdb:2
         ports:
           - 5984:5984
-      riak:
-        image: basho/riak-kv
-        ports:
-          - 8087:8087
-          - 8098:8098
       azure-blob:
         image: mcr.microsoft.com/azure-storage/azurite
         ports:
@@ -38,8 +33,6 @@ jobs:
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'
       MAPPROXY_TEST_REDIS: '127.0.0.1:6379'
-      MAPPROXY_TEST_RIAK_HTTP: 'http://localhost:8098'
-      MAPPROXY_TEST_RIAK_PBC: 'pbc://localhost:8087'
       MAPPROXY_TEST_AZURE_BLOB: 'http://localhost:10000'
       # do not load /etc/boto.cfg with Python 3 incompatible plugin
       # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882

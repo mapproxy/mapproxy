@@ -57,7 +57,6 @@ pytz==2024.2
 redis==5.0.1
 requests==2.32.3
 responses==0.25.3
-riak==2.7.0
 rsa==4.9
 s3transfer==0.10.2
 six==1.16.0
