@@ -1431,40 +1431,6 @@ class CacheConfiguration(ConfigurationBase):
             coverage=coverage
         )
 
-    def _riak_cache(self, grid_conf, image_opts):
-        from mapproxy.cache.riak import RiakCache
-
-        default_ports = self.conf['cache'].get('default_ports', {})
-        default_pb_port = default_ports.get('pb', 8087)
-        default_http_port = default_ports.get('http', 8098)
-        coverage = self.coverage()
-
-        nodes = self.conf['cache'].get('nodes')
-        if not nodes:
-            nodes = [{'host': '127.0.0.1'}]
-
-        for n in nodes:
-            if 'pb_port' not in n:
-                n['pb_port'] = default_pb_port
-            if 'http_port' not in n:
-                n['http_port'] = default_http_port
-
-        protocol = self.conf['cache'].get('protocol', 'pbc')
-        bucket = self.conf['cache'].get('bucket')
-        if not bucket:
-            suffix = grid_conf.tile_grid().name
-            bucket = self.conf['name'] + '_' + suffix
-
-        use_secondary_index = self.conf['cache'].get('secondary_index', False)
-        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
-
-        return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
-                         tile_grid=grid_conf.tile_grid(),
-                         use_secondary_index=use_secondary_index,
-                         timeout=timeout,
-                         coverage=coverage
-                         )
-
     def _redis_cache(self, grid_conf, image_opts):
         from mapproxy.cache.redis import RedisCache
 

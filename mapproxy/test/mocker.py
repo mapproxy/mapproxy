@@ -42,13 +42,7 @@ import re
 import gc
 
 
-if sys.version_info < (2, 4):
-    from sets import Set as set  # pragma: nocover
-
-if sys.version_info[0] == 2:
-    import __builtin__
-else:
-    import builtins as __builtin__
+import builtins as __builtin__
 
 
 __all__ = ["Mocker", "Expect", "expect", "IS", "CONTAINS", "IN", "MATCH",
@@ -194,15 +188,6 @@ class MockerTestCase(unittest.TestCase):
         self.__cleanup_paths = []
 
         super(MockerTestCase, self).__init__(methodName)
-
-    def __call__(self, *args, **kwargs):
-        # This is necessary for Python 2.3 only, because it didn't use run(),
-        # which is supported above.
-        try:
-            super(MockerTestCase, self).__call__(*args, **kwargs)
-        finally:
-            if sys.version_info < (2, 4):
-                self.__cleanup()
 
     def __cleanup(self):
         for path in self.__cleanup_paths:
@@ -453,14 +438,8 @@ class MockerTestCase(unittest.TestCase):
     assertIsInstance = failUnlessIsInstance
     assertIsNotInstance = failIfIsInstance
     assertNotIsInstance = failIfIsInstance  # Poor choice in 2.7/3.2+.
-
-    # The following are missing in Python < 2.4.
-    if sys.version_info < (2, 4):
-        assertTrue = unittest.TestCase.failUnless
-        assertFalse = unittest.TestCase.failIf
-    else:
-        assertTrue = unittest.TestCase.assertTrue
-        assertFalse = unittest.TestCase.assertFalse
+    assertTrue = unittest.TestCase.assertTrue
+    assertFalse = unittest.TestCase.assertFalse
 
     # The following is provided for compatibility with Twisted's trial.
     assertIdentical = assertIs

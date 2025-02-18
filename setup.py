@@ -9,7 +9,6 @@ install_requires = [
     'future',
     'pyproj>=2',
     'jsonschema>=4',
-    'importlib_resources;python_version<="3.8"',
     'werkzeug<4'
 ]
 
@@ -87,7 +86,6 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",

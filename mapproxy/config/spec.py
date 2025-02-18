@@ -110,12 +110,6 @@ source_commons = combined(
     }
 )
 
-riak_node = {
-    'host': str(),
-    'pb_port': number(),
-    'http_port': number(),
-}
-
 cache_commons = combined(
     {
         'coverage': coverage,
@@ -176,17 +170,6 @@ cache_types = {
         'access_control_list': str(),
         'tile_lock_dir': str(),
         'use_http_get': bool(),
-    }),
-    'riak': combined(cache_commons, {
-        'nodes': [riak_node],
-        'protocol': one_of('pbc', 'http', 'https'),
-        'bucket': str(),
-        'default_ports': {
-            'pb': number(),
-            'http': number(),
-        },
-        'secondary_index': bool(),
-        'tile_lock_dir': str(),
     }),
     'redis': combined(cache_commons, {
         'host': str(),

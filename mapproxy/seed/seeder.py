@@ -49,7 +49,7 @@ INTERSECTS = 1
 #
 # Since Python 3.8, MacOS uses a non-forking start method for multiprocessing which
 # inhibits similar restrictions to Windows.
-if sys.platform == 'win32' or (sys.platform == 'darwin' and sys.version_info >= (3, 8)):
+if sys.platform == 'win32' or sys.platform == 'darwin':
     import threading
     proc_class = threading.Thread
     queue_class = Queue.Queue

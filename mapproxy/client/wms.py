@@ -16,8 +16,6 @@
 """
 WMS clients for maps and information.
 """
-import sys
-
 from mapproxy.request.base import split_mime_type
 from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
@@ -82,10 +80,7 @@ class WMSClient(object):
                 data = data[:-1]
                 truncated = ' [output truncated]'
 
-            if sys.version_info >= (3, 5, 0):
-                data = data.decode('utf-8', 'backslashreplace')
-            else:
-                data = data.decode('ascii', 'ignore')
+            data = data.decode('utf-8', 'backslashreplace')
 
             log.warning("no image returned from source WMS: {}, response was: '{}'{}".format(url, data, truncated))
             raise SourceError('no image returned from source WMS: %s' % (url, ))

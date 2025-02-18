@@ -45,7 +45,7 @@ from urllib.parse import quote as url_quote
 __all__ = ['TemplateError', 'Template', 'sub', 'HTMLTemplate',
            'sub_html', 'html', 'bunch']
 
-token_re = re.compile(r'\{\{|\}\}')
+token_re = re.compile(r'\{\{|}}')
 in_re = re.compile(r'\s+in\s+')
 var_re = re.compile(r'^[a-z_][a-z0-9_]*$', re.I)
 
@@ -434,14 +434,11 @@ def html_quote(value, force=True):
         return ''
     if not isinstance(value, basestring_):
         value = coerce_text(value)
-    if sys.version >= "3" and isinstance(value, bytes):
+    if isinstance(value, bytes):
         value = escape(value.decode('latin1'), 1)
         value = value.encode('latin1')
     else:
         value = escape(value, 1)
-    if sys.version < "3":
-        if is_unicode(value):
-            value = value.encode('ascii', 'xmlcharrefreplace')
     return value
 
 
@@ -611,9 +608,6 @@ class _Empty(object):
 
     def __bool__(self):
         return False
-
-    if sys.version < "3":
-        __nonzero__ = __bool__
 
 
 Empty = _Empty()
