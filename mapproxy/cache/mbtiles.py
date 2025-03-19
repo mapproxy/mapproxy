@@ -272,7 +272,7 @@ class MBTilesCache(TileCacheBase):
 
         return loaded_tiles == len(tile_dict)
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         cursor = self.db.cursor()
         cursor.execute(
             "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
