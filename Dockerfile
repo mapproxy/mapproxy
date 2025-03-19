@@ -29,6 +29,7 @@ COPY mapproxy mapproxy
 RUN rm -rf dist/*
 RUN pip wheel . -w dist
 
+###### base/plain image ######
 
 FROM base-libs AS base
 
@@ -55,6 +56,8 @@ COPY docker/app.py .
 
 COPY docker/entrypoint.sh .
 
+COPY docker/logging.ini ./config/logging.ini
+
 ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["echo", "no CMD given"]
@@ -65,7 +68,7 @@ FROM base AS development
 
 EXPOSE 8080
 
-CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mapproxy.yaml"]
+CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mapproxy.yaml", "--log-config", "/mapproxy/config/logging.ini"]
 
 ##### nginx image ######
 

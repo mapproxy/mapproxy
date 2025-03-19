@@ -1,0 +1,45 @@
+# -------------------------------
+# MapProxy example configuration.
+# -------------------------------
+#
+# This is a minimal MapProxy configuration.
+# See documentation for more options.
+#
+
+services:
+  demo:
+  tms:
+    use_grid_names: true
+    # origin for /tiles service
+    origin: 'nw'
+  kml:
+      use_grid_names: true
+  wmts:
+  wms:
+    md:
+      title: MapProxy WMS Proxy
+      abstract: This is a minimal MapProxy example.
+
+layers:
+  - name: basemap
+    title: basemap
+    sources: [basemap_cache]
+
+caches:
+  basemap_cache:
+    grids: [webmercator]
+    sources: [basemap_wms]
+    meta_size: [1, 1]
+
+sources:
+  basemap_wms:
+    type: wms
+    req:
+      url: https://ows.terrestris.de/osm/service
+      layers: OSM-WMS
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
+
+globals:

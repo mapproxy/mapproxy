@@ -1,0 +1,85 @@
+services:
+  # You can run this services by explicitly naming them.
+  # For example: `docker compose up mapproxy-dev`
+
+  mapproxy-dev:
+    profiles:
+      - dev
+      - debian
+    image: ghcr.io/mapproxy/mapproxy/mapproxy:latest-dev
+    build:
+      context: .
+      target: development
+    volumes:
+      # in single config use, mount a mapproxy config file to this location:
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
+      # the cache_data folder needs to be writable for the container
+      # this can be ensured by running `sudo chmod -R a+w cache_data`
+      - ./cache_data:/mapproxy/config/cache_data
+      # to use a logging config that differs from a default one, mount it to this location:
+      - ./docker/logging.ini:/mapproxy/config/logging.ini
+    ports:
+      # the application will run at http://localhost:8080/demo/
+      - "8080:8080"
+
+  mapproxy-nginx:
+    profiles:
+      - nginx
+      - debian
+    image: ghcr.io/mapproxy/mapproxy/mapproxy:latest-nginx
+    build:
+      context: .
+      target: nginx
+    volumes:
+      # in single config use, mount a mapproxy config file to this location:
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
+      # the cache_data folder needs to be writable for the container
+      # this can be ensured by running `sudo chmod -R a+w cache_data`
+      - ./cache_data:/mapproxy/config/cache_data
+      # to use a logging config that differs from a default one, mount it to this location:
+      - ./docker/logging.ini:/mapproxy/config/logging.ini
+    ports:
+      # the application will run at http://localhost/mapproxy/demo/
+      - "80:80"
+
+  mapproxy-alpine-dev:
+    profiles:
+      - dev
+      - alpine
+    image: ghcr.io/mapproxy/mapproxy/mapproxy:latest-alpine-dev
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile-alpine
+    volumes:
+      # in single config use, mount a mapproxy config file to this location:
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
+      # the cache_data folder needs to be writable for the container
+      # this can be ensured by running `sudo chmod -R a+w cache_data`
+      - ./cache_data:/mapproxy/config/cache_data
+      # to use a logging config that differs from a default one, mount it to this location:
+      - ./docker/logging.ini:/mapproxy/config/logging.ini
+    ports:
+      # the application will run at http://localhost:8080/demo/
+      - "8080:8080"
+
+  mapproxy-alpine-nginx:
+    profiles:
+      - nginx
+      - alpine
+    image: ghcr.io/mapproxy/mapproxy/mapproxy:latest-alpine-nginx
+    build:
+      context: .
+      target: nginx
+      dockerfile: Dockerfile-alpine
+    volumes:
+      # in single config use, mount a mapproxy config file to this location:
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
+      # the cache_data folder needs to be writable for the container
+      # this can be ensured by running `sudo chmod -R a+w cache_data`
+      - ./cache_data:/mapproxy/config/cache_data
+      # to use a logging config that differs from a default one, mount it to this location:
+      - ./docker/logging.ini:/mapproxy/config/logging.ini
+    ports:
+      # the application will run at http://localhost/mapproxy/demo/
+      - "80:80"
