@@ -169,7 +169,7 @@ class S3Cache(TileCacheBase):
 
         return True
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         key = self.tile_key(tile)
         log.debug('remove_tile, key: %s' % key)
         self.conn().delete_object(Bucket=self.bucket_name, Key=key)
