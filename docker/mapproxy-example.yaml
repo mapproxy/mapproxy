@@ -35,8 +35,8 @@ sources:
   basemap_wms:
     type: wms
     req:
-      url: https://sgx.geodatenzentrum.de/wms_basemapde
-      layers: de_basemapde_web_raster_farbe
+      url: https://ows.terrestris.de/osm/service
+      layers: OSM-WMS
 
 grids:
     webmercator:
