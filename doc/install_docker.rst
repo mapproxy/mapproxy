@@ -22,9 +22,9 @@ The alpine variants use alpine base images and are functionally the same as the 
 The first ones comes with everything installed, but no HTTP WebServer running. These can be used for seeding tasks or as base images for implementing custom setups.
 As they have no WebServer running they are not used normally.
 
-The images ending with `-dev`, start the integrated webserver mapproxy provides through `mapproxy-util serve-develop`. These should not be used in a production environment!
+The images ending with ``-dev``, start the integrated webserver mapproxy provides through ``mapproxy-util serve-develop``. These should not be used in a production environment!
 
-The images ending with `-nginx`, come bundled with a preconfigured `nginx`_ HTTP Server, that lets you use MapProxy instantly in a production environment.
+The images ending with ``-nginx``, come bundled with a preconfigured `nginx`_ HTTP Server, that lets you use MapProxy instantly in a production environment.
 
 See the quickstart section below for a configuration / example on how to use those images.
 
@@ -74,10 +74,18 @@ Configuration
 Volume-Mounts
 ~~~~~~~~~~~~~
 
-- `/mapproxy/config/mapproxy.yaml`: MapProxy Config
-- `/mapproxy/config/logging.ini`: Logging-Configuration
-- `/mapproxy/config/cache_data`: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
+- ``/mapproxy/config/mapproxy.yaml``: MapProxy Config
+- ``/mapproxy/config/logging.ini``: Logging-Configuration
+- ``/mapproxy/config/cache_data``: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
     This can be achieved with `chmod -R a+r cache_data`
+
+
+Environment Variables
+~~~~~~~~~~~~~~~~~~~~~
+
+- ``MULTIAPP_MAPPROXY``: If set to ``true``, MapProxy will start in multi app mode and will run all configurations simultaneously
+    that are in the ``/mapproxy/config/multiapp`` directory. Default is ``false``.
+- ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available configs on the root page. Default is ``false``.
 
 
 Build your own image
@@ -87,7 +95,7 @@ There exist 2 docker files in this repository. One for the debian based images (
 are multistage and have different targets:
 
 - `base` for the plain image that does not start a webserver
-- `development` for the development image that starts the dev mapserver
+- `development` for the development image that starts the dev server
 - `nginx` for the nginx image that uses nginx to run mapproxy
 
 So if you want to build the alpine nginx image, the command would look like this:

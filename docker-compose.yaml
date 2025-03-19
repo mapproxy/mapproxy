@@ -83,3 +83,28 @@ services:
     ports:
       # the application will run at http://localhost/mapproxy/demo/
       - "80:80"
+
+  mapproxy-multiapp:
+    profiles:
+      - multiapp
+      - nginx
+      - debian
+    image: ghcr.io/mapproxy/mapproxy/mapproxy:latest-nginx
+    build:
+      context: .
+      target: nginx
+    environment:
+      MULTIAPP_MAPPROXY: true
+      MULTIAPP_ALLOW_LISTINGS: true
+    volumes:
+      # for multiapp mode, mount multiple mapproxy config files to this location:
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/multiapp/mapproxy1.yaml
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/multiapp/mapproxy2.yaml
+      # the cache_data folder needs to be writable for the container
+      # this can be ensured by running `sudo chmod -R a+w cache_data`
+      - ./cache_data:/mapproxy/config/cache_data
+      # to use a logging config that differs from a default one, mount it to this location:
+      - ./docker/logging.ini:/mapproxy/config/logging.ini
+    ports:
+      # the application will run at http://localhost/mapproxy/
+      - "80:80"

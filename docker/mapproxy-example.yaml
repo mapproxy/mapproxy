@@ -21,18 +21,18 @@ services:
       abstract: This is a minimal MapProxy example.
 
 layers:
-  - name: basemap
-    title: basemap
-    sources: [basemap_cache]
+  - name: ows
+    title: ows
+    sources: [ows_cache]
 
 caches:
-  basemap_cache:
+  ows_cache:
     grids: [webmercator]
-    sources: [basemap_wms]
+    sources: [ows]
     meta_size: [1, 1]
 
 sources:
-  basemap_wms:
+  ows:
     type: wms
     req:
       url: https://ows.terrestris.de/osm/service
