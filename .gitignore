@@ -15,6 +15,7 @@ nosetests*.xml
 .settings
 .pydevproject
 .tox/
+/cache_data/
 
 .idea/
 *.iml
