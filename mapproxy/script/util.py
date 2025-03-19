@@ -23,6 +23,7 @@ import shutil
 import sys
 import textwrap
 import logging
+from logging.config import fileConfig
 
 from mapproxy.config.loader import load_plugins
 from mapproxy.script.conf.app import config_command
@@ -55,6 +56,7 @@ def serve_develop_command(args):
     parser.add_option("--debug", default=False, action='store_true',
                       dest="debug",
                       help="Enable debug mode")
+    parser.add_option("--log-config", dest="log_config", help="Path to a log config file")
     options, args = parser.parse_args(args)
 
     if len(args) != 2:
@@ -76,6 +78,8 @@ def serve_develop_command(args):
 
     if options.debug:
         setup_logging(level=logging.DEBUG)
+    elif options.log_config is not None:
+        fileConfig(options.log_config)
     else:
         setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
