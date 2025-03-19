@@ -716,14 +716,14 @@ class WMSLayer(WMSLayerBase):
     is_active = True
     layers = []
 
-    def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
+    def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
                  res_range=None, md=None, dimensions=None):
         self.name = name
         self.title = title
         self.md = md or {}
         self.map_layers = map_layers
-        self.info_layers = info_layers
-        self.legend_layers = legend_layers
+        self.info_layers = info_layers or []
+        self.legend_layers = legend_layers or []
         self.extent = merge_layer_extents(map_layers)
         self.dimensions = dimensions
 
