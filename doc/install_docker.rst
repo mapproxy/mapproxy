@@ -46,7 +46,7 @@ There are also images available that already include binaries for `MapServer` or
 Quickstart
 ----------
 
-The mapproxy repository includes an [example docker compose file](https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml)
+The mapproxy repository includes an `example docker compose file <https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml>`_
  that you can use to run one of the images or as a reference for the most commonly used options.
 
 Create a directory (e.g. `mapproxyconfig`) for your configuration files. Put your configs into that folder.
