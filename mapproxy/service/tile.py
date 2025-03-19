@@ -204,7 +204,7 @@ class TileServer(Server):
 
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager, info_sources=[], dimensions=None, legend_version=None):
+    def __init__(self, name, title, md, tile_manager, info_sources=None, dimensions=None, legend_version=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -213,7 +213,7 @@ class TileLayer(object):
         self.title = title
         self.md = md
         self.tile_manager = tile_manager
-        self.info_sources = info_sources
+        self.info_sources = info_sources or []
         self.dimensions = dimensions
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = self.md.get('extent').transform(tile_manager.grid.srs)
