@@ -98,8 +98,8 @@ services:
       MULTIAPP_ALLOW_LISTINGS: true
     volumes:
       # for multiapp mode, mount multiple mapproxy config files to this location:
-      - ./docker/mapproxy-example.yaml:/mapproxy/config/multiapp/mapproxy1.yaml
-      - ./docker/mapproxy-example.yaml:/mapproxy/config/multiapp/mapproxy2.yaml
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/apps/mapproxy1.yaml
+      - ./docker/mapproxy-example.yaml:/mapproxy/config/apps/mapproxy2.yaml
       # the cache_data folder needs to be writable for the container
       # this can be ensured by running `sudo chmod -R a+w cache_data`
       - ./cache_data:/mapproxy/config/cache_data

@@ -87,10 +87,10 @@ Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 
 - ``MULTIAPP_MAPPROXY``: **This can only be used in nginx images.** If set to ``true``, MapProxy will start in multi app
-    mode and will run all configurations simultaneously that are in the ``/mapproxy/config/multiapp`` directory. Default
+    mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default
     is ``false``.
-- ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available configs on the root
-    page. Default is ``false``.
+- ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available apps on the root page.
+    Default is ``false``.
 
 
 Build your own image

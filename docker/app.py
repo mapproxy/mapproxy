@@ -18,7 +18,7 @@ if multiapp_mapproxy:
     multiapp_allow_listings = os.environ.get('MULTIAPP_ALLOW_LISTINGS', False)
 
     print('Starting MapProxy in multi app mode')
-    application = make_wsgi_app(r'/mapproxy/config/multiapp/', allow_listing=multiapp_allow_listings)
+    application = make_wsgi_app(r'/mapproxy/config/apps/', allow_listing=multiapp_allow_listings)
 else:
     from mapproxy.wsgiapp import make_wsgi_app
 
