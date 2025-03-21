@@ -317,6 +317,8 @@ class DemoServer(Server):
                 wmts_layer = layer
                 break
 
+        rest_enabled = 'wmts_restful' in self.services
+
         restful_url = self.restful_template.replace('{Layer}', wmts_layer.name, 1)
         if '{Format}' in restful_url:
             restful_url = restful_url.replace('{Format}', wmts_layer.format)
@@ -335,6 +337,7 @@ class DemoServer(Server):
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers,
+                                   rest_enabled=rest_enabled,
                                    restful_url=restful_url,
                                    background_url=background_url)
 
