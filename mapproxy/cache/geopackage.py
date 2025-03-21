@@ -19,7 +19,6 @@ import hashlib
 import logging
 import os
 import re
-import sqlite3
 import threading
 import time
 from io import BytesIO
@@ -30,6 +29,7 @@ from mapproxy.image import ImageSource
 from mapproxy.srs import get_epsg_num
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
+from mapproxy.util.sqlite3 import sqlite3
 
 
 log = logging.getLogger(__name__)

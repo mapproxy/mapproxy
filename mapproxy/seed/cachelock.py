@@ -16,9 +16,10 @@
 
 import errno
 import os
-import sqlite3
 import time
 from contextlib import contextmanager
+
+from mapproxy.util.sqlite3 import sqlite3
 
 
 class CacheLockedError(Exception):

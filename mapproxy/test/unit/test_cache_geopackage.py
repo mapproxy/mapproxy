@@ -16,7 +16,6 @@
 from __future__ import division
 
 import os
-import sqlite3
 import threading
 import time
 
@@ -31,6 +30,7 @@ from mapproxy.srs import SRS
 from mapproxy.test.helper import assert_files_in_dir, assert_permissions
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 from mapproxy.util.coverage import coverage
+from mapproxy.util.sqlite3 import sqlite3
 
 
 GLOBAL_WEBMERCATOR_EXTENT = MapExtent(
