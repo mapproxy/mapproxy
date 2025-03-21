@@ -246,8 +246,9 @@ class GeopackageCache(TileCacheBase):
                     log.info("srs_id already exists.")
             db.commit()
 
-            last_change = datetime.datetime.utcfromtimestamp(
-                int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+            last_change = datetime.datetime.fromtimestamp(
+                int(os.environ.get('SOURCE_DATE_EPOCH', time.time())),
+                datetime.UTC
             )
 
             # Ensure that tile table exists here, don't overwrite a valid entry.

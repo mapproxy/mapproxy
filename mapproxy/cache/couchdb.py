@@ -245,7 +245,7 @@ class CouchDBCache(TileCacheBase):
 
 
 def utc_now_isoformat():
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     now = now.isoformat()
     # remove milliseconds, add Zulu timezone
     now = now.rsplit('.', 1)[0] + 'Z'
