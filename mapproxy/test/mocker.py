@@ -2190,7 +2190,7 @@ class Patcher(Task):
         for kind in self._monitored:
             attr = self._get_kind_attr(kind)
             seen = set()
-            for obj in self._monitored[kind].itervalues():
+            for obj in self._monitored[kind].values():
                 cls = type(obj)
                 if issubclass(cls, type):
                     cls = obj
@@ -2204,7 +2204,7 @@ class Patcher(Task):
                                     self.execute)
 
     def restore(self):
-        for obj, attr, original in self._patched.itervalues():
+        for obj, attr, original in self._patched.values():
             if original is Undefined:
                 delattr(obj, attr)
             else:
