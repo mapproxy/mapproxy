@@ -19,6 +19,7 @@ from mapproxy.template import template_loader, bunch
 
 import math
 import time
+from collections import OrderedDict
 
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -31,7 +32,6 @@ from mapproxy.grid import default_bboxs
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
-from mapproxy.util.ext.odict import odict
 from mapproxy.util.coverage import load_limited_to
 
 import logging
@@ -153,7 +153,7 @@ class TileServer(Server):
                 return self.layers
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
-            allowed_layers = odict()
+            allowed_layers = OrderedDict()
             for layer in self.layers.values():
                 if result['layers'].get(layer.name, {}).get('tile', False) is True:
                     allowed_layers[layer.name] = layer

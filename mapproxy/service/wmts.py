@@ -20,6 +20,8 @@ from __future__ import print_function
 
 import re
 from functools import partial
+import logging
+from collections import OrderedDict
 
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
@@ -32,10 +34,8 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.util.coverage import load_limited_to
-from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
-import logging
 
 env = {'bunch': bunch}
 get_template = template_loader(__package__, 'templates', namespace=env)
@@ -57,7 +57,7 @@ class WMTSServer(Server):
 
     def _matrix_sets(self, layers):
         sets = {}
-        layers_grids = odict()
+        layers_grids = OrderedDict()
         for layer in layers.values():
             grid = layer.grid
             if not grid.supports_access_with_origin('nw'):
@@ -69,8 +69,8 @@ class WMTSServer(Server):
                     sets[grid.name] = TileMatrixSet(grid)
                 except AssertionError:
                     continue  # TODO
-            layers_grids.setdefault(layer.name, odict())[grid.name] = layer
-        wmts_layers = odict()
+            layers_grids.setdefault(layer.name, OrderedDict())[grid.name] = layer
+        wmts_layers = OrderedDict()
         for layer_name, layers in layers_grids.items():
             wmts_layers[layer_name] = WMTSTileLayer(layers)
         return wmts_layers, sets.values()
@@ -366,7 +366,7 @@ class WMTSTileLayer(object):
     def __init__(self, layers):
         self.grids = [lyr.grid for lyr in layers.values()]
         self.layers = layers
-        self._layer = layers[layers.keys()[0]]
+        self._layer = layers[list(layers.keys())[0]]
 
     def __getattr__(self, name):
         return getattr(self._layer, name)
