@@ -29,7 +29,7 @@ jobs:
       - name: Make wheel
         run: |
           pip install -q build
-          pip -m build
+          python -m build
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
