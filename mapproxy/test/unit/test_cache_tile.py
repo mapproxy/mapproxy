@@ -174,7 +174,7 @@ class TileCacheTestBase(object):
         if tile.timestamp:
             now = time.time()
             if self.uses_utc:
-                now = calendar.timegm(datetime.datetime.utcnow().timetuple())
+                now = calendar.timegm(datetime.datetime.now(datetime.UTC).timetuple())
             assert abs(tile.timestamp - now) <= 10
         if tile.size:
             assert tile.size == size
