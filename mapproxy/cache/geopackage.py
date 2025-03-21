@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-import datetime
+from datetime import timezone, datetime
 import hashlib
 import logging
 import os
@@ -246,8 +246,9 @@ class GeopackageCache(TileCacheBase):
                     log.info("srs_id already exists.")
             db.commit()
 
-            last_change = datetime.datetime.utcfromtimestamp(
-                int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+            last_change = datetime.fromtimestamp(
+                int(os.environ.get('SOURCE_DATE_EPOCH', time.time())),
+                timezone.utc
             )
 
             # Ensure that tile table exists here, don't overwrite a valid entry.
