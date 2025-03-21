@@ -1,6 +1,7 @@
 import yaml
-import sqlite3
 import os
+
+from mapproxy.util.sqlite3 import sqlite3
 
 
 def conf_from_geopackage(geopackage_file, output_file=None):
