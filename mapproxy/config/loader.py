@@ -2349,12 +2349,9 @@ class ServiceConfiguration(ConfigurationBase):
             kvp = wmts_conf.get('kvp')
             restful = wmts_conf.get('restful')
 
-            if kvp is None and restful is None:
-                kvp = restful = True
-
-            if kvp:
+            if kvp or kvp is None:
                 services.append('wmts_kvp')
-            if restful:
+            if restful or restful is None:
                 services.append('wmts_restful')
 
         if 'wms' in self.context.services.conf:

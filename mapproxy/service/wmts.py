@@ -184,7 +184,7 @@ class WMTSServer(Server):
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
-                return self.layers.values()
+                return list(self.layers.values())
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
             allowed_layers = []
@@ -193,7 +193,7 @@ class WMTSServer(Server):
                     allowed_layers.append(layer)
             return allowed_layers
         else:
-            return self.layers.values()
+            return list(self.layers.values())
 
     def check_request(self, request, info_formats=None):
         request.make_request()
