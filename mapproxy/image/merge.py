@@ -211,7 +211,10 @@ class BandMerger(object):
         for op in self.ops:
             chan = src_img_bands[op.src_img][op.src_band]
             if op.factor != 1.0:
-                chan = ImageMath.eval("convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
+                chan = ImageMath.lambda_eval(
+                    lambda args: args["convert"](args["int"](args["float"](args["a"]) * op.factor), 'L'),
+                    a=chan
+                )
                 if result_bands[op.dst_band] is None:
                     result_bands[op.dst_band] = chan
                 else:
