@@ -93,20 +93,20 @@ Options
 
 .. option:: --seed=<task1,task2,..>
 
-  Only seed the named seeding tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--seed`` option multiple times.
+  Only seed the named seeding tasks. You can select multiple tasks with a list of comma separated  names, or you can use the ``--seed`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all cleanup tasks unless you also use the ``--cleanup`` option.
 
 .. option:: --cleanup=<task1,task2,..>
 
-  Only cleanup the named tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--cleanup`` option multiple times.
+  Only cleanup the named tasks. You can select multiple tasks with a list of comma separated  names, or you can use the ``--cleanup`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all seeding tasks unless you also use the ``--seed`` option.
 
 
 .. option:: --continue
 
-  Continue an interrupted seed progress. MapProxy will start the seeding progress at the begining if the progress file (``--progress-file``) was not found.  MapProxy can only continue if the previous seed was started with the ``--progress-file`` or ``--continue`` option.
+  Continue an interrupted seed progress. MapProxy will start the seeding progress at the beginning if the progress file (``--progress-file``) was not found.  MapProxy can only continue if the previous seed was started with the ``--progress-file`` or ``--continue`` option.
 
 .. option:: --progress-file
 
@@ -123,7 +123,7 @@ Options
 
 .. option:: --reseed-interval
 
-  Only start seeding if ``--reseed-file`` is older then this duration.
+  Only start seeding if ``--reseed-file`` is older than this duration.
   This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
   Use this option in combination with ``--continue`` to be able to resume the seeding. By default,
 
@@ -180,9 +180,6 @@ Seed task1 and task2 and cleanup task3 with concurrency of 2:
 
 Configuration
 -------------
-
-.. note:: The configuration changed with MapProxy 1.0.0, the old format with ``seeds`` and ``views`` is still supported but will be deprecated in the future. See :ref:`below <seed_old_configuration>` for information about the old format.
-
 
 The configuration is a YAML file with three sections:
 
@@ -369,7 +366,7 @@ Examples:
 A list with coverage names. Limits the cleanup area to the coverages. By default, the whole coverage of the grids will be cleaned up.
 
 .. note:: Be careful when cleaning up caches with large coverages and levels with lots of tiles (>14).
-  Without ``coverages``, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With ``coverages``, the seed tool traverses the whole tile pyramid and needs to check every posible tile if it exists and if it should be removed. This is much slower.
+  Without ``coverages``, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With ``coverages``, the seed tool traverses the whole tile pyramid and needs to check every possible tile if it exists and if it should be removed. This is much slower.
 
 ``remove_all``
 ~~~~~~~~~~~~~~
@@ -474,7 +471,7 @@ Example progress log::
 
 
 The output starts with the current time and ends with the number of tiles it has seeded or removed so far. The third value is the current progress in percent. The progress can make large jumps, if the seeding detects that a tile and all its subtiles are outside of the seeding coverage.
-The second and fourth value show the level and bounding box of where the seeding tool is in this moment. Keep in mind, that it does not seed level by level. This is described in :ref:`seeding method <seed_method>`.
+The second and fourth value show the level and bounding box of where the seeding tool is at this moment. Keep in mind that it does not seed level by level. This is described in :ref:`seeding method <seed_method>`.
 
 
 
@@ -485,10 +482,10 @@ Example: Background seeding
 
 .. versionadded:: 1.10.0 Works on Linux and Unix only
 
-The ``--duration`` option allows you run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process at a later time.
+The ``--duration`` option allows you to run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process later.
 You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
 
-However, this will restart the seeding process from the beginning every time the is seeding completed.
+However, this will restart the seeding process from the beginning every time the seeding is completed.
 You can prevent this with the ``--reeseed-interval`` and ``--reseed-file`` option.
 The following example starts seeding for six hours. It will seed for another six hours, every time you call this command again. Once all seed and cleanup tasks were processed the command will exit immediately every time you call it within 14 days after the first call. After 14 days, the modification time of the ``reseed.time`` file will be updated and the re-seeding process starts again.
 
@@ -499,113 +496,3 @@ The following example starts seeding for six hours. It will seed for another six
     --continue --progress-file .mapproxy_seed_progress
 
 You can use the ``--reseed-file`` as a ``refresh_before`` and ``remove_before`` ``mtime``-file.
-
-
-
-.. _seed_old_configuration:
-
-Old Configuration
------------------
-
-.. note:: The following description is for the old seed configuration.
-
-The configuration contains two keys: ``views`` and ``seeds``. ``views`` describes
-the geographical extents that should be seeded. ``seeds`` links actual layers with
-those ``views``.
-
-
-Seeds
-~~~~~
-
-Contains a dictionary with layer/view mapping.:
-
-.. code-block:: yaml
-
-    seeds:
-        cache1:
-            views: ['world', 'germany', 'oldb']
-        cache2:
-            views: ['world', 'germany']
-            remove_before:
-                time: '2009-04-01T14:45:00'
-                # or
-                minutes: 15
-                hours: 4
-                days: 9
-                weeks: 8
-
-`remove_before`:
-    If present, recreate tiles if they are older than the date or time delta. At the
-    end of the seeding process all tiles that are older will be removed.
-
-    You can either define a fixed time or a time delta. The `time` is a ISO-like date
-    string (no time-zones, no abbreviations). To define time delta use one or more
-    `seconds`, `minutes`, `hours`, `days` or `weeks` entries.
-
-Views
-~~~~~
-
-Contains a dictionary with all views. Each view describes a coverage/geographical extent and the levels that should be seeded.
-
-Coverages
-^^^^^^^^^
-
-.. note:: You will need to install additional dependencies, if you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding boxes. See :doc:`coverage documentation <coverages>`.
-
-
-There are three different ways to describe the extent of the seed view.
-
- - a simple rectangular bounding box,
- - a text file with one or more polygons in WKT format,
- - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
-
-Read the :doc:`coverage documentation <coverages>` for more information.
-
-Other options
-~~~~~~~~~~~~~
-
-``srs``:
-    A list with SRSs. If the layer contains caches for multiple SRS, only the caches
-    that match one of the SRS in this list will be seeded.
-
-``res``:
-    Seed until this resolution is cached.
-
-or
-
-``level``:
-    A number until which this layer is cached, or a tuple with a range of
-    levels that should be cached.
-
-Example configuration
-^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: yaml
-
-  views:
-    germany:
-      datasource: 'shps/world_boundaries_m.shp'
-      where: 'CNTRY_NAME = "Germany"'
-      srs: 'EPSG:900913'
-      level: [0, 14]
-      srs: ['EPSG:900913', 'EPSG:4326']
-    switzerland:
-      datasource: 'polygons/SZ.txt'
-      srs: EPSG:900913
-      level: [0, 14]
-      srs: ['EPSG:900913']
-    austria:
-      bbox: [9.36, 46.33, 17.28, 49.09]
-      srs: EPSG:4326
-      level: [0, 14]
-      srs: ['EPSG:900913']
-
-  seeds:
-    osm:
-      views: ['germany', 'switzerland', 'austria']
-      remove_before:
-        time: '2010-02-20T16:00:00'
-    osm_roads:
-      views: ['germany']
-      remove_before:
-        days: 30

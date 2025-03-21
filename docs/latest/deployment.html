@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
@@ -53,7 +53,7 @@
     <link rel="prev" title="mapproxy-util autoconfig" href="mapproxy_util_autoconfig.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Nov 26, 2024"/>
+    <meta name="docbuild:last-update" content="Mar 21, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">3.1.3</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -410,13 +410,13 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 </pre></div>
 </div>
 <p>The script contains the following lines and makes the configured MapProxy available as <code class="docutils literal notranslate"><span class="pre">application</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.wsgiapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_wsgi_app</span>
 <span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;examples/minimal/etc/mapproxy.yaml&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This is sufficient for embedding MapProxy with <code class="docutils literal notranslate"><span class="pre">mod_wsgi</span></code> or for starting it with Python HTTP servers like <code class="docutils literal notranslate"><span class="pre">waitress</span></code> (see further below). You can extend this script to setup logging or to set environment variables.</p>
 <p>You can enable MapProxy to automatically reload the configuration if it changes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.wsgiapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_wsgi_app</span>
 <span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;examples/minimal/etc/mapproxy.yaml&#39;</span><span class="p">,</span> <span class="n">reloader</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -576,9 +576,9 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.2.0.</span></p>
 </div>
-<p>You can run multiple MapProxy instances (configurations) within one process with the MultiMapProxy application.</p>
+<p>You can run multiple MapProxy apps (configurations) within one process with MultiMapProxy.</p>
 <p>MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: <code class="docutils literal notranslate"><span class="pre">conf/proj1.yaml</span></code> is available at <code class="docutils literal notranslate"><span class="pre">http://hostname/proj1/</span></code>.</p>
-<p>Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.</p>
+<p>Each configuration will be loaded on demand and MapProxy caches each loaded app. The configuration will be reloaded if the file changes.</p>
 <p>MultiMapProxy as the following options:</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">config_dir</span></code></dt><dd><p>The directory where MapProxy should look for configurations.</p>
@@ -589,8 +589,8 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 <section id="id8">
 <h3>Server Script<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
 <p>There is a <code class="docutils literal notranslate"><span class="pre">make_wsgi_app</span></code> function in the <code class="docutils literal notranslate"><span class="pre">mapproxy.multiapp</span></code> package that creates configured MultiMapProxy WSGI application. Replace the <code class="docutils literal notranslate"><span class="pre">application</span></code> definition in your script as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.multiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
-<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to.projects&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.multiapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_wsgi_app</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to.configs&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -707,7 +707,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Nov 26, 2024.
+  Last updated on Mar 21, 2025.
   <br/>
 </p>
   </div>

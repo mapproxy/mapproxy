@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
@@ -52,7 +52,7 @@
     <link rel="prev" title="Development" href="development.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Nov 26, 2024"/>
+    <meta name="docbuild:last-update" content="Mar 21, 2025"/>
   </head>
   
   
@@ -114,7 +114,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">3.1.3</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -357,7 +357,7 @@ a module with a <code class="docutils literal notranslate"><span class="pre">plu
 </div>
 <p>In this example, the <code class="docutils literal notranslate"><span class="pre">mapproxy_hips/pluginmodule.py</span></code> file should have
 a <code class="docutils literal notranslate"><span class="pre">plugin_entrypoint</span></code> method taking no argument and returning nothing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plugin_entrypoint</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">plugin_entrypoint</span><span class="p">():</span>
     <span class="c1"># call different registration methods, like register_service_configuration(),</span>
     <span class="c1"># register_source_configuration()</span>
     <span class="k">pass</span>
@@ -374,7 +374,7 @@ API or behavior would change and make them incompatible.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">mapproxy.config.loader</span></code> module has a <code class="docutils literal notranslate"><span class="pre">register_service_configuration()</span></code>
 method to register a new service and specify the allowed keywords for it in
 the YAML configuration file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_service_configuration</span><span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="n">service_creator</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">register_service_configuration</span><span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="n">service_creator</span><span class="p">,</span>
                                    <span class="n">yaml_spec_service_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yaml_spec_service_def</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new service.</span>
 
@@ -390,17 +390,17 @@ the YAML configuration file.</p>
 </pre></div>
 </div>
 <p>This can for example by used like the following snippet:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">register_service_configuration</span>
-<span class="kn">from</span> <span class="nn">mapproxy.service.base</span> <span class="kn">import</span> <span class="n">Server</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.config.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_service_configuration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.service.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Server</span>
 
-<span class="k">class</span> <span class="nc">MyExtraServiceServer</span><span class="p">(</span><span class="n">Server</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyExtraServiceServer</span><span class="p">(</span><span class="n">Server</span><span class="p">):</span>
     <span class="c1"># Look at classes at https://github.com/mapproxy/mapproxy/tree/master/mapproxy/service</span>
     <span class="c1"># for a real implementation</span>
     <span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;my_extra_service&#39;</span><span class="p">,)</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-<span class="k">def</span> <span class="nf">my_extra_service_method</span><span class="p">(</span><span class="n">serviceConfiguration</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_extra_service_method</span><span class="p">(</span><span class="n">serviceConfiguration</span><span class="p">,</span> <span class="n">conf</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">MyExtraServiceServer</span><span class="p">()</span>
 
 <span class="n">register_service_configuration</span><span class="p">(</span><span class="s1">&#39;my_extra_service&#39;</span><span class="p">,</span> <span class="n">my_extra_service_method</span><span class="p">,</span>
@@ -421,14 +421,14 @@ the YAML configuration file.</p>
 for it. The YAML validator needs to be updated to recognize the new keywords.
 The <code class="docutils literal notranslate"><span class="pre">add_subcategory_to_layer_md()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.config.spec</span></code> module
 can be used to do that.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_subcategory_to_layer_md</span><span class="p">(</span><span class="n">category_name</span><span class="p">,</span> <span class="n">category_def</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">add_subcategory_to_layer_md</span><span class="p">(</span><span class="n">category_name</span><span class="p">,</span> <span class="n">category_def</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Add a new category to wms_130_layer_md.</span>
 <span class="sd">        Used by plugins</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </pre></div>
 </div>
 <p>This can for example be used like in the following snippet:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.spec</span> <span class="kn">import</span> <span class="n">add_subcategory_to_layer_md</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.config.spec</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_subcategory_to_layer_md</span>
 
 <span class="c1"># Add a &#39;hips&#39; subcategory to layer spec to be able to define hips service</span>
 <span class="c1"># specific layer metadata</span>
@@ -441,7 +441,7 @@ can be used to do that.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">mapproxy.config.loader</span></code> module has a <code class="docutils literal notranslate"><span class="pre">register_source_configuration()</span></code>
 method to register a new source and specify the allowed keywords for it in
 the YAML configuration file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_source_configuration</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">config_class</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">register_source_configuration</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">config_class</span><span class="p">,</span>
                                   <span class="n">yaml_spec_source_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yaml_spec_source_def</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new source configuration.</span>
 
@@ -457,17 +457,17 @@ the YAML configuration file.</p>
 </pre></div>
 </div>
 <p>This can for example by used like the following snippet:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">register_source_configuration</span>
-<span class="kn">from</span> <span class="nn">mapproxy.config.loader</span> <span class="kn">import</span> <span class="n">SourceConfiguration</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.config.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_source_configuration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.config.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceConfiguration</span>
 
-<span class="k">class</span> <span class="nc">my_source_configuration</span><span class="p">(</span><span class="n">SourceConfiguration</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">my_source_configuration</span><span class="p">(</span><span class="n">SourceConfiguration</span><span class="p">):</span>
     <span class="n">source_type</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;my_extra_source&#39;</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Look at classes at https://github.com/mapproxy/mapproxy/tree/master/mapproxy/source</span>
         <span class="c1"># for a real implementation</span>
-        <span class="k">class</span> <span class="nc">MySource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">MySource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">MySource</span><span class="p">()</span>
 
@@ -491,7 +491,7 @@ the YAML configuration file.</p>
 <li><p>Customizing the output of the <code class="docutils literal notranslate"><span class="pre">/demo</span></code> HTML output, typically by adding entries
 for new services. This is done with the <code class="docutils literal notranslate"><span class="pre">register_extra_demo_substitution_handler()</span></code>
 method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.service.demo</span></code> module.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_extra_demo_substitution_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">register_extra_demo_substitution_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new handler for doing substitutions</span>
 <span class="sd">        to the HTML template used by the demo service.</span>
 <span class="sd">        The handler passed to this method is invoked by the DemoServer._render_template()</span>
@@ -509,7 +509,7 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 <li><p>Handling new request paths under the <code class="docutils literal notranslate"><span class="pre">/demo/</span></code> hierarchy, typically to implement a new
 service. This is done with the <code class="docutils literal notranslate"><span class="pre">register_extra_demo_server_handler()</span></code>
 method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.service.demo</span></code> module.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_extra_demo_server_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">register_extra_demo_server_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a new handler for the demo service.</span>
 <span class="sd">        The handler passed to this method is invoked by the DemoServer.handle()</span>
 <span class="sd">        method when receiving an incoming request. This enables handlers to</span>
@@ -524,14 +524,14 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 </li>
 </ul>
 <p>This can for example be used like in the following snippet:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.service.demo</span> <span class="kn">import</span> <span class="n">register_extra_demo_server_handler</span><span class="p">,</span> <span class="n">register_extra_demo_substitution_handler</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.service.demo</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_extra_demo_server_handler</span><span class="p">,</span> <span class="n">register_extra_demo_substitution_handler</span>
 
-<span class="k">def</span> <span class="nf">demo_server_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">demo_server_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;my_service&#39;</span> <span class="ow">in</span> <span class="n">req</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;my_return&#39;</span>
     <span class="k">return</span> <span class="kc">None</span>
 
-<span class="k">def</span> <span class="nf">demo_substitution_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">demo_substitution_handler</span><span class="p">(</span><span class="n">demo_server</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
     <span class="n">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;h2&gt;My extra service&lt;/h2&gt;&#39;</span>
     <span class="n">html</span> <span class="o">+=</span> <span class="s1">&#39;&lt;a href=&quot;/demo?my_service&quot;&gt;My service&lt;/a&gt;&#39;</span>
     <span class="n">substitutions</span><span class="p">[</span><span class="s1">&#39;extra_services_html_beginning&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">html</span>
@@ -546,7 +546,7 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 <h2>Adding new commands to mapproxy-util<a class="headerlink" href="#adding-new-commands-to-mapproxy-util" title="Permalink to this heading">#</a></h2>
 <p>New commands can be added to <a class="reference internal" href="mapproxy_util.html#mapproxy-util"><span class="std std-ref">mapproxy-util</span></a> by using the
 <code class="docutils literal notranslate"><span class="pre">register_command()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">mapproxy.script.util</span></code> module</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">register_command</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">command_spec</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">register_command</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">command_spec</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Method used by plugins to register a command.</span>
 
 <span class="sd">        :param command_name: Name of the command</span>
@@ -557,10 +557,10 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 </pre></div>
 </div>
 <p>This can for example be used like in the following snippet:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">optparse</span>
-<span class="kn">from</span> <span class="nn">mapproxy.script.util</span> <span class="kn">import</span> <span class="n">register_command</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">optparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.script.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_command</span>
 
-<span class="k">def</span> <span class="nf">my_command</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_command</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">optparse</span><span class="o">.</span><span class="n">OptionParser</span><span class="p">(</span><span class="s2">&quot;%prog my_command [options] -f mapproxy_conf -l layer&quot;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--mapproxy-conf&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;mapproxy_conf&quot;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;MapProxy configuration.&quot;</span><span class="p">)</span>
@@ -590,9 +590,9 @@ method of the <code class="docutils literal notranslate"><span class="pre">mappr
 <p>It is possible to intercept any request in a plugin with <cite>register_request_interceptor</cite>. The provided function will be called on any request and should
 always return a request, either the original one or a new one.</p>
 <p>Example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.wsgiapp</span> <span class="kn">import</span> <span class="n">register_request_interceptor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.wsgiapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_request_interceptor</span>
 
-<span class="k">def</span> <span class="nf">interceptor</span><span class="p">(</span><span class="n">req</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">interceptor</span><span class="p">(</span><span class="n">req</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;service&#39;</span><span class="p">):</span>
         <span class="n">environ</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">)</span>
@@ -688,7 +688,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Nov 26, 2024.
+  Last updated on Mar 21, 2025.
   <br/>
 </p>
   </div>
