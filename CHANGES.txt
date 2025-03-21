@@ -1,3 +1,35 @@
+4.0.0 2025-03-21
+~~~~~~~~~~~~~~~~
+
+Breaking:
+  - Removed legacy seed configuration.
+  - Removed Python 3.8 support.
+  - Removed riak support as the client library is not maintained anymore. If you rely on the riak support you have to
+    continue to use version 3.1.3 with Python 3.8.
+
+Improvements:
+
+  - The tile removal and refresh code is improved by simplifying the usage of `remove_timestamp` and `before_timestamp`
+    and complementing them by new `remove_all` and `refresh_all` parameters.
+  - Add a default logging config to the docker images.
+  - Add environment variables to the docker images to enable and configure multiapp support.
+  - Added a docker compose file to make it easy to run & build docker images and to use as reference.
+  - Updated and improved the documentation about usage of the docker images.
+
+Maintenance:
+
+  - Use python build instead of invoking setup.py.
+  - Removal of the six library.
+  - Removed array initializers in function signatures.
+
+Fixes:
+
+  - Added `AdminstrativeArea` to WMTS serviceprovider metadata.
+  - Fixed spelling & grammar in seed.rst.
+  - Fixed problem with combined usage of `coverage` and the `remove_all` cache config parameters.
+  - Fixed missing dimension parameters in the `remove_tile` functions of various caches.
+
+
 3.1.3 2024-11-26
 ~~~~~~~~~~~~~~~~
 
