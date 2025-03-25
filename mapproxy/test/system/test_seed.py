@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime, timezone
+
 import os
 import time
 import shutil
@@ -146,14 +146,12 @@ class TestSeed(SeedTestBase):
     def test_cleanup_levels(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['cleanup'])
-        print(cleanup_tasks)
 
         self.make_tile((0, 0, 0))
         self.make_tile((0, 0, 1))
         self.make_tile((0, 0, 2))
         self.make_tile((0, 0, 3))
 
-        print(f'Current time is {datetime.now(timezone.utc)}')
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert not self.tile_exists((0, 0, 0))
         assert not self.tile_exists((0, 0, 1))
