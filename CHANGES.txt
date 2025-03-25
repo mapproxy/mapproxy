@@ -1,3 +1,15 @@
+4.0.1 2025-03-25
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+  - Added docs regarding OGC API support
+
+Fixes:
+
+  - WMTS Demo now works if kvp is disabled
+
+
 4.0.0 2025-03-21
 ~~~~~~~~~~~~~~~~
 
