@@ -15,7 +15,7 @@
 
 
 import codecs
-import datetime
+from datetime import timezone, datetime
 import json
 import socket
 import time
@@ -245,7 +245,7 @@ class CouchDBCache(TileCacheBase):
 
 
 def utc_now_isoformat():
-    now = datetime.datetime.utcnow()
+    now = datetime.now(timezone.utc)
     now = now.isoformat()
     # remove milliseconds, add Zulu timezone
     now = now.rsplit('.', 1)[0] + 'Z'
