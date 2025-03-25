@@ -46,13 +46,14 @@ jscript_functions=None
         const projection = ol.proj.get(srs);
 
         const source = new ol.source.WMTS({
-            url: '../service?',
+            url: {{if rest_enabled}}'../wmts{{restful_url}}'{{else}}'../service?'{{endif}},
             layer: "{{layer.name}}",
             matrixSet: '{{matrix_set}}',
             format: "{{format}}",
             projection: "{{srs}}",
             transparent: transparent,
             style: '',
+            {{if rest_enabled}}requestEncoding: 'REST',{{endif}}
             tileGrid: new ol.tilegrid.WMTS({
                 origin: ol.extent.getTopLeft(grid_extent),
                 resolutions: resolutions,
