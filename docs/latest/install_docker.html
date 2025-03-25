@@ -53,7 +53,7 @@
     <link rel="prev" title="Installation on Windows" href="install_windows.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Mar 21, 2025"/>
+    <meta name="docbuild:last-update" content="Mar 25, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">4.0.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.0.1</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -213,6 +213,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -361,11 +362,11 @@ These are currently hosted on the GitHub container registry and can be found her
 base images for implementing custom setups. As they have no WebServer running they are not used normally.</p>
 <p>The images ending with <code class="docutils literal notranslate"><span class="pre">-dev</span></code>, start the integrated webserver mapproxy provides through
 <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">serve-develop</span></code>. These should not be used in a production environment!</p>
-<p>The images ending with <code class="docutils literal notranslate"><span class="pre">-nginx</span></code>, come bundled with a preconfigured <a href="#id1"><span class="problematic" id="id2">`nginx`_</span></a> HTTP Server, that lets you use MapProxy
-instantly in a production environment.</p>
+<p>The images ending with <code class="docutils literal notranslate"><span class="pre">-nginx</span></code>, come bundled with a preconfigured <a class="reference external" href="https://nginx.org/">nginx</a> HTTP Server, that
+lets you use MapProxy instantly in a production environment.</p>
 <p>See the quickstart section below for a configuration / example on how to use those images.</p>
-<p>There are also several unofficial Docker images available on <a class="reference external" href="https://hub.docker.com/search?q=mapproxy">Docker Hub</a> that provide ready-to-use containers for
-MapProxy.</p>
+<p>There are also several unofficial Docker images available on <a class="reference external" href="https://hub.docker.com/search?q=mapproxy">Docker Hub</a>
+that provide ready-to-use containers forMapProxy.</p>
 <p>The community has very good experiences with the following ones:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://hub.docker.com/repository/docker/justb4/mapproxy/general">https://hub.docker.com/repository/docker/justb4/mapproxy/general</a> (<a class="reference external" href="https://github.com/justb4/docker-mapproxy">github just4b</a>)</p></li>
@@ -378,10 +379,8 @@ MapProxy.</p>
 </ul>
 <section id="quickstart">
 <h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h2>
-<dl class="simple">
-<dt>The mapproxy repository includes an <a class="reference external" href="https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml">example docker compose file</a></dt><dd><p>that you can use to run one of the images or as a reference for the most commonly used options.</p>
-</dd>
-</dl>
+<p>The mapproxy repository includes an <a class="reference external" href="https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml">example docker compose file</a>
+that you can use to run one of the images or as a reference for the most commonly used options.</p>
 <p>Create a directory (e.g. <cite>mapproxyconfig</cite>) for your configuration files. Put your configs into that folder.
 If you do not supply a mapproxy config file the image will create a default seed.yaml and mapproxy.yaml for you.</p>
 <p>Then pull the image that you want to use, for example:</p>
@@ -401,28 +400,18 @@ If you do not supply a mapproxy config file the image will create a default seed
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/mapproxy.yaml</span></code>: MapProxy Config</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/logging.ini</span></code>: Logging-Configuration</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/cache_data</span></code>: Cache Data dir. Make sure that this directory is writable for the mapproxy image.</dt><dd><p>This can be achieved with <cite>chmod -R a+r cache_data</cite></p>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/cache_data</span></code>: Cache Data dir. Make sure that this directory is writable for the mapproxy image.</p></li>
 </ul>
+<p>This can be achieved with <cite>chmod -R a+r cache_data</cite></p>
 </section>
 <section id="environment-variables">
 <h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">MULTIAPP_MAPPROXY</span></code>: <strong>This can only be used in nginx images.</strong> If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will start in multi app</dt><dd><p>mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default
-is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.</dt><dd><p>Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_MAPPROXY</span></code>: <strong>This can only be used in nginx images.</strong> If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will start in multi app</p></li>
 </ul>
+<p>mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.
+Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </section>
 </section>
 <section id="build-your-own-image">
@@ -525,7 +514,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Mar 21, 2025.
+  Last updated on Mar 25, 2025.
   <br/>
 </p>
   </div>
