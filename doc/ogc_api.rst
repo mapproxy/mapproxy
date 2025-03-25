@@ -3,7 +3,7 @@ OGC API Support
 
 MapProxy does not support the OGC APIs natively. There are ways to combine MapProxy with pygeoapi via docker to be able
 to use MapProxy through the OGC API of pygeoapi. An example project exists here:
-https://github.com/mapproxy/mapproxy-pygeoapi.
+https://github.com/mapproxy/mapproxy-pygeoapi-example.
 
 Call for sponsors
 -----------------
