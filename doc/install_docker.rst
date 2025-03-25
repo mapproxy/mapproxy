@@ -25,15 +25,13 @@ base images for implementing custom setups. As they have no WebServer running th
 The images ending with ``-dev``, start the integrated webserver mapproxy provides through
 ``mapproxy-util serve-develop``. These should not be used in a production environment!
 
-The images ending with ``-nginx``, come bundled with a preconfigured `nginx`_ HTTP Server, that lets you use MapProxy
-instantly in a production environment.
+The images ending with ``-nginx``, come bundled with a preconfigured `nginx <https://nginx.org/>`_ HTTP Server, that
+lets you use MapProxy instantly in a production environment.
 
 See the quickstart section below for a configuration / example on how to use those images.
 
-There are also several unofficial Docker images available on `Docker Hub`_ that provide ready-to-use containers for
-MapProxy.
-
-.. _`Docker Hub`: https://hub.docker.com/search?q=mapproxy
+There are also several unofficial Docker images available on `Docker Hub <https://hub.docker.com/search?q=mapproxy>`_
+that provide ready-to-use containers forMapProxy.
 
 The community has very good experiences with the following ones:
 
@@ -50,7 +48,7 @@ Quickstart
 ----------
 
 The mapproxy repository includes an `example docker compose file <https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml>`_
- that you can use to run one of the images or as a reference for the most commonly used options.
+that you can use to run one of the images or as a reference for the most commonly used options.
 
 Create a directory (e.g. `mapproxyconfig`) for your configuration files. Put your configs into that folder.
 If you do not supply a mapproxy config file the image will create a default seed.yaml and mapproxy.yaml for you.
@@ -80,17 +78,16 @@ Volume-Mounts
 - ``/mapproxy/config/mapproxy.yaml``: MapProxy Config
 - ``/mapproxy/config/logging.ini``: Logging-Configuration
 - ``/mapproxy/config/cache_data``: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
-    This can be achieved with `chmod -R a+r cache_data`
+This can be achieved with `chmod -R a+r cache_data`
 
 
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 
 - ``MULTIAPP_MAPPROXY``: **This can only be used in nginx images.** If set to ``true``, MapProxy will start in multi app
-    mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default
-    is ``false``.
+mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default is ``false``.
 - ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available apps on the root page.
-    Default is ``false``.
+Default is ``false``.
 
 
 Build your own image
