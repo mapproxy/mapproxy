@@ -109,15 +109,11 @@ class SeedingConfiguration(object):
 
     def seed_tasks_names(self):
         seeds = self.conf.get('seeds') or {}
-        if seeds:
-            return seeds.keys()
-        return []
+        return list(seeds.keys())
 
     def cleanup_tasks_names(self):
         cleanups = self.conf.get('cleanups') or {}
-        if cleanups:
-            return cleanups.keys()
-        return []
+        return list(cleanups.keys())
 
     def seeds(self, names=None):
         """
