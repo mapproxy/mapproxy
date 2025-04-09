@@ -49,6 +49,8 @@ Behind an HTTP server or proxy
 
 Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.
 
+.. note:: In production mode it is recommended to disable the demo service.
+
 .. _server_script:
 
 Server script
