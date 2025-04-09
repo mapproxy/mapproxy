@@ -20,6 +20,7 @@ from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
 from mapproxy.wsgiapp import make_wsgi_app as make_mapproxy_wsgi_app
+from mapproxy.util.escape import escape_html
 
 from threading import Lock
 
@@ -95,7 +96,7 @@ class MultiMapProxy(object):
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
 
-        url = req.script_url
+        url = escape_html(req.script_url)
         if self.list_apps:
             html += "<h2>available instances:</h2><ul>"
             html += '\n'.join('<li><a href="%(url)s/%(name)s/">%(name)s</a></li>' % {'url': url, 'name': app}

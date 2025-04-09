@@ -16,7 +16,9 @@
 import re
 import pytest
 
+from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
+from webtest import AppError
 
 
 @pytest.fixture(scope="module")
@@ -54,3 +56,68 @@ class TestDemo(SysTest):
         assert layersWMS == sorted(layersWMS)
         assert layersWMTS == sorted(layersWMTS)
         assert layersTBS == sorted(layersTBS)
+
+    def test_external(self, app):
+        expected_req = (
+            {
+                "path": r"/path/service?REQUEST=GetCapabilities&SERVICE=WMS"
+            },
+            {"body": b"test-string", "headers": {"content-type": "text/xml"}}
+        )
+        with mock_httpd(
+                ("localhost", 42423), [expected_req]
+        ):
+            resp = app.get('/demo/?wms_capabilities&type=external', extra_environ={
+                'HTTP_X_FORWARDED_HOST': 'localhost:42423/path'
+            })
+            content = resp.text
+            assert 'test-string' in content
+            assert 'http://localhost:42423/path/service?REQUEST=GetCapabilities&SERVICE=WMS' in content
+
+    def test_external_xss_injection(self, app):
+        expected_req = (
+            {
+                "path": r"/path/&gt;&lt;script&gt;alert(XSS)&lt;/script&gt;/service?REQUEST=GetCapabilities&SERVICE=WMS"
+            },
+            {"body": b"test-string", "headers": {"content-type": "text/xml"}}
+        )
+
+        with mock_httpd(
+                ("localhost", 42423), [expected_req]
+        ):
+            resp = app.get('/demo/?wms_capabilities&type=external', extra_environ={
+                'HTTP_X_FORWARDED_HOST': 'localhost:42423/path/"><script>alert(\'XSS\')</script>'
+            })
+        content = resp.text
+        assert 'test-string' in content
+        assert '"><script>alert(\'XSS\')' not in content
+        assert '&gt;&lt;script&gt;alert(XSS)&lt;/script&gt;' in content
+
+    def test_external_file_protocol(self, app):
+        try:
+            app.get('/demo/?wms_capabilities&type=external', extra_environ={
+                'HTTP_X_FORWARDED_PROTO': 'file'
+            })
+        except AppError as e:
+            assert '400 Bad Request' in e.args[0]
+
+    def test_tms_layer_xss(self, app):
+        expected_req = (
+            {
+                "path": r"/tms/1.0.0/osm&gt;&lt;script&gt;alert(XSS)&lt;/script&gt;/1.0.0"
+            },
+            {"body": b"test-string", "headers": {"content-type": "text/xml"}}
+        )
+
+        with mock_httpd(
+                ("localhost", 42423), [expected_req]
+        ):
+            resp = app.get(
+                '/demo/?tms_capabilities&layer=osm"><script>alert(\'XSS\')</script>&type=external&srs=1.0.0',
+                extra_environ={
+                    'HTTP_X_FORWARDED_HOST': 'localhost:42423'
+                }
+            )
+        content = resp.text
+        assert '"><script>alert(\'XSS\')' not in content
+        assert '&gt;&lt;script&gt;alert(XSS)&lt;/script&gt;' in content
