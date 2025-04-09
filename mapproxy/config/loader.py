@@ -41,6 +41,7 @@ from mapproxy.compat import string_type, iteritems
 class ConfigurationError(Exception):
     pass
 
+
 class ProxyConfiguration(object):
     def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
         self.configuration = conf
@@ -2211,6 +2212,10 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
     errors = validate_references(conf_dict)
     for error in errors:
         log.warning(error)
+
+    services = conf_dict.get('services')
+    if services is not None and 'demo' in services:
+        log.warning('Application has demo page enabled. It is recommended to disable this in production.')
 
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
         renderd=renderd)

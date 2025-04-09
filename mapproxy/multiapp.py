@@ -20,12 +20,13 @@ from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
 from mapproxy.wsgiapp import make_wsgi_app as make_mapproxy_wsgi_app
-from mapproxy.compat import iteritems
+from mapproxy.util.escape import escape_html
 
 from threading import Lock
 
 import logging
 log = logging.getLogger(__name__)
+
 
 def asbool(value):
     """
@@ -37,6 +38,7 @@ def asbool(value):
     value = str(value).lower()
     return value in ('1', 'true', 'yes', 'on')
 
+
 def app_factory(global_options, config_dir, allow_listing=False, **local_options):
     """
     Create a new MultiMapProxy app.
@@ -45,6 +47,7 @@ def app_factory(global_options, config_dir, allow_listing=False, **local_options
     :param allow_listing: allow to list all available apps
     """
     return make_wsgi_app(config_dir, asbool(allow_listing))
+
 
 def make_wsgi_app(config_dir, allow_listing=True, debug=False):
     """
@@ -93,7 +96,7 @@ class MultiMapProxy(object):
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
 
-        url = req.script_url
+        url = escape_html(req.script_url)
         if self.list_apps:
             html += "<h2>available instances:</h2><ul>"
             html += '\n'.join('<li><a href="%(url)s/%(name)s/">%(name)s</a></li>' % {'url': url, 'name': app}
@@ -170,6 +173,7 @@ class DirectoryConfLoader(ConfLoader):
     """
     Load application configurations from a directory.
     """
+
     def __init__(self, base_dir, suffix='.yaml'):
         self.base_dir = base_dir
         self.suffix = suffix
@@ -177,7 +181,7 @@ class DirectoryConfLoader(ConfLoader):
     def needs_reload(self, app_name, timestamps):
         if not timestamps:
             return True
-        for conf_file, timestamp in iteritems(timestamps):
+        for conf_file, timestamp in timestamps.items():
             m_time = os.path.getmtime(conf_file)
             if m_time > timestamp:
                 return True
