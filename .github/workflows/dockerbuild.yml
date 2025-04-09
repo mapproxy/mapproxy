@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push base image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile
           push: true
@@ -57,7 +57,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile
           push: true
@@ -66,7 +66,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile
           push: true
@@ -95,7 +95,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push base alpine image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile-alpine
           push: true
@@ -104,7 +104,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push alpine development image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile-alpine
           push: true
@@ -113,7 +113,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push alpine based nginx image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: ./Dockerfile-alpine
           push: true
@@ -128,9 +128,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
-          format: 'table'
+          format: 'sarif'
           ignore-unfixed: true
           image-ref: ${{ needs.get-version.outputs.version }}
           output: 'trivy-results.sarif'

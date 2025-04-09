@@ -23,13 +23,13 @@ jobs:
       run: sphinx-build doc/ docs -D html_context.current_version=${{ github.ref_name }}
 
     - name: Deploy docs to folder `latest` to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      uses: JamesIves/github-pages-deploy-action@v4.7.2
       with:
         folder: docs
         target-folder: docs/latest
 
     - name: Deploy docs to a folder named after the new tag to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      uses: JamesIves/github-pages-deploy-action@v4.7.2
       with:
         folder: docs
         target-folder: docs/${{ github.ref_name }}
@@ -43,10 +43,10 @@ jobs:
         | sort -V \
         | uniq \
         | jq -R -s -c 'split("\n")[:-1]' \
-        > docs/config/versions.json
+        > config/versions.json
 
     - name: Deploy config folder to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      uses: JamesIves/github-pages-deploy-action@v4.7.2
       with:
         folder: config
         target-folder: docs/config
