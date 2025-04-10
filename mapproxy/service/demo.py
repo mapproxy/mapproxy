@@ -18,6 +18,9 @@ Demo service handler
 """
 from __future__ import division
 
+import logging
+import re
+
 import os
 import pkg_resources
 import mimetypes
@@ -31,6 +34,7 @@ from mapproxy.response import Response
 from mapproxy.srs import SRS, get_epsg_num
 from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
 from mapproxy.source.wms import WMSSource
+from mapproxy.util.escape import escape_html
 
 if PY2:
     import urllib2
@@ -43,6 +47,9 @@ get_template = template_loader(__name__, 'templates', namespace=env)
 
 # Used by plugins
 extra_demo_server_handlers = set()
+
+logger = logging.getLogger("demo")
+
 
 def register_extra_demo_server_handler(handler):
     """ Method used by plugins to register a new handler for the demo service.
@@ -59,6 +66,7 @@ def register_extra_demo_server_handler(handler):
 
 
 extra_substitution_handlers = set()
+
 
 def register_extra_demo_substitution_handler(handler):
     """ Method used by plugins to register a new handler for doing substitutions
@@ -84,6 +92,7 @@ def static_filename(name):
 
 class DemoServer(Server):
     names = ('demo',)
+
     def __init__(self, layers, md, request_parser=None, tile_layers=None,
                  srs=None, image_formats=None, services=None, restful_template=None):
         Server.__init__(self)
@@ -99,6 +108,28 @@ class DemoServer(Server):
         self.srs = srs
         self.services = services or []
         self.restful_template = restful_template
+
+    @staticmethod
+    def get_capabilities_url(service_path, req):
+        if 'type' in req.args and req.args['type'] == 'external':
+            url = escape_html(req.script_url) + service_path
+        else:
+            url = req.server_script_url + service_path
+        return url
+
+    @staticmethod
+    def valid_url(url):
+        pattern = re.compile("^https?://")
+        if pattern.match(url):
+            return True
+        else:
+            logging.warn(f"A request was blocked that was trying to access a non-http resource: {url}")
+            return False
+
+    @staticmethod
+    def read_capabilities(url):
+        resp = urllib2.urlopen(url)
+        return escape_html(resp.read().decode())
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
@@ -132,41 +163,47 @@ class DemoServer(Server):
         elif 'wmts_layer' in req.args:
             demo = self._render_wmts_template('demo/wmts_demo.html', req)
         elif 'wms_capabilities' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities'%(req.server_script_url)
-            url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            url = self.get_capabilities_url('/service?REQUEST=GetCapabilities&SERVICE=WMS', req)
+            if not self.valid_url(url):
+                return Response('bad request', content_type='text/plain', status=400)
+            capabilities = self.read_capabilities(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.server_script_url)
-            url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            url = self.get_capabilities_url('/service?REQUEST=GetCapabilities&SERVICE=WMS&tiled=true', req)
+            if not self.valid_url(url):
+                return Response('bad request', content_type='text/plain', status=400)
+            capabilities = self.read_capabilities(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
         elif 'wmts_capabilities_kvp' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS' % (req.server_script_url)
-            url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            url = self.get_capabilities_url('/service?REQUEST=GetCapabilities&SERVICE=WMTS', req)
+            if not self.valid_url(url):
+                return Response('bad request', content_type='text/plain', status=400)
+            capabilities = self.read_capabilities(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'wmts_capabilities' in req.args:
-            internal_url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.server_script_url)
-            url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            url = self.get_capabilities_url('/wmts/1.0.0/WMTSCapabilities.xml', req)
+            if not self.valid_url(url):
+                return Response('bad request', content_type='text/plain', status=400)
+            capabilities = self.read_capabilities(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
-                # prevent dir traversal (seems it's not possible with urllib2, but better safe then sorry)
-                layer = req.args['layer'].replace('..', '')
-                srs = req.args['srs'].replace('..', '')
-                internal_url = '%s/tms/1.0.0/%s/%s'%(req.server_script_url, layer, srs)
+                # prevent dir traversal (seems it's not possible with urllib2, but better safe than sorry)
+                layer = escape_html(req.args['layer'].replace('..', ''))
+                srs = escape_html(req.args['srs'].replace('..', ''))
+                service_path = f'/tms/1.0.0/{layer}/{srs}'
             else:
-                internal_url = '%s/tms/1.0.0/'%(req.server_script_url)
-            capabilities = urllib2.urlopen(internal_url)
-            url = internal_url.replace(req.server_script_url, req.script_url)
+                service_path = '/tms/1.0.0/'
+            url = self.get_capabilities_url(service_path, req)
+            if not self.valid_url(url):
+                return Response('bad request', content_type='text/plain', status=400)
+            capabilities = self.read_capabilities(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':
             demo = self._render_template(req, 'demo/demo.html')
         else:
             resp = Response('', status=301)
-            resp.headers['Location'] = req.script_url.rstrip('/') + '/demo/'
+            resp.headers['Location'] = escape_html(req.script_url).rstrip('/') + '/demo/'
             return resp
         return Response(demo, content_type='text/html')
 
@@ -234,14 +271,14 @@ class DemoServer(Server):
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
         layer = self.layers[req.args['wms_layer']]
-        srs = escape(req.args['srs'])
+        srs = escape_html(req.args['srs'])
         bbox = layer.extent.bbox_for(SRS(srs))
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/256, height/256)
         return template.substitute(layer=layer,
                                    image_formats=self.image_formats,
-                                   format=escape(req.args['format']),
+                                   format=escape_html(req.args['format']),
                                    srs=srs,
                                    layer_srs=self.layer_srs,
                                    bbox=bbox,
@@ -270,8 +307,8 @@ class DemoServer(Server):
         else:
             add_res_to_options = False
         return template.substitute(layer=tile_layer,
-                                   srs=escape(req.args['srs']),
-                                   format=escape(req.args['format']),
+                                   srs=escape_html(req.args['srs']),
+                                   format=escape_html(req.args['format']),
                                    resolutions=res,
                                    units=units,
                                    add_res_to_options=add_res_to_options,
@@ -295,8 +332,8 @@ class DemoServer(Server):
             units = 'm'
         return template.substitute(layer=wmts_layer,
                                    matrix_set=wmts_layer.grid.name,
-                                   format=escape(req.args['format']),
-                                   srs=escape(req.args['srs']),
+                                   format=escape_html(req.args['format']),
+                                   srs=escape_html(req.args['srs']),
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers,
@@ -317,15 +354,3 @@ class DemoServer(Server):
                 return True
             return False
         return True
-
-
-def escape(data):
-    """
-    Escape user-provided input data for safe inclusion in HTML _and_ JS to prevent XSS.
-    """
-    data = data.replace('&', '&amp;')
-    data = data.replace('>', '&gt;')
-    data = data.replace('<', '&lt;')
-    data = data.replace("'", '')
-    data = data.replace('"', '')
-    return data

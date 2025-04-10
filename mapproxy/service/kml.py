@@ -21,6 +21,8 @@ from mapproxy.service.base import Server
 from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import load_limited_to
+from mapproxy.util.escape import escape_html
+
 
 class KMLRequest(TileRequest):
     """
@@ -43,6 +45,7 @@ class KMLRequest(TileRequest):
     @property
     def exception_handler(self):
         return PlainExceptionHandler()
+
 
 class KMLInitRequest(TileRequest):
     """
@@ -67,11 +70,13 @@ class KMLInitRequest(TileRequest):
     def exception_handler(self):
         return PlainExceptionHandler()
 
+
 def kml_request(req):
     if KMLInitRequest.tile_req_re.match(req.path):
         return KMLInitRequest(req)
     else:
         return KMLRequest(req)
+
 
 class KMLServer(Server):
     """
@@ -179,10 +184,10 @@ class KMLServer(Server):
 
         subtiles = self._get_subtiles(map_request, layer)
         tile_size = layer.grid.tile_size[0]
-        url = map_request.http.script_url.rstrip('/')
-        result = KMLRenderer().render(tile=tile, subtiles=subtiles, layer=layer,
-            url=url, name=map_request.layer, format=layer.format, name_path=layer.md['name_path'],
-            initial_level=initial_level, tile_size=tile_size)
+        url = escape_html(map_request.http.script_url.rstrip('/'))
+        result = KMLRenderer().render(
+            tile=tile, subtiles=subtiles, layer=layer, url=url, name=map_request.layer, format=layer.format,
+            name_path=layer.md['name_path'], initial_level=initial_level, tile_size=tile_size)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_tile_age)
         resp.make_conditional(map_request.http)

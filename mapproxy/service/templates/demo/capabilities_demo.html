@@ -11,8 +11,6 @@ jscript_functions = None
             <h2>{{service}} GetCapabilities</h2>
             <a href="{{url}}">{{url}}</a>
             <pre>
-{{for line in capabilities}}
-{{escape(wrapper.fill(line.decode('utf8')))}}
-{{endfor}}
+{{capabilities}}
             </pre>
 
