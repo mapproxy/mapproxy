@@ -89,11 +89,6 @@ This is the default cache type and it uses a single file for each tile. Availabl
 
   .. versionadded:: 2.0.0
 
-``directory_permissions``, ``file_permissions``:
-  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
-
-  .. versionadded:: 3.1.0
-
 .. _cache_mbtiles:
 
 ``mbtiles``
@@ -130,11 +125,6 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
   Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
 The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
-
-``directory_permissions``, ``file_permissions``:
-  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
-
-  .. versionadded:: 3.1.0
 
 .. _cache_sqlite:
 
@@ -185,11 +175,6 @@ Available options:
         cache:
           type: sqlite
           directory: /path/to/cache
-
-``directory_permissions``, ``file_permissions``:
-  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
-
-  .. versionadded:: 3.1.0
 
 .. _cache_couchdb:
 
@@ -288,7 +273,7 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 
 
 .. code-block:: json
-
+  
 
   {
       "_attachments": {
@@ -528,7 +513,7 @@ Available options:
   When set to ``true``, requests to S3 ``GetObject`` will be fetched via urllib2 instead of boto, which decreases response times. Defaults to ``false``.
 
 .. note::
-  The hierarchical ``directory_layouts`` can hit limitations of AWS S3 if you are routinely processing 3500 or more requests per second. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
+  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
 
 Example
 -------
@@ -665,11 +650,6 @@ Available options:
 
 ``version``:
   The version of the ArcGIS compact cache format. This option is required. Either ``1`` or ``2``.
-
-``directory_permissions``, ``file_permissions``:
-  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
-
-  .. versionadded:: 3.1.0
 
 
 You can set the ``sources`` to an empty list, if you use an existing compact cache files and do not have a source.

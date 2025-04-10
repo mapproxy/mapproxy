@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">3.1.4</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -620,7 +620,7 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 </section>
 <section id="title">
 <h3><code class="docutils literal notranslate"><span class="pre">title</span></code><a class="headerlink" href="#title" title="Permalink to this heading">#</a></h3>
-<p>Readable name of the layer, e.g. WMS layer title.</p>
+<p>Readable name of the layer, e.g WMS layer title.</p>
 </section>
 <section id="id1">
 <span id="id2"></span><h3><code class="docutils literal notranslate"><span class="pre">layers</span></code><a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
@@ -666,12 +666,12 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <section id="min-res-max-res-or-min-scale-max-scale">
 <h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code><a class="headerlink" href="#min-res-max-res-or-min-scale-max-scale" title="Permalink to this heading">#</a></h3>
 <p>Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (<code class="docutils literal notranslate"><span class="pre">min_res</span></code> is inclusive, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> exclusive). You can use either the resolution or the scale values, missing values will be interpreted as <cite>unlimited</cite>. Resolutions should be in meters per pixel.</p>
-<p>The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).</p>
+<p>The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).</p>
 <p>Please read <a class="reference internal" href="#scale-resolution"><span class="std std-ref">scale vs. resolution</span></a> for some notes on <cite>scale</cite>.</p>
 </section>
 <section id="legendurl">
 <h3><code class="docutils literal notranslate"><span class="pre">legendurl</span></code><a class="headerlink" href="#legendurl" title="Permalink to this heading">#</a></h3>
-<p>Configure a URL to an image that should be returned as the legend for this layer. Local URLs (<code class="docutils literal notranslate"><span class="pre">file://</span></code>) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> here. If WMS and WMTS are enabled the address to the WMS <cite>GetLegendGraphic</cite> endpoint will be included in the WMTS capabilities as the legend URL.</p>
+<p>Configure a URL to an image that should be returned as the legend for this layer. Local URLs (<code class="docutils literal notranslate"><span class="pre">file://</span></code>) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a <code class="docutils literal notranslate"><span class="pre">legendurl</span></code> here. If WMS and WMTS are enabled the address to the WMS <cite>GetLegendGraphic</cite> endpoint will be included in the WMTS capabilities as the legend url.</p>
 </section>
 <section id="md">
 <span id="layer-metadata"></span><h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#md" title="Permalink to this heading">#</a></h3>
@@ -758,7 +758,7 @@ Each dimension is another dictionary with a list of <code class="docutils litera
 <h3><code class="docutils literal notranslate"><span class="pre">wmts_kvp_legendurl</span></code> and <code class="docutils literal notranslate"><span class="pre">wmts_rest_legendurl</span></code><a class="headerlink" href="#wmts-kvp-legendurl-and-wmts-rest-legendurl" title="Permalink to this heading">#</a></h3>
 <p>It is possible to configure which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be
 inserted as a <code class="docutils literal notranslate"><span class="pre">LegendURL</span></code> tag into the capabilities document. These URLs support two template variables <code class="docutils literal notranslate"><span class="pre">{base_url}</span></code>
-which is the base URL of MapProxy and <code class="docutils literal notranslate"><span class="pre">{layer_name}</span></code> which is the name of the layer.</p>
+which is the base url of MapProxy and <code class="docutils literal notranslate"><span class="pre">{layer_name}</span></code> which is the name of the layer.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">legend_layer</span>
 <span class="w">    </span><span class="nt">tile_sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cache</span><span class="p p-Indicator">]</span>
@@ -869,7 +869,7 @@ with no data (e.g. water areas, areas with no roads, etc.).</p>
 <section id="minimize-meta-requests">
 <h3><code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code><a class="headerlink" href="#minimize-meta-requests" title="Permalink to this heading">#</a></h3>
 <p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).</p>
-<p>By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a request will trigger four requests each larger than 2000x2000 pixel. With the <code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code> option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.</p>
+<p>By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the <code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code> option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.</p>
 </section>
 <section id="watermark">
 <span id="index-4"></span><h3><code class="docutils literal notranslate"><span class="pre">watermark</span></code><a class="headerlink" href="#watermark" title="Permalink to this heading">#</a></h3>
@@ -924,8 +924,8 @@ Requests below the configured resolution or level will be passed to the underlyi
 <h3><code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> and <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code><a class="headerlink" href="#upscale-tiles-and-downscale-tiles" title="Permalink to this heading">#</a></h3>
 <p>MapProxy is able to create missing tiles by rescaling tiles from zoom levels below or above.</p>
 <p>MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.</p>
-<p>You can use <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, e.g. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> allows you to provide responses for 10cm requests in all areas, always returning the best available data.</p>
-<p>MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentially. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore <cite>not</cite> recommended to use <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> values larger than one.</p>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> allows you to provide responses for 10cm requests in all areas, always returning the best available data.</p>
+<p>MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore <cite>not</cite> recommended to use <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> values larger then one.</p>
 <p>You can use <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> to fill a cache for a source that only provides data for higher resolutions.</p>
 <p><code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> will seed each level independently for caches with <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> or <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code>. It will start with the highest zoom level for <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code>, so that tiles in the next (lower) zoom levels can be created by downscaling the already created tiles. It will start in the lowest zoom level for <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code>, so that tiles in the next (higher) zoom levels can be created by upscaling the already creates tiles.</p>
 <p>A transparent tile is returned if no tile is found within the configured <code class="docutils literal notranslate"><span class="pre">upscale_tiles</span></code> or <code class="docutils literal notranslate"><span class="pre">downscale_tiles</span></code> range.</p>
@@ -959,18 +959,18 @@ The validity conditions are the same as for seeding:</p>
 <p>Example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">osm_cache</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;osm_grid&#39;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">OSM</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">refresh_before</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;osm_grid&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">OSM</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">disable_storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">refresh_before</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 </section>
 <section id="disable-storage">
 <h3><code class="docutils literal notranslate"><span class="pre">disable_storage</span></code><a class="headerlink" href="#disable-storage" title="Permalink to this heading">#</a></h3>
 <p>If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
-even if there are matching tiles in the cache. See <a class="reference internal" href="sources.html#wms-seed-only"><span class="std std-ref">seed_only</span></a> if you need an <em>offline</em> mode.</p>
+even if the there are matching tiles in the cache. See <a class="reference internal" href="sources.html#wms-seed-only"><span class="std std-ref">seed_only</span></a> if you need an <em>offline</em> mode.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.</p>
@@ -979,7 +979,7 @@ even if there are matching tiles in the cache. See <a class="reference internal"
 <section id="cache-dir">
 <h3><code class="docutils literal notranslate"><span class="pre">cache_dir</span></code><a class="headerlink" href="#cache-dir" title="Permalink to this heading">#</a></h3>
 <p>Directory where MapProxy should store tiles for this cache. Uses the value of <code class="docutils literal notranslate"><span class="pre">globals.cache.base_dir</span></code> by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. <code class="docutils literal notranslate"><span class="pre">cachename_EPSG1234</span></code>).
-See <a class="reference internal" href="caches.html#cache-file-directory"><span class="std std-ref">directory option</span></a> on how to configure a complete path.</p>
+See <a class="reference internal" href="caches.html#cache-file-directory"><span class="std std-ref">directory option</span></a> on how configure a complete path.</p>
 </section>
 <section id="cache">
 <h3><code class="docutils literal notranslate"><span class="pre">cache</span></code><a class="headerlink" href="#cache" title="Permalink to this heading">#</a></h3>
@@ -1100,7 +1100,7 @@ look to blurry/pixelated in some resolutions.</p>
 </section>
 <section id="min-res-and-max-res">
 <h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code> and <code class="docutils literal notranslate"><span class="pre">max_res</span></code><a class="headerlink" href="#min-res-and-max-res" title="Permalink to this heading">#</a></h3>
-<p>The resolutions of the first and the last level.</p>
+<p>The the resolutions of the first and the last level.</p>
 </section>
 <section id="stretch-factor">
 <h3><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code><a class="headerlink" href="#stretch-factor" title="Permalink to this heading">#</a></h3>
@@ -1108,7 +1108,7 @@ look to blurry/pixelated in some resolutions.</p>
 match any cached resolution. MapProxy will stretch or shrink images to the
 requested resolution. The <cite>stretch_factor</cite> defines the maximum factor
 MapProxy is allowed to stretch images. Stretched images result in better
-performance but will look blurry when the value is too large (&gt; 1.2).</p>
+performance but will look blurry when the value is to large (&gt; 1.2).</p>
 <p>Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
 resolution will be generated from the 10m level, requests for 8m from the 5m
 level.</p>
@@ -1152,7 +1152,7 @@ resolution will get a result, requests with 5km will get a blank response.</p>
 </section>
 <section id="sources-conf-label">
 <span id="index-10"></span><span id="id9"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Permalink to this heading">#</a></h2>
-<p>A source defines where MapProxy can request new data. Each source has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and all other options are dependent to this type.</p>
+<p>A sources defines where MapProxy can request new data. Each source has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and all other options are dependent to this type.</p>
 <p>See <a class="reference internal" href="sources.html"><span class="doc">Sources</span></a> for the documentation of all available sources.</p>
 <p>An example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
@@ -1221,7 +1221,7 @@ Bicubic enhances the contrast at edges and should be used for vector images.</p>
 <p><span class="versionmodified added">New in version 1.10.0: </span><code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code></p>
 </div>
 <dl class="simple" id="meta-size">
-<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 and 0 <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code>, this will result in 1024x1024 requests to the source. (Note that the default value for <code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code> is 80.) Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">meta_size</span></code></dt><dd><p>MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> defines how large a meta-tile is. A <code class="docutils literal notranslate"><span class="pre">meta_size</span></code> of <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">4]</span></code> will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code>.</p>
 </dd>
 </dl>
 <dl class="simple" id="id12">
@@ -1230,7 +1230,7 @@ If set to <cite>true</cite>, MapProxy will request neighboring tiles from the so
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">meta_buffer</span></code></dt><dd><p>MapProxy will increase the size of each meta-tile request by this number of
 pixels in each direction. This can solve cases where labels are cut-off at
-the edge of tiles. Defaults to 80.</p>
+the edge of tiles.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">base_dir</span></code></dt><dd><p>The base directory where all cached tiles will be stored. The path can
 either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/var/mapproxy/cache</span></code>) or relative to the
@@ -1238,7 +1238,7 @@ mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span
 </dd>
 </dl>
 <dl class="simple" id="lock-dir">
-<dt><code class="docutils literal notranslate"><span class="pre">lock_dir</span></code></dt><dd><p>MapProxy uses locking to limit multiple requests to the same service. See <code class="docutils literal notranslate"><span class="pre">concurrent_requests</span></code>.
+<dt><code class="docutils literal notranslate"><span class="pre">lock_dir</span></code></dt><dd><p>MapProxy uses locking to limit multiple request to the same service. See <code class="docutils literal notranslate"><span class="pre">concurrent_requests</span></code>.
 This option defines where the temporary lock files will be stored. The path
 can either be absolute (e.g. <code class="docutils literal notranslate"><span class="pre">/tmp/lock/mapproxy</span></code>) or relative to the
 mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span class="pre">./cache_data/tile_locks</span></code>.</p>
@@ -1256,13 +1256,8 @@ mapproxy.yaml file. Defaults to <code class="docutils literal notranslate"><span
 <dt><code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code></dt><dd><p>Enables the <code class="docutils literal notranslate"><span class="pre">link_single_color_images</span></code> option for all caches if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">symlink</span></code> or <code class="docutils literal notranslate"><span class="pre">hardlink</span></code>. See <a class="reference internal" href="#link-single-color-images"><span class="std std-ref">link_single_color_images</span></a>.</p>
 </dd>
 </dl>
-<dl id="max-tile-limit">
+<dl class="simple" id="max-tile-limit">
 <dt><code class="docutils literal notranslate"><span class="pre">max_tile_limit</span></code></dt><dd><p>Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 3.1.0.</span></p>
-</div>
 </dd>
 </dl>
 </section>
@@ -1301,7 +1296,7 @@ PROJ&gt;=5 uses a different configuration format. Please refer to the PROJ docum
 </div></blockquote>
 <dl id="axis-order">
 <dt><code class="docutils literal notranslate"><span class="pre">axis_order_ne</span></code> and <code class="docutils literal notranslate"><span class="pre">axis_order_en</span></code></dt><dd><p>The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
-The ordering is dependent to the SRS. Most clients and servers did not respect the
+The ordering is dependent to the SRS. Most clients and servers did not respected the
 ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
 emphasized that the axis ordering of the SRS should be used.</p>
 <p>Here you can define the axis ordering of your SRS. This might be required for proper
@@ -1386,7 +1381,7 @@ See the <a class="reference external" href="http://docs.python.org/dev/library/s
 <p><span class="versionmodified added">New in version 1.14.0.</span></p>
 </div>
 <p>Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed
-back to the source on subsequent requests. Useful for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
 with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process).
 Cookie handling is based on Python <a class="reference external" href="https://docs.python.org/3/library/http.cookiejar.html">CookieJar</a>. Disabled by default.</p>
 </section>
@@ -1527,7 +1522,7 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
 <h2>Notes<a class="headerlink" href="#notes" title="Permalink to this heading">#</a></h2>
 <section id="scale-vs-resolution">
 <span id="scale-resolution"></span><h3>Scale vs. resolution<a class="headerlink" href="#scale-vs-resolution" title="Permalink to this heading">#</a></h3>
-<p>Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a <cite>map</cite> is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the <cite>map</cite> is depended on the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.</p>
+<p>Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a <cite>map</cite> is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the <cite>map</cite> is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.</p>
 <p>This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 91dpi). But you need to understand that a <cite>scale</cite> will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).</p>
 <p>You can convert between scales and resolutions with the <a class="reference internal" href="mapproxy_util.html#mapproxy-util-scales"><span class="std std-ref">mapproxy-util scales tool</span></a>.</p>
 <p>MapProxy will use the OCG value (0.28mm/px) if it’s necessary to use a scale value (e.g. MinScaleDenominator in WMS 1.3.0 capabilities), but you should always use resolutions within MapProxy.</p>

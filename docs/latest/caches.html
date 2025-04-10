@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">3.1.4</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -446,11 +446,6 @@ Each backend has a <code class="docutils literal notranslate"><span class="pre">
 <p><span class="versionmodified added">New in version 2.0.0.</span></p>
 </div>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 3.1.0.</span></p>
-</div>
-</dd>
 </dl>
 </section>
 <section id="mbtiles">
@@ -482,13 +477,6 @@ Each backend has a <code class="docutils literal notranslate"><span class="pre">
 Use the <code class="docutils literal notranslate"><span class="pre">--summary</span></code> option of the <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> tool.</p>
 </div>
 <p>The note about <code class="docutils literal notranslate"><span class="pre">bulk_meta_tiles</span></code> for SQLite below applies to MBtiles as well.</p>
-<dl>
-<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 3.1.0.</span></p>
-</div>
-</dd>
-</dl>
 </section>
 <section id="sqlite">
 <span id="cache-sqlite"></span><h2><code class="docutils literal notranslate"><span class="pre">sqlite</span></code><a class="headerlink" href="#sqlite" title="Permalink to this heading">#</a></h2>
@@ -534,13 +522,6 @@ Use the <code class="docutils literal notranslate"><span class="pre">--summary</
 </pre></div>
 </div>
 </div>
-<dl>
-<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 3.1.0.</span></p>
-</div>
-</dd>
-</dl>
 </section>
 <section id="couchdb">
 <span id="cache-couchdb"></span><h2><code class="docutils literal notranslate"><span class="pre">couchdb</span></code><a class="headerlink" href="#couchdb" title="Permalink to this heading">#</a></h2>
@@ -819,7 +800,7 @@ You can set the default profile with <code class="docutils literal notranslate">
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The hierarchical <code class="docutils literal notranslate"><span class="pre">directory_layouts</span></code> can hit limitations of AWS S3 if you are routinely processing 3500 or more requests per second. <code class="docutils literal notranslate"><span class="pre">directory_layout:</span> <span class="pre">reverse_tms</span></code> can work around this limitation. Please read <a class="reference external" href="http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html">S3 Request Rate and Performance Considerations</a> for more information on this issue.</p>
+<p>The hierarchical <code class="docutils literal notranslate"><span class="pre">directory_layouts</span></code> can hit limitations of S3 <em>“if you are routinely processing 100 or more requests per second”</em>. <code class="docutils literal notranslate"><span class="pre">directory_layout:</span> <span class="pre">reverse_tms</span></code> can work around this limitation. Please read <a class="reference external" href="http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html">S3 Request Rate and Performance Considerations</a> for more information on this issue.</p>
 </div>
 </section>
 <section id="id14">
@@ -936,15 +917,10 @@ using the <code class="docutils literal notranslate"><span class="pre">AZURE_STO
 <p>Version 1 of the compact cache format is compatible with ArcGIS 10.0 and the default version of ArcGIS 10.0-10.2. Version 2 is supported by ArcGIS 10.3 or higher.
 Version 1 stores is one additional <code class="docutils literal notranslate"><span class="pre">.bundlx</span></code> index file for each <code class="docutils literal notranslate"><span class="pre">.bundle</span></code> data file.</p>
 <p>Available options:</p>
-<dl>
+<dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">directory</span></code>:</dt><dd><p>Directory where MapProxy should store the level directories. This will not add the cache name or grid name to the path. You can use this option to point MapProxy to an existing compact cache.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">version</span></code>:</dt><dd><p>The version of the ArcGIS compact cache format. This option is required. Either <code class="docutils literal notranslate"><span class="pre">1</span></code> or <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">directory_permissions</span></code>, <code class="docutils literal notranslate"><span class="pre">file_permissions</span></code>:</dt><dd><p>Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. <code class="docutils literal notranslate"><span class="pre">rwxrw-r--</span></code> is <code class="docutils literal notranslate"><span class="pre">'764'</span></code>. This will not work on windows OS.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 3.1.0.</span></p>
-</div>
 </dd>
 </dl>
 <p>You can set the <code class="docutils literal notranslate"><span class="pre">sources</span></code> to an empty list, if you use an existing compact cache files and do not have a source.</p>
