@@ -144,13 +144,13 @@ class TestSeed(SeedTestBase):
     empty_ogrdata = 'empty_ogrdata.geojson'
 
     def test_cleanup_levels(self):
-        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['cleanup'])
-
         self.make_tile((0, 0, 0))
         self.make_tile((0, 0, 1))
         self.make_tile((0, 0, 2))
         self.make_tile((0, 0, 3))
+
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['cleanup'])
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert not self.tile_exists((0, 0, 0))
@@ -162,9 +162,6 @@ class TestSeed(SeedTestBase):
                             ['02'])
 
     def test_cleanup_remove_all(self):
-        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['remove_all'])
-
         self.make_tile((0, 0, 0))
         self.make_tile((0, 0, 1))
         self.make_tile((1, 0, 1))
@@ -172,6 +169,9 @@ class TestSeed(SeedTestBase):
         self.make_tile((1, 1, 1))
         self.make_tile((0, 0, 2))
         self.make_tile((0, 0, 3))
+
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['remove_all'])
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
                             ['00', '01', '02', '03'])
@@ -191,9 +191,6 @@ class TestSeed(SeedTestBase):
                             ['00', '02', '03'])
 
     def test_cleanup_remove_all_with_coverage(self):
-        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['remove_all_with_coverage'])
-
         self.make_tile((0, 0, 0))
         self.make_tile((0, 0, 1))
         self.make_tile((1, 0, 1))
@@ -201,6 +198,9 @@ class TestSeed(SeedTestBase):
         self.make_tile((1, 1, 1))
         self.make_tile((0, 0, 2))
         self.make_tile((0, 0, 3))
+
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['remove_all_with_coverage'])
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
                             ['00', '01', '02', '03'])
@@ -216,14 +216,14 @@ class TestSeed(SeedTestBase):
         assert self.tile_exists((0, 0, 3))
 
     def test_cleanup_coverage(self):
-        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        cleanup_tasks = seed_conf.cleanups(['with_coverage'])
-
         self.make_tile((0, 0, 0))
         self.make_tile((1, 0, 1))
         self.make_tile((2, 0, 2))
         self.make_tile((2, 0, 3))
         self.make_tile((4, 0, 3))
+
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['with_coverage'])
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert not self.tile_exists((0, 0, 0))
@@ -335,6 +335,12 @@ class TestSeed(SeedTestBase):
         cache.store_tile(self.create_tile((0, 0, 3)))
         assert cache.is_cached(Tile((0, 0, 2)))
         assert cache.is_cached(Tile((0, 0, 3)))
+
+        # simulate that cleanup was called after creation of tiles
+        time.sleep(1)
+
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['sqlite_cache_remove_all'])
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
                             ['2.mbtile', '3.mbtile'],

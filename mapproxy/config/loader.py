@@ -19,7 +19,6 @@ Configuration loading and system initializing.
 from __future__ import division
 from mapproxy.util.fs import find_exec
 from mapproxy.util.yaml import load_yaml_file, YAMLError
-from mapproxy.util.ext.odict import odict
 from mapproxy.util.py import memoize
 from mapproxy.config.spec import validate_options, add_source_to_mapproxy_yaml_spec, add_service_to_mapproxy_yaml_spec
 from mapproxy.config.validator import validate
@@ -32,6 +31,7 @@ import hashlib
 import warnings
 from copy import deepcopy, copy
 from functools import partial
+from collections import OrderedDict
 
 import logging
 from urllib.parse import urlparse
@@ -74,7 +74,7 @@ class ProxyConfiguration(object):
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
     def load_caches(self):
-        self.caches = odict()
+        self.caches = OrderedDict()
         caches_conf = self.configuration.get('caches')
         if not caches_conf:
             return
@@ -91,7 +91,7 @@ class ProxyConfiguration(object):
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
 
     def load_tile_layers(self):
-        self.layers = odict()
+        self.layers = OrderedDict()
         layers_conf = deepcopy(self._layers_conf_dict())
         if layers_conf is None:
             return
@@ -178,7 +178,7 @@ class ProxyConfiguration(object):
                 # layer list without root -> wrap in root layer
                 layers_conf = dict(title=None, layers=layers_conf)
 
-        if len(set(layers_conf.keys()) &
+        if len(layers_conf.keys() &
                set('layers name title sources'.split())) < 2:
             # looks like unordered legacy config
             layers_conf = self._legacy_layers_conf_dict()
@@ -190,7 +190,7 @@ class ProxyConfiguration(object):
         Returns a dictionary with all layers that have a name and sources.
         Flattens the layer tree.
         """
-        layers = _layers if _layers is not None else odict()
+        layers = _layers if _layers is not None else OrderedDict()
 
         if 'layers' in layers_conf:
             for layer in layers_conf.pop('layers'):
@@ -245,7 +245,7 @@ def list_of_dicts_to_ordered_dict(dictlist):
     [('a', 1), ('b', 2), ('c', 3)]
     """
 
-    result = odict()
+    result = OrderedDict()
     for d in dictlist:
         for k, v in d.items():
             result[k] = v
@@ -2180,7 +2180,7 @@ class ServiceConfiguration(ConfigurationBase):
         return services
 
     def tile_layers(self, conf, use_grid_names=False):
-        layers = odict()
+        layers = OrderedDict()
         for layer_name, layer_conf in self.context.layers.items():
             for tile_layer in layer_conf.tile_layers(grid_name_as_path=use_grid_names):
                 if not tile_layer:
@@ -2230,7 +2230,7 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60  # seconds
 
         info_formats = conf.get('featureinfo_formats', [])
-        info_formats = odict((f['suffix'], f['mimetype']) for f in info_formats)
+        info_formats = OrderedDict((f['suffix'], f['mimetype']) for f in info_formats)
 
         if kvp is None and restful is None:
             kvp = restful = True
@@ -2283,7 +2283,7 @@ class ServiceConfiguration(ConfigurationBase):
             global_key='wms.concurrent_layer_renderer')
         image_formats_names = self.context.globals.get_value('image_formats', conf,
                                                              global_key='wms.image_formats')
-        image_formats = odict()
+        image_formats = OrderedDict()
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
@@ -2325,7 +2325,7 @@ class ServiceConfiguration(ConfigurationBase):
         services = list(self.context.services.conf.keys())
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = odict()
+        layers = OrderedDict()
         for layer_name, layer_conf in self.context.layers.items():
             lyr = layer_conf.wms_layer()
             if lyr:
@@ -2359,7 +2359,7 @@ class ServiceConfiguration(ConfigurationBase):
                 # demo service only supports 1.1.1, use wms_111 as an indicator
                 services.append('wms_111')
 
-        layers = odict(sorted(layers.items(), key=lambda x: x[1].name))
+        layers = OrderedDict(sorted(layers.items(), key=lambda x: x[1].name))
         background = self.context.globals.get_value('background', conf)
 
         return DemoServer(
