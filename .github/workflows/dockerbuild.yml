@@ -76,6 +76,6 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           build-args: |
-            MAPPROXY_VERSION=${{ needs.get-version.outputs.version }
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.version }}
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
