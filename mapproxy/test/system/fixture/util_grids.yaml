@@ -1,5 +1,6 @@
 services:
-    demo:
+    wms:
+
 layers:
     - name: grid_layer
       title: Grid Layer

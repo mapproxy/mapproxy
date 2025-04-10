@@ -1,3 +1,12 @@
+2.2.1 2025-04-10
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Security fix to prevent XSS injections in demo pages
+- Security fix to prevent reading file urls
+
+
 2.2.0 2024-07-24
 ~~~~~~~~~~~~~~~~
 
