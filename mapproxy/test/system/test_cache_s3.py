@@ -26,10 +26,10 @@ import pytest
 
 try:
     import boto3
-    from moto import mock_s3
+    from moto import mock_aws 
 except ImportError:
     boto3 = None
-    mock_s3 = None
+    mock_aws = None
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +39,7 @@ def config_file():
 
 @pytest.fixture(scope="module")
 def s3_buckets():
-    with mock_s3():
+    with mock_aws():
         boto3.client("s3").create_bucket(Bucket="default_bucket")
         boto3.client("s3").create_bucket(Bucket="tiles")
         boto3.client("s3").create_bucket(Bucket="reversetiles")
@@ -47,7 +47,7 @@ def s3_buckets():
         yield
 
 
-@pytest.mark.skipif(not (boto3 and mock_s3), reason="boto3 and moto required")
+@pytest.mark.skipif(not (boto3 and mock_aws), reason="boto3 and moto required")
 @pytest.mark.usefixtures("s3_buckets")
 class TestS3Cache(SysTest):
 
@@ -104,6 +104,25 @@ class TestS3Cache(SysTest):
 
         self.common_map_req.params.layers = "reverse"
         resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/png"
+        data = BytesIO(resp.body)
+        assert is_png(data)
+
+    def test_get_map_cached_multiple_grids(self, app):
+        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        tile = create_tmp_image((256, 256))
+        boto3.client("s3").upload_fileobj(
+            BytesIO(tile), Bucket="tiles", Key="multiple_grids/WebMerc/9/1/4.png"
+        )
+        boto3.client("s3").upload_fileobj(
+            BytesIO(tile), Bucket="tiles", Key="multiple_grids/WebMerc2/1/1/1.png"
+        )
+
+        resp = app.get("/wmts/multiple_grids/WebMerc/9/1/4.png")
+        assert resp.content_type == "image/png"
+        data = BytesIO(resp.body)
+        assert is_png(data)
+        resp = app.get("/wmts/multiple_grids/WebMerc2/1/1/1.png")
         assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)
