@@ -54,7 +54,7 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+            MAPPROXY_VERSION=${{ github.ref_name }}
           target: base
           tags: ${{ needs.get-version.outputs.version }}
 
@@ -65,7 +65,7 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           build-args: |
-            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+            MAPPROXY_VERSION=${{ github.ref_name }}
           target: development
           tags: ${{ needs.get-version.outputs.version }}-dev
 
@@ -76,6 +76,6 @@ jobs:
           file: ./docker/Dockerfile
           push: true
           build-args: |
-            MAPPROXY_VERSION=${{ needs.get-version.outputs.version }}
+            MAPPROXY_VERSION=${{ github.ref_name }}
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
