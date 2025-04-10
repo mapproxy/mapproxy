@@ -23,6 +23,12 @@ PEP8: <https://www.python.org/dev/peps/pep-0008/>
 Debugging
 ---------
 
+* With Intellij
+  * Create run configuration
+  * Select script `mapproxy-util` from the `bin` folder in your venv folder.
+  * Add script parameters `serve-develop apps/base/mapproxy.yaml`.
+  * Start configuration in debug mode, no need to start mapproxy in debug mode.
+
 * With PyCharm:
   * Attach to dev server with <https://www.jetbrains.com/help/pycharm/attaching-to-local-process.html>
 

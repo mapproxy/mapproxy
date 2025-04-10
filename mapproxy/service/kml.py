@@ -21,6 +21,7 @@ from mapproxy.service.base import Server
 from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import load_limited_to
+from mapproxy.util.escape import escape_html
 
 
 class KMLRequest(TileRequest):
@@ -182,7 +183,7 @@ class KMLServer(Server):
 
         subtiles = self._get_subtiles(map_request, layer)
         tile_size = layer.grid.tile_size[0]
-        url = map_request.http.script_url.rstrip('/')
+        url = escape_html(map_request.http.script_url.rstrip('/'))
         result = KMLRenderer().render(
             tile=tile, subtiles=subtiles, layer=layer, url=url, name=map_request.layer, format=layer.format,
             name_path=layer.md['name_path'], initial_level=initial_level, tile_size=tile_size)
