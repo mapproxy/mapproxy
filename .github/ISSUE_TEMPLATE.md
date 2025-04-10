@@ -32,6 +32,6 @@
 ## Your Environment
 <!--- Include as many relevant details about the environment you experienced the bug in -->
 * Version used:
-* Environment name and version (e.g. Python 2.7.5 with mod_wsgi 4.5.9):
+* Environment name and version (e.g. Python 3.9 with mod_wsgi 4.5.9):
 * Server type and version:
 * Operating System and version:

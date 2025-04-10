@@ -1,0 +1,49 @@
+name: Release
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  build-publish-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/MapProxy
+    permissions:
+      id-token: write  # this permission is needed for trusted publishing on pypi
+      contents: write # this is needed to create the github release
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt update
+          sudo apt -y install --no-install-recommends python3-pil python3-yaml python3-pyproj libgeos-dev python3-lxml libgdal-dev python3-shapely libxml2-dev libxslt-dev
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+
+      - name: Make wheel
+        run: |
+          python setup.py egg_info -b "" -D sdist bdist_wheel
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Grep changes
+        run: |
+          awk '
+          /^[0-9]+\.[0-9]+\.[0-9]+ [0-9]{4}-[0-9]{2}-[0-9]{2}$/ { if (header_found) exit; header_found=1; skip=2}
+          skip { skip--; next }
+          /^.*$/ { print }
+          ' CHANGES.txt > RELEASE_NOTES.txt
+
+      - name: Create a GitHub release page
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          bodyFile: RELEASE_NOTES.txt
+          artifacts: "dist/*.whl"
