@@ -5,11 +5,14 @@ Preparation
 -----------
 
 - Stash changes, checkout `master` and pull all changes (`git stash && git checkout master && git pull`)
+- Create a new branch for a pull request (`git checkout -b 2.0.2`, the name is irrelevant here)
 - Update CHANGES.txt with all important changes. Verify version and date in header line.
   IMPORTANT: Be careful to have the proper amount of blank lines.
   You can use the git compare function for that, e.g.: https://github.com/mapproxy/mapproxy/compare/2.0.2...master
 - Update version in `setup.py`.
 - Commit and push updates (`git add -A && git commit -m 'dev: prepare 2.0.2 release' && git push`)
+- Create a pull request on github
+- After the pull request was merged, check out master and pull (`git checkout master && git pull`)
 - Create tag and push tag (`git tag 2.0.2 && git push --tags`)
 
 
