@@ -2159,7 +2159,6 @@ class ServiceConfiguration(ConfigurationBase):
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 # If not a known service, try to use the plugin mechanism
-                global plugin_services
                 creator = plugin_services.get(service_name, None)
                 if not creator:
                     raise ValueError('unknown service: %s' % service_name)
