@@ -27,7 +27,6 @@ MapProxy Documentation
    mapproxy_util_autoconfig
    deployment
    configuration_examples
-   ogc_api
    inspire
    labeling
    auth

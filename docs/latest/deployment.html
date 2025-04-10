@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">4.0.2</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">3.1.4</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -213,7 +213,6 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -581,9 +580,9 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.2.0.</span></p>
 </div>
-<p>You can run multiple MapProxy apps (configurations) within one process with MultiMapProxy.</p>
+<p>You can run multiple MapProxy instances (configurations) within one process with the MultiMapProxy application.</p>
 <p>MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: <code class="docutils literal notranslate"><span class="pre">conf/proj1.yaml</span></code> is available at <code class="docutils literal notranslate"><span class="pre">http://hostname/proj1/</span></code>.</p>
-<p>Each configuration will be loaded on demand and MapProxy caches each loaded app. The configuration will be reloaded if the file changes.</p>
+<p>Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.</p>
 <p>MultiMapProxy as the following options:</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">config_dir</span></code></dt><dd><p>The directory where MapProxy should look for configurations.</p>
@@ -595,7 +594,7 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 <h3>Server Script<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
 <p>There is a <code class="docutils literal notranslate"><span class="pre">make_wsgi_app</span></code> function in the <code class="docutils literal notranslate"><span class="pre">mapproxy.multiapp</span></code> package that creates configured MultiMapProxy WSGI application. Replace the <code class="docutils literal notranslate"><span class="pre">application</span></code> definition in your script as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mapproxy.multiapp</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_wsgi_app</span>
-<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to.configs&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to.projects&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

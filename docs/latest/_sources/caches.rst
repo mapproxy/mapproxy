@@ -317,14 +317,61 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 
 The ``_attachments``-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: ``http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile``.
 
-
 .. _cache_riak:
 
 ``riak``
 ========
 
-Support dropped after version 3.1.3 of MapProxy.
+.. versionadded:: 1.6.0
 
+Store tiles in a `Riak <http://basho.com/riak/>`_ cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
+This backend is good for very large caches which can be distributed over many nodes. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.
+
+Requirements
+------------
+
+You will need the `Python Riak client <https://pypi.org/project/riak>`_ version 2.4.2 or older. You can install it in the usual way, for example with ``pip install riak==2.4.2``. Environments with older version must be upgraded with ``pip install -U riak==2.4.2``. Python library depends on packages `python-dev`, `libffi-dev` and `libssl-dev`.
+
+Configuration
+-------------
+
+Available options:
+
+``nodes``:
+    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. Defaults to single localhost node.
+
+``protocol``:
+    Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
+
+``bucket``:
+    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and must be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
+
+``default_ports``:
+    Default ``pb`` and ``http`` ports for ``pbc`` and ``http`` protocols. Will be used as the default for each defined node.
+
+``secondary_index``:
+    If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
+
+Example
+-------
+
+.. code-block:: yaml
+
+  myriakcache:
+    sources: [mywms]
+    grids: [mygrid]
+    cache:
+      type: riak
+      nodes:
+        - host: 1.example.org
+          pb_port: 9999
+        - host: 1.example.org
+        - host: 1.example.org
+      protocol: pbc
+      bucket: myriakcachetiles
+      default_ports:
+        pb: 8087
+        http: 8098
 
 .. _cache_redis:
 

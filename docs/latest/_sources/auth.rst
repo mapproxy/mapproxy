@@ -93,8 +93,7 @@ Here is a more elaborate example that denies requests to all layers that start w
           environ['mapproxy.authorize'] = self.authorize
           return self.app(environ, start_response)
 
-      def authorize(self, service, layers=None, environ=None, **kw):
-          layers = layers or None
+      def authorize(self, service, layers=[], environ=None, **kw):
           allowed = denied = False
           if service.startswith('wms.'):
               auth_layers = {}

@@ -287,11 +287,11 @@ MultiMapProxy
 
 .. versionadded:: 1.2.0
 
-You can run multiple MapProxy apps (configurations) within one process with MultiMapProxy.
+You can run multiple MapProxy instances (configurations) within one process with the MultiMapProxy application.
 
 MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: ``conf/proj1.yaml`` is available at ``http://hostname/proj1/``.
 
-Each configuration will be loaded on demand and MapProxy caches each loaded app. The configuration will be reloaded if the file changes.
+Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.
 
 MultiMapProxy as the following options:
 
@@ -310,5 +310,5 @@ There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that 
 .. code-block:: python
 
   from mapproxy.multiapp import make_wsgi_app
-  application = make_wsgi_app('/path/to.configs', allow_listing=True)
+  application = make_wsgi_app('/path/to.projects', allow_listing=True)
 
