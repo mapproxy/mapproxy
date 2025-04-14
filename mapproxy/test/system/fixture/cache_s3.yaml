@@ -5,6 +5,8 @@ globals:
 
 services:
   tms:
+  wmts:
+    restful: true
   wms:
     md:
       title: MapProxy S3
@@ -19,6 +21,9 @@ layers:
   - name: reverse
     title: Reverse
     sources: [reverse_cache]
+  - name: multiple_grids
+    title: Multiple Grids
+    sources: [multiple_grids_cache]
 
 caches:
   default_cache:
@@ -45,9 +50,21 @@ caches:
       directory: reversetiles
     sources: [tms]
 
+  multiple_grids_cache:
+    grids: [webmercator, webmercator2]
+    cache:
+      type: s3
+      bucket_name: tiles
+      directory: multiple_grids
+      include_grid_name: true
+    sources: [tms]
+
 grids:
   webmercator:
     name: WebMerc
+    base: GLOBAL_WEBMERCATOR
+  webmercator2:
+    name: WebMerc2
     base: GLOBAL_WEBMERCATOR
 
 

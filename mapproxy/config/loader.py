@@ -1355,9 +1355,16 @@ class CacheConfiguration(ConfigurationBase):
                                                       global_key='cache.s3.use_http_get'
                                                       )
 
+        include_grid_name = self.context.globals.get_value('cache.include_grid_name', self.conf,
+                                                      global_key='cache.s3.include_grid_name')
+
         directory_layout = self.conf['cache'].get('directory_layout', 'tms')
 
         base_path = self.conf['cache'].get('directory', None)
+
+        if include_grid_name and base_path:
+            base_path = os.path.join(base_path, grid_conf.tile_grid().name)
+
         if base_path is None:
             base_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
 
