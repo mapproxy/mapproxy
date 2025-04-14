@@ -196,8 +196,25 @@ class WMSMapRequest(WMSRequest):
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.dimensions = self._get_dimensions(param)
+        self.extra_params = self._get_extra_params(param)
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
+
+    def _get_extra_params(self, param):
+        # All parameters that aren't standard WMS parameters or dimensions
+        if param:
+            wms_keys = list(self.fixed_params.keys()) + self.expected_param + ['transparent']
+            if self.dimensions:
+                wms_keys = wms_keys + list(self.dimensions.keys())
+            keys = []
+            if isinstance(param, RequestParams):
+                keys = list(map(lambda k: k[0], param.iteritems()))
+            else:
+                keys = list(param.keys())
+            extra_keys = set(keys) - set(wms_keys)
+            extra_params = dict([(key, param.get(key)) for key in extra_keys])
+            return extra_params
+        return {}
 
     def _get_dimensions(self, param):
         if param:

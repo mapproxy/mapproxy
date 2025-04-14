@@ -99,6 +99,7 @@ class WMSClient(object):
         req.params.srs = query.srs.srs_code
         req.params.format = format
         req.params.update(query.dimensions_for_params(self.fwd_req_params))
+        req.params.update(query.extra_params_for_params(self.fwd_req_params))
         return req
 
     def combined_client(self, other, query):
@@ -117,12 +118,14 @@ class WMSClient(object):
 
 
 class WMSInfoClient(object):
-    def __init__(self, request_template, supported_srs=None, http_client=None):
+    def __init__(self, request_template, supported_srs=None, http_client=None,
+                 fwd_req_params=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         if not supported_srs and self.request_template.params.srs is not None:
             supported_srs = SupportedSRS([SRS(self.request_template.params.srs)])
         self.supported_srs = supported_srs
+        self.fwd_req_params = fwd_req_params or set()
 
     def get_info(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
@@ -184,14 +187,16 @@ class WMSInfoClient(object):
         if not req.params.format:
             req.params.format = query.format or 'image/png'
         req.params.srs = query.srs.srs_code
+        req.params.update(query.extra_params_for_params(self.fwd_req_params))
 
         return req.complete_url
 
 
 class WMSLegendClient(object):
-    def __init__(self, request_template, http_client=None):
+    def __init__(self, request_template, http_client=None, fwd_req_params=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
+        self.fwd_req_params = fwd_req_params or set()
 
     def get_legend(self, query):
         resp = self._retrieve(query)
@@ -223,6 +228,7 @@ class WMSLegendClient(object):
                 req.params.format = query.format or 'image/png'
         if query.scale:
             req.params['scale'] = query.scale
+        req.params.update(query.extra_params_for_params(self.fwd_req_params))
         return req.complete_url
 
     @property

@@ -54,4 +54,3 @@ sources:
     req:
       url: http://localhost:42423/service2
       layers: foo,bar
-    forward_req_params: ['time', 'elevation']

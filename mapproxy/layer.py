@@ -123,7 +123,7 @@ class MapQuery(object):
     """
 
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False, dimensions=None):
+                 tiled_only=False, dimensions=None, extra_params=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -131,6 +131,18 @@ class MapQuery(object):
         self.transparent = transparent
         self.tiled_only = tiled_only
         self.dimensions = dimensions or {}
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = MapQuery(None, None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
     def dimensions_for_params(self, params):
         """
@@ -147,13 +159,16 @@ class MapQuery(object):
         info = self.__dict__
         serialized_dimensions = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.dimensions.items()])
         info["serialized_dimensions"] = serialized_dimensions
+        serialized_extra_params = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.extra_params.items()])
+        info["serialized_extra_params"] = serialized_extra_params
         return ("MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s,"
-                " dimensions={%(serialized_dimensions)s)}") % info
+                " dimensions={%(serialized_dimensions)s}"
+                " extra_params={%(serialized_extra_params)s})") % info
 
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None,
-                 feature_count=None):
+                 feature_count=None, extra_params=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -161,6 +176,18 @@ class InfoQuery(object):
         self.info_format = info_format
         self.format = format
         self.feature_count = feature_count
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = InfoQuery(None, None, None, None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
     @property
     def coord(self):
@@ -168,9 +195,21 @@ class InfoQuery(object):
 
 
 class LegendQuery(object):
-    def __init__(self, format, scale):
+    def __init__(self, format, scale, extra_params=None):
         self.format = format
         self.scale = scale
+        self.extra_params = extra_params or {}
+
+    def extra_params_for_params(self, params):
+        """
+        Return subset of the extra_params.
+
+        >>> mq = LegendQuery(None, None, extra_params={'key': 1, 'bar': 2})
+        >>> mq.extra_params_for_params(set(['KeY', 'baz']))
+        {'key': 1}
+        """
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.extra_params.items() if k.lower() in params)
 
 
 class Dimension(list):
@@ -426,7 +465,8 @@ class CacheMapLayer(MapLayer):
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             if size[0] == 0 or size[1] == 0:
                 raise BlankImage()
-            src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
+            src_query = MapQuery(bbox, size, query.srs, query.format,
+                                 dimensions=query.dimensions, extra_params=query.extra_params)
             resp = self._image(src_query)
             result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
                                     cacheable=resp.cacheable)
@@ -465,7 +505,8 @@ class CacheMapLayer(MapLayer):
 
         with self.tile_manager.session():
             tile_collection = self.tile_manager.load_tile_coords(
-                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
+                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions,
+                extra_params=query.extra_params)
 
         if tile_collection.empty:
             raise BlankImage()

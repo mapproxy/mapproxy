@@ -312,7 +312,8 @@ class TileLayer(object):
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord,
-                                                         dimensions=dimensions, with_metadata=True)
+                                                         dimensions=dimensions, with_metadata=True,
+                                                         extra_params=tile_request.extra_params)
             if tile.source is None:
                 return self.empty_response()
 

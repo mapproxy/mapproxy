@@ -41,8 +41,8 @@ def has_renderd_support():
 
 
 class RenderdTileCreator(TileCreator):
-    def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None):
-        TileCreator.__init__(self, tile_mgr, dimensions)
+    def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None, extra_params=None):
+        TileCreator.__init__(self, tile_mgr, dimensions, extra_params)
         self.tile_locker = tile_locker.lock or self.tile_mgr.lock
         self.renderd_address = renderd_address
         self.priority = priority
