@@ -26,7 +26,7 @@ import pytest
 
 try:
     import boto3
-    from moto import mock_aws 
+    from moto import mock_aws
 except ImportError:
     boto3 = None
     mock_aws = None
