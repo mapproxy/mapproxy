@@ -19,6 +19,7 @@ from mapproxy.util.bbox import bbox_tuple
 class GridError(Exception):
     pass
 
+
 class NoTiles(GridError):
     pass
 

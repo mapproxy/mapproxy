@@ -505,6 +505,7 @@ class TileGrid(object):
 
         return True
 
+
 def is_float(x):
     try:
         float(x)
