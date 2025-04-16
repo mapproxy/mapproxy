@@ -15,10 +15,19 @@ Dev Setup
 * Create an application: `mapproxy-util create -t base-config apps/base`
 
 * Start a dev server in debug mode: `mapproxy-util serve-develop apps/base/mapproxy.yaml --debug`
+
 Coding Style
 ------------
 
 PEP8: <https://www.python.org/dev/peps/pep-0008/>
+
+PyCharm / Intellij
+------------------
+
+* Mark the mapproxy folder as `Sources` 
+* Set your venv as the project SDK / Python interpreter in your project settings
+* Add the root folder of mapproxy to the paths of the python interpreter in your project settings
+
 
 Debugging
 ---------

@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from mapproxy.compat.image import Image
-from mapproxy.grid import tile_grid
+from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions

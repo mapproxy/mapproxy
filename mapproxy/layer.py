@@ -19,15 +19,20 @@ Layers that can get maps/infos from different sources/caches.
 """
 
 from __future__ import division
-from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_intersects, bbox_contains
+
+from mapproxy.grid import NoTiles, GridError
+from mapproxy.grid.resolutions import merge_resolution_range
 from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf, SupportedSRS
 from mapproxy.proj import ProjError
+from mapproxy.srs import SRS, make_lin_transf, SupportedSRS
+from mapproxy.util.bbox import bbox_contains, bbox_intersects, merge_bbox, bbox_equals
 
 import logging
 from functools import reduce
+
+
 log = logging.getLogger(__name__)
 
 
@@ -184,7 +189,7 @@ class Dimension(list):
 
 def map_extent_from_grid(grid):
     """
-    >>> from mapproxy.grid import tile_grid_for_epsg
+    >>> from mapproxy.grid.tile_grid import tile_grid_for_epsg
     >>> map_extent_from_grid(tile_grid_for_epsg('EPSG:900913'))
     ... #doctest: +NORMALIZE_WHITESPACE
     MapExtent((-20037508.342789244, -20037508.342789244,

@@ -29,6 +29,9 @@ from mapproxy.proj import CRS, Transformer
 from mapproxy.config import base_config
 
 import logging
+
+from mapproxy.util.bbox import calculate_bbox
+
 log_system = logging.getLogger('mapproxy.system')
 log_proj = logging.getLogger('mapproxy.proj')
 
@@ -77,10 +80,6 @@ def _clean_srs_code(code):
         return code.upper()
     else:
         return 'EPSG:' + str(code)
-
-
-class TransformationError(Exception):
-    pass
 
 
 _proj_initialized = False
@@ -600,71 +599,6 @@ def generate_envelope_points(bbox, n):
     for i in range(n-1, 0, -1):
         result.append((minx, miny + i*ystep))
     return result
-
-
-def calculate_bbox(points):
-    """
-    Calculates the bbox of a list of points.
-
-    >>> calculate_bbox([(-5, 20), (3, 8), (99, 0)])
-    (-5, 0, 99, 20)
-
-    @param points: list of points [(x0, y0), (x1, y2), ...]
-    @returns: bbox of the input points.
-    """
-    points = list(points)
-    # points can be INF for invalid transformations, filter out
-    try:
-        minx = min(p[0] for p in points if p[0] != float('inf'))
-        miny = min(p[1] for p in points if p[1] != float('inf'))
-        maxx = max(p[0] for p in points if p[0] != float('inf'))
-        maxy = max(p[1] for p in points if p[1] != float('inf'))
-        return (minx, miny, maxx, maxy)
-    except ValueError:  # min/max are called with empty list when everything is inf
-        raise TransformationError()
-
-
-def merge_bbox(bbox1, bbox2):
-    """
-    Merge two bboxes.
-
-    >>> merge_bbox((-10, 20, 0, 30), (30, -20, 90, 10))
-    (-10, -20, 90, 30)
-
-    """
-    minx = min(bbox1[0], bbox2[0])
-    miny = min(bbox1[1], bbox2[1])
-    maxx = max(bbox1[2], bbox2[2])
-    maxy = max(bbox1[3], bbox2[3])
-    return (minx, miny, maxx, maxy)
-
-
-def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
-    """
-    Compares two bbox and checks if they are equal, or nearly equal.
-
-    :param x_delta: how precise the comparison should be.
-                    should be reasonable small, like a tenth of a pixel.
-                    defaults to 1/1.000.000th of the width.
-    :type x_delta: bbox units
-
-    >>> src_bbox = (939258.20356824622, 6887893.4928338043,
-    ...             1095801.2374962866, 7044436.5267618448)
-    >>> dst_bbox = (939258.20260000182, 6887893.4908000007,
-    ...             1095801.2365000017, 7044436.5247000009)
-    >>> bbox_equals(src_bbox, dst_bbox, 61.1, 61.1)
-    True
-    >>> bbox_equals(src_bbox, dst_bbox, 0.0001)
-    False
-    """
-    if x_delta is None:
-        x_delta = abs(src_bbox[0] - src_bbox[2]) / 1000000.0
-    if y_delta is None:
-        y_delta = x_delta
-    return (abs(src_bbox[0] - dst_bbox[0]) < x_delta and
-            abs(src_bbox[1] - dst_bbox[1]) < x_delta and
-            abs(src_bbox[2] - dst_bbox[2]) < y_delta and
-            abs(src_bbox[3] - dst_bbox[3]) < y_delta)
 
 
 def make_lin_transf(src_bbox, dst_bbox):

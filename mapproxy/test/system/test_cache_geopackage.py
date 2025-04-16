@@ -28,7 +28,7 @@ from mapproxy.test.http import MockServ
 from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import SysTest
 from mapproxy.cache.geopackage import GeopackageCache
-from mapproxy.grid import TileGrid
+from mapproxy.grid.tile_grid import TileGrid
 
 
 @pytest.fixture(scope="module")

@@ -304,7 +304,7 @@ def wms_query_eq(expected, actual):
     >>> wms_query_eq('/1/2/3.png', '/1/2/0.png')
     False
     """
-    from mapproxy.srs import bbox_equals
+    from mapproxy.util.bbox import bbox_equals
     if path_from_query(expected) != path_from_query(actual):
         return False
 
