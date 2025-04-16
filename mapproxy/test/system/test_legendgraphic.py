@@ -214,6 +214,7 @@ class TestWMSLegendgraphic(SysTest):
         self.common_lg_req_111.params["layer"] = "wms_no_legend"
         resp = app.get(self.common_lg_req_111, expect_errors=True)
         assert resp.content_type == "application/vnd.ogc.se_xml"
+        assert resp.status_code == 404
         xml = resp.lxml
         assert (
             "wms_no_legend has no legend graphic"
@@ -247,6 +248,7 @@ class TestWMSLegendgraphic(SysTest):
         self.common_lg_req_130.params["layer"] = "wms_no_legend"
         resp = app.get(self.common_lg_req_130, expect_errors=True)
         assert resp.content_type == "text/xml"
+        assert resp.status_code == 404
         xml = resp.lxml
         assert_xpath_wms130(xml, "/ogc:ServiceExceptionReport/@version", "1.3.0")
         assert_xpath_wms130(
