@@ -9,7 +9,7 @@ on:
       - "*.*.*"
 jobs:
   get-version:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     steps:
