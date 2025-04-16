@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-publish-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: pypi
       url: https://pypi.org/project/MapProxy
