@@ -36,7 +36,7 @@ Tile caching (creation, caching and retrieval of tiles).
 """
 from functools import partial
 from contextlib import contextmanager
-from mapproxy.grid import MetaGrid
+from mapproxy.grid.meta_grid import MetaGrid
 from mapproxy.image import BlankImageSource
 from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.opts import ImageOptions

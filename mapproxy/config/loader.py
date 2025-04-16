@@ -274,7 +274,7 @@ class ConfigurationBase(object):
 class GridConfiguration(ConfigurationBase):
     @memoize
     def tile_grid(self):
-        from mapproxy.grid import tile_grid
+        from mapproxy.grid.tile_grid import tile_grid
 
         if 'base' in self.conf:
             base_grid_name = self.conf['base']
@@ -637,7 +637,7 @@ class SourceConfiguration(ConfigurationBase):
 
 
 def resolution_range(conf):
-    from mapproxy.grid import resolution_range as _resolution_range
+    from mapproxy.grid.resolutions import resolution_range as _resolution_range
     if 'min_res' in conf or 'max_res' in conf:
         return _resolution_range(min_res=conf.get('min_res'),
                                  max_res=conf.get('max_res'))

@@ -17,7 +17,7 @@
 import operator
 import threading
 
-from mapproxy.grid import bbox_intersects, bbox_contains
+from mapproxy.util.bbox import bbox_intersects, bbox_contains
 from mapproxy.util.py import cached_property
 from mapproxy.util.geom import (
     require_geom_support,

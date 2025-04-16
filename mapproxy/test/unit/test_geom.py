@@ -24,7 +24,8 @@ import shapely
 import shapely.prepared
 from shapely.errors import ShapelyError
 
-from mapproxy.srs import SRS, bbox_equals
+from mapproxy.srs import SRS
+from mapproxy.util.bbox import bbox_equals
 from mapproxy.util.geom import (
     load_polygons,
     load_datasource,

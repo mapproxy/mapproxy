@@ -26,7 +26,7 @@ except ImportError:
     import queue as Queue
 
 from mapproxy.config import base_config
-from mapproxy.grid import MetaGrid
+from mapproxy.grid.meta_grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.config import local_base_config
 from mapproxy.util.lock import LockTimeout

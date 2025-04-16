@@ -21,7 +21,7 @@ import codecs
 from functools import partial
 from contextlib import closing
 
-from mapproxy.grid import tile_grid
+from mapproxy.grid.tile_grid import tile_grid
 
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')

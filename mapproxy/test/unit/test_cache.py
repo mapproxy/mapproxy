@@ -35,7 +35,8 @@ from mapproxy.client.http import HTTPClient
 from mapproxy.client.wms import WMSClient
 from mapproxy.compat.image import Image
 from mapproxy.config.coverage import load_coverage
-from mapproxy.grid import TileGrid, resolution_range
+from mapproxy.grid.tile_grid import TileGrid
+from mapproxy.grid.resolutions import resolution_range
 from mapproxy.image import ImageSource, BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import (

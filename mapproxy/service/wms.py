@@ -24,7 +24,7 @@ from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
                                   mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
-from mapproxy.srs import SRS, TransformationError
+from mapproxy.srs import SRS
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
@@ -36,6 +36,7 @@ from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util import async_
+from mapproxy.util.bbox import TransformationError
 from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict

@@ -17,7 +17,8 @@ from __future__ import division
 
 from mapproxy.compat.image import Image, transform_uses_center
 from mapproxy.image import ImageSource, image_filter
-from mapproxy.srs import make_lin_transf, bbox_equals
+from mapproxy.srs import make_lin_transf
+from mapproxy.util.bbox import bbox_equals
 
 
 class ImageTransformer(object):

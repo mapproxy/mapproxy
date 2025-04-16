@@ -22,7 +22,7 @@ import pytest
 
 from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 from mapproxy.cache.tile import Tile
-from mapproxy.grid import tile_grid
+from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 

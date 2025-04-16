@@ -15,21 +15,12 @@
 
 from __future__ import print_function, division
 
-
-from mapproxy.grid import (
-    MetaGrid,
-    TileGrid,
-    _create_tile_list,
-    bbox_intersects,
-    bbox_contains,
-    NoTiles,
-    tile_grid,
-    resolutions,
-    ResolutionRange,
-    resolution_range,
-    merge_resolution_range,
-)
-from mapproxy.srs import SRS, TransformationError
+from mapproxy.grid import NoTiles, _create_tile_list
+from mapproxy.grid.meta_grid import MetaGrid
+from mapproxy.grid.resolutions import resolutions, ResolutionRange, merge_resolution_range, resolution_range
+from mapproxy.grid.tile_grid import tile_grid, TileGrid
+from mapproxy.srs import SRS
+from mapproxy.util.bbox import TransformationError, bbox_intersects, bbox_contains
 
 import pytest
 

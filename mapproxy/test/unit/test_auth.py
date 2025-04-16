@@ -16,7 +16,7 @@
 import pytest
 
 from mapproxy.exception import RequestError
-from mapproxy.grid import tile_grid
+from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapLayer, DefaultMapExtent
