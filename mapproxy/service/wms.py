@@ -86,6 +86,7 @@ class WMSServer(Server):
 
         params = map_request.params
         query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
+        offset = None
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -306,7 +307,7 @@ class WMSServer(Server):
         self.check_legend_request(request)
         layer = request.params.layer
         if not self.layers[layer].has_legend:
-            raise RequestError('layer %s has no legend graphic' % layer, request=request)
+            raise RequestError('layer %s has no legend graphic' % layer, request=request, status=404)
         legend = self.layers[layer].legend(request)
 
         [legends.append(i) for i in legend if i is not None]
