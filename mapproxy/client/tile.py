@@ -144,7 +144,7 @@ def arcgiscache_path(tile_coord):
 
 def bbox(tile_coord, grid):
     """
-    >>> from mapproxy.grid import tile_grid
+    >>> from mapproxy.grid.tile_grid import tile_grid
     >>> grid = tile_grid(4326, bbox=(0, -15, 10, -5))
     >>> bbox((0, 0, 0), grid)
     '0.00000000,-15.00000000,10.00000000,-5.00000000'

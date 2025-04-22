@@ -15,7 +15,7 @@
 
 
 from mapproxy.client.tile import TileClient, TileURLTemplate
-from mapproxy.grid import TileGrid
+from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.source.tile import TiledSource
 from mapproxy.source.error import HTTPSourceErrorHandler

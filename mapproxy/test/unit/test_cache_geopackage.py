@@ -24,7 +24,7 @@ from io import BytesIO
 
 from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
 from mapproxy.cache.tile import Tile
-from mapproxy.grid import tile_grid, TileGrid
+from mapproxy.grid.tile_grid import tile_grid, TileGrid
 from mapproxy.image import ImageSource
 from mapproxy.layer import MapExtent
 from mapproxy.srs import SRS

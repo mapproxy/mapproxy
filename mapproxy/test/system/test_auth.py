@@ -17,7 +17,7 @@ from __future__ import division
 
 import pytest
 
-from mapproxy.srs import bbox_equals
+from mapproxy.util.bbox import bbox_equals
 from mapproxy.util.geom import geom_support
 
 from mapproxy.test.http import MockServ

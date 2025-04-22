@@ -20,7 +20,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.srs import bbox_equals
+from mapproxy.util.bbox import bbox_equals
 from mapproxy.util.times import format_httpdate
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd

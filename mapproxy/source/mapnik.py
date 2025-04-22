@@ -22,7 +22,7 @@ import threading
 import multiprocessing
 from io import BytesIO
 
-from mapproxy.grid import tile_grid
+from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, MapLayer

@@ -30,8 +30,7 @@ from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.dummy import DummyLocker
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
-from mapproxy.grid import tile_grid_for_epsg
-from mapproxy.grid import TileGrid
+from mapproxy.grid.tile_grid import tile_grid_for_epsg, TileGrid
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import BBOXCoverage, GeomCoverage
 from mapproxy.seed.config import before_timestamp_from_options, SeedConfigurationError

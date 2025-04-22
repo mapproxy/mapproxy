@@ -23,17 +23,17 @@ from functools import reduce
 
 from mapproxy.cache.dummy import DummyCache
 from mapproxy.config import abspath
-from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
-from mapproxy.srs import TransformationError
-from mapproxy.util.py import memoize
-from mapproxy.util.times import timestamp_from_isodate, timestamp_before
-from mapproxy.util.coverage import MultiCoverage, BBOXCoverage
-from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
-from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.config.loader import ConfigurationError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 from mapproxy.seed.spec import validate_seed_conf
+from mapproxy.util.bbox import TransformationError
+from mapproxy.util.coverage import MultiCoverage, BBOXCoverage
+from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
+from mapproxy.util.py import memoize
+from mapproxy.util.times import timestamp_from_isodate, timestamp_before
+from mapproxy.util.yaml import load_yaml_file, YAMLError
 
 
 class SeedConfigurationError(ConfigurationError):
