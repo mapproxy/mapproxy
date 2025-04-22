@@ -15,6 +15,7 @@
 
 from __future__ import print_function, division
 
+from codecs import encode
 import re
 import sys
 import functools
@@ -180,26 +181,11 @@ class TestWMS111(SysTest):
         assert xml.xpath("//Layer/MetadataURL/@type")[0] == "TC211"
 
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
-        expected_names = set(
-            [
-                "direct_fwd_params",
-                "direct",
-                "wms_cache",
-                "wms_cache_100",
-                "wms_cache_130",
-                "wms_cache_transparent",
-                "wms_merge",
-                "tms_cache",
-                "tms_fi_cache",
-                "wms_cache_multi",
-                "wms_cache_link_single",
-                "wms_cache_110",
-                "watermark_cache",
-                "wms_managed_cookies_cache",
-            ]
-        )
+        expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
+                          "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
         assert layer_names == expected_names
-        assert set(xml.xpath("//Layer/Layer[3]/Abstract/text()")) == set(["Some abstract"])
+        assert set(xml.xpath("//Layer/Layer[3]/Abstract/text()")) == {"Some abstract"}
 
         bboxs = xml.xpath("//Layer/Layer[1]/BoundingBox")
         bboxs = dict((e.attrib["SRS"], e) for e in bboxs)
@@ -367,7 +353,7 @@ class TestWMS111(SysTest):
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/tiff"
         img = ImageSource(BytesIO(resp.body)).as_image()
-        assert_geotiff_tags(img, (-180, 80), (180/200.0, 80/200.0), 4326, False)
+        assert_geotiff_tags(img, (-180, 80), (180 / 200.0, 80 / 200.0), 4326, False)
 
     def test_get_map_xml_exception(self, app):
         self.common_map_req.params["bbox"] = "0,0,90,90"
@@ -765,6 +751,23 @@ class TestWMS111(SysTest):
             assert resp.content_type == "text/html"
             assert resp.body == b"<html><body><p>info</p></body></html>"
 
+    def test_get_featureinfo_info_format_special_chars(self, app):
+        expected_req = (
+            {
+                "path": r"/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng"
+                        "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913"
+                        "&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles="
+                        "&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20"
+                        "&info_format=text%2Fhtml"
+            },
+            {"body": encode(u"äüß▼"), "headers": {"content-type": "text/html"}},
+        )
+        with mock_httpd(("localhost", 42423), [expected_req]):
+            self.common_fi_req.params["info_format"] = "text/html"
+            resp = app.get(self.common_fi_req)
+            assert resp.content_type == "text/html"
+            assert resp.body == encode(u"<html><body><p>äüß▼</p></body></html>")
+
     def test_get_featureinfo_130(self, app):
         expected_req = (
             {
@@ -889,24 +892,9 @@ class TestWMS110(SysTest):
         assert float(llbox.attrib["maxx"]) == pytest.approx(180.0)
 
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
-        expected_names = set(
-            [
-                "direct_fwd_params",
-                "direct",
-                "wms_cache",
-                "wms_cache_100",
-                "wms_cache_130",
-                "wms_cache_transparent",
-                "wms_merge",
-                "tms_cache",
-                "tms_fi_cache",
-                "wms_cache_multi",
-                "wms_cache_link_single",
-                "wms_cache_110",
-                "watermark_cache",
-                "wms_managed_cookies_cache",
-            ]
-        )
+        expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
+                          "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
         assert layer_names == expected_names
         assert validate_with_dtd(xml, dtd_name="wms/1.1.0/capabilities_1_1_0.dtd")
 
@@ -1139,28 +1127,13 @@ class TestWMS100(SysTest):
         assert resp.content_type == "text/xml"
         xml = resp.lxml
         assert (
-            xml.xpath("/WMT_MS_Capabilities/Service/Title/text()")[0] ==
-            u"MapProxy test fixture \u2603"
+                xml.xpath("/WMT_MS_Capabilities/Service/Title/text()")[0] ==
+                u"MapProxy test fixture \u2603"
         )
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
-        expected_names = set(
-            [
-                "direct_fwd_params",
-                "direct",
-                "wms_cache",
-                "wms_cache_100",
-                "wms_cache_130",
-                "wms_cache_transparent",
-                "wms_merge",
-                "tms_cache",
-                "tms_fi_cache",
-                "wms_cache_multi",
-                "wms_cache_link_single",
-                "wms_cache_110",
-                "watermark_cache",
-                "wms_managed_cookies_cache",
-            ]
-        )
+        expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
+                          "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
         assert layer_names == expected_names
         # TODO srs
         assert validate_with_dtd(xml, dtd_name="wms/1.0.0/capabilities_1_0_0.dtd")
@@ -1360,24 +1333,9 @@ class TestWMS130(SysTest):
         layer_names = set(
             xml.xpath("//wms:Layer/wms:Layer/wms:Name/text()", namespaces=ns130)
         )
-        expected_names = set(
-            [
-                "direct_fwd_params",
-                "direct",
-                "wms_cache",
-                "wms_cache_100",
-                "wms_cache_130",
-                "wms_cache_transparent",
-                "wms_merge",
-                "tms_cache",
-                "tms_fi_cache",
-                "wms_cache_multi",
-                "wms_cache_link_single",
-                "wms_cache_110",
-                "watermark_cache",
-                "wms_managed_cookies_cache",
-            ]
-        )
+        expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
+                          "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
         assert layer_names == expected_names
         assert is_130_capa(xml)
 

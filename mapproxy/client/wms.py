@@ -16,6 +16,8 @@
 """
 WMS clients for maps and information.
 """
+from codecs import decode
+
 from mapproxy.request.base import split_mime_type
 from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
@@ -137,7 +139,7 @@ class WMSInfoClient(object):
         if not info_format:
             # otherwise from query
             info_format = query.info_format
-        return create_featureinfo_doc(resp.read(), info_format)
+        return create_featureinfo_doc(decode(resp.read()), info_format)
 
     def _get_transformed_query(self, query):
         """

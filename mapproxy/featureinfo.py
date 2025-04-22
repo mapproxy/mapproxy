@@ -18,6 +18,7 @@ import json
 
 from functools import reduce
 from io import StringIO, BytesIO
+from typing import List
 
 try:
     from lxml import etree, html
@@ -41,44 +42,40 @@ class FeatureInfoDoc(object):
 class TextFeatureInfoDoc(FeatureInfoDoc):
     info_type = "text"
 
-    def __init__(self, content):
+    def __init__(self, content: str):
         self.content = content
 
-    def as_string(self):
+    def as_string(self) -> str:
         return self.content
 
     @classmethod
-    def combine(cls, docs):
+    def combine(cls, docs: List[FeatureInfoDoc]):
         result_content = [doc.as_string() for doc in docs]
-        return cls(b"\n".join(result_content))
+        return cls("\n".join(result_content))
 
 
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = "xml"
     defaultEncoding = "UTF-8"
 
-    def __init__(self, content):
+    def __init__(self, content: str|bytes):
         if isinstance(content, (str, bytes)):
             self._str_content = content
-            self._etree = None
+            self._etree = self._parse_content()
         else:
-            self._str_content = None
             if hasattr(content, "getroottree"):
                 content = content.getroottree()
             self._etree = content
             assert hasattr(content, "getroot"), "expected etree like object"
+            self._str_content = self._serialize_etree()
 
     def as_string(self):
-        if self._str_content is None:
-            self._str_content = self._serialize_etree()
         return self._str_content
 
     def as_etree(self):
-        if self._etree is None:
-            self._etree = self._parse_content()
         return self._etree
 
-    def _serialize_etree(self):
+    def _serialize_etree(self) -> str:
         encoding = self._etree.docinfo.encoding if \
             self._etree.docinfo.encoding else self.defaultEncoding
         return etree.tostring(self._etree, encoding=encoding, xml_declaration=False)
@@ -108,7 +105,9 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
         return root
 
     def _serialize_etree(self):
-        return html.tostring(self._etree)
+        encoding = self._etree.docinfo.encoding if \
+            self._etree.docinfo.encoding else self.defaultEncoding
+        return html.tostring(self._etree, encoding=encoding)
 
     @classmethod
     def combine(cls, docs):

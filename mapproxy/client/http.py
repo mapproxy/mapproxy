@@ -18,6 +18,7 @@ Tile retrieval (WMS, TMS, etc.).
 """
 import sys
 import time
+from typing import Any
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
@@ -160,9 +161,11 @@ class HTTPClient(object):
         self.header_list = headers.items() if headers else []
         self.hide_error_details = hide_error_details
 
-    def open(self, url, data=None, method=None):
+    def open(self, url, data=None, method=None) -> Any:
         code = None
         result = None
+        start_time = time.time()
+        req = None
         try:
             req = urllib2.Request(url, data=data)
         except ValueError as e:
@@ -173,7 +176,6 @@ class HTTPClient(object):
         if method:
             req.method = method
         try:
-            start_time = time.time()
             if self._timeout is not None:
                 result = self.opener.open(req, timeout=self._timeout)
             else:
