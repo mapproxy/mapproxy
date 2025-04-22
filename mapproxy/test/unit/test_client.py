@@ -411,7 +411,7 @@ class TestCombinedWMSClient(object):
 class TestWMSInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
         req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers': 'foo'})
-        http = MockHTTPClient()
+        http = MockHTTPClient(response_type='text')
         wms = WMSInfoClient(req, http_client=http, supported_srs=SupportedSRS([SRS(25832)]))
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (128, 64), 'text/plain')
@@ -428,7 +428,7 @@ class TestWMSInfoClient(object):
     def test_transform_fi_request(self):
         req = WMS111FeatureInfoRequest(
             url=TESTSERVER_URL + '/service?map=foo', param={'layers': 'foo', 'srs': 'EPSG:25832'})
-        http = MockHTTPClient()
+        http = MockHTTPClient(response_type='text')
         wms = WMSInfoClient(req, http_client=http)
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (128, 64), 'text/plain')

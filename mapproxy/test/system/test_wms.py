@@ -646,6 +646,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_coverage(self, app):
         self.common_fi_req.params["bbox"] = "-180.0,-90.0,180.0,90.0"
@@ -676,6 +677,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.body == b"info"
             assert resp.content_type == "text/plain"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_float(self, app):
         expected_req = (
@@ -694,6 +696,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_transformed(self, app):
         expected_req = (
@@ -750,6 +753,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/html"
             assert resp.body == b"<html><body><p>info</p></body></html>"
+            assert resp.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     def test_get_featureinfo_info_format_special_chars(self, app):
         expected_req = (
@@ -767,6 +771,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/html"
             assert resp.body == encode(u"<html><body><p>äüß▼</p></body></html>")
+            assert resp.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     def test_get_featureinfo_130(self, app):
         expected_req = (
@@ -784,6 +789,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_missing_params(self, app):
         expected_req = (
@@ -801,6 +807,7 @@ class TestWMS111(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_missing_params_strict(self, app):
         request_parser = app.app.handlers["service"].services["wms"].request_parser
@@ -1468,6 +1475,7 @@ class TestWMS130(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
     def test_get_featureinfo_111(self, app):
         expected_req = (
@@ -1485,6 +1493,7 @@ class TestWMS130(SysTest):
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
+            assert resp.headers['Content-Type'] == 'text/plain; charset=utf-8'
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="not supported on Windows")
