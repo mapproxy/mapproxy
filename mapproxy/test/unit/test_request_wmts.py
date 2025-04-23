@@ -45,7 +45,7 @@ class DummyRequest(object):
 
 
 def test_tile_request():
-    args = """requeST=GetTile&service=wmts&tileMatrixset=EPSG900913&
+    args = """request=GetTile&service=wmts&tileMatrixset=EPSG900913&
 tilematrix=2&tileROW=4&TILECOL=2&FORMAT=image/png&Style=&layer=Foo&version=1.0.0"""
     req = wmts_request(dummy_req(args))
 
@@ -56,7 +56,7 @@ tilematrix=2&tileROW=4&TILECOL=2&FORMAT=image/png&Style=&layer=Foo&version=1.0.0
 
 
 def test_featureinfo_request():
-    args = """requeST=GetFeatureInfo&service=wmts&tileMatrixset=EPSG900913&
+    args = """request=GetFeatureInfo&service=wmts&tileMatrixset=EPSG900913&
 tilematrix=2&tileROW=4&TILECOL=2&FORMAT=image/png&Style=&layer=Foo&version=1.0.0&
 i=5&j=10&infoformat=application/json"""
     req = wmts_request(dummy_req(args))
@@ -70,7 +70,7 @@ i=5&j=10&infoformat=application/json"""
 
 
 def test_capabilities_request():
-    args = """requeST=GetCapabilities&service=wmts"""
+    args = """request=GetCapabilities&service=wmts"""
     req = wmts_request(dummy_req(args))
 
     assert isinstance(req, WMTS100CapabilitiesRequest)

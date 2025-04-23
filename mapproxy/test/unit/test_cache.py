@@ -245,7 +245,7 @@ class TestTileManagerTiledSource(object):
 
     def test_create_tiles(self, tile_mgr, mock_file_cache, mock_tile_client):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert sorted(mock_tile_client.requested_tiles) == [(0, 0, 1), (1, 0, 1)]
 
 
@@ -263,7 +263,7 @@ class TestTileManagerDifferentSourceGrid(object):
 
     def test_create_tiles(self, tile_mgr, mock_file_cache, mock_tile_client):
         tile_mgr.creator().create_tiles([Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(1, 0, 1)}
         assert mock_tile_client.requested_tiles == [(0, 0, 0)]
 
     def test_create_tiles_out_of_bounds(self, tile_mgr):
@@ -302,7 +302,7 @@ class TestTileManagerSource(object):
 
     def test_create_tile(self, tile_mgr, mock_file_cache, mock_source):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert sorted(mock_source.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (256, 256), SRS(4326))]
@@ -343,22 +343,21 @@ class TestTileManagerWMSSource(object):
 
     def test_create_tile_first_level(self, tile_mgr, mock_file_cache, mock_wms_client):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert mock_wms_client.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
     def test_create_tile(self, tile_mgr, mock_file_cache, mock_wms_client):
         tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
+               {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)}
         assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))]
 
     def test_create_tiles(self, tile_mgr, mock_file_cache, mock_wms_client):
         tile_mgr.creator().create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
-                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
+               {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)}
         assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))]
@@ -371,8 +370,7 @@ class TestTileManagerWMSSource(object):
         assert isinstance(tiles[1].source, ImageSource)
 
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
-                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
+               {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)}
         assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))]
@@ -405,21 +403,21 @@ class TestTileManagerWMSSourceMinimalMetaRequests(object):
         # not enabled for single tile requests
         tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)])
+               {(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)}
         assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 3.515625, 90.0), (522, 512), SRS(4326))]
 
     def test_create_tile_multiple(self, tile_mgr, mock_file_cache, mock_wms_client):
         tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
         assert mock_file_cache.stored_tiles == \
-            set([(4, 0, 3), (4, 1, 3), (4, 2, 3)])
+               {(4, 0, 3), (4, 1, 3), (4, 2, 3)}
         assert sorted(mock_wms_client.requested) == \
             [((-1.7578125, -90, 46.7578125, 46.7578125), (276, 778), SRS(4326))]
 
     def test_create_tile_multiple_fragmented(self, tile_mgr, mock_file_cache, mock_wms_client):
         tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
         assert mock_file_cache.stored_tiles == \
-            set([(4, 0, 3), (4, 1, 3), (4, 2, 3), (5, 0, 3), (5, 1, 3), (5, 2, 3)])
+               {(4, 0, 3), (4, 1, 3), (4, 2, 3), (5, 0, 3), (5, 1, 3), (5, 2, 3)}
         assert sorted(mock_wms_client.requested) == \
             [((-1.7578125, -90, 91.7578125, 46.7578125), (532, 778), SRS(4326))]
 
@@ -474,7 +472,7 @@ class TestTileManagerLocking(object):
 
     def test_get_single(self, tile_mgr, file_cache, slow_source):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
@@ -486,7 +484,7 @@ class TestTileManagerLocking(object):
         [t.start() for t in threads]
         [t.join() for t in threads]
 
-        assert file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert file_cache.loaded_tiles == counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
         assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
@@ -532,7 +530,7 @@ class TestTileManagerMultipleSources(object):
 
     def test_get_single(self, tile_mgr, mock_file_cache, source_base, source_overlay):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1)}
         assert source_base.requested == \
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))]
         assert source_overlay.requested == \
@@ -574,7 +572,7 @@ class TestTileManagerMultipleSourcesWithMetaTiles(object):
 
     def test_merged_tiles(self, tile_mgr, mock_file_cache, source_base, source_overlay):
         tiles = tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert source_base.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
         assert source_overlay.requested == \
@@ -634,14 +632,12 @@ class TestTileManagerBulkMetaTiles(object):
     def test_bulk_get(self, tile_mgr, mock_file_cache, source_base, source_overlay):
         tiles = tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         assert len(tiles) == 2*2
-        assert mock_file_cache.stored_tiles == set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)}
         for requested in [source_base.requested, source_overlay.requested]:
-            assert set(requested) == set([
-                ((-180.0, 0.0, -90.0, 90.0), (256, 256), SRS(4326)),
-                ((-90.0, 0.0, 0.0, 90.0), (256, 256), SRS(4326)),
-                ((-180.0, -90.0, -90.0, 0.0), (256, 256), SRS(4326)),
-                ((-90.0, -90.0, 0.0, 0.0), (256, 256), SRS(4326)),
-            ])
+            assert set(requested) == {((-180.0, 0.0, -90.0, 90.0), (256, 256), SRS(4326)),
+                                      ((-90.0, 0.0, 0.0, 90.0), (256, 256), SRS(4326)),
+                                      ((-180.0, -90.0, -90.0, 0.0), (256, 256), SRS(4326)),
+                                      ((-90.0, -90.0, 0.0, 0.0), (256, 256), SRS(4326))}
 
     def test_bulk_get_error(self, tile_mgr, source_base):
         tile_mgr.sources = [source_base, ErrorSource()]
@@ -653,10 +649,8 @@ class TestTileManagerBulkMetaTiles(object):
     def test_bulk_get_multiple_meta_tiles(self, tile_mgr, mock_file_cache):
         tiles = tile_mgr.creator().create_tiles([Tile((1, 0, 2)), Tile((2, 0, 2))])
         assert len(tiles) == 2*2*2
-        assert mock_file_cache.stored_tiles, set([
-            (0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
-            (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2),
-        ])
+        assert mock_file_cache.stored_tiles, {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2),
+                                              (2, 1, 2), (3, 1, 2)}
 
 
 class TestTileManagerBulkMetaTilesConcurrent(TestTileManagerBulkMetaTiles):
@@ -699,15 +693,14 @@ class TestCacheMapLayer(object):
 
     def test_get_map_small(self, layer, mock_file_cache):
         result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(0, 0, 1), (1, 0, 1)}
         assert result.size == (300, 150)
 
     def test_get_map_large(self, layer, mock_file_cache):
         # gets next resolution layer
         result = layer.get_map(MapQuery((-180, -90, 180, 90), (600, 300), SRS(4326), 'png'))
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
-                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
+               {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)}
         assert result.size == (600, 300)
 
     def test_transformed(self, layer, mock_file_cache):
@@ -715,15 +708,14 @@ class TestCacheMapLayer(object):
             (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
             SRS(900913), 'png'))
         assert mock_file_cache.stored_tiles == \
-            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
-                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
+               {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)}
         assert result.size == (500, 500)
 
     def test_single_tile_match(self, layer, mock_file_cache):
         result = layer.get_map(MapQuery(
             (0.001, 0, 90, 90), (256, 256), SRS(4326), 'png', tiled_only=True))
         assert mock_file_cache.stored_tiles == \
-            set([(3, 0, 2), (2, 0, 2), (3, 1, 2), (2, 1, 2)])
+               {(3, 0, 2), (2, 0, 2), (3, 1, 2), (2, 1, 2)}
         assert result.size == (256, 256)
 
     def test_single_tile_no_match(self, layer):
@@ -753,7 +745,7 @@ class TestCacheMapLayer(object):
             (0, 0, 10000, 10000), (50, 50),
             SRS(900913), 'png'))
         assert mock_file_cache.stored_tiles == \
-            set([(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)])
+               {(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)}
         assert result.size == (50, 50)
 
 
@@ -779,7 +771,7 @@ class TestCacheMapLayerWithExtent(object):
 
     def test_get_map_small(self, layer, mock_file_cache, mock_wms_client):
         result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(1, 0, 1)}
         # source requests one tile (no meta-tiling configured)
         assert mock_wms_client.requested == [((0.0, -90.0, 180.0, 90.0), (256, 256), SRS('EPSG:4326'))]
         assert result.size == (300, 150)
@@ -787,7 +779,7 @@ class TestCacheMapLayerWithExtent(object):
     def test_get_map_small_with_source_extent(self, source, layer, mock_file_cache, mock_wms_client):
         source.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
         result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
+        assert mock_file_cache.stored_tiles == {(1, 0, 1)}
         # source requests one tile (no meta-tiling configured) limited to source.extent
         assert mock_wms_client.requested == [((0, 0, 90, 45), (128, 64), (SRS(4326)))]
         assert result.size == (300, 150)
@@ -836,21 +828,29 @@ class TestDirectMapLayerWithSupportedSRS(object):
 
 
 class MockHTTPClient(object):
-    def __init__(self):
+    def __init__(self, response_type='image'):
         self.requested = []
+        self.response_type = response_type
 
     def open(self, url, data=None):
         self.requested.append(url)
-        w = int(re.search(r'width=(\d+)', url, re.IGNORECASE).group(1))
-        h = int(re.search(r'height=(\d+)', url, re.IGNORECASE).group(1))
-        format = re.search(r'format=image(/|%2F)(\w+)', url, re.IGNORECASE).group(2)
-        transparent = re.search(r'transparent=(\w+)', url, re.IGNORECASE)
-        transparent = True if transparent and transparent.group(1).lower() == 'true' else False
-        result = BytesIO()
-        create_debug_img((int(w), int(h)), transparent).save(result, format=format)
-        result.seek(0)
-        result.headers = {'Content-type': 'image/'+format}
-        return result
+        if self.response_type == 'image':
+            w = int(re.search(r'width=(\d+)', url, re.IGNORECASE).group(1))
+            h = int(re.search(r'height=(\d+)', url, re.IGNORECASE).group(1))
+            format = re.search(r'format=image(/|%2F)(\w+)', url, re.IGNORECASE).group(2)
+            transparent = re.search(r'transparent=(\w+)', url, re.IGNORECASE)
+            transparent = True if transparent and transparent.group(1).lower() == 'true' else False
+            result = BytesIO()
+            create_debug_img((int(w), int(h)), transparent).save(result, format=format)
+            result.seek(0)
+            result.headers = {'Content-type': 'image/'+format}
+            return result
+        elif self.response_type == 'text':
+            result = BytesIO(b'text')
+            result.headers = {'Content-type': 'text/plain'}
+            return result
+        else:
+            raise Exception('Unknown response type')
 
 
 @pytest.fixture
@@ -1105,7 +1105,7 @@ def test_srs_conditional_layers():
     ['low_3857', MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)), False, True, False],
     ['low_projected', MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)), False, True, False],
 ])
-def test_neasted_conditional_layers(case, map_query, is_direct, is_l3857, is_l4326):
+def test_nested_conditional_layers(case, map_query, is_direct, is_l3857, is_l4326):
     direct = MockLayer()
     l3857 = MockLayer()
     l4326 = MockLayer()
@@ -1207,7 +1207,7 @@ class TestTileManagerRescaleTiles(object):
             -99, [(16, 8, 5)], [], [(16, 8, 5), (8, 4, 4), (4, 2, 3), (2, 1, 2), (1, 0, 1), (0, 0, 0)], "blank",
         ),
         (
-            "upscale: unregular grid, partial match",
+            "upscale: irregular grid, partial match",
             -2, [(201, 101, 10)], [(78, 40, 8), (79, 40, 8), (79, 39, 8)], [
                 (201, 101, 10), (100, 50, 9),
                 # check all four tiles above 100/50/9
@@ -1215,7 +1215,7 @@ class TestTileManagerRescaleTiles(object):
             ], "partial",
         ),
         (
-            "upscale: unregular grid, multiple tiles, partial match",
+            "upscale: irregular grid, multiple tiles, partial match",
             -2, [(200, 100, 10), (201, 100, 10), (200, 101, 10), (201, 101, 10)],
             [(78, 40, 8), (79, 40, 8), (79, 39, 8)], [
                 (200, 100, 10), (201, 100, 10), (200, 101, 10), (201, 101, 10),
@@ -1224,7 +1224,7 @@ class TestTileManagerRescaleTiles(object):
             ], "partial",
         ),
         (
-            "upscale: unregular grid",
+            "upscale: irregular grid",
             -3, [(200, 100, 10)], [], [
                 (200, 100, 10), (100, 50, 9),
                 # check all four tiles above 100/50/9
@@ -1251,7 +1251,7 @@ class TestTileManagerRescaleTiles(object):
             0.0439453125,          # 5
             0.02197265625,         # 6
             0.010986328125,        # 7
-            0.007,                 # 8 additional resolution to test unregular grids
+            0.007,                 # 8 additional resolution to test irregular grids
             0.0054931640625,       # 9
             0.00274658203125,      # 10
         ]

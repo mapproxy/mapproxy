@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from codecs import decode
 import copy
 import json
 
 from functools import reduce
-from io import StringIO, BytesIO
+from io import StringIO
+from typing import List, Union
 
 try:
     from lxml import etree, html
@@ -30,6 +32,7 @@ except ImportError:
 
 class FeatureInfoDoc(object):
     content_type = None
+    content: str = None
 
     def as_etree(self):
         raise NotImplementedError()
@@ -41,51 +44,49 @@ class FeatureInfoDoc(object):
 class TextFeatureInfoDoc(FeatureInfoDoc):
     info_type = "text"
 
-    def __init__(self, content):
-        self.content = content
+    def __init__(self, content: Union[str, bytes]):
+        self.content = content if isinstance(content, str) else decode(content)
 
-    def as_string(self):
+    def as_string(self) -> str:
         return self.content
 
     @classmethod
-    def combine(cls, docs):
+    def combine(cls, docs: List[FeatureInfoDoc]):
         result_content = [doc.as_string() for doc in docs]
-        return cls(b"\n".join(result_content))
+        return cls("\n".join(result_content))
 
 
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = "xml"
     defaultEncoding = "UTF-8"
+    _etree = None
 
-    def __init__(self, content):
+    def __init__(self, content: Union[str, bytes]):
         if isinstance(content, (str, bytes)):
-            self._str_content = content
-            self._etree = None
+            self.content = content if isinstance(content, str) else decode(content)
         else:
-            self._str_content = None
             if hasattr(content, "getroottree"):
                 content = content.getroottree()
             self._etree = content
             assert hasattr(content, "getroot"), "expected etree like object"
 
     def as_string(self):
-        if self._str_content is None:
-            self._str_content = self._serialize_etree()
-        return self._str_content
+        if self.content is None:
+            self.content = self._serialize_etree()
+        return self.content
 
     def as_etree(self):
         if self._etree is None:
             self._etree = self._parse_content()
         return self._etree
 
-    def _serialize_etree(self):
+    def _serialize_etree(self) -> str:
         encoding = self._etree.docinfo.encoding if \
             self._etree.docinfo.encoding else self.defaultEncoding
-        return etree.tostring(self._etree, encoding=encoding, xml_declaration=False)
+        return decode(etree.tostring(self._etree, encoding=encoding, xml_declaration=False), encoding)
 
     def _parse_content(self):
-        doc = as_io(self._str_content)
-        return etree.parse(doc)
+        return etree.parse(StringIO(self.content))
 
     @classmethod
     def combine(cls, docs):
@@ -104,11 +105,13 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = "html"
 
     def _parse_content(self):
-        root = html.document_fromstring(self._str_content)
+        root = html.document_fromstring(self.content)
         return root
 
     def _serialize_etree(self):
-        return html.tostring(self._etree)
+        encoding = self._etree.docinfo.encoding if \
+            self._etree.docinfo.encoding else self.defaultEncoding
+        return decode(html.tostring(self._etree, encoding=encoding), encoding)
 
     @classmethod
     def combine(cls, docs):
@@ -134,7 +137,7 @@ class JSONFeatureInfoDoc(FeatureInfoDoc):
     info_type = "json"
 
     def __init__(self, content):
-        self.content = content
+        self.content = content if isinstance(content, str) else decode(content)
 
     def as_string(self):
         return self.content
@@ -143,10 +146,7 @@ class JSONFeatureInfoDoc(FeatureInfoDoc):
     def combine(cls, docs):
         contents = []
         for d in docs:
-            content = d.content
-            if not isinstance(content, str):
-                content = content.decode('UTF-8')
-            result = json.loads(content)
+            result = json.loads(d.content)
             if result:
                 contents.append(result)
         if not contents:
@@ -218,26 +218,19 @@ class XSLTransformer(object):
     __call__ = transform
 
 
-def as_io(doc):
-    if isinstance(doc, str):
-        return StringIO(doc)
-    else:
-        return BytesIO(doc)
-
-
 def combine_docs(docs, transformer=None):
     """
     Combine multiple FeatureInfoDocs.
 
     Combines as text, if the type of the docs differ.
-    Otherwise the type specifix combine is called.
+    Otherwise, the type specific combine is called.
 
     Returns the combined document and the info_type (text, xml or json).
     info_type is None if the output is transformed, as the type is dependent on the
     transformer.
     """
     if len(set(d.info_type for d in docs)) > 1:
-        # more then one info_type, combine as plain text
+        # more than one info_type, combine as plain text
         doc = TextFeatureInfoDoc.combine(docs)
         infotype = "text"
     else:
