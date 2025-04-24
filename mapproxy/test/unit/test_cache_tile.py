@@ -106,6 +106,7 @@ class TileCacheTestBase(object):
             assert self.cache.load_tile(tile) is True
             assert not tile.is_missing()
 
+    @pytest.mark.skipif(os.geteuid() == 0, reason="Test skipped for root user")
     def test_store_tiles_no_permissions(self):
         tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
         tiles[0].stored = True
