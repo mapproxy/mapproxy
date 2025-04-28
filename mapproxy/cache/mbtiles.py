@@ -16,7 +16,6 @@
 import glob
 import hashlib
 import os
-import sqlite3
 import threading
 import time
 from io import BytesIO
@@ -26,6 +25,7 @@ from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
+from mapproxy.util.sqlite3 import sqlite3
 
 import logging
 log = logging.getLogger(__name__)

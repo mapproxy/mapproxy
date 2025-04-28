@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import calendar
-import datetime
+from datetime import timezone, datetime
 import os
 import shutil
 import sys
@@ -175,7 +175,7 @@ class TileCacheTestBase(object):
         if tile.timestamp:
             now = time.time()
             if self.uses_utc:
-                now = calendar.timegm(datetime.datetime.utcnow().timetuple())
+                now = calendar.timegm(datetime.now(timezone.utc).timetuple())
             assert abs(tile.timestamp - now) <= 10
         if tile.size:
             assert tile.size == size

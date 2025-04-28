@@ -17,7 +17,6 @@ from __future__ import division
 
 import os
 import shutil
-import sqlite3
 
 from io import BytesIO
 
@@ -29,6 +28,7 @@ from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import SysTest
 from mapproxy.cache.geopackage import GeopackageCache
 from mapproxy.grid.tile_grid import TileGrid
+from mapproxy.util.sqlite3 import sqlite3
 
 
 @pytest.fixture(scope="module")

@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import sqlite3
 import threading
 import time
 
@@ -26,6 +25,7 @@ from mapproxy.image import ImageSource
 from mapproxy.test.helper import assert_files_in_dir, assert_permissions
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+from mapproxy.util.sqlite3 import sqlite3
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
