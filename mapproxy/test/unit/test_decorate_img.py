@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
+
 from mapproxy.compat.image import Image
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
@@ -24,7 +26,6 @@ from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSGroupLayer, WMSServer
 from mapproxy.service.wmts import WMTSServer
 from mapproxy.test.http import make_wsgi_env
-from mapproxy.util.ext.odict import odict
 
 
 class DummyLayer(MapLayer):
@@ -81,7 +82,7 @@ class TestDecorateImg(object):
             image_formats={'image/png': ImageOptions(format='image/png')}
         )
         # Tile Servers
-        layers = odict()
+        layers = OrderedDict()
         layers["wms_cache_EPSG900913"] = DummyTileLayer('wms_cache')
         self.tile_server = TileServer(layers, {})
         self.wmts_server = WMTSServer(layers, {})

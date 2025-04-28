@@ -27,10 +27,9 @@ except ImportError:
     from importlib import resources as importlib_resources
 import os
 import mimetypes
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from mapproxy.config.config import base_config
-from mapproxy.util.ext.odict import odict
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.request.base import Request
@@ -255,8 +254,8 @@ class DemoServer(Server):
             tms_tile_layers[name].append(self.tile_layers[layer])
         wmts_layers = tms_tile_layers.copy()
 
-        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
-        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
+        wmts_layers = OrderedDict(sorted(wmts_layers.items(), key=lambda x: x[0]))
+        tms_tile_layers = OrderedDict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
 
         substitutions = dict(
             extra_services_html_beginning='',

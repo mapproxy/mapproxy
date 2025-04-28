@@ -80,7 +80,7 @@ class TestDimensionsWMS130(SysTest):
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
 
-        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+        assert set(expected_dim.keys()) == set(results.keys())
 
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
@@ -149,7 +149,7 @@ class TestDimensionsWMS111(SysTest):
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
 
-        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+        assert set(expected_dim.keys()) == set(results.keys())
 
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
@@ -215,7 +215,7 @@ class TestDimensionsWMS110(SysTest):
             temp_dict['values'] = dimension.text
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
-        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+        assert set(expected_dim.keys()) == set(results.keys())
 
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
@@ -270,7 +270,7 @@ class TestDimensionsWMS100(SysTest):
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
 
-        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+        assert set(expected_dim.keys()) == set(results.keys())
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
         assert expected_dim['time']['values'] == results['time']['values']

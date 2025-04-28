@@ -70,7 +70,7 @@ class TestLayerConfiguration(object):
         layers = root.child_layers()
 
         # names are in order
-        assert layers.keys() == ['one', 'two', 'three']
+        assert list(layers.keys()) == ['one', 'two', 'three']
 
         assert len(layers) == 3
         assert layers['one'].title == 'Layer One'
@@ -131,7 +131,7 @@ class TestLayerConfiguration(object):
         layers = root.child_layers()
 
         # names are in order
-        assert layers.keys() == ['root', 'one', 'two']
+        assert list(layers.keys()) == ['root', 'one', 'two']
 
         assert len(layers) == 3
         assert layers['root'].title == 'Root Layer'
@@ -161,7 +161,7 @@ class TestLayerConfiguration(object):
 
         layers = root.child_layers()
         # names are in order
-        assert layers.keys() == ['one', 'two']
+        assert list(layers.keys()) == ['one', 'two']
 
     def test_without_root(self):
         conf = self._test_conf('''
@@ -181,7 +181,7 @@ class TestLayerConfiguration(object):
 
         layers = root.child_layers()
         # names are in order
-        assert layers.keys() == ['one', 'two']
+        assert list(layers.keys()) == ['one', 'two']
 
     def test_hierarchy(self):
         conf = self._test_conf('''
@@ -215,11 +215,11 @@ class TestLayerConfiguration(object):
 
         layers = root.child_layers()
         # names are in order
-        assert layers.keys() == ['one', 'onea', 'oneb', 'oneba', 'onebb', 'two']
+        assert list(layers.keys()) == ['one', 'onea', 'oneb', 'oneba', 'onebb', 'two']
 
         layers_conf = conf.layers
         assert len(layers_conf) == 4
-        assert layers_conf.keys() == ['onea', 'oneba', 'onebb', 'two']
+        assert list(layers_conf.keys()) == ['onea', 'oneba', 'onebb', 'two']
         assert layers_conf['onea'].conf['title'] == 'Layer One A'
         assert layers_conf['onea'].conf['name'] == 'onea'
         assert layers_conf['onea'].conf['sources'] == ['s']
@@ -244,7 +244,7 @@ class TestLayerConfiguration(object):
 
         layers = root.child_layers()
         # names are in order
-        assert layers.keys() == ['one', 'two']
+        assert list(layers.keys()) == ['one', 'two']
 
     def test_without_sources_or_layers(self):
         conf = self._test_conf('''
