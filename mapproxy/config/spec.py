@@ -170,6 +170,7 @@ cache_types = {
         'access_control_list': str(),
         'tile_lock_dir': str(),
         'use_http_get': bool(),
+        'include_grid_name': bool(),
     }),
     'redis': combined(cache_commons, {
         'host': str(),

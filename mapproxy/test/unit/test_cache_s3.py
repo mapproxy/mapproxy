@@ -20,10 +20,10 @@ from mapproxy.srs import SRS
 
 try:
     import boto3
-    from moto import mock_s3
+    from moto import mock_aws
 except ImportError:
     boto3 = None
-    mock_s3 = None
+    mock_aws = None
 
 from mapproxy.cache.s3 import S3Cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
@@ -34,7 +34,7 @@ GLOBAL_WEBMERCATOR_EXTENT = MapExtent(
     SRS(3857))
 
 
-@pytest.mark.skipif(not mock_s3 or not boto3,
+@pytest.mark.skipif(not mock_aws or not boto3,
                     reason="boto3 and moto required for S3 tests")
 class TestS3Cache(TileCacheTestBase):
     always_loads_metadata = True
@@ -43,7 +43,7 @@ class TestS3Cache(TileCacheTestBase):
     def setup_method(self):
         TileCacheTestBase.setup_method(self)
 
-        self.mock = mock_s3()
+        self.mock = mock_aws()
         self.mock.start()
 
         self.bucket_name = "test"
