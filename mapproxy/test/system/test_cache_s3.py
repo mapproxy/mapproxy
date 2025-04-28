@@ -69,7 +69,7 @@ class TestS3Cache(SysTest):
         )
 
     def test_get_map_cached(self, app):
-        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        # mock_aws interferes with MockServ, use boto to manually upload tile
         tile = create_tmp_image((256, 256))
         boto3.client("s3").upload_fileobj(
             BytesIO(tile),
@@ -83,7 +83,7 @@ class TestS3Cache(SysTest):
         assert is_png(data)
 
     def test_get_map_cached_quadkey(self, app):
-        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        # mock_aws interferes with MockServ, use boto to manually upload tile
         tile = create_tmp_image((256, 256))
         boto3.client("s3").upload_fileobj(
             BytesIO(tile), Bucket="tiles", Key="quadkeytiles/2003.png"
@@ -96,7 +96,7 @@ class TestS3Cache(SysTest):
         assert is_png(data)
 
     def test_get_map_cached_reverse_tms(self, app):
-        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        # mock_aws interferes with MockServ, use boto to manually upload tile
         tile = create_tmp_image((256, 256))
         boto3.client("s3").upload_fileobj(
             BytesIO(tile), Bucket="tiles", Key="reversetiles/9/1/4.png"
@@ -109,7 +109,7 @@ class TestS3Cache(SysTest):
         assert is_png(data)
 
     def test_get_map_cached_multiple_grids(self, app):
-        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        # mock_aws interferes with MockServ, use boto to manually upload tile
         tile = create_tmp_image((256, 256))
         boto3.client("s3").upload_fileobj(
             BytesIO(tile), Bucket="tiles", Key="multiple_grids/WebMerc/9/1/4.png"
