@@ -481,7 +481,7 @@ Available options:
   When set to ``true``, requests to S3 ``GetObject`` will be fetched via urllib2 instead of boto, which decreases response times. Defaults to ``false``.
 
 ``include_grid_name``:
-  When set to ``true``, the grid name will be included in the path (``[directory]/[grid.name]/[z]/...``) . Defaults to ``false``.
+  When set to ``true``, the grid name will be included in the path in the bucket (``[directory]/[grid.name]/[z]/...``). Defaults to ``false``.
 
 .. note::
   The hierarchical ``directory_layouts`` can hit limitations of AWS S3 if you are routinely processing 3500 or more requests per second. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
