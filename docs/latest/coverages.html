@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
@@ -14,36 +14,36 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/documentation_options.js?v=ce394494"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'coverages';</script>
     <link rel="canonical" href="/mapproxy/coverages.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Seeding" href="seed.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Apr 10, 2025"/>
+    <meta name="docbuild:last-update" content="Apr 29, 2025"/>
   </head>
   
   
@@ -61,28 +61,23 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -104,18 +99,23 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -152,16 +152,19 @@
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+    </button>
   
 </div>
 
-    </nav>
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -177,6 +180,8 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="index.html">
@@ -195,7 +200,18 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
@@ -213,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -234,7 +251,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -243,14 +260,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -279,10 +296,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -290,14 +307,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -347,10 +364,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="coverages">
-<span id="id1"></span><h1>Coverages<a class="headerlink" href="#coverages" title="Permalink to this heading">#</a></h1>
+<span id="id1"></span><h1>Coverages<a class="headerlink" href="#coverages" title="Link to this heading">#</a></h1>
 <p>With coverages you can define areas where data is available or where data you are interested in is.
 MapProxy supports coverages for <a class="reference internal" href="sources.html"><span class="doc">sources</span></a>, <a class="reference internal" href="caches.html"><span class="doc">caches</span></a> and in the <a class="reference internal" href="seed.html"><span class="doc">mapproxy-seed tool</span></a>. Refer to the corresponding section in the documentation.</p>
 <p>There are five different ways to describe a coverage:</p>
@@ -362,11 +379,11 @@ MapProxy supports coverages for <a class="reference internal" href="sources.html
 <li><p>a file with webmercator tile coordinates.</p></li>
 </ul>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.</span></p>
 </div>
 <p>You can also build intersections, unions and differences between multiple coverages.</p>
 <section id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">#</a></h2>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">#</a></h2>
 <p>If you want to use polygons to define a coverage, instead of simple bounding boxes, you will also need Shapely and GEOS. For loading polygons from shapefiles you’ll also need GDAL/OGR.</p>
 <p>MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.</p>
 <p>On Debian:</p>
@@ -376,18 +393,18 @@ pip<span class="w"> </span>install<span class="w"> </span>Shapely
 </div>
 </section>
 <section id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">#</a></h2>
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
 <p>All coverages are configured by defining the source of the coverage and the SRS.
 The configuration of the coverage depends on the type. The SRS can allways be configured with the <code class="docutils literal notranslate"><span class="pre">srs</span></code> option.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.5.0: </span>MapProxy can autodetect the type of the coverage. You can now use <code class="docutils literal notranslate"><span class="pre">coverage</span></code> instead of the <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, <code class="docutils literal notranslate"><span class="pre">polygons</span></code> or <code class="docutils literal notranslate"><span class="pre">ogr_datasource</span></code> option.
+<p><span class="versionmodified added">Added in version 1.5.0: </span>MapProxy can autodetect the type of the coverage. You can now use <code class="docutils literal notranslate"><span class="pre">datasource</span></code> instead of the <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, <code class="docutils literal notranslate"><span class="pre">polygons</span></code> or <code class="docutils literal notranslate"><span class="pre">ogr_datasource</span></code> option.
 The old options are still supported.</p>
 </div>
 </section>
 <section id="coverage-types">
-<h2>Coverage Types<a class="headerlink" href="#coverage-types" title="Permalink to this heading">#</a></h2>
+<h2>Coverage Types<a class="headerlink" href="#coverage-types" title="Link to this heading">#</a></h2>
 <section id="bounding-box">
-<h3>Bounding box<a class="headerlink" href="#bounding-box" title="Permalink to this heading">#</a></h3>
+<h3>Bounding box<a class="headerlink" href="#bounding-box" title="Link to this heading">#</a></h3>
 <p>For simple box coverages.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">bbox</span></code> or <code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>A simple BBOX as a list of minx, miny, maxx, maxy, e.g: <cite>[4, -30, 10, -28]</cite> or as a string <cite>4,-30,10,-28</cite>.</p>
@@ -395,7 +412,7 @@ The old options are still supported.</p>
 </dl>
 </section>
 <section id="polygon-file">
-<h3>Polygon file<a class="headerlink" href="#polygon-file" title="Permalink to this heading">#</a></h3>
+<h3>Polygon file<a class="headerlink" href="#polygon-file" title="Link to this heading">#</a></h3>
 <p>Text files with one WKT polygon or multi-polygon per line.
 You can create your own files or use <a class="reference external" href="http://mapproxy.org/static/polygons/">one of the files we provide for every country</a>. Read <a class="reference external" href="http://mapproxy.org/static/polygons/0-fips-codes.txt">the index</a> to find your country.</p>
 <dl class="simple">
@@ -404,9 +421,9 @@ You can create your own files or use <a class="reference external" href="http://
 </dl>
 </section>
 <section id="geojson">
-<h3>GeoJSON<a class="headerlink" href="#geojson" title="Permalink to this heading">#</a></h3>
+<h3>GeoJSON<a class="headerlink" href="#geojson" title="Link to this heading">#</a></h3>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10: </span>Previous versions required OGR/GDAL for reading GeoJSON.</p>
+<p><span class="versionmodified added">Added in version 1.10: </span>Previous versions required OGR/GDAL for reading GeoJSON.</p>
 </div>
 <p>You can use GeoJSON files with Polygon and MultiPolygons geometries. FeatureCollections and Features of these geometries are suppored as well. MapProxy uses OGR to read GeoJSON files if you define a <code class="docutils literal notranslate"><span class="pre">where</span></code> filter.</p>
 <dl class="simple">
@@ -415,7 +432,7 @@ You can create your own files or use <a class="reference external" href="http://
 </dl>
 </section>
 <section id="ogr-datasource">
-<h3>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Permalink to this heading">#</a></h3>
+<h3>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Link to this heading">#</a></h3>
 <p>Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGIS).</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The name of the datasource. Refer to the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR format page</a> for a list of all supported
@@ -429,9 +446,9 @@ option is unset, the first layer from the datasource will be used.</p>
 </dl>
 </section>
 <section id="expire-tiles">
-<h3>Expire tiles<a class="headerlink" href="#expire-tiles" title="Permalink to this heading">#</a></h3>
+<h3>Expire tiles<a class="headerlink" href="#expire-tiles" title="Link to this heading">#</a></h3>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.</span></p>
 </div>
 <p>Text file with webmercator tile coordinates. The tiles should be in <code class="docutils literal notranslate"><span class="pre">z/x/y</span></code> format (e.g. <code class="docutils literal notranslate"><span class="pre">14/1283/6201</span></code>),
 with one tile coordinate per line. Only tiles in the webmercator grid are supported (origin is always <cite>nw</cite>).</p>
@@ -441,9 +458,9 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
 </dl>
 </section>
 <section id="union">
-<h3>Union<a class="headerlink" href="#union" title="Permalink to this heading">#</a></h3>
+<h3>Union<a class="headerlink" href="#union" title="Link to this heading">#</a></h3>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.</span></p>
 </div>
 <p>A union coverage contains the combined coverage of one or more sub-coverages. This can be used to combine multiple coverages a single source. Each sub-coverage can be of any supported type and SRS.</p>
 <dl class="simple">
@@ -452,9 +469,9 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
 </dl>
 </section>
 <section id="difference">
-<h3>Difference<a class="headerlink" href="#difference" title="Permalink to this heading">#</a></h3>
+<h3>Difference<a class="headerlink" href="#difference" title="Link to this heading">#</a></h3>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.</span></p>
 </div>
 <p>A difference coverage subtracts the coverage of other sub-coverages from the first coverage. This can be used to exclude parts from a coverage. Each sub-coverage can be of any supported type and SRS.</p>
 <dl class="simple">
@@ -463,9 +480,9 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
 </dl>
 </section>
 <section id="intersection">
-<h3>Intersection<a class="headerlink" href="#intersection" title="Permalink to this heading">#</a></h3>
+<h3>Intersection<a class="headerlink" href="#intersection" title="Link to this heading">#</a></h3>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.</span></p>
 </div>
 <p>An intersection coverage contains only areas that are covered by all sub-coverages. This can be used to limit a larger coverage to a smaller area. Each sub-coverage can be of any supported type and SRS.</p>
 <dl class="simple">
@@ -475,18 +492,18 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
 </section>
 </section>
 <section id="clipping">
-<h2>Clipping<a class="headerlink" href="#clipping" title="Permalink to this heading">#</a></h2>
+<h2>Clipping<a class="headerlink" href="#clipping" title="Link to this heading">#</a></h2>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+<p><span class="versionmodified added">Added in version 1.10.0.</span></p>
 </div>
 <p>By default MapProxy tries to get and serve full source image even if a coverage only touches it.
 Clipping by coverage can be enabled by setting <code class="docutils literal notranslate"><span class="pre">clip:</span> <span class="pre">true</span></code>. If enabled, all areas outside the coverage will be converted to transparent pixels.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">clip</span></code> option is only active for source coverages and not for seeding coverages.</p>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="sources">
-<h3>sources<a class="headerlink" href="#sources" title="Permalink to this heading">#</a></h3>
+<h3>sources<a class="headerlink" href="#sources" title="Link to this heading">#</a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option to define a coverage for a WMS or tile source.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">mywms</span><span class="p">:</span>
@@ -517,7 +534,7 @@ Clipping by coverage can be enabled by setting <code class="docutils literal not
 </div>
 </section>
 <section id="caches">
-<h3>caches<a class="headerlink" href="#caches" title="Permalink to this heading">#</a></h3>
+<h3>caches<a class="headerlink" href="#caches" title="Link to this heading">#</a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option to define a coverage for any cache.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">mycache</span><span class="p">:</span>
@@ -565,7 +582,7 @@ The <code class="docutils literal notranslate"><span class="pre">coverage</span>
 </div>
 </section>
 <section id="mapproxy-seed">
-<h3>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Permalink to this heading">#</a></h3>
+<h3>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Link to this heading">#</a></h3>
 <p>To define a seed-area in the <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code>, add the coverage directly to the view.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">coverages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">germany</span><span class="p">:</span>
@@ -603,7 +620,7 @@ The <code class="docutils literal notranslate"><span class="pre">coverage</span>
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -632,6 +649,7 @@ The <code class="docutils literal notranslate"><span class="pre">coverage</span>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -692,7 +710,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 10, 2025.
+  Last updated on Apr 29, 2025.
   <br/>
 </p>
   </div>
@@ -710,8 +728,8 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

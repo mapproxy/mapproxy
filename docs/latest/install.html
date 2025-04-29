@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
@@ -14,36 +14,36 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/documentation_options.js?v=ce394494"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'install';</script>
     <link rel="canonical" href="/mapproxy/install.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
@@ -53,7 +53,7 @@
     <link rel="prev" title="MapProxy Documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Apr 10, 2025"/>
+    <meta name="docbuild:last-update" content="Apr 29, 2025"/>
   </head>
   
   
@@ -61,28 +61,23 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -104,18 +99,23 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -152,16 +152,19 @@
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+    </button>
   
 </div>
 
-    </nav>
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -177,6 +180,8 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="index.html">
@@ -195,7 +200,18 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
@@ -213,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -234,7 +251,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -243,14 +260,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -279,10 +296,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -290,14 +307,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -347,20 +364,20 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
 <p>This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to <a class="reference internal" href="install_windows.html"><span class="doc">Installation on Windows</span></a>.</p>
 <p>This tutorial was created and tested with Debian and Ubuntu, if you’re installing MapProxy on a different system you might need to change some package names.</p>
-<p>MapProxy is <a class="reference external" href="https://pypi.org/project/MapProxy/">registered at the Python Package Index</a> (PyPI). If you have Python 3.8 or higher, you can install MapProxy with:</p>
+<p>MapProxy is <a class="reference external" href="https://pypi.org/project/MapProxy/">registered at the Python Package Index</a> (PyPI). If you have Python 3.9 or higher, you can install MapProxy with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
 </pre></div>
 </div>
 <p>This is really, easy <cite>but</cite> we recommend to install MapProxy into a <a class="reference external" href="http://guide.python-distribute.org/virtualenv.html">virtual Python environment</a>. A <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don’t need root permissions for the installation.</p>
 <p><a class="reference external" href="https://virtualenv.pypa.io/en/latest/">Read about virtualenv</a> if you want to know more about the benefits.</p>
 <section id="create-a-new-virtual-environment">
-<h2>Create a new virtual environment<a class="headerlink" href="#create-a-new-virtual-environment" title="Permalink to this heading">#</a></h2>
+<h2>Create a new virtual environment<a class="headerlink" href="#create-a-new-virtual-environment" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> is available as <code class="docutils literal notranslate"><span class="pre">python-virtualenv</span></code> on most Linux systems. You can also <a class="reference external" href="https://virtualenv.pypa.io/en/latest/installation.html">install Virtualenv from source</a>.</p>
 <p>To create a new environment with the name <code class="docutils literal notranslate"><span class="pre">venv</span></code> call:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">venv</span>
@@ -378,11 +395,11 @@ document.write(`
 <p>This will change the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> for your <cite>current</cite> session.</p>
 </section>
 <section id="install-dependencies">
-<h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this heading">#</a></h2>
-<p>MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.8 or higher, which should already be installed with most Linux distributions.</p>
+<h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Link to this heading">#</a></h2>
+<p>MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.9 or higher, which should already be installed with most Linux distributions.</p>
 <p>MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read <a class="reference internal" href="#dependency-details"><span class="std std-ref">Dependency details</span></a> for a list of all required and optional dependencies.</p>
 <section id="id1">
-<h3>Installation<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<h3>Installation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>On a Debian or Ubuntu system, you need to install the following packages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">pil</span> <span class="n">python3</span><span class="o">-</span><span class="n">yaml</span> <span class="n">python3</span><span class="o">-</span><span class="n">pyproj</span>
 </pre></div>
@@ -393,9 +410,9 @@ document.write(`
 </div>
 </section>
 <section id="dependency-details">
-<span id="id2"></span><h3>Dependency details<a class="headerlink" href="#dependency-details" title="Permalink to this heading">#</a></h3>
+<span id="id2"></span><h3>Dependency details<a class="headerlink" href="#dependency-details" title="Link to this heading">#</a></h3>
 <section id="pyproj-or-libproj">
-<h4>pyproj or libproj<a class="headerlink" href="#pyproj-or-libproj" title="Permalink to this heading">#</a></h4>
+<h4>pyproj or libproj<a class="headerlink" href="#pyproj-or-libproj" title="Link to this heading">#</a></h4>
 <p>MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
 The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.</p>
 <div class="versionchanged">
@@ -403,7 +420,7 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 </div>
 </section>
 <section id="pillow">
-<span id="dependencies-pil"></span><h4>Pillow<a class="headerlink" href="#pillow" title="Permalink to this heading">#</a></h4>
+<span id="dependencies-pil"></span><h4>Pillow<a class="headerlink" href="#pillow" title="Link to this heading">#</a></h4>
 <p>Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as <code class="docutils literal notranslate"><span class="pre">python-pil</span></code> or <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code>. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of <code class="docutils literal notranslate"><span class="pre">python-imaging</span></code> should be &gt;=3.1.</p>
 <p>You can install a new version of Pillow from source with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">build</span><span class="o">-</span><span class="n">essential</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">dev</span> \
@@ -413,21 +430,21 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 </div>
 </section>
 <section id="shapely-and-geos-optional">
-<h4>Shapely and GEOS <em>(optional)</em><a class="headerlink" href="#shapely-and-geos-optional" title="Permalink to this heading">#</a></h4>
+<h4>Shapely and GEOS <em>(optional)</em><a class="headerlink" href="#shapely-and-geos-optional" title="Link to this heading">#</a></h4>
 <p>You will need Shapely to use the <a class="reference internal" href="coverages.html"><span class="doc">coverage feature</span></a> of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (<code class="docutils literal notranslate"><span class="pre">python-shapely</span></code>) and GEOS (<code class="docutils literal notranslate"><span class="pre">libgeos-dev</span></code>). You can install Shapely as a Python package with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">Shapely</span></code> if you system does not provide a recent (&gt;= 1.8) version of Shapely.</p>
 </section>
 <section id="gdal-optional">
-<h4>GDAL <em>(optional)</em><a class="headerlink" href="#gdal-optional" title="Permalink to this heading">#</a></h4>
+<h4>GDAL <em>(optional)</em><a class="headerlink" href="#gdal-optional" title="Link to this heading">#</a></h4>
 <p>The <a class="reference internal" href="coverages.html"><span class="doc">coverage feature</span></a> allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support (BBOX, WKT and GeoJSON coverages are supported natively). OGR is part of GDAL (<code class="docutils literal notranslate"><span class="pre">libgdal-dev</span></code>).</p>
 </section>
 <section id="lxml-optional">
-<span id="lxml-install"></span><h4>lxml <em>(optional)</em><a class="headerlink" href="#lxml-optional" title="Permalink to this heading">#</a></h4>
+<span id="lxml-install"></span><h4>lxml <em>(optional)</em><a class="headerlink" href="#lxml-optional" title="Link to this heading">#</a></h4>
 <p><a class="reference external" href="http://lxml.de">lxml</a> is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple XML/HTML documents. It is available as <code class="docutils literal notranslate"><span class="pre">python-lxml</span></code>.</p>
 </section>
 </section>
 </section>
 <section id="install-mapproxy">
-<h2>Install MapProxy<a class="headerlink" href="#install-mapproxy" title="Permalink to this heading">#</a></h2>
+<h2>Install MapProxy<a class="headerlink" href="#install-mapproxy" title="Link to this heading">#</a></h2>
 <p>Your virtual environment should contain <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>, a tool to install Python packages.</p>
 <p>To install you need to call:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
@@ -451,7 +468,7 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 </div>
 </section>
 <section id="create-a-configuration">
-<span id="create-configuration"></span><h2>Create a configuration<a class="headerlink" href="#create-a-configuration" title="Permalink to this heading">#</a></h2>
+<span id="create-configuration"></span><h2>Create a configuration<a class="headerlink" href="#create-a-configuration" title="Link to this heading">#</a></h2>
 <p>To create a new set of configuration files for MapProxy call:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">create</span> <span class="o">-</span><span class="n">t</span> <span class="n">base</span><span class="o">-</span><span class="n">config</span> <span class="n">mymapproxy</span>
 </pre></div>
@@ -460,7 +477,7 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 <p>Refer to the <a class="reference internal" href="configuration.html"><span class="doc">configuration documentation</span></a> for more information. With the default configuration the cached data will be placed in the <code class="docutils literal notranslate"><span class="pre">cache_data</span></code> subdirectory.</p>
 </section>
 <section id="start-the-test-server">
-<h2>Start the test server<a class="headerlink" href="#start-the-test-server" title="Permalink to this heading">#</a></h2>
+<h2>Start the test server<a class="headerlink" href="#start-the-test-server" title="Link to this heading">#</a></h2>
 <p>To start a test server:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">serve</span><span class="o">-</span><span class="n">develop</span> <span class="n">mymapproxy</span><span class="o">/</span><span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span>
 </pre></div>
@@ -469,7 +486,7 @@ The internal API of PROJ was updated with PROJ &gt;=5. The old PROJ 4 API is now
 <p>MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at <a class="reference external" href="http://localhost:8080/demo/">http://localhost:8080/demo/</a></p>
 </section>
 <section id="upgrade">
-<h2>Upgrade<a class="headerlink" href="#upgrade" title="Permalink to this heading">#</a></h2>
+<h2>Upgrade<a class="headerlink" href="#upgrade" title="Link to this heading">#</a></h2>
 <p>You can upgrade MapProxy with pip in combination with a version number or with the <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> option.
 Use the <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> option to avoid upgrading the dependencies.</p>
 <p>To upgrade to version 1.x.y:</p>
@@ -485,7 +502,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">--no-deps</
 </pre></div>
 </div>
 <section id="changes">
-<h3>Changes<a class="headerlink" href="#changes" title="Permalink to this heading">#</a></h3>
+<h3>Changes<a class="headerlink" href="#changes" title="Link to this heading">#</a></h3>
 <p>New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on start-up if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">serve-develop</span></code> for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.</p>
 <p>If you upgrade from 0.8, please read the <a class="reference external" href="http://mapproxy.org/docs/1.5.0/migrate.html">old migration documentation</a>.</p>
 </section>
@@ -500,7 +517,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">--no-deps</
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -529,6 +546,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">--no-deps</
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -589,7 +607,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 10, 2025.
+  Last updated on Apr 29, 2025.
   <br/>
 </p>
   </div>
@@ -607,8 +625,8 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

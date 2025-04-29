@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
@@ -14,36 +14,36 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/documentation_options.js?v=ce394494"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'labeling';</script>
     <link rel="canonical" href="/mapproxy/labeling.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
@@ -53,7 +53,7 @@
     <link rel="prev" title="INSPIRE View Service" href="inspire.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Apr 10, 2025"/>
+    <meta name="docbuild:last-update" content="Apr 29, 2025"/>
   </head>
   
   
@@ -61,28 +61,23 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -104,18 +99,23 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -152,16 +152,19 @@
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+    </button>
   
 </div>
 
-    </nav>
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -177,6 +180,8 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="index.html">
@@ -195,7 +200,18 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
@@ -213,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -234,7 +251,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -243,14 +260,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -279,10 +296,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -290,14 +307,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -347,14 +364,14 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="wms-labeling">
-<h1>WMS Labeling<a class="headerlink" href="#wms-labeling" title="Permalink to this heading">#</a></h1>
+<h1>WMS Labeling<a class="headerlink" href="#wms-labeling" title="Link to this heading">#</a></h1>
 <p>The tiling of rendered vector maps often results in issues with truncated or repeated labels. Some of these issues can be reduced with a proper configuration of MapProxy, but some require changes to the configuration of the source WMS server.</p>
 <p>This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other WMS servers. Refer to their documentations on how to configure these settings.</p>
 <section id="the-problem">
-<h2>The Problem<a class="headerlink" href="#the-problem" title="Permalink to this heading">#</a></h2>
+<h2>The Problem<a class="headerlink" href="#the-problem" title="Link to this heading">#</a></h2>
 <p>MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, but it always requests images/tiles that are aligned to the internal grid. MapProxy combines, scales and reprojects these tiles for WMS requests and for tiled requests (TMS/KML) the tiles are combined by the client (OpenLayers, etc).</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
@@ -365,26 +382,26 @@ document.write(`
 <p>When tiles are combined, the text labels at the boundaries need to be present at both tiles and need to be placed at the exact same (geographic) location.</p>
 <p>There are three common problems here.</p>
 <section id="no-placement-outside-the-bbox">
-<h3>No placement outside the BBOX<a class="headerlink" href="#no-placement-outside-the-bbox" title="Permalink to this heading">#</a></h3>
+<h3>No placement outside the BBOX<a class="headerlink" href="#no-placement-outside-the-bbox" title="Link to this heading">#</a></h3>
 <p>WMS servers do not draw features that are outside of the map bounds. For example, a city label that extends into the neighboring map tile will not be drawn in that other tile, because the geographic feature of the city (a single point) is only present in one tile.</p>
 <img alt="_images/labeling-no-placement.png" src="_images/labeling-no-placement.png" />
 </section>
 <section id="dynamic-label-placement">
-<h3>Dynamic label placement<a class="headerlink" href="#dynamic-label-placement" title="Permalink to this heading">#</a></h3>
+<h3>Dynamic label placement<a class="headerlink" href="#dynamic-label-placement" title="Link to this heading">#</a></h3>
 <p>WMS servers can adjust the position of labels so that more labels can fit on a map. For example, a city label is not always displayed at the same geographic location, but moved around to fit in the requested map or to make space for other labels.</p>
 <img alt="_images/labeling-dynamic.png" src="_images/labeling-dynamic.png" />
 </section>
 <section id="repeated-labels">
-<h3>Repeated labels<a class="headerlink" href="#repeated-labels" title="Permalink to this heading">#</a></h3>
+<h3>Repeated labels<a class="headerlink" href="#repeated-labels" title="Link to this heading">#</a></h3>
 <p>WMS servers render labels for polygon areas in each request. Labels for large areas will appear multiple times, once in each tile.</p>
 <img alt="_images/labeling-repeated.png" src="_images/labeling-repeated.png" />
 </section>
 </section>
 <section id="mapproxy-options">
-<h2>MapProxy Options<a class="headerlink" href="#mapproxy-options" title="Permalink to this heading">#</a></h2>
+<h2>MapProxy Options<a class="headerlink" href="#mapproxy-options" title="Link to this heading">#</a></h2>
 <p>There are two options that help with these issues.</p>
 <section id="meta-tiles">
-<span id="id3"></span><h3>Meta Tiles<a class="headerlink" href="#meta-tiles" title="Permalink to this heading">#</a></h3>
+<span id="id3"></span><h3>Meta Tiles<a class="headerlink" href="#meta-tiles" title="Link to this heading">#</a></h3>
 <p>You can use meta tiles to reduce the labeling issues. A meta tile is a collection of multiple tiles. Instead of requesting each tile with a single request, MapProxy requests a single image that covers the area of multiple tiles and then splits that response into the actual tiles.</p>
 <p>The following image demonstrates that:</p>
 <img alt="_images/labeling-metatiling.png" src="_images/labeling-metatiling.png" />
@@ -406,7 +423,7 @@ document.write(`
 <p>This does also work for tiles services. When a client like OpenLayers requests the 20 tiles from the example above in parallel, MapProxy will still requests the two meta tiles. Locking ensures that each meta tile will be requested only once.</p>
 </section>
 <section id="meta-buffer">
-<span id="id4"></span><h3>Meta Buffer<a class="headerlink" href="#meta-buffer" title="Permalink to this heading">#</a></h3>
+<span id="id4"></span><h3>Meta Buffer<a class="headerlink" href="#meta-buffer" title="Link to this heading">#</a></h3>
 <p>In addition to meta tiles, MapProxy implements a meta buffer. The meta buffer adds extra space at the edges of the requested area. With this buffer, you can solve the first issue: no placement outside the BBOX.</p>
 <img alt="_images/labeling-meta-buffer.png" src="_images/labeling-meta-buffer.png" />
 <p>You can combine meta tiling and meta buffer. MapProxy then extends the whole meta tile with the configured buffer.</p>
@@ -428,12 +445,12 @@ document.write(`
 </section>
 </section>
 <section id="wms-server-options">
-<h2>WMS Server Options<a class="headerlink" href="#wms-server-options" title="Permalink to this heading">#</a></h2>
+<h2>WMS Server Options<a class="headerlink" href="#wms-server-options" title="Link to this heading">#</a></h2>
 <p>You can reduce some of the labeling issues with meta tiling, and solve the first issue with the meta buffer. The issues with dynamic and repeated labeling requires some changes to your WMS server.</p>
 <p>In general, you need to disable the dynamic position of labels and you need to allow the rendering of partial labels.</p>
 </section>
 <section id="mapserver-options">
-<h2>MapServer Options<a class="headerlink" href="#mapserver-options" title="Permalink to this heading">#</a></h2>
+<h2>MapServer Options<a class="headerlink" href="#mapserver-options" title="Link to this heading">#</a></h2>
 <p>MapServer has lots of settings that affect the rendering. The two most important settings are</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">PROCESSING</span> <span class="pre">&quot;LABEL_NO_CLIP=ON&quot;</span></code> from the <code class="docutils literal notranslate"><span class="pre">LAYER</span></code> configuration.</dt><dd><p>With this option the labels are fixed to the whole feature and not only the part of the feature that is visible in the current map request. Default is off.</p>
@@ -445,14 +462,14 @@ document.write(`
 </dd>
 </dl>
 <section id="partial-false">
-<h3><code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code><a class="headerlink" href="#partial-false" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code><a class="headerlink" href="#partial-false" title="Link to this heading">#</a></h3>
 <p>The easiest option to solve all issues is <code class="docutils literal notranslate"><span class="pre">PARTIAL</span> <span class="pre">FALSE</span></code> with a meta buffer of 0. This prevents any label from truncation, but it comes with a large downside: Since no labels are rendered at the boundaries of the meta tiles, you will have areas with no labels at all. These areas form a noticeable grid pattern on your maps.</p>
 <p>The following images demonstrates a WMS request with a meta tile boundary in the center.</p>
 <img alt="_images/labeling-partial-false.png" src="_images/labeling-partial-false.png" />
 <p>You can improve that with the right set of configuration options for each type of geometry.</p>
 </section>
 <section id="points">
-<h3>Points<a class="headerlink" href="#points" title="Permalink to this heading">#</a></h3>
+<h3>Points<a class="headerlink" href="#points" title="Link to this heading">#</a></h3>
 <p>As described above, you can use a meta buffer to prevent missing labels. You need to set <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">TRUE</span></code> (which is the default), and configure a large enough meta buffer. The labels need to be placed at the same position with each request. You can configure that with the <code class="docutils literal notranslate"><span class="pre">POSITION</span></code> options. The default is <code class="docutils literal notranslate"><span class="pre">auto</span></code> and you should set this to an explicit value, <code class="docutils literal notranslate"><span class="pre">cc</span></code> or <code class="docutils literal notranslate"><span class="pre">uc</span></code> for example.</p>
 <p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LABEL</span>
@@ -471,7 +488,7 @@ document.write(`
 </div>
 </section>
 <section id="polygons">
-<h3>Polygons<a class="headerlink" href="#polygons" title="Permalink to this heading">#</a></h3>
+<h3>Polygons<a class="headerlink" href="#polygons" title="Link to this heading">#</a></h3>
 <p>Meta tiling reduces the number of repeated labels, but they can still appear at the border of meta tiles.</p>
 <p>You can use the <code class="docutils literal notranslate"><span class="pre">PROCESSING</span> <span class="pre">&quot;LABEL_NO_CLIP=ON&quot;</span></code> option to fix this problem.
 With this option, MapServer places the label always at a fixed position, even if that position is outside the current map request.</p>
@@ -499,7 +516,7 @@ With this option, MapServer places the label always at a fixed position, even if
 </div>
 </section>
 <section id="lines">
-<h3>Lines<a class="headerlink" href="#lines" title="Permalink to this heading">#</a></h3>
+<h3>Lines<a class="headerlink" href="#lines" title="Link to this heading">#</a></h3>
 <p>By default, labels are repeated on longer line strings. Where these labels are repeated depends on the current view of that line. That placement might differ in two neighboring image requests for long lines.</p>
 <p>Most of the time, the labels will match at the boundaries of the meta tiles, when you use <code class="docutils literal notranslate"><span class="pre">PARTIALS</span> <span class="pre">TRUE</span></code> and a meta buffer. But, you might notice truncated labels on long line strings. In practice these issues are rare, though.</p>
 <p><code class="docutils literal notranslate"><span class="pre">example.map</span></code>:</p>
@@ -569,7 +586,7 @@ With this option, MapServer places the label always at a fixed position, even if
 </section>
 </section>
 <section id="other-wms-servers">
-<h2>Other WMS Servers<a class="headerlink" href="#other-wms-servers" title="Permalink to this heading">#</a></h2>
+<h2>Other WMS Servers<a class="headerlink" href="#other-wms-servers" title="Link to this heading">#</a></h2>
 <p>The most important step for all WMS servers is to disable to dynamic placement of labels. Look into the documentation how to do this for you WMS server.</p>
 <p>If you want to contribute to this document then join our <a class="reference external" href="http://lists.osgeo.org/mailman/listinfo/mapproxy">mailing list</a> or use our <a class="reference external" href="https://github.com/mapproxy/mapproxy/issues/">issue tracker</a>.</p>
 </section>
@@ -583,7 +600,7 @@ With this option, MapServer places the label always at a fixed position, even if
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -612,6 +629,7 @@ With this option, MapServer places the label always at a fixed position, even if
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -672,7 +690,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 10, 2025.
+  Last updated on Apr 29, 2025.
   <br/>
 </p>
   </div>
@@ -690,8 +708,8 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

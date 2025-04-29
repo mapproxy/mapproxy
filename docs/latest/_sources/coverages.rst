@@ -41,7 +41,7 @@ All coverages are configured by defining the source of the coverage and the SRS.
 The configuration of the coverage depends on the type. The SRS can allways be configured with the ``srs`` option.
 
 .. versionadded:: 1.5.0
-    MapProxy can autodetect the type of the coverage. You can now use ``coverage`` instead of the ``bbox``, ``polygons`` or ``ogr_datasource`` option.
+    MapProxy can autodetect the type of the coverage. You can now use ``datasource`` instead of the ``bbox``, ``polygons`` or ``ogr_datasource`` option.
     The old options are still supported.
 
 Coverage Types

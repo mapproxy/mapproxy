@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
@@ -14,36 +14,36 @@
   
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
-    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=a7d515d7"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/documentation_options.js?v=ce394494"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'install_docker';</script>
     <link rel="canonical" href="/mapproxy/install_docker.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Installation on Windows" href="install_windows.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Apr 10, 2025"/>
+    <meta name="docbuild:last-update" content="Apr 29, 2025"/>
   </head>
   
   
@@ -61,28 +61,23 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
-  <label class="overlay overlay-primary" for="__primary"></label>
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
   
   <input type="checkbox"
           class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
-  <label class="overlay overlay-secondary" for="__secondary"></label>
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
@@ -104,18 +99,23 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
-  </label>
+  </button>
   
   
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.2.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -152,16 +152,19 @@
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+    </button>
   
 </div>
 
-    </nav>
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -177,6 +180,8 @@
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
+  
+    
   
 
 <a class="navbar-brand logo" href="index.html">
@@ -195,7 +200,18 @@
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
@@ -213,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
@@ -234,7 +251,7 @@
 
       </div>
       
-      <main id="main-content" class="bd-main">
+      <main id="main-content" class="bd-main" role="main">
         
         
 
@@ -243,14 +260,14 @@
           <div class="bd-content">
             <div class="bd-article-container">
               
-              <div class="bd-header-article">
+              <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
   
     <div class="header-article-items__start">
       
-        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
-</label></div>
+</button></div>
       
     </div>
   
@@ -279,10 +296,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -290,14 +307,14 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
-<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
-</label>
+</button>
 </div></div>
       
     </div>
@@ -318,18 +335,13 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart">Quickstart</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-plain-image-without-starting-a-webserver">Running the <cite>plain</cite> image without starting a webserver</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-dev-image">Running the <cite>dev</cite> image</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-nginx-image">Running the <cite>nginx</cite> image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart">Quickstart</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#volume-mounts">Volume-Mounts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-your-own-image">Build your own image</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-plain-image-without-starting-a-webserver">For the <cite>plain</cite> image without starting a webserver</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-dev-image">For the <cite>dev</cite> image</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-nginx-image">For the <cite>nginx</cite> image</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-your-own-image">Build your own image</a></li>
 </ul>
             </nav>
         </div>
@@ -339,30 +351,38 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="installation-via-docker">
-<h1>Installation via Docker<a class="headerlink" href="#installation-via-docker" title="Permalink to this heading">#</a></h1>
-<p>MapProxy does have its own official docker images.
+<h1>Installation via Docker<a class="headerlink" href="#installation-via-docker" title="Link to this heading">#</a></h1>
+<p>MapProxy has its own official docker images.
 These are currently hosted on the GitHub container registry and can be found here:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="github reference external" href="https://github.com/mapproxy/mapproxy/pkgs/container/mapproxy%2Fmapproxy">mapproxy/mapproxy</a></p></li>
 </ul>
 </div></blockquote>
-<p>Currently we have 3 different images for every release, named e.g.</p>
+<p>Currently we have 6 different images for every release, named e.g.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-alpine</p></li>
 <li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-alpine-dev</p></li>
 <li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-alpine-nginx</p></li>
 </ul>
 </div></blockquote>
-<p>The first one comes with everything installed, but no HTTP WebServer running. You can use it to implement your custom setup.</p>
-<p>The second image, ending with <cite>-dev</cite>, starts the integrated webserver mapproxy provides through <cite>mapproxy-util serve-develop</cite>.</p>
-<p>The third image, ending with <cite>-nginx</cite>, comes bundled with a preconfigured <a class="reference external" href="https://nginx.org">nginx</a> HTTP Server, that lets you use MapProxy instantly in a production environment.</p>
+<p>The alpine variants use alpine base images and are functionally the same as the other images.</p>
+<p>The first ones comes with everything installed, but no HTTP WebServer running. These can be used for seeding tasks or as
+base images for implementing custom setups. As they have no WebServer running they are not used normally.</p>
+<p>The images ending with <code class="docutils literal notranslate"><span class="pre">-dev</span></code>, start the integrated webserver mapproxy provides through
+<code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">serve-develop</span></code>. These should not be used in a production environment!</p>
+<p>The images ending with <code class="docutils literal notranslate"><span class="pre">-nginx</span></code>, come bundled with a preconfigured <a class="reference external" href="https://nginx.org/">nginx</a> HTTP Server, that
+lets you use MapProxy instantly in a production environment.</p>
 <p>See the quickstart section below for a configuration / example on how to use those images.</p>
-<p>There are also several unofficial Docker images available on <a class="reference external" href="https://hub.docker.com/search?q=mapproxy">Docker Hub</a> that provide ready-to-use containers for MapProxy.</p>
+<p>There are also several unofficial Docker images available on <a class="reference external" href="https://hub.docker.com/search?q=mapproxy">Docker Hub</a>
+that provide ready-to-use containers forMapProxy.</p>
 <p>The community has very good experiences with the following ones:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://hub.docker.com/repository/docker/justb4/mapproxy/general">https://hub.docker.com/repository/docker/justb4/mapproxy/general</a> (<a class="reference external" href="https://github.com/justb4/docker-mapproxy">github just4b</a>)</p></li>
@@ -374,68 +394,55 @@ These are currently hosted on the GitHub container registry and can be found her
 <li><p><a class="github reference external" href="https://github.com/justb4/docker-mapproxy-mapserver-mapnik">justb4/docker-mapproxy-mapserver-mapnik</a></p></li>
 </ul>
 <section id="quickstart">
-<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h2>
-<p>Depending on your needs, pull the desired image (see description above):</p>
-<blockquote>
-<div><p>docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0</p>
-</div></blockquote>
-<p>or:</p>
-<blockquote>
-<div><p>docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev</p>
-</div></blockquote>
-<p>or:</p>
-<blockquote>
-<div><p>docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx</p>
-</div></blockquote>
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">#</a></h2>
+<p>The mapproxy repository includes an <a class="reference external" href="https://github.com/mapproxy/mapproxy/blob/master/docker-compose.yaml">example docker compose file</a>
+that you can use to run one of the images or as a reference for the most commonly used options.</p>
 <p>Create a directory (e.g. <cite>mapproxyconfig</cite>) for your configuration files. Put your configs into that folder.
-If you do not supply config files (seed.yaml and mapproxy.yaml) the image will create them for you.</p>
-<p>To start the docker container with a mount on your config folder, use the command matching your image.</p>
-<section id="running-the-plain-image-without-starting-a-webserver">
-<h3>Running the <cite>plain</cite> image without starting a webserver<a class="headerlink" href="#running-the-plain-image-without-starting-a-webserver" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-t<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig:/mapproxy/config<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
+If you do not supply a mapproxy config file the image will create a default seed.yaml and mapproxy.yaml for you.</p>
+<p>Then pull the image that you want to use, for example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 </pre></div>
 </div>
-<p>Afterwards, the <cite>MapProxy</cite> instance is idling and you can connect with the container via e.g.</p>
-<blockquote>
-<div><p>docker exec -it mapproxy bash</p>
-</div></blockquote>
-</section>
-<section id="running-the-dev-image">
-<h3>Running the <cite>dev</cite> image<a class="headerlink" href="#running-the-dev-image" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>-t<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig:/mapproxy/config<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
-</pre></div>
-</div>
-<p>Afterwards, the <cite>MapProxy</cite> instance is running on <a class="reference external" href="http://localhost:8080/demo/">http://localhost:8080/demo/</a></p>
-</section>
-<section id="running-the-nginx-image">
-<h3>Running the <cite>nginx</cite> image<a class="headerlink" href="#running-the-nginx-image" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">80</span>:80<span class="w"> </span>-t<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig:/mapproxy/config<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
+<p>And then run the image like this:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">80</span>:80<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 </pre></div>
 </div>
 <p>Afterwards, the <cite>MapProxy</cite> instance is running on <a class="reference external" href="http://localhost/mapproxy/demo/">http://localhost/mapproxy/demo/</a></p>
 </section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
+<section id="volume-mounts">
+<h3>Volume-Mounts<a class="headerlink" href="#volume-mounts" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/mapproxy.yaml</span></code>: MapProxy Config</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/logging.ini</span></code>: Logging-Configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/cache_data</span></code>: Cache Data dir. Make sure that this directory is writable for the mapproxy image.</p></li>
+</ul>
+<p>This can be achieved with <cite>chmod -R a+r cache_data</cite></p>
+</section>
+<section id="environment-variables">
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_MAPPROXY</span></code>: <strong>This can only be used in nginx images.</strong> If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will start in multi app</p></li>
+</ul>
+<p>mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.
+Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</section>
 </section>
 <section id="build-your-own-image">
-<h2>Build your own image<a class="headerlink" href="#build-your-own-image" title="Permalink to this heading">#</a></h2>
-<p>The Dockerfiles contain a setup that will build the current state of the repository in a builder image.</p>
-<section id="for-the-plain-image-without-starting-a-webserver">
-<h3>For the <cite>plain</cite> image without starting a webserver<a class="headerlink" href="#for-the-plain-image-without-starting-a-webserver" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>base<span class="w"> </span>-t<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0<span class="w"> </span>.
+<h2>Build your own image<a class="headerlink" href="#build-your-own-image" title="Link to this heading">#</a></h2>
+<p>There exist 2 docker files in this repository. One for the debian based images (<cite>Dockerfile</cite>) and one for the alpine
+based images (<cite>Dockerfile-alpine</cite>). Both are multistage and have different targets:</p>
+<ul class="simple">
+<li><p><cite>base</cite> for the plain image that does not start a webserver</p></li>
+<li><p><cite>development</cite> for the development image that starts the dev server</p></li>
+<li><p><cite>nginx</cite> for the nginx image that uses nginx to run mapproxy</p></li>
+</ul>
+<p>So if you want to build the alpine nginx image, the command would look like this:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>Dockerfile-alpine<span class="w"> </span>--target<span class="w"> </span>nginx<span class="w"> </span>-t<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:latest-alpine-nginx<span class="w"> </span>.
 </pre></div>
 </div>
-</section>
-<section id="for-the-dev-image">
-<h3>For the <cite>dev</cite> image<a class="headerlink" href="#for-the-dev-image" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>development<span class="w"> </span>-t<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev<span class="w"> </span>.
-</pre></div>
-</div>
-</section>
-<section id="for-the-nginx-image">
-<h3>For the <cite>nginx</cite> image<a class="headerlink" href="#for-the-nginx-image" title="Permalink to this heading">#</a></h3>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>nginx<span class="w"> </span>-t<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx<span class="w"> </span>.
-</pre></div>
-</div>
-</section>
 </section>
 </section>
 
@@ -447,7 +454,7 @@ If you do not supply config files (seed.yaml and mapproxy.yaml) the image will c
               
               
               
-                <footer class="prev-next-footer">
+                <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
     <a class="left-prev"
@@ -477,24 +484,20 @@ If you do not supply config files (seed.yaml and mapproxy.yaml) the image will c
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart">Quickstart</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-plain-image-without-starting-a-webserver">Running the <cite>plain</cite> image without starting a webserver</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-dev-image">Running the <cite>dev</cite> image</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-nginx-image">Running the <cite>nginx</cite> image</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart">Quickstart</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#volume-mounts">Volume-Mounts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-your-own-image">Build your own image</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-plain-image-without-starting-a-webserver">For the <cite>plain</cite> image without starting a webserver</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-dev-image">For the <cite>dev</cite> image</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#for-the-nginx-image">For the <cite>nginx</cite> image</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-your-own-image">Build your own image</a></li>
 </ul>
   </nav></div>
 
@@ -528,7 +531,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 10, 2025.
+  Last updated on Apr 29, 2025.
   <br/>
 </p>
   </div>
@@ -546,8 +549,8 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

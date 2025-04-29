@@ -238,7 +238,7 @@ The name of the layer. You can omit the name for group layers (e.g. layers with 
 
 ``title``
 """""""""
-Readable name of the layer, e.g WMS layer title.
+Readable name of the layer, e.g. WMS layer title.
 
 
 .. _layers:
@@ -297,14 +297,14 @@ A list of caches for this layer. This list overrides ``sources`` for WMTS and TM
 
 Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
-The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
+The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
 ``legendurl``
 """""""""""""
 
-Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here. If WMS and WMTS are enabled the address to the WMS `GetLegendGraphic` endpoint will be included in the WMTS capabilities as the legend url.
+Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here. If WMS and WMTS are enabled the address to the WMS `GetLegendGraphic` endpoint will be included in the WMTS capabilities as the legend URL.
 
 .. _layer_metadata:
 
@@ -397,7 +397,7 @@ Each dimension is another dictionary with a list of ``values`` and an optional `
 
 It is possible to configure which URLS the WMTS will advertise as LegendURLs through its capabilities. These will be
 inserted as a ``LegendURL`` tag into the capabilities document. These URLs support two template variables ``{base_url}``
-which is the base url of MapProxy and ``{layer_name}`` which is the name of the layer.
+which is the base URL of MapProxy and ``{layer_name}`` which is the name of the layer.
 
 .. code-block:: yaml
 
@@ -541,7 +541,7 @@ In practice this means that all the linked images will have the first such tile'
 """"""""""""""""""""""""""
 If set to ``true``, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).
 
-By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
+By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a request will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
 
 .. index:: watermark
 
@@ -616,9 +616,9 @@ MapProxy is able to create missing tiles by rescaling tiles from zoom levels bel
 
 MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set ``upscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.
 
-You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, always returning the best available data.
+You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, e.g. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, always returning the best available data.
 
-MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set ``downscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore `not` recommended to use ``downscale_tiles`` values larger then one.
+MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set ``downscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentially. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore `not` recommended to use ``downscale_tiles`` values larger than one.
 
 You can use ``downscale_tiles`` to fill a cache for a source that only provides data for higher resolutions.
 
@@ -664,20 +664,20 @@ Example:
 
 .. code-block:: yaml
 
-   caches:
-     osm_cache:
-     grids: ['osm_grid']
-     sources: [OSM]
-     disable_storage: false
-     refresh_before:
-       days: 1
+  caches:
+    osm_cache:
+      grids: ['osm_grid']
+      sources: [OSM]
+      disable_storage: false
+      refresh_before:
+        days: 1
 
 
 ``disable_storage``
 """"""""""""""""""""
 
 If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
-even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
+even if there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
 
 .. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
 
@@ -685,7 +685,7 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 """""""""""""
 
 Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. ``cachename_EPSG1234``).
-See :ref:`directory option<cache_file_directory>` on how configure a complete path.
+See :ref:`directory option<cache_file_directory>` on how to configure a complete path.
 
 ``cache``
 """""""""
@@ -841,7 +841,7 @@ The total number of cached resolution levels. Defaults to 20, except for grids w
 
 ``min_res`` and ``max_res``
 """""""""""""""""""""""""""
-The the resolutions of the first and the last level.
+The resolutions of the first and the last level.
 
 ``stretch_factor``
 """"""""""""""""""
@@ -849,7 +849,7 @@ MapProxy chooses the `optimal` cached level for requests that do not exactly
 match any cached resolution. MapProxy will stretch or shrink images to the
 requested resolution. The `stretch_factor` defines the maximum factor
 MapProxy is allowed to stretch images. Stretched images result in better
-performance but will look blurry when the value is to large (> 1.2).
+performance but will look blurry when the value is too large (> 1.2).
 
 Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
 resolution will be generated from the 10m level, requests for 8m from the 5m
@@ -910,7 +910,7 @@ Example ``grids`` configuration
 sources
 -------
 
-A sources defines where MapProxy can request new data. Each source has a ``type`` and all other options are dependent to this type.
+A source defines where MapProxy can request new data. Each source has a ``type`` and all other options are dependent to this type.
 
 See :doc:`sources` for the documentation of all available sources.
 
@@ -1004,7 +1004,7 @@ The following options define how tiles are created and stored. Most options can 
 .. _meta_size:
 
 ``meta_size``
-  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with ``bulk_meta_tiles``.
+  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 and 0 ``meta_buffer``, this will result in 1024x1024 requests to the source. (Note that the default value for ``meta_buffer`` is 80.) Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with ``bulk_meta_tiles``.
 
 
 .. _bulk_meta_tiles:
@@ -1017,7 +1017,7 @@ The following options define how tiles are created and stored. Most options can 
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
   pixels in each direction. This can solve cases where labels are cut-off at
-  the edge of tiles.
+  the edge of tiles. Defaults to 80.
 
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
@@ -1027,7 +1027,7 @@ The following options define how tiles are created and stored. Most options can 
 .. _lock_dir:
 
 ``lock_dir``
-  MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
+  MapProxy uses locking to limit multiple requests to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data/tile_locks``.
@@ -1054,6 +1054,11 @@ The following options define how tiles are created and stored. Most options can 
 
 ``max_tile_limit``
   Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.
+
+``directory_permissions``, ``file_permissions``:
+  Permissions that MapProxy will set when creating files and directories. Must be given as string containing the octal representation of permissions. I.e. ``rwxrw-r--`` is ``'764'``. This will not work on windows OS.
+
+  .. versionadded:: 3.1.0
 
 
 ``srs``
@@ -1098,7 +1103,7 @@ The following options define how tiles are created and stored. Most options can 
 
 ``axis_order_ne`` and ``axis_order_en``
   The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
-  The ordering is dependent to the SRS. Most clients and servers did not respected the
+  The ordering is dependent to the SRS. Most clients and servers did not respect the
   ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
   emphasized that the axis ordering of the SRS should be used.
 
@@ -1207,7 +1212,7 @@ Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-ori
 .. versionadded:: 1.14.0
 
 Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed
-back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+back to the source on subsequent requests. Useful for sources which require to maintain an HTTP session to work efficiently, maybe in combination
 with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process).
 Cookie handling is based on Python `CookieJar <https://docs.python.org/3/library/http.cookiejar.html>`_. Disabled by default.
 
@@ -1381,7 +1386,7 @@ Notes
 Scale vs. resolution
 """"""""""""""""""""
 
-Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a `map` is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the `map` is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.
+Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a `map` is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the `map` is depended on the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.
 
 This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 91dpi). But you need to understand that a `scale` will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).
 
