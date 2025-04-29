@@ -77,11 +77,12 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
 
         # wrap the socket using verification with the root
         #    certs in self.ca_certs_path
-        self.sock = ssl.wrap_socket(sock,
-                                    self.key_file,
-                                    self.cert_file,
-                                    cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=self._ca_certs)
+        context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        context.verify_mode = ssl.CERT_REQUIRED
+        context.load_cert_chain(certfile=self.cert_file, keyfile=self.key_file)
+        context.load_verify_locations(cafile=self._ca_certs)
+
+        self.sock = context.wrap_socket(sock, server_hostname=self.host)
 
 
 def verified_https_connection_with_ca_certs(ca_certs):
