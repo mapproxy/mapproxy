@@ -1,3 +1,31 @@
+4.1.0 2025-04-29
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+  - It is now possible to integrate the grid name into paths for AWS buckets. This allows storage of tiles for multiple
+    grids in the same bucket.
+  - We are returning a 404 http status code instead of a 500 if no legend graphic is found for a service.
+  - We are using utf-8 in GetFeatureInfo requests now.
+
+Maintenance:
+
+  - Updated some dependencies.
+  - Updated the GitHub runner versions.
+  - Refactored the grid.py file into multiple files.
+  - Removed the implementation of odict in favour of the builtin OrderedDict class.
+  - Added support for python 3.13.
+  - Skipping permissions tests if tests are run with root user. This is necessary to build and test MapProxy in a chroot
+    environment which is used to package MapProxy for Debian. Normal testing is not affected.
+
+Fixes:
+
+  - Fixed deprecation warnings for utctime, sqlite, ImageMath.eval, mock_s3.
+  - Fix entrypoint.sh to create default MapProxy configurations if none are found.
+  - Allowed the trivy security scan workflow to write the results to the GitHub security tab.
+  - We are not allowing the deprecated TLS Versions 1.1 or lower for connections to servers anymore.
+
+
 4.0.2 2025-04-10
 ~~~~~~~~~~~~~~~~
 
