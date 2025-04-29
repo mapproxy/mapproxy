@@ -2,6 +2,7 @@ name: Docker Build and Publish
 
 permissions:
   packages: write
+  security-events: write
 
 on:
   push:
