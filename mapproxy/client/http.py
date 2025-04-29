@@ -81,6 +81,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         context.verify_mode = ssl.CERT_REQUIRED
         context.load_cert_chain(certfile=self.cert_file, keyfile=self.key_file)
         context.load_verify_locations(cafile=self._ca_certs)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
 
         self.sock = context.wrap_socket(sock, server_hostname=self.host)
 
@@ -153,9 +154,8 @@ class HTTPClient(object):
                  ssl_ca_certs=None, timeout=None, headers=None, hide_error_details=False,
                  manage_cookies=False):
         self._timeout = timeout
-        if url and url.startswith('https'):
-            if insecure:
-                ssl_ca_certs = None
+        if url and url.startswith('https') and insecure:
+            ssl_ca_certs = None
 
         self.opener = create_url_opener(ssl_ca_certs, url, username, password,
                                         insecure=insecure, manage_cookies=manage_cookies)
