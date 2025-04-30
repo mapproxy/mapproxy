@@ -1,3 +1,11 @@
+4.1.1 2025-04-30
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+  - The scale denominator in the WMTS capabilites is now rounded to 10 digits after the decimal place.
+
+
 4.1.0 2025-04-29
 ~~~~~~~~~~~~~~~~
 
