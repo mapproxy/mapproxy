@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 class WMTSServer(Server):
     service = 'wmts'
 
-    def __init__(self, layers, md, request_parser=None, max_tile_age=None, info_formats={}):
+    def __init__(self, layers, md, request_parser=None, max_tile_age=None, info_formats=None):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
         self.md = md
@@ -53,7 +53,7 @@ class WMTSServer(Server):
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
         self.fi_transformers = None
-        self.info_formats = info_formats
+        self.info_formats = info_formats or {}
 
     def _matrix_sets(self, layers):
         sets = {}
@@ -237,12 +237,12 @@ class WMTSRestServer(WMTSServer):
     default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
     default_info_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
 
-    def __init__(self, layers, md, max_tile_age=None, template=None, fi_template=None, info_formats={}):
+    def __init__(self, layers, md, max_tile_age=None, template=None, fi_template=None, info_formats=None):
         WMTSServer.__init__(self, layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
         self.fi_template = fi_template or self.default_info_template
-        self.info_formats = info_formats
+        self.info_formats = info_formats or {}
         self.url_converter = URLTemplateConverter(self.template)
         self.fi_url_converter = FeatureInfoURLTemplateConverter(self.fi_template)
         self.request_parser = make_wmts_rest_request_parser(self.url_converter, self.fi_url_converter)
@@ -264,10 +264,10 @@ class Capabilities(object):
     Renders WMS capabilities documents.
     """
 
-    def __init__(self, server_md, layers, matrix_sets, info_formats={}):
+    def __init__(self, server_md, layers, matrix_sets, info_formats=None):
         self.service = server_md
         self.layers = layers
-        self.info_formats = info_formats
+        self.info_formats = info_formats or {}
         self.matrix_sets = matrix_sets
 
     def render(self, _map_request):
@@ -303,7 +303,7 @@ class Capabilities(object):
 
 
 class RestfulCapabilities(Capabilities):
-    def __init__(self, server_md, layers, matrix_sets, url_converter, fi_url_converter, info_formats={}):
+    def __init__(self, server_md, layers, matrix_sets, url_converter, fi_url_converter, info_formats=None):
         Capabilities.__init__(self, server_md, layers, matrix_sets, info_formats=info_formats)
         self.url_converter = url_converter
         self.fi_url_converter = fi_url_converter
@@ -406,11 +406,11 @@ class TileMatrixSet(object):
             if self.grid.srs.is_axis_order_ne:
                 topleft = bbox[3], bbox[0]
             grid_size = self.grid.grid_sizes[level]
-            scale_denom = res / (0.28 / 1000) * meter_per_unit(self.grid.srs)
+            scale_denom = round(res / (0.28 / 1000) * meter_per_unit(self.grid.srs), 10)
             yield bunch(
                 identifier=level,
                 topleft=topleft,
                 grid_size=grid_size,
-                scale_denom=scale_denom,
+                scale_denom=f'{scale_denom}'.strip('0').strip('.'),
                 tile_size=self.grid.tile_size,
             )
