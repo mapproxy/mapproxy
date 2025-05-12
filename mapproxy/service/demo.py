@@ -126,7 +126,7 @@ class DemoServer(Server):
         if pattern.match(url):
             return True
         else:
-            logging.warn(f"A request was blocked that was trying to access a non-http resource: {url}")
+            logging.warning(f"A request was blocked that was trying to access a non-http resource: {url}")
             return False
 
     @staticmethod
