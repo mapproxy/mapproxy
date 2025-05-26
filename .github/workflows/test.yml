@@ -51,15 +51,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Cache python deps 💾
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.OS }}-python-${{ hashFiles('**/requirements-tests.txt') }}
-        restore-keys: |
-          ${{ runner.OS }}-python-
-          ${{ runner.OS }}-
+        cache: 'pip'
 
     - name: Install dependencies ⏬
       run: |
