@@ -211,10 +211,14 @@ class BandMerger(object):
         for op in self.ops:
             chan = src_img_bands[op.src_img][op.src_band]
             if op.factor != 1.0:
-                chan = ImageMath.lambda_eval(
-                    lambda args: args["convert"](args["int"](args["float"](args["a"]) * op.factor), 'L'),
-                    a=chan
-                )
+                # eval is deprecated since Pillow==10.3.0, lambda_eval is the replacement
+                if hasattr(ImageMath, 'lambda_eval'):
+                    chan = ImageMath.lambda_eval(
+                        lambda args: args["convert"](args["int"](args["float"](args["a"]) * op.factor), 'L'),
+                        a=chan
+                    )
+                else:
+                    chan = ImageMath.eval("convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
                 if result_bands[op.dst_band] is None:
                     result_bands[op.dst_band] = chan
                 else:

@@ -1,6 +1,3 @@
-import platform
-import importlib.metadata
-
 from setuptools import setup, find_packages
 
 
@@ -9,33 +6,9 @@ install_requires = [
     'future',
     'pyproj>=2',
     'jsonschema>=4',
-    'werkzeug<4'
+    'werkzeug<4',
+    'Pillow>=8.1.2'
 ]
-
-
-def package_installed(pkg):
-    """Check if package is installed"""
-    try:
-        importlib.metadata.version(pkg)
-    except importlib.metadata.PackageNotFoundError:
-        return False
-    else:
-        return True
-
-
-# depend on Pillow if it is installed, otherwise
-# depend on PIL if it is installed, otherwise
-# require Pillow
-if package_installed('Pillow'):
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
-elif package_installed('PIL'):
-    install_requires.append('PIL>=1.1.6,<1.2.99')
-else:
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
-
-if platform.python_version_tuple() < ('2', '6'):
-    # for mapproxy-seed
-    install_requires.append('multiprocessing>=2.6')
 
 
 def long_description(changelog_releases=10):
