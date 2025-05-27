@@ -1,3 +1,14 @@
+4.1.2 2025-05-27
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+    - Set Pillow versions in setup.py to actually supported versions
+    - Using PIL instead of Pillow was not working since Python 2, so it is removed from setup.py
+    - Using a higher pyproj version for Python 3.13 is necessary
+    - Added a test for an older Pillow version with Python 3.9
+
+
 4.1.1 2025-04-30
 ~~~~~~~~~~~~~~~~
 
