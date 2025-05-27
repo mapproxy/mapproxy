@@ -7,7 +7,7 @@ install_requires = [
     'pyproj>=2',
     'jsonschema>=4',
     'werkzeug<4',
-    'Pillow>=8.1.2'
+    'Pillow>=8.1.2,!=8.3.0,!=8.3.1'
 ]
 
 
