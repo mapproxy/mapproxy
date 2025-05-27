@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Apr 30, 2025"/>
+    <meta name="docbuild:last-update" content="May 27, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">4.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">4.1.2</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -1472,10 +1472,9 @@ was not changed.</p>
 <dl id="jpeg-quality">
 <dt><code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code></dt><dd><p>An integer value from 0 to 100 that defines the image quality of JPEG images. Larger values result in slower performance, larger file sizes but better image quality. You should try values between 75 and 90 for good compromise between performance and quality.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">quantizer</span></code></dt><dd><p>The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> and <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code>. <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code> is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> in some cases.
-The quantizing is done by the Python Image Library (PIL). <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code> is a <a class="reference external" href="http://mapproxy.org/blog/improving-the-performance-for-png-requests/">new quantizer</a> that is only available in Pillow &gt;=2.0. See <a class="reference internal" href="install.html#dependencies-pil"><span class="std std-ref">installation of PIL</span></a>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">quantizer</span></code></dt><dd><p>The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> and <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code>. <code class="docutils literal notranslate"><span class="pre">fastoctree</span></code> is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with <code class="docutils literal notranslate"><span class="pre">mediancut</span></code> in some cases.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">tiff_compression</span></code></dt><dd><p>Enable compression for TIFF images. Available compression methods are <cite>tiff_lzw</cite> for lossless LZW compression, <cite>jpeg</cite> for JPEG compression and <cite>raw</cite> for no compression (default). You can use the <code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code> option to tune the image quality for JPEG compressed TIFFs. Requires Pillow &gt;= 6.1.0.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">tiff_compression</span></code></dt><dd><p>Enable compression for TIFF images. Available compression methods are <cite>tiff_lzw</cite> for lossless LZW compression, <cite>jpeg</cite> for JPEG compression and <cite>raw</cite> for no compression (default). You can use the <code class="docutils literal notranslate"><span class="pre">jpeg_quality</span></code> option to tune the image quality for JPEG compressed TIFFs.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.12.0.</span></p>
 </div>
@@ -1733,7 +1732,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 30, 2025.
+  Last updated on May 27, 2025.
   <br/>
 </p>
   </div>
