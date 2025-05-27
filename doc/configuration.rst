@@ -1302,10 +1302,9 @@ The following encoding options are available:
 
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
-  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
 
 ``tiff_compression``
-  Enable compression for TIFF images. Available compression methods are `tiff_lzw` for lossless LZW compression, `jpeg` for JPEG compression and `raw` for no compression (default). You can use the ``jpeg_quality`` option to tune the image quality for JPEG compressed TIFFs. Requires Pillow >= 6.1.0.
+  Enable compression for TIFF images. Available compression methods are `tiff_lzw` for lossless LZW compression, `jpeg` for JPEG compression and `raw` for no compression (default). You can use the ``jpeg_quality`` option to tune the image quality for JPEG compressed TIFFs.
 
   .. versionadded:: 1.12.0
 

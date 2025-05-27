@@ -29,6 +29,10 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        pillow-version: ["11.2.1"]
+        include:
+          - python-version: "3.9"
+            pillow-version: "8.1.2"
 
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'
@@ -51,20 +55,13 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Cache python deps 💾
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.OS }}-python-${{ hashFiles('**/requirements-tests.txt') }}
-        restore-keys: |
-          ${{ runner.OS }}-python-
-          ${{ runner.OS }}-
+        cache: 'pip'
 
     - name: Install dependencies ⏬
       run: |
         pip install .
         pip install -r requirements-tests.txt
+        pip install Pillow==${{ matrix.pillow-version }}
         pip freeze
 
     - name: Run tests 🏗️
