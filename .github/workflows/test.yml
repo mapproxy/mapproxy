@@ -32,7 +32,7 @@ jobs:
         pillow-version: ["11.2.1"]
         include:
           - python-version: "3.9"
-            pillow-version: "9.4.0"
+            pillow-version: "8.1.2"
 
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'

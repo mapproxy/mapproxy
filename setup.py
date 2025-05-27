@@ -7,9 +7,11 @@ install_requires = [
     'pyproj>=2',
     'jsonschema>=4',
     'werkzeug<4',
-    'Pillow>=9.4.0;python_version<="3.11"',
-    'Pillow>=10.4.0;python_version=="3.12"',
-    'Pillow>=11.2.1;python_version=="3.13"'
+    'Pillow>=8,!=8.3.0,!=8.3.1;python_version=="3.9"',
+    'Pillow>=9;python_version=="3.10"',
+    'Pillow>=10;python_version=="3.11"',
+    'Pillow>=10.1;python_version=="3.12"',
+    'Pillow>=11;python_version=="3.13"'
 ]
 
 
@@ -61,6 +63,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
