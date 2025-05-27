@@ -29,6 +29,10 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        pillow-version: ["11.2.1"]
+        include:
+          - python-version: "3.9"
+            pillow-version: "9.4.0"
 
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'
@@ -57,6 +61,7 @@ jobs:
       run: |
         pip install .
         pip install -r requirements-tests.txt
+        pip install Pillow==${{ matrix.pillow-version }}
         pip freeze
 
     - name: Run tests 🏗️
