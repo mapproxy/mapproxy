@@ -2,6 +2,28 @@
     <TileMapService version="1.0.0">
     <Title>{{service.title}}</Title>
     <Abstract>{{service.abstract}}</Abstract>
+{{if service.keyword_list}}
+    <KeywordList>{{service.keyword_list}}</KeywordList>
+{{endif}}
+{{if service.contact}}
+{{py:service.contact = bunch(default='', **service.contact)}}
+    <ContactInformation>
+        <ContactPersonPrimary>
+            <ContactPerson>{{service.contact.person}}</ContactPerson>
+            <ContactOrganization>{{service.contact.organization}}</ContactOrganization>
+        </ContactPersonPrimary>
+        <ContactPosition>{{service.contact.position}}</ContactPosition>
+        <ContactAddress>
+            <Address>{{service.contact.address}}</Address>
+            <City>{{service.contact.city}}</City>
+            <PostCode>{{service.contact.postcode}}</PostCode>
+            <Country>{{service.contact.country}}</Country>
+        </ContactAddress>
+        <ContactVoiceTelephone>{{service.contact.phone}}</ContactVoiceTelephone>
+        <ContactFacsimileTelephone>{{service.contact.fax}}</ContactFacsimileTelephone>
+        <ContactElectronicMailAddress>{{service.contact.email}}</ContactElectronicMailAddress>
+    </ContactInformation>
+{{endif}}    
     <TileMaps>
 {{for layer in layers.values()}}
         <TileMap title="{{layer.title}}"
