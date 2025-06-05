@@ -180,7 +180,7 @@ class WMSInfoClient(object):
         req.params.pos = query.pos
         if query.feature_count:
             req.params['feature_count'] = query.feature_count
-        if not 'query_layers' in req.params:
+        if 'query_layers' not in req.params:
             req.params['query_layers'] = req.params['layers']
         if 'info_format' not in req.params and query.info_format:
             req.params['info_format'] = query.info_format
