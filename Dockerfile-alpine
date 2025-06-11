@@ -79,6 +79,8 @@ FROM base AS nginx
 # use current version of nginx
 ARG NGINX_VERSION=1.25.3
 
+ENV MAPPROXY_ALPINE=true
+
 USER root:root
 
 RUN apk --no-cache add ca-certificates uwsgi uwsgi-python3 supervisor pcre-dev && \
