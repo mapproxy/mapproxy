@@ -18,7 +18,7 @@ import copy
 import json
 
 from functools import reduce
-from io import StringIO
+from io import StringIO, BytesIO
 from typing import List, Union
 
 from lxml import etree, html
@@ -26,7 +26,7 @@ from lxml import etree, html
 
 class FeatureInfoDoc(object):
     content_type = None
-    content: str = None
+    content: Union[str, bytes] = None
 
     def as_etree(self):
         raise NotImplementedError()
@@ -39,10 +39,10 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
     info_type = "text"
 
     def __init__(self, content: Union[str, bytes]):
-        self.content = content if isinstance(content, str) else decode(content)
+        self.content = content
 
     def as_string(self) -> str:
-        return self.content
+        return self.content if isinstance(self.content, str) else decode(self.content)
 
     @classmethod
     def combine(cls, docs: List[FeatureInfoDoc]):
@@ -57,7 +57,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 
     def __init__(self, content: Union[str, bytes]):
         if isinstance(content, (str, bytes)):
-            self.content = content if isinstance(content, str) else decode(content)
+            self.content = content
         else:
             if hasattr(content, "getroottree"):
                 content = content.getroottree()
@@ -67,7 +67,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     def as_string(self):
         if self.content is None:
             self.content = self._serialize_etree()
-        return self.content
+        return self.content if isinstance(self.content, str) else decode(self.content)
 
     def as_etree(self):
         if self._etree is None:
@@ -80,7 +80,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         return decode(etree.tostring(self._etree, encoding=encoding, xml_declaration=False), encoding)
 
     def _parse_content(self):
-        return etree.parse(StringIO(self.content))
+        return etree.parse(StringIO(self.content) if isinstance(self.content, str) else BytesIO(self.content))
 
     @classmethod
     def combine(cls, docs):
@@ -131,10 +131,10 @@ class JSONFeatureInfoDoc(FeatureInfoDoc):
     info_type = "json"
 
     def __init__(self, content):
-        self.content = content if isinstance(content, str) else decode(content)
+        self.content = content
 
     def as_string(self):
-        return self.content
+        return self.content if isinstance(self.content, str) else decode(self.content)
 
     @classmethod
     def combine(cls, docs):
