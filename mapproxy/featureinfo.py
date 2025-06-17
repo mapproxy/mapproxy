@@ -21,13 +21,7 @@ from functools import reduce
 from io import StringIO
 from typing import List, Union
 
-try:
-    from lxml import etree, html
-
-    has_xslt_support = True
-except ImportError:
-    has_xslt_support = False
-    etree = html = None
+from lxml import etree, html
 
 
 class FeatureInfoDoc(object):
