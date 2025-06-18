@@ -239,14 +239,32 @@ A request to ``/tms/1.0.0`` will return the TMS metadata as XML. ``/tms/1.0.0/la
 When set to `true`, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
 Tiles will then be available under ``/tms/1.0.0/mylayer/mygrid/`` instead of ``/tms/1.0.0/mylayer/EPSG1234/`` or ``/tms/1.0.0/mylayer_EPSG1234/``.
 
-Example
-"""""""
+Full example
+""""""""""""
 
 .. code-block:: yaml
 
   services:
     tms:
-      use_grid_names: true
+      origin: 'sw'
+      use_grid_names: true"
+      md:
+        title: MapProxy TMS Proxy
+        abstract: This is the fantastic MapProxy.
+        contact:
+          person: Your Name Here
+          position: Technical Director
+          organization: FakeOrg
+          address: Fakestreet 123
+          city: Somewhere
+          state: XYZ
+          postcode: 12345
+          country: Germany
+          phone: +49(0)000-000000-0
+          fax: +49(0)000-000000-0
+          email: you@example.org
+        keyword_list:
+         - keywords:   ["View Service", MapProxy]
 
 
 .. index:: OpenLayers
