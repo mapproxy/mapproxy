@@ -22,7 +22,6 @@ from mapproxy.util.geom import (
     load_ogr_datasource,
     load_polygons,
     load_expire_tiles,
-    require_geom_support,
     build_multipolygon,
 )
 from mapproxy.util.coverage import (
@@ -57,7 +56,6 @@ def load_coverage(conf, base_path=None):
             parts.append(load_coverage(cov))
         return diff_coverage(parts, clip=clip)
     elif 'ogr_datasource' in conf:
-        require_geom_support()
         srs = conf['ogr_srs']
         datasource = conf['ogr_datasource']
         if not re.match(r'^\w{2,}:', datasource):
@@ -68,7 +66,6 @@ def load_coverage(conf, base_path=None):
         geom = load_ogr_datasource(datasource, where)
         bbox, geom = build_multipolygon(geom, simplify=True)
     elif 'polygons' in conf:
-        require_geom_support()
         srs = conf['polygons_srs']
         geom = load_polygons(abspath(conf['polygons'], base_path=base_path))
         bbox, geom = build_multipolygon(geom, simplify=True)
@@ -79,7 +76,6 @@ def load_coverage(conf, base_path=None):
             bbox = [float(x) for x in bbox.split(',')]
         geom = None
     elif 'datasource' in conf:
-        require_geom_support()
         datasource = conf['datasource']
         srs = conf['srs']
         if isinstance(datasource, (list, tuple)):
@@ -97,7 +93,6 @@ def load_coverage(conf, base_path=None):
             geom = load_datasource(datasource, where)
             bbox, geom = build_multipolygon(geom, simplify=True)
     elif 'expire_tiles' in conf:
-        require_geom_support()
         filename = abspath(conf['expire_tiles'])
         geom = load_expire_tiles(filename)
         _, geom = build_multipolygon(geom, simplify=False)
