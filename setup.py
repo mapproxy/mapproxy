@@ -12,7 +12,7 @@ install_requires = [
     'Pillow>=10;python_version=="3.11"',
     'Pillow>=10.1;python_version=="3.12"',
     'Pillow>=11;python_version=="3.13"',
-    'lxml>=5',
+    'lxml>=4',
     'shapely>=2'
 ]
 
