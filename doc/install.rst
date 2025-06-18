@@ -41,7 +41,7 @@ Install Dependencies
 
 MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.9 or higher, which should already be installed with most Linux distributions.
 
-MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
+MapProxy requires a few third-party libraries that are required to run.
 
 Installation
 ^^^^^^^^^^^^
@@ -49,6 +49,13 @@ Installation
 On a Debian or Ubuntu system, you need to install the following packages::
 
   sudo apt-get install libgeos-dev libgdal-dev libxml2-dev libxslt-dev
+
+Additional dependencies are installed automatically via pip when running `pip install MapProxy`. It is possible to use
+apt packages for some dependencies instead, pip will detect them if they are already installed and can be used. The apt
+packages will only work if the python version you are using is the same as the system wide installed python. The system
+packages can be quite old, so this is **not recommended**::
+
+  sudo apt-get install python3-dev python3-pil python3-yaml python3-pyproj python3-lxml python3-shapely
 
 
 Install MapProxy
