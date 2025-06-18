@@ -5,9 +5,6 @@ LABEL maintainer="mapproxy.org"
 RUN apk -U upgrade --update \
     && apk add \
       g++ \
-      py3-pip  \
-      gdal \
-      gdal-dev \
       gdal \
       gdal-dev \
       libxslt-dev \
@@ -50,7 +47,9 @@ ENV PATH="${PATH}:/mapproxy/.local/bin"
 RUN mkdir mapproxy-dist
 COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
-RUN pip install requests redis boto3 azure-storage-blob Shapely && \
+# Installing optional packages and MapProxy afterwards
+
+RUN pip install requests redis boto3 azure-storage-blob && \
   pip install --find-links=./mapproxy-dist --no-index MapProxy && \
   pip cache purge
 

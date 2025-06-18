@@ -3,13 +3,8 @@ FROM python:3.12-slim-bookworm AS base-libs
 LABEL maintainer="mapproxy.org"
 
 RUN apt update && apt -y install --no-install-recommends \
-  python3-pil \
-  python3-yaml \
-  python3-pyproj \
   libgeos-dev \
-  python3-lxml \
   libgdal-dev \
-  python3-shapely \
   libxml2-dev \
   libxslt-dev && \
   apt-get -y --purge autoremove && \
@@ -48,7 +43,9 @@ ENV PATH="${PATH}:/mapproxy/.local/bin"
 RUN mkdir mapproxy-dist
 COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
-RUN pip install requests redis boto3 azure-storage-blob Shapely && \
+# Installing optional packages and MapProxy afterwards
+
+RUN pip install requests redis boto3 azure-storage-blob && \
   pip install --find-links=./mapproxy-dist --no-index MapProxy && \
   pip cache purge
 

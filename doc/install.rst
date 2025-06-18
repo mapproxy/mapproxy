@@ -48,57 +48,8 @@ Installation
 
 On a Debian or Ubuntu system, you need to install the following packages::
 
-  sudo apt-get install python3-pil python3-yaml python3-pyproj
+  sudo apt-get install libgeos-dev libgdal-dev libxml2-dev libxslt-dev
 
-To get all optional packages::
-
-  sudo apt-get install libgeos-dev python3-lxml libgdal-dev python3-dev python3-shapely
-
-.. _dependency_details:
-
-Dependency details
-^^^^^^^^^^^^^^^^^^
-
-pyproj or libproj
-~~~~~~~~~~~~~~~~~
-
-MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
-The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
-
-
-.. versionchanged:: 1.13
-  Support for new PROJ API via pyproj.
-
-
-.. _dependencies_pil:
-
-Pillow
-~~~~~~
-Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as ``python-pil`` or ``python-imaging``. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of ``python-imaging`` should be >=3.1.
-
-You can install a new version of Pillow from source with::
-
-  sudo apt-get install build-essential python-dev libjpeg-dev \
-    zlib1g-dev libfreetype6-dev
-  pip install Pillow
-
-
-Shapely and GEOS *(optional)*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.8) version of Shapely.
-
-GDAL *(optional)*
-~~~~~~~~~~~~~~~~~
-The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support (BBOX, WKT and GeoJSON coverages are supported natively). OGR is part of GDAL (``libgdal-dev``).
-
-.. _lxml_install:
-
-lxml *(optional)*
-~~~~~~~~~~~~~~~~~
-
-`lxml`_ is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple XML/HTML documents. It is available as ``python-lxml``.
-
-.. _`lxml`: http://lxml.de
 
 Install MapProxy
 ----------------

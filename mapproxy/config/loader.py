@@ -749,12 +749,10 @@ class WMSSourceConfiguration(SourceConfiguration):
         return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
-        from mapproxy.featureinfo import XSLTransformer, has_xslt_support
+        from mapproxy.featureinfo import XSLTransformer
         fi_transformer = None
         fi_xslt = conf.get('featureinfo_xslt')
         if fi_xslt:
-            if not has_xslt_support:
-                raise ValueError('featureinfo_xslt requires lxml. Please install.')
             fi_xslt = context.globals.abspath(fi_xslt)
             fi_format = conf.get('featureinfo_out_format')
             if not fi_format:
@@ -2098,12 +2096,10 @@ class LayerConfiguration(ConfigurationBase):
 
 
 def fi_xslt_transformers(conf, context):
-    from mapproxy.featureinfo import XSLTransformer, has_xslt_support
+    from mapproxy.featureinfo import XSLTransformer
     fi_transformers = {}
     fi_xslt = conf.get('featureinfo_xslt')
     if fi_xslt:
-        if not has_xslt_support:
-            raise ValueError('featureinfo_xslt requires lxml. Please install.')
         for info_type, fi_xslt in fi_xslt.items():
             fi_xslt = context.globals.abspath(fi_xslt)
             fi_transformers[info_type] = XSLTransformer(fi_xslt)
