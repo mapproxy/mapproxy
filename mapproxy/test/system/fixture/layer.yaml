@@ -267,7 +267,6 @@ sources:
     type: wms
     wms_opts:
       featureinfo: True
-      query_layers: foo
     req:
       url: http://localhost:42423/service
       layers: foo,bar
