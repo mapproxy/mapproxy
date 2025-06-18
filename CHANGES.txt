@@ -1,3 +1,21 @@
+5.0.0 2025-06-18
+~~~~~~~~~~~~~~~~
+
+Breaking:
+
+  - The dependencies lxml, shapely, pyproj, gdal and PyYAML are no longer optional
+
+Maintenance:
+
+  - By default lxml, shapely, pyproj, Pillow and PyYAML are now installed via pip and are not recommended to be installed
+    as apt packages anymore
+
+Fixes:
+
+  - The alpine image uses the python3 plugin for uwsgi correctly
+  - An lxml encoding error is fixed
+
+
 4.1.2 2025-05-27
 ~~~~~~~~~~~~~~~~
 
