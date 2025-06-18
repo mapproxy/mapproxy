@@ -18,7 +18,6 @@ from __future__ import division
 import pytest
 
 from mapproxy.util.bbox import bbox_equals
-from mapproxy.util.geom import geom_support
 
 from mapproxy.test.http import MockServ
 from mapproxy.test.image import img_from_buf, create_tmp_image, is_transparent
@@ -40,9 +39,6 @@ FI_REQ = (
     "/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:4326"
     "&BBOX=-80,-40,0,0&WIDTH=200&HEIGHT=100&styles=&FORMAT=image/png&X=10&Y=10&"
 )
-
-
-pytestmark = pytest.mark.skipif(not geom_support, reason="Shapely required")
 
 
 class TestWMSAuth(SysTest):
@@ -765,9 +761,7 @@ class TestWMTSAuth(SysTest):
                     "ows": "http://www.opengis.net/ows/1.1",
                 },
             )
-        ) == set(
-            ["layer 1b", "layer 1a", "layer 2a", "layer 2b1", "layer 1", "layer 3"]
-        )
+        ) == {"layer 1b", "layer 1a", "layer 2a", "layer 2b1", "layer 1", "layer 3"}
 
     def test_capabilities_authorize_none(self, app):
 
@@ -823,7 +817,7 @@ class TestWMTSAuth(SysTest):
                     "ows": "http://www.opengis.net/ows/1.1",
                 },
             )
-        ) == set(["layer 1a", "layer 2b1"])
+        ) == {"layer 1a", "layer 2b1"}
 
     def test_get_tile(self, app):
 
