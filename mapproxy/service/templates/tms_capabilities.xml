@@ -2,8 +2,8 @@
     <TileMapService version="1.0.0">
     <Title>{{service.title}}</Title>
     <Abstract>{{service.abstract}}</Abstract>
-{{if service.keyword_list}}
-    <KeywordList>{{service.keyword_list}}</KeywordList>
+{{if service.keyword_list and len(service.keyword_list) > 0}}
+    <KeywordList>{{for list in service.keyword_list}}{{py: kw=bunch(default='', **list)}}{{" ".join(map(lambda k : '"'+k+'"', kw.keywords))}}{{endfor}}</KeywordList>
 {{endif}}
 {{if service.contact}}
 {{py:service.contact = bunch(default='', **service.contact)}}
