@@ -183,7 +183,7 @@ class TestWMS111(SysTest):
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
         expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
                           "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
-                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache", "wms_fi_ql_cache"}
         assert layer_names == expected_names
         assert set(xml.xpath("//Layer/Layer[3]/Abstract/text()")) == {"Some abstract"}
 
@@ -901,7 +901,7 @@ class TestWMS110(SysTest):
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
         expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
                           "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
-                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache", "wms_fi_ql_cache"}
         assert layer_names == expected_names
         assert validate_with_dtd(xml, dtd_name="wms/1.1.0/capabilities_1_1_0.dtd")
 
@@ -1140,7 +1140,7 @@ class TestWMS100(SysTest):
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
         expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
                           "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
-                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache", "wms_fi_ql_cache"}
         assert layer_names == expected_names
         # TODO srs
         assert validate_with_dtd(xml, dtd_name="wms/1.0.0/capabilities_1_0_0.dtd")
@@ -1342,7 +1342,7 @@ class TestWMS130(SysTest):
         )
         expected_names = {"direct_fwd_params", "direct", "wms_cache", "wms_cache_100", "wms_cache_130",
                           "wms_cache_transparent", "wms_merge", "tms_cache", "tms_fi_cache", "wms_cache_multi",
-                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache"}
+                          "wms_cache_link_single", "wms_cache_110", "watermark_cache", "wms_managed_cookies_cache", "wms_fi_ql_cache"}
         assert layer_names == expected_names
         assert is_130_capa(xml)
 
