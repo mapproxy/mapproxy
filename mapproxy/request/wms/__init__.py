@@ -779,6 +779,9 @@ def create_request(req_data, param, req_type='map', version='1.1.1', abspath=Non
     if 'info_format' in param:
         req_data['info_format'] = param['info_format']
 
+    if 'query_layers' in param:
+        req_data['query_layers'] = param['query_layers']
+
     if 'transparent' in req_data:
         # we don't want a boolean
         req_data['transparent'] = str(req_data['transparent'])
