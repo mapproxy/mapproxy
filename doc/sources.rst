@@ -93,6 +93,9 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo_out_format``
   Output format returned by the XSLT script. By default MapProxy will use ``featureinfo_format``.
 
+``query_layers``
+  The ``QUERY_LAYERS`` for FeatureInfo requests. By default MapProxy will use the same as the LAYERS param.
+
 .. versionadded:: 1.12.0
   ``featureinfo_out_format``
 

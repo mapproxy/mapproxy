@@ -674,8 +674,20 @@
             "req": {
               "title": "req",
               "type": "object"
+            },
+            "wms_opts": {
+              "title": "wms_opts",
+              "type": "object",
+              "properties": {
+                "featureinfo": {
+                  "type": "boolean"
+                },
+                "query_layers": {
+                  "type": "string"
+                }
+              }
             }
-          },
+          },          
           "required": ["req"]
         }
       ]

@@ -515,6 +515,7 @@ mapproxy_yaml_spec = {
                     'featureinfo_format': str(),
                     'featureinfo_xslt': str(),
                     'featureinfo_out_format': str(),
+                    'query_layers': str(),
                 },
                 'image': combined(image_opts, {
                     'opacity': number(),
