@@ -849,6 +849,7 @@ class TestWMS111(SysTest):
         )
         with mock_httpd(("localhost", 42423), [expected_req]):
             self.common_fi_req.params["layers"] = "wms_fi_ql_cache"
+            self.common_fi_req.params["query_layers"] = "wms_fi_ql_cache"
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
