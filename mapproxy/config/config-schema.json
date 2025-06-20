@@ -685,7 +685,7 @@
                 "query_layers": {
                   "type": "string"
                 },
-            },
+            }
           },          
           "required": ["req"]
         }
