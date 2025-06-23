@@ -32,7 +32,7 @@
           <ows:Facsimile>{{service.contact.fax}}</ows:Facsimile>
         </ows:Phone>
         <ows:Address>
-          <ows:DeliveryPoint>{{service.contact.organization}}</ows:DeliveryPoint>
+          <ows:DeliveryPoint>{{service.contact.address}}</ows:DeliveryPoint>
           <ows:City>{{service.contact.city}}</ows:City>
           <ows:AdministrativeArea>{{service.contact.state}}</ows:AdministrativeArea>
           <ows:PostalCode>{{service.contact.postcode}}</ows:PostalCode>
@@ -42,6 +42,49 @@
       </ows:ContactInfo>
     </ows:ServiceContact>
   </ows:ServiceProvider>
+{{endif}}
+{{if restful}}
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>RESTful</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>RESTful</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetFeatureInfo">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>RESTful</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
 {{endif}}
 {{if not restful}}
   <ows:OperationsMetadata>
@@ -96,7 +139,7 @@
         <ows:UpperCorner>{{layer.md['extent'].llbbox[2]}} {{layer.md['extent'].llbbox[3]}}</ows:UpperCorner>
       </ows:WGS84BoundingBox>
       <ows:Identifier>{{layer.name}}</ows:Identifier>
-      <Style>
+      <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         {{if legendurls[layer.name]}}
         <LegendURL
@@ -141,7 +184,7 @@
 {{for tile_matrix_set in tile_matrix_sets}}
     <TileMatrixSet>
       <ows:Identifier>{{tile_matrix_set.name}}</ows:Identifier>
-      <ows:SupportedCRS>{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
   {{for matrix in tile_matrix_set}}
       <TileMatrix>
         <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
