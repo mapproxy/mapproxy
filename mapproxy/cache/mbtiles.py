@@ -117,7 +117,7 @@ class MBTilesCache(TileCacheBase):
 
         if self.file_permissions:
             permission = int(self.file_permissions, base=8)
-            log.info("setting file permissions on MBTile file: ", permission)
+            log.info("setting file permissions on MBTile file: %s", permission)
             os.chmod(self.mbtile_file, permission)
 
     def update_metadata(self, name='', description='', version=1, overlay=True, format='png'):
