@@ -343,6 +343,7 @@ ogc_service_md = {
     'contact': anything(),
     'fees': str,
     'access_constraints': str,
+    'auto_metadata': bool(),
     'keyword_list': [
         {
             'vocabulary': str,

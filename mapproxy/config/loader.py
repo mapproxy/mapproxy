@@ -2012,6 +2012,7 @@ class LayerConfiguration(ConfigurationBase):
             
         # Get WMS URLs from this layer's sources
         source_urls = []
+        auth_configs = {}
         layer_sources = self.conf.get('sources', [])
         
         for source_name in layer_sources:
@@ -2020,11 +2021,21 @@ class LayerConfiguration(ConfigurationBase):
                 if source_conf.get('type') == 'wms':
                     req_conf = source_conf.get('req', {})
                     if 'url' in req_conf:
-                        source_urls.append(req_conf['url'])
+                        url = req_conf['url']
+                        source_urls.append(url)
+                        
+                        # Extract auth credentials from HTTP configuration
+                        http_conf = source_conf.get('http', {})
+                        if 'username' in http_conf and 'password' in http_conf:
+                            auth_configs[url] = {
+                                'username': http_conf['username'],
+                                'password': http_conf['password']
+                            }
             elif source_name in self.context.caches:
                 # For cache sources, find the underlying WMS sources
-                cache_sources = self._get_cache_wms_sources(source_name)
+                cache_sources, cache_auth_configs = self._get_cache_wms_sources(source_name)
                 source_urls.extend(cache_sources)
+                auth_configs.update(cache_auth_configs)
         
         if not source_urls:
             # No valid WMS sources found, return layer metadata as-is
@@ -2037,7 +2048,7 @@ class LayerConfiguration(ConfigurationBase):
             
         # Get auto metadata for this layer
         auto_metadata = metadata_manager.get_layer_metadata(
-            layer_name, source_urls, layer_md
+            layer_name, source_urls, layer_md, auth_configs
         )
         
         # Create a copy of the layer metadata and merge auto metadata
@@ -2057,11 +2068,13 @@ class LayerConfiguration(ConfigurationBase):
     def _get_cache_wms_sources(self, cache_name):
         """
         Recursively get WMS source URLs from a cache configuration.
+        Returns both URLs and auth configurations.
         """
         wms_urls = []
+        auth_configs = {}
         
         if cache_name not in self.context.caches:
-            return wms_urls
+            return wms_urls, auth_configs
             
         cache_conf = self.context.caches[cache_name]
         cache_sources = cache_conf.conf.get('sources', [])
@@ -2072,13 +2085,23 @@ class LayerConfiguration(ConfigurationBase):
                 if source_conf.get('type') == 'wms':
                     req_conf = source_conf.get('req', {})
                     if 'url' in req_conf:
-                        wms_urls.append(req_conf['url'])
+                        url = req_conf['url']
+                        wms_urls.append(url)
+                        
+                        # Extract auth credentials from HTTP configuration
+                        http_conf = source_conf.get('http', {})
+                        if 'username' in http_conf and 'password' in http_conf:
+                            auth_configs[url] = {
+                                'username': http_conf['username'],
+                                'password': http_conf['password']
+                            }
             elif source_name in self.context.caches:
                 # Recursively check nested caches
-                nested_urls = self._get_cache_wms_sources(source_name)
+                nested_urls, nested_auth_configs = self._get_cache_wms_sources(source_name)
                 wms_urls.extend(nested_urls)
+                auth_configs.update(nested_auth_configs)
                 
-        return wms_urls
+        return wms_urls, auth_configs
 
     @memoize
     def tile_layers(self, grid_name_as_path=False):
@@ -2345,11 +2368,91 @@ class ServiceConfiguration(ConfigurationBase):
 
         return services
 
-    def wms_service(self, conf):
-        from mapproxy.service.wms import WMSServer
-        from mapproxy.request.wms import Version
+    def _merge_service_auto_metadata(self, service_md):
+        """
+        Merge service configuration metadata with auto metadata from all WMS sources.
+        Priority: service_md > source_metadata > defaults
+        """
+        auto_metadata_enabled = service_md.get('auto_metadata', False)
+        
+        if not auto_metadata_enabled:
+            return service_md
+            
+        # Get all WMS URLs from all layers' sources
+        source_urls = []
+        auth_configs = {}
+        
+        for layer_name, layer_conf in self.context.layers.items():
+            layer_sources = layer_conf.conf.get('sources', [])
+            
+            for source_name in layer_sources:
+                if source_name in self.context.sources:
+                    source_conf = self.context.sources[source_name].conf
+                    if source_conf.get('type') == 'wms':
+                        req_conf = source_conf.get('req', {})
+                        if 'url' in req_conf:
+                            url = req_conf['url']
+                            if url not in source_urls:
+                                source_urls.append(url)
+                                
+                            # Extract auth credentials from HTTP configuration
+                            http_conf = source_conf.get('http', {})
+                            if 'username' in http_conf and 'password' in http_conf:
+                                auth_configs[url] = {
+                                    'username': http_conf['username'],
+                                    'password': http_conf['password']
+                                }
+                elif source_name in self.context.caches:
+                    # For cache sources, find the underlying WMS sources
+                    cache_sources, cache_auth_configs = self._get_cache_wms_sources_from_layer(source_name)
+                    for url in cache_sources:
+                        if url not in source_urls:
+                            source_urls.append(url)
+                    auth_configs.update(cache_auth_configs)
+        
+        if not source_urls:
+            # No valid WMS sources found, return service metadata as-is
+            return service_md
+            
+        # Get auto metadata from all sources
+        source_service_metadata = []
+        for source_url in source_urls:
+            # Get auth credentials for this source URL
+            auth_config = auth_configs.get(source_url, {})
+            username = auth_config.get('username')
+            password = auth_config.get('password')
+            
+            source_metadata = metadata_manager.get_source_metadata(source_url, username=username, password=password)
+            service_metadata = source_metadata.get('service', {})
+            if service_metadata:
+                source_service_metadata.append(service_metadata)
+                
+        # Merge the auto metadata (service_md takes priority)
+        auto_metadata = metadata_manager.merge_metadata(service_md, source_service_metadata)
+        
+        # Create a copy of the service metadata and merge auto metadata
+        merged_md = service_md.copy()
+        
+        # Remove auto_metadata flag from final output  
+        if 'auto_metadata' in merged_md:
+            del merged_md['auto_metadata']
+            
+        # Merge the auto metadata (service_md takes priority)
+        for key, value in auto_metadata.items():
+            if key not in merged_md and value:
+                merged_md[key] = value
+                
+        return merged_md
 
-        md = conf.get('md', {})
+    def _get_cache_wms_sources_from_layer(self, cache_name):
+        """
+        Helper method to get WMS sources from cache configurations for service-level metadata.
+        """
+        return self.context.layers.get(cache_name, type('MockLayer', (), {'_get_cache_wms_sources': lambda x: ([], {})}))._get_cache_wms_sources(cache_name)
+
+    def wms_service(self, conf):
+
+        md = self._merge_service_auto_metadata(conf.get('md', {}))
 
         inspire_md = conf.get('inspire_md', {})
         tile_layers = self.tile_layers(conf)

@@ -21,7 +21,7 @@ import logging
 from io import BytesIO
 from urllib.parse import urlparse
 
-from mapproxy.client.http import open_url, HTTPClientError
+from mapproxy.client.http import open_url, HTTPClientError, HTTPClient, auth_data_from_url
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.util.ext import wmsparse
 
@@ -36,18 +36,20 @@ class WMSMetadataManager(object):
     def __init__(self):
         self._cache = {}
 
-    def get_source_metadata(self, url, version='1.1.1'):
+    def get_source_metadata(self, url, version='1.1.1', username=None, password=None):
         """
         Fetch and parse metadata from a WMS GetCapabilities document.
 
         Args:
             url: WMS base URL
             version: WMS version (default: 1.1.1)
+            username: Basic auth username (optional)
+            password: Basic auth password (optional)
 
         Returns:
             dict: Parsed metadata dictionary with 'service' and 'layers' keys
         """
-        cache_key = (url, version)
+        cache_key = (url, version, username, password)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
@@ -55,7 +57,19 @@ class WMSMetadataManager(object):
             capabilities_url = self._build_capabilities_url(url, version)
             log.debug('Fetching metadata from %s', capabilities_url)
 
-            capabilities_response = open_url(capabilities_url)
+            # Check if URL contains auth info or use provided credentials
+            clean_url, (url_username, url_password) = auth_data_from_url(capabilities_url)
+            if url_username or url_password:
+                # Use auth data from URL
+                http_client = HTTPClient(clean_url, url_username, url_password)
+                capabilities_response = http_client.open(clean_url)
+            elif username or password:
+                # Use provided credentials
+                http_client = HTTPClient(capabilities_url, username, password)
+                capabilities_response = http_client.open(capabilities_url)
+            else:
+                # No authentication
+                capabilities_response = open_url(capabilities_url)
             capabilities_data = BytesIO(capabilities_response.read())
 
             service = wmsparse.parse_capabilities(capabilities_data)
@@ -186,7 +200,7 @@ class WMSMetadataManager(object):
 
         return merged
 
-    def get_layer_metadata(self, layer_name, source_urls, layer_config=None):
+    def get_layer_metadata(self, layer_name, source_urls, layer_config=None, auth_configs=None):
         """
         Get merged metadata for a specific layer from multiple sources.
         
@@ -194,18 +208,27 @@ class WMSMetadataManager(object):
             layer_name: Name of the layer to get metadata for
             source_urls: List of WMS source URLs to fetch metadata from
             layer_config: Optional layer configuration dict to merge
+            auth_configs: Optional dict mapping source URLs to auth credentials
+                         Format: {url: {'username': 'user', 'password': 'pass'}}
             
         Returns:
             dict: Merged layer metadata
         """
         if layer_config is None:
             layer_config = {}
+        if auth_configs is None:
+            auth_configs = {}
             
         source_layer_metadata = []
         
         # Collect layer metadata from all sources
         for source_url in source_urls:
-            source_metadata = self.get_source_metadata(source_url)
+            # Get auth credentials for this source URL
+            auth_config = auth_configs.get(source_url, {})
+            username = auth_config.get('username')
+            password = auth_config.get('password')
+            
+            source_metadata = self.get_source_metadata(source_url, username=username, password=password)
             layers_metadata = source_metadata.get('layers', {})
             
             # Try to find matching layer metadata with fallback strategies

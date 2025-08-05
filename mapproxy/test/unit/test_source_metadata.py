@@ -371,3 +371,108 @@ class TestLayerMetadata:
         
         assert 'buildings' in metadata['layers']
         assert metadata['layers']['buildings']['title'] == 'Building Footprints'
+    
+    @patch('mapproxy.source.metadata.open_url')
+    @patch('mapproxy.source.metadata.HTTPClient')
+    @patch('mapproxy.source.metadata.auth_data_from_url')
+    @patch('mapproxy.util.ext.wmsparse.parse_capabilities')
+    def test_basic_auth_credentials(self, mock_parse, mock_auth_data, mock_http_client, mock_open_url):
+        """Test that basic auth credentials are correctly used when fetching metadata."""
+        # Setup auth_data_from_url to return clean URL and no embedded auth
+        mock_auth_data.return_value = ('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities', (None, None))
+        
+        # Setup mock HTTP client
+        mock_client_instance = Mock()
+        mock_response = Mock()
+        mock_response.read.return_value = b'<mock_capabilities/>'
+        mock_client_instance.open.return_value = mock_response
+        mock_http_client.return_value = mock_client_instance
+        
+        # Setup mock WMS capabilities parsing
+        mock_service = Mock()
+        mock_service.metadata.return_value = {
+            'title': 'Secure WMS Service',
+            'abstract': 'A secure service requiring authentication'
+        }
+        mock_service.layers_list.return_value = [
+            {
+                'name': 'secure_layer',
+                'title': 'Secure Layer',
+                'abstract': 'A layer requiring authentication'
+            }
+        ]
+        mock_parse.return_value = mock_service
+        
+        # Test with username and password
+        metadata = self.manager.get_source_metadata('http://example.com/wms', username='testuser', password='testpass')
+        
+        # Verify HTTPClient was called with credentials
+        mock_http_client.assert_called_once_with('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities', 'testuser', 'testpass')
+        mock_client_instance.open.assert_called_once_with('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities')
+        
+        # Verify metadata was parsed correctly
+        assert metadata['service']['title'] == 'Secure WMS Service'
+        assert 'secure_layer' in metadata['layers']
+        assert metadata['layers']['secure_layer']['title'] == 'Secure Layer'
+    
+    @patch('mapproxy.source.metadata.open_url')
+    @patch('mapproxy.source.metadata.HTTPClient')
+    @patch('mapproxy.source.metadata.auth_data_from_url')
+    @patch('mapproxy.util.ext.wmsparse.parse_capabilities')
+    def test_auth_from_url(self, mock_parse, mock_auth_data, mock_http_client, mock_open_url):
+        """Test that auth credentials embedded in URL are correctly extracted and used."""
+        # Setup auth_data_from_url to return clean URL and extracted auth
+        mock_auth_data.return_value = ('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities', ('urluser', 'urlpass'))
+        
+        # Setup mock HTTP client
+        mock_client_instance = Mock()
+        mock_response = Mock()
+        mock_response.read.return_value = b'<mock_capabilities/>'
+        mock_client_instance.open.return_value = mock_response
+        mock_http_client.return_value = mock_client_instance
+        
+        # Setup mock WMS capabilities parsing
+        mock_service = Mock()
+        mock_service.metadata.return_value = {
+            'title': 'URL Auth WMS Service',
+            'abstract': 'A service with auth in URL'
+        }
+        mock_service.layers_list.return_value = []
+        mock_parse.return_value = mock_service
+        
+        # Test with URL containing auth credentials
+        metadata = self.manager.get_source_metadata('http://urluser:urlpass@example.com/wms')
+        
+        # Verify HTTPClient was called with URL-extracted credentials
+        mock_http_client.assert_called_once_with('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities', 'urluser', 'urlpass')
+        mock_client_instance.open.assert_called_once_with('http://example.com/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities')
+        
+        # Verify metadata was parsed correctly
+        assert metadata['service']['title'] == 'URL Auth WMS Service'
+    
+    @patch('mapproxy.source.metadata.open_url')
+    @patch('mapproxy.util.ext.wmsparse.parse_capabilities')
+    def test_no_auth_fallback(self, mock_parse, mock_open_url):
+        """Test that when no auth is provided, it falls back to open_url."""
+        # Setup mock response
+        mock_response = Mock()
+        mock_response.read.return_value = b'<mock_capabilities/>'
+        mock_open_url.return_value = mock_response
+        
+        # Setup mock WMS capabilities parsing
+        mock_service = Mock()
+        mock_service.metadata.return_value = {
+            'title': 'Public WMS Service',
+            'abstract': 'A public service'
+        }
+        mock_service.layers_list.return_value = []
+        mock_parse.return_value = mock_service
+        
+        # Test without any auth credentials
+        metadata = self.manager.get_source_metadata('http://example.com/wms')
+        
+        # Verify open_url was called
+        mock_open_url.assert_called_once()
+        
+        # Verify metadata was parsed correctly
+        assert metadata['service']['title'] == 'Public WMS Service'

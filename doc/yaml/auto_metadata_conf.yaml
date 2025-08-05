@@ -21,6 +21,18 @@ sources:
     wms_opts:
       version: '1.3.0'
       
+  # WMS source requiring basic authentication
+  secure_wms:
+    type: wms
+    req:
+      url: http://secure.example.com/wms
+      layers: classified:boundaries
+    wms_opts:
+      version: '1.3.0'
+    http:
+      username: mapproxy_user
+      password: secret_password
+      
   # Third WMS source for detailed layer examples
   detailed_wms:
     type: wms
@@ -53,6 +65,11 @@ caches:
   countries_cache:
     grids: [webmercator] 
     sources: [mapserver_wms]
+    
+  # Cache using secure WMS source with auth
+  secure_cache:
+    grids: [webmercator]
+    sources: [secure_wms]
 
 layers:
   # Layer with auto metadata from direct WMS source
@@ -70,6 +87,14 @@ layers:
     md:
       auto_metadata: true  # Inherits from mapserver_wms via cache
       # MapProxy will try to match "world_countries" with source layer names
+      
+  # Layer using secure WMS source with basic auth
+  - name: classified_boundaries
+    title: Classified Boundaries
+    sources: [secure_cache]  # Cache from secure WMS source
+    md:
+      abstract: "Sensitive boundary data requiring authentication"
+      auto_metadata: true  # Inherits from secure_wms (with auth)
     
   # Layer with mixed manual and auto metadata from multiple WMS sources
   - name: combined_transport
@@ -109,14 +134,17 @@ services:
   demo:
   
   wms:
-    # Service-level metadata (no auto_metadata_sources in layer-only approach)
+    # Service-level metadata with auto metadata inheritance
     md:
       title: Geographic Data Service
       abstract: >
         This service provides geographic data layers with automatic metadata
-        inheritance at the layer level from their respective WMS sources.
+        inheritance from their respective WMS sources, including secure sources.
       
-      # Manual service contact information
+      # Enable automatic metadata inheritance from all WMS sources
+      auto_metadata: true
+      
+      # Manual service contact information (overrides auto metadata)
       contact:
         person: Your Name
         organization: Your Organization  

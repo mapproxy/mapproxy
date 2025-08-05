@@ -118,6 +118,38 @@ layers:
       auto_metadata: true
 ```
 
+### Authentication Support
+
+MapProxy supports basic HTTP authentication when fetching metadata from WMS sources that require authentication:
+
+```yaml
+sources:
+  secure_wms:
+    type: wms
+    req:
+      url: http://secure.example.com/wms
+      layers: classified:boundaries
+    http:
+      username: your_username
+      password: your_password
+
+layers:
+  - name: secure_layer
+    title: "Secure Data Layer"
+    sources: [secure_wms]
+    md:
+      auto_metadata: true  # Uses auth credentials to fetch metadata
+```
+
+**Authentication methods supported:**
+
+1. **HTTP Basic Auth via configuration**: Use `http.username` and `http.password` in source configuration
+2. **URL-embedded credentials**: `http://username:password@server.com/wms` (credentials extracted automatically)
+
+The authentication credentials are automatically used when:
+- Fetching layer metadata for layers with `auto_metadata: true`
+- Fetching service metadata for services with `auto_metadata: true`
+
 ### Layer Metadata Priority
 
 Layer metadata is merged with the following priority (highest to lowest):
@@ -142,6 +174,64 @@ layers:
       author: "Custom Author"  # Additional manual field
       auto_metadata: true  # Enable inheritance from WMS sources
 ```
+
+## Service-Level Auto Metadata
+
+In addition to layer-level metadata inheritance, MapProxy supports automatic metadata inheritance at the service level. When enabled, the WMS service metadata will be automatically populated from all WMS sources used across all layers.
+
+### Basic Service Auto Metadata
+
+Configure the WMS service to inherit metadata from all underlying WMS sources:
+
+```yaml
+sources:
+  geoserver_wms:
+    type: wms
+    req:
+      url: http://geoserver.example.com/wms
+      layers: ne:populated_places
+  
+  secure_wms:
+    type: wms
+    req:
+      url: http://secure.example.com/wms
+      layers: classified:boundaries
+    http:
+      username: mapproxy_user
+      password: secret_password
+
+layers:
+  - name: places
+    sources: [geoserver_wms]
+    
+  - name: boundaries  
+    sources: [secure_wms]
+
+services:
+  wms:
+    md:
+      title: "My Geographic Service"  # Manual override
+      auto_metadata: true  # Inherit from all WMS sources (geoserver_wms, secure_wms)
+      contact:
+        person: "Service Administrator"  # Manual contact info
+```
+
+### Service Metadata Priority
+
+Service metadata is merged with the following priority (highest to lowest):
+
+1. **Manual service configuration** (`services.wms.md`)
+2. **Source WMS service metadata** (from all WMS sources across all layers)
+3. **Default values**
+
+### Service Metadata Collection
+
+When `auto_metadata: true` is set for a service:
+
+1. MapProxy scans all layers to find their WMS sources
+2. Fetches GetCapabilities from each unique WMS source (using auth if configured)
+3. Extracts service-level metadata from each source
+4. Merges metadata with manual configuration taking priority
 
 ## Supported Metadata Fields
 
