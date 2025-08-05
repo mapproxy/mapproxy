@@ -271,6 +271,7 @@ inspire_md = {
 
 wms_130_layer_md = {
     'abstract': str,
+    'auto_metadata': bool,
     'keyword_list': [
         {
             'vocabulary': str,
@@ -516,6 +517,7 @@ mapproxy_yaml_spec = {
                     'featureinfo_xslt': str(),
                     'featureinfo_out_format': str(),
                 },
+                'auto_metadata': bool(),
                 'image': combined(image_opts, {
                     'opacity': number(),
                     'transparent_color': one_of(str(), [number()]),

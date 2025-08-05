@@ -1,0 +1,135 @@
+# MapProxy configuration example with automatic metadata inheritance
+# This example shows how to use layer-level auto_metadata to automatically 
+# inherit metadata from each layer's own WMS sources
+
+sources:
+  # External WMS source with rich metadata
+  geoserver_wms:
+    type: wms
+    req:
+      url: http://geoserver.example.com/geoserver/wms
+      layers: ne:populated_places
+    wms_opts:
+      version: '1.1.1'
+    
+  # Another external WMS source with multiple layers
+  mapserver_wms:
+    type: wms  
+    req:
+      url: http://mapserver.example.com/cgi-bin/mapserv
+      layers: countries,roads
+    wms_opts:
+      version: '1.3.0'
+      
+  # Third WMS source for detailed layer examples
+  detailed_wms:
+    type: wms
+    req:
+      url: http://detailed.example.com/wms
+      layers: transport:highways,landuse:parks
+    wms_opts:
+      version: '1.3.0'
+
+  # Fourth WMS source for multi-source layer example
+  aerial_wms:
+    type: wms
+    req:
+      url: http://aerial.example.com/wms
+      layers: orthoimagery
+    wms_opts:
+      version: '1.3.0'
+
+  # Local tile source (not WMS, will be ignored for metadata)
+  osm_tiles:
+    type: tile
+    url: http://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+    grid: webmercator
+
+caches:
+  places_cache:
+    grids: [webmercator]
+    sources: [geoserver_wms]
+    
+  countries_cache:
+    grids: [webmercator] 
+    sources: [mapserver_wms]
+
+layers:
+  # Layer with auto metadata from direct WMS source
+  - name: populated_places
+    title: Populated Places
+    sources: [geoserver_wms]  # Direct WMS source
+    md:
+      abstract: "Custom description for populated places"
+      auto_metadata: true  # Inherits from geoserver_wms
+    
+  # Layer with auto metadata from cache source (inherits from underlying WMS)
+  - name: world_countries
+    title: World Countries  
+    sources: [countries_cache]  # Cache source
+    md:
+      auto_metadata: true  # Inherits from mapserver_wms via cache
+      # MapProxy will try to match "world_countries" with source layer names
+    
+  # Layer with mixed manual and auto metadata from multiple WMS sources
+  - name: combined_transport
+    title: Combined Transportation Data
+    sources: [detailed_wms, mapserver_wms]  # Multiple WMS sources
+    md:
+      abstract: "Custom combined transport description"  # Manual override
+      keywords: ["roads", "transport", "infrastructure"]  # Manual keywords
+      auto_metadata: true  # Inherits from both detailed_wms and mapserver_wms
+        
+  # Layer with only custom metadata (no auto inheritance)
+  - name: parks
+    title: National Parks
+    sources: [detailed_wms]
+    md:
+      abstract: "Protected natural areas and parks"
+      keywords: ["parks", "nature", "protected"]
+      # auto_metadata: false (default - no inheritance)
+    
+  # Layer without auto metadata (traditional manual configuration)
+  - name: osm_background
+    title: OpenStreetMap Background
+    sources: [osm_tiles]  # Non-WMS source
+    md:
+      abstract: "OpenStreetMap tile layer background"
+      # No auto_metadata - fully manual
+
+  # Layer with multi-source auto metadata (inherits from multiple WMS sources)
+  - name: combined_imagery
+    title: Combined Imagery
+    sources: [aerial_wms, geoserver_wms]  # Multiple WMS sources
+    md:
+      auto_metadata: true  # Inherits from both aerial_wms and geoserver_wms
+      title: "Combined Aerial and Geographic Data"  # Manual override
+
+services:
+  demo:
+  
+  wms:
+    # Service-level metadata (no auto_metadata_sources in layer-only approach)
+    md:
+      title: Geographic Data Service
+      abstract: >
+        This service provides geographic data layers with automatic metadata
+        inheritance at the layer level from their respective WMS sources.
+      
+      # Manual service contact information
+      contact:
+        person: Your Name
+        organization: Your Organization  
+        email: contact@yourorg.com
+    
+    # Standard WMS configuration
+    srs: ['EPSG:4326', 'EPSG:3857']
+    image_formats: ['image/jpeg', 'image/png']
+    
+globals:
+  cache:
+    base_dir: './cache_data'
+  
+  # Optional: Configure HTTP timeouts for metadata requests
+  http:
+    client_timeout: 30

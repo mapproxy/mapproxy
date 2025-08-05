@@ -24,6 +24,7 @@ from mapproxy.config.spec import validate_options, add_source_to_mapproxy_yaml_s
 from mapproxy.config.validator import validate
 from mapproxy.config import load_default_config, finish_base_config, defaults
 from mapproxy.service.ows import OWSServer
+from mapproxy.source.metadata import metadata_manager
 
 import os
 import sys
@@ -1974,7 +1975,7 @@ class LayerConfiguration(ConfigurationBase):
 
         layer = WMSLayer(
             self.conf.get('name'), self.conf.get('title'), sources, fi_sources, lg_sources, res_range=res_range,
-            md=self.conf.get('md'), dimensions=dimensions)
+            md=self._merge_layer_auto_metadata(), dimensions=dimensions)
         return layer
 
     @memoize
@@ -1998,6 +1999,86 @@ class LayerConfiguration(ConfigurationBase):
             default = conf.get('default', values[-1])
             dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
         return dimensions
+
+    def _merge_layer_auto_metadata(self):
+        """
+        Merge layer configuration metadata with auto metadata from layer's own WMS sources.
+        """
+        layer_md = self.conf.get('md', {})
+        auto_metadata_enabled = layer_md.get('auto_metadata', False)
+        
+        if not auto_metadata_enabled:
+            return layer_md
+            
+        # Get WMS URLs from this layer's sources
+        source_urls = []
+        layer_sources = self.conf.get('sources', [])
+        
+        for source_name in layer_sources:
+            if source_name in self.context.sources:
+                source_conf = self.context.sources[source_name].conf
+                if source_conf.get('type') == 'wms':
+                    req_conf = source_conf.get('req', {})
+                    if 'url' in req_conf:
+                        source_urls.append(req_conf['url'])
+            elif source_name in self.context.caches:
+                # For cache sources, find the underlying WMS sources
+                cache_sources = self._get_cache_wms_sources(source_name)
+                source_urls.extend(cache_sources)
+        
+        if not source_urls:
+            # No valid WMS sources found, return layer metadata as-is
+            return layer_md
+            
+        # Use layer name for matching
+        layer_name = self.conf.get('name')
+        if not layer_name:
+            return layer_md
+            
+        # Get auto metadata for this layer
+        auto_metadata = metadata_manager.get_layer_metadata(
+            layer_name, source_urls, layer_md
+        )
+        
+        # Create a copy of the layer metadata and merge auto metadata
+        merged_md = layer_md.copy()
+        
+        # Remove auto_metadata flag from final output  
+        if 'auto_metadata' in merged_md:
+            del merged_md['auto_metadata']
+            
+        # Merge the auto metadata (layer_md takes priority)
+        for key, value in auto_metadata.items():
+            if key not in merged_md and value:
+                merged_md[key] = value
+                
+        return merged_md
+
+    def _get_cache_wms_sources(self, cache_name):
+        """
+        Recursively get WMS source URLs from a cache configuration.
+        """
+        wms_urls = []
+        
+        if cache_name not in self.context.caches:
+            return wms_urls
+            
+        cache_conf = self.context.caches[cache_name]
+        cache_sources = cache_conf.conf.get('sources', [])
+        
+        for source_name in cache_sources:
+            if source_name in self.context.sources:
+                source_conf = self.context.sources[source_name].conf
+                if source_conf.get('type') == 'wms':
+                    req_conf = source_conf.get('req', {})
+                    if 'url' in req_conf:
+                        wms_urls.append(req_conf['url'])
+            elif source_name in self.context.caches:
+                # Recursively check nested caches
+                nested_urls = self._get_cache_wms_sources(source_name)
+                wms_urls.extend(nested_urls)
+                
+        return wms_urls
 
     @memoize
     def tile_layers(self, grid_name_as_path=False):
@@ -2269,6 +2350,7 @@ class ServiceConfiguration(ConfigurationBase):
         from mapproxy.request.wms import Version
 
         md = conf.get('md', {})
+
         inspire_md = conf.get('inspire_md', {})
         tile_layers = self.tile_layers(conf)
         attribution = conf.get('attribution')
@@ -2322,6 +2404,7 @@ class ServiceConfiguration(ConfigurationBase):
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
 
         return server
+
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer
