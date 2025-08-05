@@ -8,7 +8,7 @@ boto3==1.35.6
 boto==2.49.0
 botocore==1.35.6
 certifi==2025.4.26
-cffi==1.17.1;
+cffi==1.17.1
 cfn-lint==0.80.3
 chardet==5.2.0
 cryptography==44.0.2
