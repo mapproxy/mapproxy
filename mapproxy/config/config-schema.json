@@ -578,7 +578,7 @@
         },
         "use_direct_from_level": {
           "description": "Requests below this level will not be stored",
-          "type": "boolean"
+          "type": "integer"
         },
         "use_direct_from_res": {
           "description": "Requests below this resolution will not be stored",
