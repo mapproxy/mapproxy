@@ -15,10 +15,22 @@
 
 from __future__ import print_function, division
 
+import copy
+
 from mapproxy.grid import NoTiles, _create_tile_list
 from mapproxy.grid.meta_grid import MetaGrid
-from mapproxy.grid.resolutions import resolutions, ResolutionRange, merge_resolution_range, resolution_range
-from mapproxy.grid.tile_grid import tile_grid, TileGrid
+from mapproxy.grid.resolutions import (
+    resolutions,
+    ResolutionRange,
+    merge_resolution_range,
+    resolution_range,
+)
+from mapproxy.grid.tile_grid import (
+    tile_grid,
+    TileGrid,
+    tile_grid_from_ogc_tile_matrix_set,
+    UnsupportedException,
+)
 from mapproxy.srs import SRS
 from mapproxy.util.bbox import TransformationError, bbox_intersects, bbox_contains
 
@@ -48,7 +60,7 @@ class TestResolution(object):
         assert res == [1600, 400.0, 100.0, 25.0]
 
     def test_min_res_levels_sqrt2(self):
-        conf = dict(min_res=1600, num_levels=5, res_factor='sqrt2')
+        conf = dict(min_res=1600, num_levels=5, res_factor="sqrt2")
         res = resolutions(**conf)
         assert res == pytest.approx([1600.0, 1131.0, 800.0, 566.0, 400.0], 0.1)
 
@@ -58,33 +70,33 @@ class TestResolution(object):
         assert len(res) == 10
         # will calculate log10 based factor of 1.75752...
         assert res[0] == pytest.approx(1600)
-        assert res[1] == pytest.approx(1600/1.75752, 0.01)
-        assert res[8] == pytest.approx(1600/1.75752**8, 0.01)
+        assert res[1] == pytest.approx(1600 / 1.75752, 0.01)
+        assert res[8] == pytest.approx(1600 / 1.75752**8, 0.01)
         assert res[9] == pytest.approx(10)
 
     def test_bbox_levels(self):
         conf = dict(bbox=[0, 40, 15, 50], num_levels=10, tile_size=(256, 256))
         res = resolutions(**conf)
         assert len(res) == 10
-        assert res[0] == pytest.approx(15/256)
-        assert res[1] == pytest.approx(15/512)
+        assert res[0] == pytest.approx(15 / 256)
+        assert res[1] == pytest.approx(15 / 512)
 
 
 class TestAlignedGrid(object):
     def test_epsg_4326_bbox(self):
-        base = tile_grid(srs='epsg:4326')
+        base = tile_grid(srs="epsg:4326")
         bbox = (10.0, -20.0, 40.0, 10.0)
         sub = tile_grid(align_with=base, bbox=bbox)
 
         assert sub.bbox == bbox
-        assert sub.resolution(0) == 180/256/8
+        assert sub.resolution(0) == 180 / 256 / 8
         abbox, grid_size, tiles = sub.get_affected_level_tiles(bbox, 0)
         assert abbox == (10.0, -20.0, 55.0, 25.0)
         assert grid_size == (2, 2)
         assert list(tiles) == [(0, 1, 0), (1, 1, 0), (0, 0, 0), (1, 0, 0)]
 
     def test_epsg_4326_bbox_from_sqrt2(self):
-        base = tile_grid(srs='epsg:4326', res_factor='sqrt2')
+        base = tile_grid(srs="epsg:4326", res_factor="sqrt2")
         bbox = (10.0, -20.0, 40.0, 10.0)
         sub = tile_grid(align_with=base, bbox=bbox, res_factor=2.0)
 
@@ -94,9 +106,9 @@ class TestAlignedGrid(object):
         assert sub.resolution(2) == base.resolution(12)
 
     def test_epsg_4326_bbox_to_sqrt2(self):
-        base = tile_grid(srs='epsg:4326', res_factor=2.0)
+        base = tile_grid(srs="epsg:4326", res_factor=2.0)
         bbox = (10.0, -20.0, 40.0, 10.0)
-        sub = tile_grid(align_with=base, bbox=bbox, res_factor='sqrt2')
+        sub = tile_grid(align_with=base, bbox=bbox, res_factor="sqrt2")
 
         assert sub.bbox == bbox
         assert sub.resolution(0) == base.resolution(4)
@@ -104,39 +116,56 @@ class TestAlignedGrid(object):
         assert sub.resolution(4) == base.resolution(6)
 
         assert sub.resolution(0) > sub.resolution(1) > sub.resolution(3)
-        assert sub.resolution(3)/2 == sub.resolution(5)
+        assert sub.resolution(3) / 2 == sub.resolution(5)
 
 
 def test_metagrid_tiles():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
-    assert list(mgrid.meta_tile((0, 0, 0)).tile_patterns) == \
-        [((0, 0, 0), (0, 0))]
-    assert list(mgrid.meta_tile((0, 1, 1)).tile_patterns) == \
-        [((0, 1, 1), (0, 0)), ((1, 1, 1), (256, 0)),
-         ((0, 0, 1), (0, 256)), ((1, 0, 1), (256, 256))]
+    assert list(mgrid.meta_tile((0, 0, 0)).tile_patterns) == [((0, 0, 0), (0, 0))]
+    assert list(mgrid.meta_tile((0, 1, 1)).tile_patterns) == [
+        ((0, 1, 1), (0, 0)),
+        ((1, 1, 1), (256, 0)),
+        ((0, 0, 1), (0, 256)),
+        ((1, 0, 1), (256, 256)),
+    ]
 
-    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == \
-        [((0, 3, 2), (0, 0)), ((1, 3, 2), (256, 0)),
-         ((0, 2, 2), (0, 256)), ((1, 2, 2), (256, 256))]
+    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == [
+        ((0, 3, 2), (0, 0)),
+        ((1, 3, 2), (256, 0)),
+        ((0, 2, 2), (0, 256)),
+        ((1, 2, 2), (256, 256)),
+    ]
 
 
 def test_metagrid_tiles_w_meta_size():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2))
-    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == \
-        [((0, 3, 2), (0, 0)), ((1, 3, 2), (256, 0)),
-         ((2, 3, 2), (512, 0)), ((3, 3, 2), (768, 0)),
-         ((0, 2, 2), (0, 256)), ((1, 2, 2), (256, 256)),
-         ((2, 2, 2), (512, 256)), ((3, 2, 2), (768, 256))]
+    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == [
+        ((0, 3, 2), (0, 0)),
+        ((1, 3, 2), (256, 0)),
+        ((2, 3, 2), (512, 0)),
+        ((3, 3, 2), (768, 0)),
+        ((0, 2, 2), (0, 256)),
+        ((1, 2, 2), (256, 256)),
+        ((2, 2, 2), (512, 256)),
+        ((3, 2, 2), (768, 256)),
+    ]
 
 
 class TestMetaGridGeodetic(object):
     def setup_method(self):
-        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
+        self.mgrid = MetaGrid(
+            grid=tile_grid("EPSG:4326"), meta_size=(2, 2), meta_buffer=10
+        )
 
     def test_meta_bbox_level_0(self):
-        assert self.mgrid._meta_bbox((0, 0, 0)) == ((-180, -90, 180, 90), (0, 0, 0, -128))
-        assert (self.mgrid._meta_bbox((0, 0, 0), limit_to_bbox=False) ==
-                ((-194.0625, -104.0625, 194.0625, 284.0625), (10, 10, 10, 10)))
+        assert self.mgrid._meta_bbox((0, 0, 0)) == (
+            (-180, -90, 180, 90),
+            (0, 0, 0, -128),
+        )
+        assert self.mgrid._meta_bbox((0, 0, 0), limit_to_bbox=False) == (
+            (-194.0625, -104.0625, 194.0625, 284.0625),
+            (10, 10, 10, 10),
+        )
 
         assert self.mgrid.meta_tile((0, 0, 0)).size == (256, 128)
 
@@ -147,75 +176,87 @@ class TestMetaGridGeodetic(object):
         assert meta_tile.tile_patterns == [((0, 0, 0), (0, -128))]
 
     def test_meta_bbox_level_1(self):
-        assert (self.mgrid._meta_bbox((0, 0, 1)) == ((-180, -90, 180, 90), (0, 0, 0, 0)))
-        assert (self.mgrid._meta_bbox((0, 0, 1), limit_to_bbox=False) ==
-                ((-187.03125, -97.03125, 187.03125, 97.03125), (10, 10, 10, 10)))
-        assert (self.mgrid.meta_tile((0, 0, 1)).size == (512, 256))
+        assert self.mgrid._meta_bbox((0, 0, 1)) == ((-180, -90, 180, 90), (0, 0, 0, 0))
+        assert self.mgrid._meta_bbox((0, 0, 1), limit_to_bbox=False) == (
+            (-187.03125, -97.03125, 187.03125, 97.03125),
+            (10, 10, 10, 10),
+        )
+        assert self.mgrid.meta_tile((0, 0, 1)).size == (512, 256)
 
     def test_tiles_level_1(self):
-        assert (list(self.mgrid.meta_tile((0, 0, 1)).tile_patterns) ==
-                [
-                ((0, 0, 1), (0, 0)),
-                ((1, 0, 1), (256, 0))
-                ])
+        assert list(self.mgrid.meta_tile((0, 0, 1)).tile_patterns) == [
+            ((0, 0, 1), (0, 0)),
+            ((1, 0, 1), (256, 0)),
+        ]
 
     def test_tile_list_level_1(self):
-        assert (list(self.mgrid.tile_list((0, 0, 1))) ==
-                [(0, 0, 1), (1, 0, 1)])
+        assert list(self.mgrid.tile_list((0, 0, 1))) == [(0, 0, 1), (1, 0, 1)]
 
     def test_meta_bbox_level_2(self):
-        assert (self.mgrid._meta_bbox((0, 0, 2)) == ((-180, -90, 3.515625, 90), (0, 0, 10, 0)))
-        assert (self.mgrid._meta_bbox((0, 0, 2), limit_to_bbox=False) ==
-                ((-183.515625, -93.515625, 3.515625, 93.515625), (10, 10, 10, 10)))
-        assert (self.mgrid.meta_tile((0, 0, 2)).size == (522, 512))
+        assert self.mgrid._meta_bbox((0, 0, 2)) == (
+            (-180, -90, 3.515625, 90),
+            (0, 0, 10, 0),
+        )
+        assert self.mgrid._meta_bbox((0, 0, 2), limit_to_bbox=False) == (
+            (-183.515625, -93.515625, 3.515625, 93.515625),
+            (10, 10, 10, 10),
+        )
+        assert self.mgrid.meta_tile((0, 0, 2)).size == (522, 512)
 
-        assert (self.mgrid._meta_bbox((2, 0, 2)) == ((-3.515625, -90, 180, 90), (10, 0, 0, 0)))
+        assert self.mgrid._meta_bbox((2, 0, 2)) == (
+            (-3.515625, -90, 180, 90),
+            (10, 0, 0, 0),
+        )
         meta_tile = self.mgrid.meta_tile((2, 0, 2))
         assert meta_tile.size == (522, 512)
         assert meta_tile.grid_size == (2, 2)
 
     def test_tiles_level_2(self):
-        assert (list(self.mgrid.meta_tile((0, 0, 2)).tile_patterns) ==
-                [
-                ((0, 1, 2), (0, 0)),
-                ((1, 1, 2), (256, 0)),
-                ((0, 0, 2), (0, 256)),
-                ((1, 0, 2), (256, 256)),
-                ])
-        assert (list(self.mgrid.meta_tile((2, 0, 2)).tile_patterns) ==
-                [
-                ((2, 1, 2), (10, 0)),
-                ((3, 1, 2), (266, 0)),
-                ((2, 0, 2), (10, 256)),
-                ((3, 0, 2), (266, 256)),
-                ])
+        assert list(self.mgrid.meta_tile((0, 0, 2)).tile_patterns) == [
+            ((0, 1, 2), (0, 0)),
+            ((1, 1, 2), (256, 0)),
+            ((0, 0, 2), (0, 256)),
+            ((1, 0, 2), (256, 256)),
+        ]
+        assert list(self.mgrid.meta_tile((2, 0, 2)).tile_patterns) == [
+            ((2, 1, 2), (10, 0)),
+            ((3, 1, 2), (266, 0)),
+            ((2, 0, 2), (10, 256)),
+            ((3, 0, 2), (266, 256)),
+        ]
 
     def test_tile_list_level_2(self):
-        assert (list(self.mgrid.tile_list((0, 0, 2))) ==
-                [(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)])
-        assert (list(self.mgrid.tile_list((1, 1, 2))) ==
-                [(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)])
+        assert list(self.mgrid.tile_list((0, 0, 2))) == [
+            (0, 1, 2),
+            (1, 1, 2),
+            (0, 0, 2),
+            (1, 0, 2),
+        ]
+        assert list(self.mgrid.tile_list((1, 1, 2))) == [
+            (0, 1, 2),
+            (1, 1, 2),
+            (0, 0, 2),
+            (1, 0, 2),
+        ]
 
     def test_tiles_level_3(self):
-        assert (list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns) ==
-                [
-                ((2, 1, 3), (10, 10)),
-                ((3, 1, 3), (266, 10)),
-                ((2, 0, 3), (10, 266)),
-                ((3, 0, 3), (266, 266)),
-                ])
-        assert (list(self.mgrid.meta_tile((2, 2, 3)).tile_patterns) ==
-                [
-                ((2, 3, 3), (10, 0)),
-                ((3, 3, 3), (266, 0)),
-                ((2, 2, 3), (10, 256)),
-                ((3, 2, 3), (266, 256)),
-                ])
+        assert list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns) == [
+            ((2, 1, 3), (10, 10)),
+            ((3, 1, 3), (266, 10)),
+            ((2, 0, 3), (10, 266)),
+            ((3, 0, 3), (266, 266)),
+        ]
+        assert list(self.mgrid.meta_tile((2, 2, 3)).tile_patterns) == [
+            ((2, 3, 3), (10, 0)),
+            ((3, 3, 3), (266, 0)),
+            ((2, 2, 3), (10, 256)),
+            ((3, 2, 3), (266, 256)),
+        ]
 
 
 class TestMetaGridGeodeticUL(object):
     def setup_method(self):
-        self.tile_grid = tile_grid('EPSG:4326', origin='ul')
+        self.tile_grid = tile_grid("EPSG:4326", origin="ul")
         self.mgrid = MetaGrid(grid=self.tile_grid, meta_size=(2, 2), meta_buffer=10)
 
     def test_tiles_level_0(self):
@@ -230,66 +271,70 @@ class TestMetaGridGeodeticUL(object):
         assert meta_tile.bbox == pytest.approx((-180, -90, 180, 90))
         assert meta_tile.size == (512, 256)
         assert meta_tile.grid_size == (2, 1)
-        assert (list(meta_tile.tile_patterns) ==
-                [
-                ((0, 0, 1), (0, 0)),
-                ((1, 0, 1), (256, 0))
-                ])
+        assert list(meta_tile.tile_patterns) == [
+            ((0, 0, 1), (0, 0)),
+            ((1, 0, 1), (256, 0)),
+        ]
 
     def test_tile_list_level_1(self):
-        assert (list(self.mgrid.tile_list((0, 0, 1))) ==
-                [(0, 0, 1), (1, 0, 1)])
+        assert list(self.mgrid.tile_list((0, 0, 1))) == [(0, 0, 1), (1, 0, 1)]
 
     def test_tiles_level_2(self):
         meta_tile = self.mgrid.meta_tile((0, 0, 2))
         assert meta_tile.bbox == pytest.approx((-180, -90, 3.515625, 90))
         assert meta_tile.size == (522, 512)
         assert meta_tile.grid_size == (2, 2)
-        assert (meta_tile.tile_patterns ==
-                [
-                    ((0, 0, 2), (0, 0)),
-                    ((1, 0, 2), (256, 0)),
-                    ((0, 1, 2), (0, 256)),
-                    ((1, 1, 2), (256, 256)),
-                ])
-        assert (list(self.mgrid.meta_tile((2, 0, 2)).tile_patterns) ==
-                [
-                ((2, 0, 2), (10, 0)),
-                ((3, 0, 2), (266, 0)),
-                ((2, 1, 2), (10, 256)),
-                ((3, 1, 2), (266, 256)),
-                ])
+        assert meta_tile.tile_patterns == [
+            ((0, 0, 2), (0, 0)),
+            ((1, 0, 2), (256, 0)),
+            ((0, 1, 2), (0, 256)),
+            ((1, 1, 2), (256, 256)),
+        ]
+        assert list(self.mgrid.meta_tile((2, 0, 2)).tile_patterns) == [
+            ((2, 0, 2), (10, 0)),
+            ((3, 0, 2), (266, 0)),
+            ((2, 1, 2), (10, 256)),
+            ((3, 1, 2), (266, 256)),
+        ]
 
     def test_tile_list_level_2(self):
-        assert (list(self.mgrid.tile_list((0, 0, 2))) ==
-                [(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
-        assert (list(self.mgrid.tile_list((1, 1, 2))) ==
-                [(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
+        assert list(self.mgrid.tile_list((0, 0, 2))) == [
+            (0, 0, 2),
+            (1, 0, 2),
+            (0, 1, 2),
+            (1, 1, 2),
+        ]
+        assert list(self.mgrid.tile_list((1, 1, 2))) == [
+            (0, 0, 2),
+            (1, 0, 2),
+            (0, 1, 2),
+            (1, 1, 2),
+        ]
 
     def test_tiles_level_3(self):
         meta_tile = self.mgrid.meta_tile((2, 0, 3))
         assert meta_tile.bbox == pytest.approx((-91.7578125, -1.7578125, 1.7578125, 90))
         assert meta_tile.size == (532, 522)
         assert meta_tile.grid_size == (2, 2)
-        assert (list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns) ==
-                [
-                ((2, 0, 3), (10, 0)),
-                ((3, 0, 3), (266, 0)),
-                ((2, 1, 3), (10, 256)),
-                ((3, 1, 3), (266, 256)),
-                ])
-        assert (list(self.mgrid.meta_tile((2, 2, 3)).tile_patterns) ==
-                [
-                ((2, 2, 3), (10, 10)),
-                ((3, 2, 3), (266, 10)),
-                ((2, 3, 3), (10, 266)),
-                ((3, 3, 3), (266, 266)),
-                ])
+        assert list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns) == [
+            ((2, 0, 3), (10, 0)),
+            ((3, 0, 3), (266, 0)),
+            ((2, 1, 3), (10, 256)),
+            ((3, 1, 3), (266, 256)),
+        ]
+        assert list(self.mgrid.meta_tile((2, 2, 3)).tile_patterns) == [
+            ((2, 2, 3), (10, 10)),
+            ((3, 2, 3), (266, 10)),
+            ((2, 3, 3), (10, 266)),
+            ((3, 3, 3), (266, 266)),
+        ]
 
 
 class TestMetaTile(object):
     def setup_method(self):
-        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
+        self.mgrid = MetaGrid(
+            grid=tile_grid("EPSG:4326"), meta_size=(2, 2), meta_buffer=10
+        )
 
     def test_meta_tile(self):
         meta_tile = self.mgrid.meta_tile((2, 0, 2))
@@ -298,23 +343,31 @@ class TestMetaTile(object):
     def test_metatile_bbox(self):
         mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
         meta_tile = mgrid.meta_tile((0, 0, 2))
-        assert meta_tile.bbox == pytest.approx((-20037508.342789244, -20037508.342789244, 0.0, 0.0))
+        assert meta_tile.bbox == pytest.approx(
+            (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
+        )
         meta_tile = mgrid.meta_tile((1, 1, 2))
-        assert meta_tile.bbox == pytest.approx((-20037508.342789244, -20037508.342789244, 0.0, 0.0))
+        assert meta_tile.bbox == pytest.approx(
+            (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
+        )
         meta_tile = mgrid.meta_tile((4, 5, 3))
-        assert meta_tile.bbox == pytest.approx((0.0, 0.0, 10018754.171394622, 10018754.171394622))
+        assert meta_tile.bbox == pytest.approx(
+            (0.0, 0.0, 10018754.171394622, 10018754.171394622)
+        )
 
     def test_metatile_non_default_meta_size(self):
         mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2))
         meta_tile = mgrid.meta_tile((4, 5, 3))
-        assert meta_tile.bbox == pytest.approx((0.0, 0.0, 20037508.342789244, 10018754.171394622))
+        assert meta_tile.bbox == pytest.approx(
+            (0.0, 0.0, 20037508.342789244, 10018754.171394622)
+        )
         assert meta_tile.size == (1024, 512)
         assert meta_tile.grid_size == (4, 2)
 
 
 class TestMetaTileSQRT2(object):
     def setup_method(self):
-        self.grid = tile_grid('EPSG:4326', res_factor='sqrt2')
+        self.grid = tile_grid("EPSG:4326", res_factor="sqrt2")
         self.mgrid = MetaGrid(grid=self.grid, meta_size=(4, 4), meta_buffer=10)
 
     def test_meta_tile(self):
@@ -336,9 +389,14 @@ class TestMetaTileSQRT2(object):
         meta_tile = self.mgrid.meta_tile((0, 0, 3))
         assert meta_tile.bbox == pytest.approx((-180.0, -90, 180.0, 90.0))
         assert meta_tile.size == (724, 362)
-        assert meta_tile.tile_patterns == [((0, 1, 3), (0, -149)), ((1, 1, 3), (256, -149)),
-                                           ((2, 1, 3), (512, -149)), ((0, 0, 3), (0, 107)), ((1, 0, 3), (256, 107)),
-                                           ((2, 0, 3), (512, 107))]
+        assert meta_tile.tile_patterns == [
+            ((0, 1, 3), (0, -149)),
+            ((1, 1, 3), (256, -149)),
+            ((2, 1, 3), (512, -149)),
+            ((0, 0, 3), (0, 107)),
+            ((1, 0, 3), (256, 107)),
+            ((2, 0, 3), (512, 107)),
+        ]
 
     def test_metatile_non_default_meta_size(self):
         mgrid = MetaGrid(grid=self.grid, meta_size=(4, 2), meta_buffer=0)
@@ -346,24 +404,31 @@ class TestMetaTileSQRT2(object):
         assert meta_tile.bbox == pytest.approx((0.0, 0.0, 180.0, 90.0))
         assert meta_tile.size == (1024, 512)
         assert meta_tile.grid_size == (4, 2)
-        assert meta_tile.tile_patterns == [((4, 3, 6), (0, 0)), ((5, 3, 6), (256, 0)),
-                                           ((6, 3, 6), (512, 0)), ((7, 3, 6), (768, 0)), ((4, 2, 6), (0, 256)),
-                                           ((5, 2, 6), (256, 256)), ((6, 2, 6), (512, 256)), ((7, 2, 6), (768, 256))]
+        assert meta_tile.tile_patterns == [
+            ((4, 3, 6), (0, 0)),
+            ((5, 3, 6), (256, 0)),
+            ((6, 3, 6), (512, 0)),
+            ((7, 3, 6), (768, 0)),
+            ((4, 2, 6), (0, 256)),
+            ((5, 2, 6), (256, 256)),
+            ((6, 2, 6), (512, 256)),
+            ((7, 2, 6), (768, 256)),
+        ]
 
 
 class TestMinimalMetaTile(object):
     def setup_method(self):
-        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
+        self.mgrid = MetaGrid(
+            grid=tile_grid("EPSG:4326"), meta_size=(2, 2), meta_buffer=10
+        )
 
     def test_minimal_tiles(self):
         sgrid = self.mgrid.minimal_meta_tile([(0, 0, 2), (1, 0, 2)])
         assert sgrid.grid_size == (2, 1)
-        assert (list(sgrid.tile_patterns) ==
-                [
-                ((0, 0, 2), (0, 10)),
-                ((1, 0, 2), (256, 10)),
-                ]
-                )
+        assert list(sgrid.tile_patterns) == [
+            ((0, 0, 2), (0, 10)),
+            ((1, 0, 2), (256, 10)),
+        ]
         assert sgrid.bbox == (-180.0, -90.0, 3.515625, 3.515625)
 
     def test_minimal_tiles_fragmented(self):
@@ -372,36 +437,41 @@ class TestMinimalMetaTile(object):
                 (2, 3, 3),
                 (1, 2, 3),
                 (2, 1, 3),
-            ])
+            ]
+        )
 
         assert sgrid.grid_size == (2, 3)
-        assert (list(sgrid.tile_patterns) ==
-                [
-                ((1, 3, 3), (10, 0)), ((2, 3, 3), (266, 0)),
-                ((1, 2, 3), (10, 256)), ((2, 2, 3), (266, 256)),
-                ((1, 1, 3), (10, 512)), ((2, 1, 3), (266, 512)),
-                ]
-                )
+        assert list(sgrid.tile_patterns) == [
+            ((1, 3, 3), (10, 0)),
+            ((2, 3, 3), (266, 0)),
+            ((1, 2, 3), (10, 256)),
+            ((2, 2, 3), (266, 256)),
+            ((1, 1, 3), (10, 512)),
+            ((2, 1, 3), (266, 512)),
+        ]
         assert sgrid.bbox == (-136.7578125, -46.7578125, -43.2421875, 90.0)
 
     def test_minimal_tiles_fragmented_ul(self):
-        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326', origin='ul'),
-                              meta_size=(2, 2), meta_buffer=10)
+        self.mgrid = MetaGrid(
+            grid=tile_grid("EPSG:4326", origin="ul"), meta_size=(2, 2), meta_buffer=10
+        )
         sgrid = self.mgrid.minimal_meta_tile(
             [
                 (2, 0, 3),
                 (1, 1, 3),
                 (2, 2, 3),
-            ])
+            ]
+        )
 
         assert sgrid.grid_size == (2, 3)
-        assert (list(sgrid.tile_patterns) ==
-                [
-                ((1, 0, 3), (10, 0)), ((2, 0, 3), (266, 0)),
-                ((1, 1, 3), (10, 256)), ((2, 1, 3), (266, 256)),
-                ((1, 2, 3), (10, 512)), ((2, 2, 3), (266, 512)),
-                ]
-                )
+        assert list(sgrid.tile_patterns) == [
+            ((1, 0, 3), (10, 0)),
+            ((2, 0, 3), (266, 0)),
+            ((1, 1, 3), (10, 256)),
+            ((2, 1, 3), (266, 256)),
+            ((1, 2, 3), (10, 512)),
+            ((2, 2, 3), (266, 512)),
+        ]
         assert sgrid.bbox == (-136.7578125, -46.7578125, -43.2421875, 90.0)
 
 
@@ -411,8 +481,7 @@ class TestMetaGridLevelMetaTiles(object):
 
     def test_full_grid_0(self):
         bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
-        abbox, tile_grid, meta_tiles = \
-            self.meta_grid.get_affected_level_tiles(bbox, 0)
+        abbox, tile_grid, meta_tiles = self.meta_grid.get_affected_level_tiles(bbox, 0)
         meta_tiles = list(meta_tiles)
         assert_almost_equal_bbox(bbox, abbox)
 
@@ -421,8 +490,7 @@ class TestMetaGridLevelMetaTiles(object):
 
     def test_full_grid_2(self):
         bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
-        abbox, tile_grid, meta_tiles = \
-            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        abbox, tile_grid, meta_tiles = self.meta_grid.get_affected_level_tiles(bbox, 2)
         meta_tiles = list(meta_tiles)
         assert_almost_equal_bbox(bbox, abbox)
 
@@ -440,8 +508,7 @@ class TestMetaGridLevelMetaTilesGeodetic(object):
 
     def test_full_grid_2(self):
         bbox = (-180.0, -90.0, 180.0, 90)
-        abbox, tile_grid, meta_tiles = \
-            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        abbox, tile_grid, meta_tiles = self.meta_grid.get_affected_level_tiles(bbox, 2)
         meta_tiles = list(meta_tiles)
         assert_almost_equal_bbox(bbox, abbox)
 
@@ -452,8 +519,7 @@ class TestMetaGridLevelMetaTilesGeodetic(object):
 
     def test_partial_grid_3(self):
         bbox = (0.0, 5.0, 45, 40)
-        abbox, tile_grid, meta_tiles = \
-            self.meta_grid.get_affected_level_tiles(bbox, 3)
+        abbox, tile_grid, meta_tiles = self.meta_grid.get_affected_level_tiles(bbox, 3)
         meta_tiles = list(meta_tiles)
         assert_almost_equal_bbox((0.0, 0.0, 90.0, 90.0), abbox)
 
@@ -486,13 +552,13 @@ class TestTileGridResolutions(object):
         assert grid.closest_level(0.00001) == 2
 
     def test_factor_grid(self):
-        grid = TileGrid(is_geodetic=True, res=1/0.75, tile_size=(360, 180))
+        grid = TileGrid(is_geodetic=True, res=1 / 0.75, tile_size=(360, 180))
         assert grid.resolution(0) == 1.0
         assert grid.resolution(1) == 0.75
-        assert grid.resolution(2) == 0.75*0.75
+        assert grid.resolution(2) == 0.75 * 0.75
 
     def test_sqrt_grid(self):
-        grid = TileGrid(is_geodetic=True, res='sqrt2', tile_size=(360, 180))
+        grid = TileGrid(is_geodetic=True, res="sqrt2", tile_size=(360, 180))
         assert grid.resolution(0) == 1.0
         assert grid.resolution(2) == pytest.approx(0.5)
         assert grid.resolution(4) == pytest.approx(0.25)
@@ -504,7 +570,7 @@ class TestWGS84TileGrid(object):
 
     def test_resolution(self):
         assert self.grid.resolution(0) == pytest.approx(1.40625)
-        assert self.grid.resolution(1) == pytest.approx(1.40625/2)
+        assert self.grid.resolution(1) == pytest.approx(1.40625 / 2)
 
     def test_bbox(self):
         assert self.grid.bbox == (-180.0, -90.0, 180.0, 90.0)
@@ -515,7 +581,9 @@ class TestWGS84TileGrid(object):
         assert self.grid.grid_sizes[2] == (4, 2)
 
     def test_affected_tiles(self):
-        bbox, grid, tiles = self.grid.get_affected_tiles((-180, -90, 180, 90), (512, 256))
+        bbox, grid, tiles = self.grid.get_affected_tiles(
+            (-180, -90, 180, 90), (512, 256)
+        )
         assert bbox == (-180.0, -90.0, 180.0, 90.0)
         assert grid == (2, 1)
         assert list(tiles) == [(0, 0, 1), (1, 0, 1)]
@@ -533,24 +601,29 @@ class TestWGS84TileGrid(object):
 
 class TestWGS83TileGridUL(object):
     def setup_method(self):
-        self.grid = TileGrid(4326, bbox=(-180, -90, 180, 90), origin='ul')
+        self.grid = TileGrid(4326, bbox=(-180, -90, 180, 90), origin="ul")
 
     def test_resolution(self):
         assert self.grid.resolution(0) == pytest.approx(1.40625)
-        assert self.grid.resolution(1) == pytest.approx(1.40625/2)
+        assert self.grid.resolution(1) == pytest.approx(1.40625 / 2)
 
     def test_bbox(self):
         assert self.grid.bbox == (-180.0, -90.0, 180.0, 90.0)
 
     def test_tile_bbox(self):
-        assert (self.grid.tile_bbox((0, 0, 0)) == (-180.0, -270.0, 180.0, 90.0))
-        assert (self.grid.tile_bbox((0, 0, 0), limit=True) == (-180.0, -90.0, 180.0, 90.0))
-        assert (self.grid.tile_bbox((0, 0, 1)) == (-180.0, -90.0, 0.0, 90.0))
+        assert self.grid.tile_bbox((0, 0, 0)) == (-180.0, -270.0, 180.0, 90.0)
+        assert self.grid.tile_bbox((0, 0, 0), limit=True) == (
+            -180.0,
+            -90.0,
+            180.0,
+            90.0,
+        )
+        assert self.grid.tile_bbox((0, 0, 1)) == (-180.0, -90.0, 0.0, 90.0)
 
     def test_tile(self):
-        assert (self.grid.tile(-170, -80, 0) == (0, 0, 0))
-        assert (self.grid.tile(-170, -80, 1) == (0, 0, 1))
-        assert (self.grid.tile(-170, -80, 2) == (0, 1, 2))
+        assert self.grid.tile(-170, -80, 0) == (0, 0, 0)
+        assert self.grid.tile(-170, -80, 1) == (0, 0, 1)
+        assert self.grid.tile(-170, -80, 2) == (0, 1, 2)
 
     def test_grid_size(self):
         assert self.grid.grid_sizes[0] == (1, 1)
@@ -558,7 +631,9 @@ class TestWGS83TileGridUL(object):
         assert self.grid.grid_sizes[2] == (4, 2)
 
     def test_affected_tiles(self):
-        bbox, grid, tiles = self.grid.get_affected_tiles((-180, -90, 180, 90), (512, 256))
+        bbox, grid, tiles = self.grid.get_affected_tiles(
+            (-180, -90, 180, 90), (512, 256)
+        )
         assert bbox == (-180.0, -90.0, 180.0, 90.0)
         assert grid == (2, 1)
         assert list(tiles) == [(0, 0, 1), (1, 0, 1)]
@@ -595,7 +670,7 @@ class TestGKTileGrid(TileGridTest):
         width = self.grid.bbox[2] - self.grid.bbox[0]
         height = self.grid.bbox[3] - self.grid.bbox[1]
         assert height == 880000.0 and width == 680000.0
-        assert res == 880000.0/256
+        assert res == 880000.0 / 256
 
     def test_tile_bbox(self):
         tile_bbox = self.grid.tile_bbox((0, 0, 0))
@@ -603,23 +678,31 @@ class TestGKTileGrid(TileGridTest):
 
     def test_tile(self):
         x, y = 3450000, 5890000
-        assert [self.grid.tile(x, y, level) for level in range(5)] == \
-            [(0, 0, 0), (0, 1, 1), (0, 3, 2), (1, 6, 3), (3, 12, 4)]
+        assert [self.grid.tile(x, y, level) for level in range(5)] == [
+            (0, 0, 0),
+            (0, 1, 1),
+            (0, 3, 2),
+            (1, 6, 3),
+            (3, 12, 4),
+        ]
 
-    @pytest.mark.parametrize('level,grid_size', [
-        (0, (1, 1)),
-        (1, (2, 2)),
-        (2, (4, 4)),
-        (3, (7, 8)),
-    ])
+    @pytest.mark.parametrize(
+        "level,grid_size",
+        [
+            (0, (1, 1)),
+            (1, (2, 2)),
+            (2, (4, 4)),
+            (3, (7, 8)),
+        ],
+    )
     def test_grids(self, level, grid_size):
         self.check_grid(level, grid_size)
 
     def test_closest_level(self):
-        assert self.grid.closest_level(880000.0/256) == 0
-        assert self.grid.closest_level(600000.0/256) == 1
-        assert self.grid.closest_level(440000.0/256) == 1
-        assert self.grid.closest_level(420000.0/256) == 1
+        assert self.grid.closest_level(880000.0 / 256) == 0
+        assert self.grid.closest_level(600000.0 / 256) == 1
+        assert self.grid.closest_level(440000.0 / 256) == 1
+        assert self.grid.closest_level(420000.0 / 256) == 1
 
     def test_adjacent_tile_bbox(self):
         t1 = self.grid.tile_bbox((0, 0, 1))
@@ -638,31 +721,46 @@ class TestGKTileGridUL(TileGridTest):
     """
 
     def setup_method(self):
-        self.grid = TileGrid(SRS(31467),
-                             bbox=(3300000, 5300000, 3900000, 6000000), origin='ul',
-                             res=[1500, 1000, 500, 300, 150, 100])
+        self.grid = TileGrid(
+            SRS(31467),
+            bbox=(3300000, 5300000, 3900000, 6000000),
+            origin="ul",
+            res=[1500, 1000, 500, 300, 150, 100],
+        )
 
     def test_bbox(self):
         assert self.grid.bbox == (3300000, 5300000, 3900000, 6000000)
 
     def test_tile_bbox(self):
-        assert (self.grid.tile_bbox((0, 0, 0)) ==
-                (3300000.0, 5616000.0, 3684000.0, 6000000.0))
-        assert (self.grid.tile_bbox((1, 0, 0)) ==
-                (3684000.0, 5616000.0, 4068000.0, 6000000.0))
-        assert (self.grid.tile_bbox((1, 1, 0)) ==
-                (3684000.0, 5232000.0, 4068000.0, 5616000.0))
+        assert self.grid.tile_bbox((0, 0, 0)) == (
+            3300000.0,
+            5616000.0,
+            3684000.0,
+            6000000.0,
+        )
+        assert self.grid.tile_bbox((1, 0, 0)) == (
+            3684000.0,
+            5616000.0,
+            4068000.0,
+            6000000.0,
+        )
+        assert self.grid.tile_bbox((1, 1, 0)) == (
+            3684000.0,
+            5232000.0,
+            4068000.0,
+            5616000.0,
+        )
 
     def test_tile(self):
         x, y = 3310000, 5990000
-        assert (self.grid.tile(x, y, 0) == (0, 0, 0))
-        assert (self.grid.tile(x, y, 1) == (0, 0, 1))
-        assert (self.grid.tile(x, y, 2) == (0, 0, 2))
+        assert self.grid.tile(x, y, 0) == (0, 0, 0)
+        assert self.grid.tile(x, y, 1) == (0, 0, 1)
+        assert self.grid.tile(x, y, 2) == (0, 0, 2)
 
         x, y = 3890000, 5310000
-        assert (self.grid.tile(x, y, 0) == (1, 1, 0))
-        assert (self.grid.tile(x, y, 1) == (2, 2, 1))
-        assert (self.grid.tile(x, y, 2) == (4, 5, 2))
+        assert self.grid.tile(x, y, 0) == (1, 1, 0)
+        assert self.grid.tile(x, y, 1) == (2, 2, 1)
+        assert self.grid.tile(x, y, 2) == (4, 5, 2)
 
     def test_grids(self):
         assert_grid_size(self.grid, 0, (2, 2))
@@ -688,98 +786,119 @@ class TestGKTileGridUL(TileGridTest):
 
 class TestClosestLevelTinyResFactor(object):
     def setup_method(self):
-        self.grid = TileGrid(SRS(31467),
-                             bbox=[420000, 30000, 900000, 350000],
-                             origin='ul',
-                             res=[
-            4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250, 2000, 1750, 1500, 1250, 1000, 750, 650, 500, 250, 100,
-            50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5],
+        self.grid = TileGrid(
+            SRS(31467),
+            bbox=[420000, 30000, 900000, 350000],
+            origin="ul",
+            res=[
+                4000,
+                3750,
+                3500,
+                3250,
+                3000,
+                2750,
+                2500,
+                2250,
+                2000,
+                1750,
+                1500,
+                1250,
+                1000,
+                750,
+                650,
+                500,
+                250,
+                100,
+                50,
+                20,
+                10,
+                5,
+                2.5,
+                2,
+                1.5,
+                1,
+                0.5,
+            ],
         )
 
     def test_closest_level(self):
-        assert (self.grid.closest_level(5000) == 0)
-        assert (self.grid.closest_level(4000) == 0)
-        assert (self.grid.closest_level(3750) == 1)
-        assert (self.grid.closest_level(3500) == 2)
-        assert (self.grid.closest_level(3250) == 3)
-        assert (self.grid.closest_level(3000) == 4)
+        assert self.grid.closest_level(5000) == 0
+        assert self.grid.closest_level(4000) == 0
+        assert self.grid.closest_level(3750) == 1
+        assert self.grid.closest_level(3500) == 2
+        assert self.grid.closest_level(3250) == 3
+        assert self.grid.closest_level(3000) == 4
 
 
 class TestOrigins(object):
     def test_basic(self):
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ll')
-        assert grid.supports_access_with_origin('ll')
-        assert not grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin="ll")
+        assert grid.supports_access_with_origin("ll")
+        assert not grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ul')
-        assert not grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin="ul")
+        assert not grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
     def test_basic_no_level_zero(self):
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ll',
-                         min_res=360/256/2)
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(
+            4326, bbox=(-180, -90, 180, 90), origin="ll", min_res=360 / 256 / 2
+        )
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ul',
-                         min_res=360/256/2)
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(
+            4326, bbox=(-180, -90, 180, 90), origin="ul", min_res=360 / 256 / 2
+        )
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
     def test_basic_mixed_name(self):
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ll')
-        assert grid.supports_access_with_origin('sw')
-        assert not grid.supports_access_with_origin('nw')
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin="ll")
+        assert grid.supports_access_with_origin("sw")
+        assert not grid.supports_access_with_origin("nw")
 
-        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ul')
-        assert not grid.supports_access_with_origin('sw')
-        assert grid.supports_access_with_origin('nw')
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin="ul")
+        assert not grid.supports_access_with_origin("sw")
+        assert grid.supports_access_with_origin("nw")
 
     def test_custom_with_match(self):
         # height is divisible by res*tile_size
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin='ll',
-                         min_res=1)
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin="ll", min_res=1)
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin='ul',
-                         min_res=1)
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin="ul", min_res=1)
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
     def test_custom_without_match(self):
         # height is not divisible by res*tile_size
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1000), origin='ll',
-                         min_res=1)
-        assert grid.supports_access_with_origin('ll')
-        assert not grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1000), origin="ll", min_res=1)
+        assert grid.supports_access_with_origin("ll")
+        assert not grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1000), origin='ul',
-                         min_res=1)
-        assert not grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1000), origin="ul", min_res=1)
+        assert not grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
     def test_custom_res_with_match(self):
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin='ll',
-                         res=[1, 0.5, 0.25])
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin="ll", res=[1, 0.5, 0.25])
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin='ul',
-                         res=[1, 0.5, 0.25])
-        assert grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin="ul", res=[1, 0.5, 0.25])
+        assert grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
     def test_custom_res_without_match(self):
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1023), origin='ll',
-                         res=[1, 0.5, 0.25])
-        assert grid.supports_access_with_origin('ll')
-        assert not grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1023), origin="ll", res=[1, 0.5, 0.25])
+        assert grid.supports_access_with_origin("ll")
+        assert not grid.supports_access_with_origin("ul")
 
-        grid = tile_grid(4326, bbox=(0, 0, 1024, 1023), origin='ul',
-                         res=[1, 0.5, 0.25])
-        assert not grid.supports_access_with_origin('ll')
-        assert grid.supports_access_with_origin('ul')
+        grid = tile_grid(4326, bbox=(0, 0, 1024, 1023), origin="ul", res=[1, 0.5, 0.25])
+        assert not grid.supports_access_with_origin("ll")
+        assert grid.supports_access_with_origin("ul")
 
 
 class TestFixedResolutionsTileGrid(TileGridTest):
@@ -801,34 +920,48 @@ class TestFixedResolutionsTileGrid(TileGridTest):
     def test_affected_tiles(self):
         req_bbox = (3250000, 5230000, 3930000, 6110000)
         self.grid.max_shrink_factor = 10
-        bbox, grid_size, tiles = \
-            self.grid.get_affected_tiles(req_bbox, (256, 256))
-        assert bbox == (req_bbox[0], req_bbox[1],
-                        req_bbox[0]+1000*256*3, req_bbox[1]+1000*256*4)
+        bbox, grid_size, tiles = self.grid.get_affected_tiles(req_bbox, (256, 256))
+        assert bbox == (
+            req_bbox[0],
+            req_bbox[1],
+            req_bbox[0] + 1000 * 256 * 3,
+            req_bbox[1] + 1000 * 256 * 4,
+        )
         assert grid_size == (3, 4)
         tiles = list(tiles)
-        assert tiles == [(0, 3, 0), (1, 3, 0), (2, 3, 0),
-                         (0, 2, 0), (1, 2, 0), (2, 2, 0),
-                         (0, 1, 0), (1, 1, 0), (2, 1, 0),
-                         (0, 0, 0), (1, 0, 0), (2, 0, 0),
-                         ]
+        assert tiles == [
+            (0, 3, 0),
+            (1, 3, 0),
+            (2, 3, 0),
+            (0, 2, 0),
+            (1, 2, 0),
+            (2, 2, 0),
+            (0, 1, 0),
+            (1, 1, 0),
+            (2, 1, 0),
+            (0, 0, 0),
+            (1, 0, 0),
+            (2, 0, 0),
+        ]
 
     def test_affected_tiles_2(self):
         req_bbox = (3250000, 5230000, 3930000, 6110000)
         self.grid.max_shrink_factor = 2.0
         try:
-            bbox, grid_size, tiles = \
-                self.grid.get_affected_tiles(req_bbox, (256, 256))
+            bbox, grid_size, tiles = self.grid.get_affected_tiles(req_bbox, (256, 256))
         except NoTiles:
             pass
         else:
-            assert False, 'got no exception'
+            assert False, "got no exception"
 
-    @pytest.mark.parametrize('level,grid_size', [
-        (0, (3, 4)),
-        (1, (6, 7)),
-        (2, (14, 18)),
-    ])
+    @pytest.mark.parametrize(
+        "level,grid_size",
+        [
+            (0, (3, 4)),
+            (1, (6, 7)),
+            (2, (14, 18)),
+        ],
+    )
     def test_grids(self, level, grid_size):
         self.check_grid(level, grid_size)
 
@@ -843,7 +976,9 @@ class TestFixedResolutionsTileGrid(TileGridTest):
 
 class TestGeodeticTileGrid(TileGridTest):
     def setup_method(self):
-        self.grid = TileGrid(is_geodetic=True, )
+        self.grid = TileGrid(
+            is_geodetic=True,
+        )
 
     def test_auto_resolution(self):
         grid = TileGrid(is_geodetic=True, bbox=(-10, 30, 10, 40), tile_size=(20, 20))
@@ -851,11 +986,14 @@ class TestGeodeticTileGrid(TileGridTest):
         assert tile_bbox == (-10, 30, 10, 50)
         assert grid.resolution(0) == 1.0
 
-    @pytest.mark.parametrize('level,grid_size', [
-        (0, (1, 1)),
-        (1, (2, 1)),
-        (2, (4, 2)),
-    ])
+    @pytest.mark.parametrize(
+        "level,grid_size",
+        [
+            (0, (1, 1)),
+            (1, (2, 1)),
+            (2, (4, 2)),
+        ],
+    )
     def test_grids(self, level, grid_size):
         self.check_grid(level, grid_size)
 
@@ -873,7 +1011,9 @@ class TestGeodeticTileGrid(TileGridTest):
 
     def test_w_resolution(self):
         res = [1, 0.5, 0.2]
-        grid = TileGrid(is_geodetic=True, bbox=(-10, 30, 10, 40), tile_size=(20, 20), res=res)
+        grid = TileGrid(
+            is_geodetic=True, bbox=(-10, 30, 10, 40), tile_size=(20, 20), res=res
+        )
         assert grid.grid_sizes[0] == (1, 1)
         assert grid.grid_sizes[1] == (2, 1)
         assert grid.grid_sizes[2] == (5, 3)
@@ -882,12 +1022,13 @@ class TestGeodeticTileGrid(TileGridTest):
         assert self.grid.tile(-180, -90, 0) == (0, 0, 0)
         assert self.grid.tile(-180, -90, 1) == (0, 0, 1)
         assert self.grid.tile(-180, -90, 2) == (0, 0, 2)
-        assert self.grid.tile(180-0.001, 90-0.001, 0) == (0, 0, 0)
+        assert self.grid.tile(180 - 0.001, 90 - 0.001, 0) == (0, 0, 0)
         assert self.grid.tile(10, 50, 1) == (1, 0, 1)
 
     def test_affected_tiles(self):
-        bbox, grid_size, tiles = \
-            self.grid.get_affected_tiles((-45, -45, 45, 45), (512, 512))
+        bbox, grid_size, tiles = self.grid.get_affected_tiles(
+            (-45, -45, 45, 45), (512, 512)
+        )
         assert self.grid.grid_sizes[3] == (8, 4)
         assert bbox == (-45.0, -45.0, 45.0, 45.0)
         assert grid_size == (2, 2)
@@ -898,14 +1039,18 @@ class TestGeodeticTileGrid(TileGridTest):
 class TestTileGrid(object):
     def test_tile_out_of_grid_bounds(self):
         grid = TileGrid(is_geodetic=True)
-        assert (grid.tile(-180.01, 50, 1) == (-1, 0, 1))
+        assert grid.tile(-180.01, 50, 1) == (-1, 0, 1)
 
     def test_affected_tiles_out_of_grid_bounds(self):
         grid = TileGrid()
         # bbox from open layers
-        req_bbox = (-30056262.509599999, -10018754.170400001, -20037508.339999996, -0.00080000050365924835)
-        bbox, grid_size, tiles = \
-            grid.get_affected_tiles(req_bbox, (256, 256))
+        req_bbox = (
+            -30056262.509599999,
+            -10018754.170400001,
+            -20037508.339999996,
+            -0.00080000050365924835,
+        )
+        bbox, grid_size, tiles = grid.get_affected_tiles(req_bbox, (256, 256))
         assert_almost_equal_bbox(bbox, req_bbox, 1)
         assert grid_size == (1, 1)
         tiles = list(tiles)
@@ -913,13 +1058,18 @@ class TestTileGrid(object):
 
     def test_broken_bbox(self):
         grid = TileGrid()
-        req_bbox = (-20000855.0573254, 2847125.18913603, -19329367.42767611, 4239924.78564583)
+        req_bbox = (
+            -20000855.0573254,
+            2847125.18913603,
+            -19329367.42767611,
+            4239924.78564583,
+        )
         try:
             grid.get_affected_tiles(req_bbox, (256, 256), req_srs=SRS(31467))
         except TransformationError:
             pass
         else:
-            assert False, 'Expected TransformationError'
+            assert False, "Expected TransformationError"
 
 
 class TestTileGridThreshold(object):
@@ -948,32 +1098,32 @@ class TestTileGridThreshold(object):
         # thresholds near the next upper res value (within threshold)
         grid = TileGrid(res=[1000, 500, 250, 100, 50], threshold_res=[495, 240])
         grid.stretch_factor = 1.1
-        assert (grid.closest_level(1100) == 0)
+        assert grid.closest_level(1100) == 0
         # regular transition (w/stretchfactor)
-        assert (grid.closest_level(950) == 0)
-        assert (grid.closest_level(800) == 1)
-        assert (grid.closest_level(500) == 1)
+        assert grid.closest_level(950) == 0
+        assert grid.closest_level(800) == 1
+        assert grid.closest_level(500) == 1
         # transition at threshold
-        assert (grid.closest_level(496) == 1)
-        assert (grid.closest_level(495) == 2)
-        assert (grid.closest_level(250) == 2)
+        assert grid.closest_level(496) == 1
+        assert grid.closest_level(495) == 2
+        assert grid.closest_level(250) == 2
         # transition at threshold (within strechfactor)
-        assert (grid.closest_level(241) == 2)
-        assert (grid.closest_level(240) == 3)
-        assert (grid.closest_level(100) == 3)
+        assert grid.closest_level(241) == 2
+        assert grid.closest_level(240) == 3
+        assert grid.closest_level(100) == 3
         # regular transition (w/stretchfactor)
-        assert (grid.closest_level(92) == 3)
-        assert (grid.closest_level(90) == 4)
+        assert grid.closest_level(92) == 3
+        assert grid.closest_level(90) == 4
 
     def test_above_first_res(self):
         grid = TileGrid(res=[1000, 500, 250, 100, 50], threshold_res=[1100, 750])
         grid.stretch_factor = 1.1
-        assert (grid.closest_level(1200) == 0)
-        assert (grid.closest_level(1100) == 0)
-        assert (grid.closest_level(1000) == 0)
-        assert (grid.closest_level(800) == 0)
-        assert (grid.closest_level(750.1) == 0)
-        assert (grid.closest_level(750) == 1)
+        assert grid.closest_level(1200) == 0
+        assert grid.closest_level(1100) == 0
+        assert grid.closest_level(1000) == 0
+        assert grid.closest_level(800) == 0
+        assert grid.closest_level(750.1) == 0
+        assert grid.closest_level(750) == 1
 
 
 class TestCreateTileList(object):
@@ -983,11 +1133,23 @@ class TestCreateTileList(object):
         grid_size = (1, 2)
         tiles = list(_create_tile_list(xs, ys, 3, grid_size))
 
-        expected = [None, None, None,
-                    None, None, None,
-                    None, (0, 0, 3), None,
-                    None, (0, 1, 3), None,
-                    None, None, None]
+        expected = [
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            (0, 0, 3),
+            None,
+            None,
+            (0, 1, 3),
+            None,
+            None,
+            None,
+            None,
+        ]
         assert expected == tiles
 
     def _create_tile_list(self, xs, ys, level, grid_size):
@@ -1097,7 +1259,9 @@ class TestResolutionRange(object):
         assert res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
         # max is inclusive
         assert res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
-        assert not res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
+        assert not res_range.contains(
+            [0, 0, 100000, 100000], (10001, 10001), SRS(900913)
+        )
 
     def test_deg(self):
         res_range = ResolutionRange(100000, 1000)
@@ -1118,7 +1282,9 @@ class TestResolutionRange(object):
         assert res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
         # max is inclusive
         assert res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
-        assert not res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
+        assert not res_range.contains(
+            [0, 0, 100000, 100000], (10001, 10001), SRS(900913)
+        )
 
     def test_no_max(self):
         res_range = ResolutionRange(1000, None)
@@ -1129,7 +1295,9 @@ class TestResolutionRange(object):
         assert res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
         assert res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
         assert res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
-        assert res_range.contains([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))
+        assert res_range.contains(
+            [0, 0, 100000, 100000], (1000000, 100000), SRS(900913)
+        )
 
     def test_none(self):
         res_range = resolution_range(None, None)
@@ -1140,12 +1308,15 @@ class TestResolutionRange(object):
         assert res_range.min_res == pytest.approx(280)
         assert res_range.max_res == pytest.approx(0.28)
 
-    @pytest.mark.parametrize('min_res,max_res,max_scale,min_scale', [
-        [10, None, 10, None],
-        [10, 20, 10, None],
-        [10, None, 10, 20],
-        [10, 20, 10, 20],
-    ])
+    @pytest.mark.parametrize(
+        "min_res,max_res,max_scale,min_scale",
+        [
+            [10, None, 10, None],
+            [10, 20, 10, None],
+            [10, None, 10, 20],
+            [10, 20, 10, 20],
+        ],
+    )
     def test_invalid_combination(self, min_res, max_res, max_scale, min_scale):
         with pytest.raises(ValueError):
             resolution_range(min_res, max_res, max_scale, min_scale)
@@ -1160,29 +1331,31 @@ class TestResolutionRange(object):
 
     def test_merge_resolutions(self):
         res_range = merge_resolution_range(
-            ResolutionRange(None, 10), ResolutionRange(1000, None))
+            ResolutionRange(None, 10), ResolutionRange(1000, None)
+        )
         assert res_range is None
 
         res_range = merge_resolution_range(
-            ResolutionRange(10000, 10), ResolutionRange(1000, None))
+            ResolutionRange(10000, 10), ResolutionRange(1000, None)
+        )
         assert res_range.min_res == 10000
         assert res_range.max_res is None
 
         res_range = merge_resolution_range(
-            ResolutionRange(10000, 10), ResolutionRange(1000, 1))
+            ResolutionRange(10000, 10), ResolutionRange(1000, 1)
+        )
         assert res_range.min_res == 10000
         assert res_range.max_res == 1
 
         res_range = merge_resolution_range(
-            ResolutionRange(10000, 10), ResolutionRange(None, None))
+            ResolutionRange(10000, 10), ResolutionRange(None, None)
+        )
         assert res_range is None
 
-        res_range = merge_resolution_range(
-            None, ResolutionRange(None, None))
+        res_range = merge_resolution_range(None, ResolutionRange(None, None))
         assert res_range is None
 
-        res_range = merge_resolution_range(
-            ResolutionRange(10000, 10), None)
+        res_range = merge_resolution_range(ResolutionRange(10000, 10), None)
         assert res_range is None
 
     def test_eq(self):
@@ -1231,20 +1404,28 @@ class TestGridSubset(object):
         assert g1.tile_bbox((0, 0, 0)) != g2.tile_bbox((0, 0, 0))
         assert g1.is_subset_of(g2)
 
-        g1 = tile_grid(SRS(3857), bbox=[0, 0, 20037508.342789244, 20037508.342789244],
-                       min_res=78271.51696402048, num_levels=18)
-        g2 = tile_grid(SRS(3857), origin='nw')
+        g1 = tile_grid(
+            SRS(3857),
+            bbox=[0, 0, 20037508.342789244, 20037508.342789244],
+            min_res=78271.51696402048,
+            num_levels=18,
+        )
+        g2 = tile_grid(SRS(3857), origin="nw")
         assert g1.is_subset_of(g2)
 
     def test_subbbox(self):
         g2 = tile_grid(SRS(4326))
-        g1 = tile_grid(SRS(4326), num_levels=10, min_res=g2.resolutions[3], bbox=(0, 0, 180, 90))
+        g1 = tile_grid(
+            SRS(4326), num_levels=10, min_res=g2.resolutions[3], bbox=(0, 0, 180, 90)
+        )
 
         assert g1.is_subset_of(g2)
 
     def test_incompatible_subbbox(self):
         g2 = tile_grid(SRS(4326))
-        g1 = tile_grid(SRS(4326), min_res=g2.resolutions[3], num_levels=10, bbox=(-10, 0, 180, 90))
+        g1 = tile_grid(
+            SRS(4326), min_res=g2.resolutions[3], num_levels=10, bbox=(-10, 0, 180, 90)
+        )
 
         assert not g1.is_subset_of(g2)
 
@@ -1255,10 +1436,12 @@ class TestGridSubset(object):
         assert not g1.is_subset_of(g2)
 
     def test_non_matching_bboxfor_origins(self):
-        g1 = tile_grid(SRS(21781), bbox=[420000, 30000, 900000, 360000],
-                       res=[250], origin='nw')
-        g2 = tile_grid(SRS(21781), bbox=[420000, 30000, 900000, 360000],
-                       res=[250], origin='sw')
+        g1 = tile_grid(
+            SRS(21781), bbox=[420000, 30000, 900000, 360000], res=[250], origin="nw"
+        )
+        g2 = tile_grid(
+            SRS(21781), bbox=[420000, 30000, 900000, 360000], res=[250], origin="sw"
+        )
 
         assert not g1.is_subset_of(g2)
 
@@ -1268,3 +1451,149 @@ class TestGridSubset(object):
         g2 = tile_grid(SRS(3857), res=[100, 1])
 
         assert not g1.is_subset_of(g2)
+
+
+WebMercatorQuad = {
+    "id": "WebMercatorQuad",
+    "title": "WebMercatorQuad",
+    "uri": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad",
+    "crs": "http://www.opengis.net/def/crs/EPSG/0/3857",
+    "orderedAxes": ["E", "N"],
+    "wellKnownScaleSet": "http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible",
+    "tileMatrices": [
+        {
+            "id": "0",
+            "scaleDenominator": 559082264.028718,
+            "cellSize": 156543.03392804,
+            "cornerOfOrigin": "topLeft",
+            "pointOfOrigin": [-20037508.3427892, 20037508.3427892],
+            "matrixWidth": 1,
+            "matrixHeight": 1,
+            "tileWidth": 256,
+            "tileHeight": 256,
+        },
+        {
+            "id": "1",
+            "scaleDenominator": 279541132.01436,
+            "cellSize": 78271.5169640205,
+            "cornerOfOrigin": "topLeft",
+            "pointOfOrigin": [-20037508.3427892, 20037508.3427892],
+            "matrixWidth": 2,
+            "matrixHeight": 2,
+            "tileWidth": 256,
+            "tileHeight": 256,
+        },
+        {
+            "id": "2",
+            "scaleDenominator": 139770566.00718,
+            "cellSize": 39135.7584820102,
+            "cornerOfOrigin": "topLeft",
+            "pointOfOrigin": [-20037508.3427892, 20037508.3427892],
+            "matrixWidth": 4,
+            "matrixHeight": 4,
+            "tileWidth": 256,
+            "tileHeight": 256,
+        },
+    ],
+}
+
+
+def test_tile_grid_from_ogc_tile_matrix_set_WebMercatorQuad():
+    tile_grid = tile_grid_from_ogc_tile_matrix_set(WebMercatorQuad)
+    assert tile_grid.srs.srs_code == "EPSG:3857"
+    assert tile_grid.tile_size == (256, 256)
+    assert tile_grid.origin == "ul"
+    assert tile_grid.name == "WebMercatorQuad"
+    assert tile_grid.is_geodetic is False
+    assert tile_grid.bbox == [
+        -20037508.3427892,
+        -20037508.342789043,
+        20037508.342789043,
+        20037508.3427892,
+    ]
+    assert tile_grid.levels == 3
+    assert len(tile_grid.grid_sizes) == 3
+    assert tile_grid.grid_sizes[0] == (1, 1)
+    assert tile_grid.grid_sizes[1] == (2, 2)
+    assert tile_grid.grid_sizes[2] == (4, 4)
+
+
+LatLonGrid = {
+    "id": "LatLonGrid",
+    "title": "LatLonGrid",
+    "crs": "http://www.opengis.net/def/crs/EPSG/0/4326",
+    "orderedAxes": ["Lat", "Lon"],
+    "tileMatrices": [
+        {
+            "id": "0",
+            "scaleDenominator": 388251.572242165,
+            "cellSize": 0.0009765625,
+            "cornerOfOrigin": "topLeft",
+            "pointOfOrigin": [90, -180],
+            "matrixWidth": 360,
+            "matrixHeight": 180,
+            "tileWidth": 1024,
+            "tileHeight": 1024,
+        }
+    ],
+}
+
+
+def test_tile_grid_from_ogc_tile_matrix_set_LatLonGrid():
+    tile_grid = tile_grid_from_ogc_tile_matrix_set(LatLonGrid)
+    assert tile_grid.srs.srs_code == "EPSG:4326"
+    assert tile_grid.tile_size == (1024, 1024)
+    assert tile_grid.origin == "ul"
+    assert tile_grid.name == "LatLonGrid"
+    assert tile_grid.is_geodetic is True
+    assert tile_grid.bbox == [-180, -90, 180, 90]
+    assert tile_grid.levels == 1
+    assert len(tile_grid.grid_sizes) == 1
+    assert tile_grid.grid_sizes[0] == (360, 180)
+
+
+def test_tile_grid_from_ogc_tile_matrix_set_errors():
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][0]["variableMatrixWidths"] = []
+    with pytest.raises(
+        UnsupportedException,
+        match="Tile matrix with variableMatrixWidths are not supported",
+    ):
+        tile_grid_from_ogc_tile_matrix_set(d)
+
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][0]["cornerOfOrigin"] = "invalid"
+    with pytest.raises(UnsupportedException, match="Invalid cornerOfOrigin=invalid"):
+        tile_grid_from_ogc_tile_matrix_set(d)
+
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][1]["tileWidth"] = 512
+    with pytest.raises(
+        UnsupportedException,
+        match="Tile matrix set with varying tileWidth depending on tile matrix",
+    ):
+        tile_grid_from_ogc_tile_matrix_set(d)
+
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][1]["tileHeight"] = 512
+    with pytest.raises(
+        UnsupportedException,
+        match="Tile matrix set with varying tileHeight depending on tile matrix",
+    ):
+        tile_grid_from_ogc_tile_matrix_set(d)
+
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][1]["pointOfOrigin"][0] = 0
+    with pytest.raises(
+        UnsupportedException,
+        match="Tile matrix set with varying pointOfOrigin depending on tile matrix",
+    ):
+        tile_grid_from_ogc_tile_matrix_set(d)
+
+    d = copy.deepcopy(WebMercatorQuad)
+    d["tileMatrices"][1]["pointOfOrigin"][1] = 0
+    with pytest.raises(
+        UnsupportedException,
+        match="Tile matrix set with varying pointOfOrigin depending on tile matrix",
+    ):
+        tile_grid_from_ogc_tile_matrix_set(d)

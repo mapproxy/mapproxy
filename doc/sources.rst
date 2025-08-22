@@ -11,6 +11,8 @@ MapProxy supports the following sources:
 - :ref:`mapserver_label`
 - :ref:`mapnik_label`
 - :ref:`debug_label`
+- :ref:`ogcapitiles_label`
+- :ref:`ogcapimaps_label`
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
 
@@ -645,4 +647,119 @@ Example:
 
   debug_source:
     type: debug
+
+
+.. _ogcapitiles_label:
+
+OGC API Tiles
+"""""""""""""
+
+.. versionadded:: 5.1.0
+
+Use the type ``ogcapitiles`` to for servers implementing `OGC API Tiles <https://docs.ogc.org/is/20-057/20-057.html>`__.
+Note that this source can be used directly by un-tiled services like WMS.
+
+``landingpage_url``
+^^^^^^^^^^^^^^^^^^^
+
+[required] The URL of the `landing page <https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389>`__
+of the OGC API server.
+
+``collection``
+^^^^^^^^^^^^^^
+
+[optional] The name of the collection from which to get tiles from. If not specified, the tile related links from the landing page will be used (if existing).
+
+``tile_matrix_set_id``
+^^^^^^^^^^^^^^^^^^^^^^
+
+[optional] A tile matrix set id, as indicated by the ``id`` member in the response to the ``/ogcapi/tileMatrixSets`` page. When specifying it, the source will only consider this tile matrix set to get tiles. Otherwise it will determine automatically which tile matrix set among those availables can be used to satisfy the incoming request. Example of commons tile matrix sets are ``GlobalCRS84Pixel`` or ``WebMercatorQuad``.
+
+``coverage``
+^^^^^^^^^^^^
+
+[optional] Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``image``
+^^^^^^^^^
+
+See :ref:`image_options`.
+
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: yaml
+
+  my_ogcapitiles_source:
+    type: ogcapitiles
+    landingpage_url: http://example.com/ogcapi
+    collection: my_collection_name
+
+
+.. _ogcapimaps_label:
+
+OGC API Maps
+""""""""""""
+
+.. versionadded:: 5.1.0
+
+Use the type ``ogcapimaps`` to for servers implementing `OGC API Maps <https://docs.ogc.org/is/20-058/20-058.html>`__.
+
+``landingpage_url``
+^^^^^^^^^^^^^^^^^^^
+
+[required] The URL of the `landing page <https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389>`__
+of the OGC API server.
+
+``collection``
+^^^^^^^^^^^^^^
+
+[optional] The name of the collection from which to get tiles from. If not specified, the map related link from the landing page will be used (if existing).
+
+``coverage``
+^^^^^^^^^^^^
+
+[optional]  Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``transparent``
+^^^^^^^^^^^^^^^
+
+[optional]  Can be set to ``true`` if you want to use this source as an overlay.
+
+``image``
+^^^^^^^^^
+
+[optional] 
+
+See :ref:`image_options` for other options.
+
+``transparent_color``
+
+  Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``).
+
+``transparent_color_tolerance``
+
+  Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction e.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+
+  .. code-block:: yaml
+
+    image:
+      transparent_color: '#ffffff'
+      transparent_color_tolerance: 20
+
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: yaml
+
+  my_ogcapimaps_source:
+    type: ogcapimaps
+    landingpage_url: http://example.com/ogcapi
+    transparent: true
+    collection: my_collection_name
+    image:
+        transparent_color: '#ffffff'
+
 

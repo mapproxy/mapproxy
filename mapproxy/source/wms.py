@@ -20,6 +20,7 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
 from mapproxy.image.merge import concat_legends, concat_json_legends
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
 from mapproxy.source import InfoSource, SourceError, LegendSource
@@ -30,19 +31,15 @@ import logging
 log = logging.getLogger('mapproxy.source.wms')
 
 
-class WMSSource(MapLayer):
-    supports_meta_tiles = True
+class WMSLikeSource(MapLayer):
 
-    def __init__(self, client, image_opts=None, coverage=None, res_range=None,
+    def __init__(self, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None, fwd_req_params=None,
+                 supported_srs=None, supported_formats=None,
                  error_handler=None):
-        MapLayer.__init__(self, image_opts=image_opts)
-        self.client = client
+        self.image_opts = image_opts or ImageOptions()
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
-        self.fwd_req_params = fwd_req_params or set()
-
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
         if self.transparent_color:
@@ -55,29 +52,8 @@ class WMSSource(MapLayer):
             self.extent = DefaultMapExtent()
         self.error_handler = error_handler
 
-    def is_opaque(self, query):
-        """
-        Returns true if we are sure that the image is not transparent.
-        """
-        if self.res_range and not self.res_range.contains(query.bbox, query.size,
-                                                          query.srs):
-            return False
-
-        if self.image_opts.transparent:
-            return False
-
-        if self.opacity is not None and (0.0 < self.opacity < 0.99):
-            return False
-
-        if not self.coverage:
-            # not transparent and no coverage
-            return True
-
-        if self.coverage.contains(query.bbox, query.srs):
-            # not transparent and completely inside coverage
-            return True
-
-        return False
+    def _retrieve(self, query, format):
+        raise NotImplementedError
 
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
@@ -121,7 +97,7 @@ class WMSSource(MapLayer):
                 query.srs = request_srs
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
-        resp = self.client.retrieve(query, format)
+        resp = self._retrieve(query, format)
         return ImageSource(resp, size=query.size, image_opts=self.image_opts)
 
     def _get_sub_query(self, query, format):
@@ -129,7 +105,7 @@ class WMSSource(MapLayer):
         if size[0] == 0 or size[1] == 0:
             raise BlankImage()
         src_query = MapQuery(bbox, size, query.srs, format, dimensions=query.dimensions)
-        resp = self.client.retrieve(src_query, format)
+        resp = self._retrieve(src_query, format)
         return SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
 
     def _get_transformed(self, query, format):
@@ -152,7 +128,7 @@ class WMSSource(MapLayer):
         if self.coverage and not self.coverage.contains(src_bbox, src_srs):
             img = self._get_sub_query(src_query, format)
         else:
-            resp = self.client.retrieve(src_query, format)
+            resp = self._retrieve(src_query, format)
             img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
 
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox,
@@ -160,6 +136,50 @@ class WMSSource(MapLayer):
 
         img.format = format
         return img
+
+
+class WMSSource(WMSLikeSource):
+    supports_meta_tiles = True
+
+    def __init__(self, client, image_opts=None, coverage=None, res_range=None,
+                 transparent_color=None, transparent_color_tolerance=None,
+                 supported_srs=None, supported_formats=None, fwd_req_params=None,
+                 error_handler=None):
+        WMSLikeSource.__init__(self, image_opts=image_opts, coverage=coverage,
+                               res_range=res_range, transparent_color=transparent_color,
+                               transparent_color_tolerance=transparent_color_tolerance,
+                               supported_srs=supported_srs, supported_formats=supported_formats,
+                               error_handler=error_handler)
+
+        self.client = client
+        self.fwd_req_params = fwd_req_params or set()
+
+    def _retrieve(self, query, format):
+        return self.client.retrieve(query, format)
+
+    def is_opaque(self, query):
+        """
+        Returns true if we are sure that the image is not transparent.
+        """
+        if self.res_range and not self.res_range.contains(query.bbox, query.size,
+                                                          query.srs):
+            return False
+
+        if self.image_opts.transparent:
+            return False
+
+        if self.opacity is not None and (0.0 < self.opacity < 0.99):
+            return False
+
+        if not self.coverage:
+            # not transparent and no coverage
+            return True
+
+        if self.coverage.contains(query.bbox, query.srs):
+            # not transparent and completely inside coverage
+            return True
+
+        return False
 
     def _is_compatible(self, other, query):
         if not isinstance(other, WMSSource):

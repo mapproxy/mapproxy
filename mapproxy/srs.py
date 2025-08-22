@@ -666,3 +666,14 @@ class SupportedSRS(object):
     def __eq__(self, other):
         # .prefered_srs is set global, so we only compare .supported_srs
         return self.supported_srs == other.supported_srs
+
+
+def ogc_crs_url_to_auth_code(url):
+    """Convert a OGC CRS URL (http://www.opengis.net/def/crs/AUTH_NAME/[VERSION]/CODE) into 'AUTH_NAME:CODE'"""
+
+    prefix = "http://www.opengis.net/def/crs/"
+    if not url.startswith(prefix):
+        raise ValueError(f'{url} is not a OGC CRS URL')
+
+    auth_name, version, code = url[len(prefix):].split('/')
+    return auth_name + ':' + code
