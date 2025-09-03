@@ -80,8 +80,13 @@ class TestValidator(object):
         ''')
 
         errors = validate(conf)
-        assert errors == [
-            "[] is too short in root.layers[0].sources"
+        assert errors in [
+            [
+                "[] is too short in root.layers[0].sources"
+            ],
+            [
+                "[] should be non-empty in root.layers[0].sources"
+            ]
         ]
 
     def test_missing_cache_source(self):
