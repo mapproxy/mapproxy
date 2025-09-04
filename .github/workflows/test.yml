@@ -49,7 +49,7 @@ jobs:
         sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
     - name: Checkout sources
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Use python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
