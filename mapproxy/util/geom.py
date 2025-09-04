@@ -26,15 +26,11 @@ from mapproxy.grid.tile_grid import tile_grid
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
 
-try:
-    import shapely.wkt
-    import shapely.geometry
-    import shapely.ops
-    import shapely.prepared
-    from shapely.errors import ShapelyError
-    geom_support = True
-except ImportError:
-    geom_support = False
+import shapely.wkt
+import shapely.geometry
+import shapely.ops
+import shapely.prepared
+from shapely.errors import ShapelyError
 
 
 class GeometryError(Exception):
@@ -47,11 +43,6 @@ class EmptyGeometryError(Exception):
 
 class CoverageReadError(Exception):
     pass
-
-
-def require_geom_support():
-    if not geom_support:
-        raise ImportError('Shapely required for geometry support')
 
 
 def load_datasource(datasource, where=None):
