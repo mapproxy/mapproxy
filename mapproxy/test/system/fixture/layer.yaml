@@ -35,6 +35,12 @@ services:
       title: MapProxy test fixture ☃
       abstract: This is MapProxy.
       online_resource: http://mapproxy.org/
+      keyword_list:
+       - vocabulary: Name of the vocabulary
+         keywords:   [keyword1, keyword2]
+       - vocabulary: Name of another vocabulary
+         keywords:   [keyword1, keyword2]
+       - keywords:   ["keywords without vocabulary"]
       contact:
         person: Bob Mustermann
         position: Technical Director
