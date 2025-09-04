@@ -862,6 +862,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = wms_opts.get('version', '1.1.1')
             if 'featureinfo_format' in wms_opts:
                 params['info_format'] = wms_opts['featureinfo_format']
+            if 'query_layers' in wms_opts:
+                params['query_layers'] = wms_opts['query_layers']
             fi_request = create_request(self.conf['req'], params,
                                         req_type='featureinfo', version=version,
                                         abspath=self.context.globals.abspath)
