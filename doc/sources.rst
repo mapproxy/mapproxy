@@ -120,7 +120,7 @@ Disable this source in regular mode. If set to ``true``, this source will always
 
 Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
-The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
+The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
@@ -133,7 +133,7 @@ A list with SRSs that the WMS source supports. MapProxy will only query the sour
 
 You don't need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.
 
-If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS. E.g when ``supported_srs`` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).
+If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS e.g. when ``supported_srs`` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).
 
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
@@ -162,7 +162,7 @@ See :ref:`image_options` for other options.
 
 ``transparent_color_tolerance``
 
-  Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+  Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction e.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
 
   .. code-block:: yaml
 
@@ -250,7 +250,7 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
 
 ``authorize_stale``
 
-  Set this to ``True`` if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error reponse, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (``False``) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.
+  Set this to ``True`` if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error response, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (``False``) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.
 
 You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
 
@@ -398,7 +398,7 @@ ImageServer example:
 Tiles
 """""
 
-Use the type ``tile`` to request data from from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.
+Use the type ``tile`` to request data from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.
 
 ``url``
 ^^^^^^^
