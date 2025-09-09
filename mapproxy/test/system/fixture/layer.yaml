@@ -129,6 +129,9 @@ layers:
   - name: wms_managed_cookies_cache
     title: WMS with cookies management
     sources: [wms_managed_cookies]
+  - name: wms_fi_ql_cache
+    title: WMS with query_layers source
+    sources: [wms_fi_ql]  
 
 caches:
   wms_cache:
@@ -169,6 +172,8 @@ caches:
       text: '@ Omniscale'
   wms_managed_cookies_cache:
     sources: [wms_managed_cookies]
+  wms_fi_ql_cache:
+    sources: [wms_fi_ql]
 
 sources:
   direct:
@@ -258,3 +263,11 @@ sources:
       layers: layer1
     http:
       manage_cookies: True
+  wms_fi_ql:
+    type: wms
+    wms_opts:
+      featureinfo: True
+      query_layers: foo
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
