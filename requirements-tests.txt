@@ -53,7 +53,7 @@ python-dateutil==2.9.0.post0
 python-jose==3.5.0
 pytz==2024.2
 redis==5.0.1
-requests==2.32.3
+requests==2.32.4
 responses==0.25.3
 rsa==4.9.1
 s3transfer==0.10.2
