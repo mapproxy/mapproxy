@@ -50,7 +50,7 @@ pyrsistent==0.20.0
 pytest-rerunfailures==13.0
 pytest==8.3.2
 python-dateutil==2.9.0.post0
-python-jose==3.3.0
+python-jose==3.5.0
 pytz==2024.2
 redis==5.0.1
 requests==2.32.3
