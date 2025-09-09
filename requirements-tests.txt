@@ -12,7 +12,7 @@ cffi==1.17.1;
 cfn-lint==0.80.3
 chardet==5.2.0
 cryptography==44.0.2
-decorator==5.1.1
+decorator==5.2.1
 docker==7.1.0
 docutils==0.20.1;python_version<"3.9"
 docutils==0.21.2;python_version>="3.9"
