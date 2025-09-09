@@ -843,7 +843,7 @@ class TestWMS111(SysTest):
                 "path": r"/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng"
                 "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913"
                 "&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles="
-                "&WIDTH=200&QUERY_LAYERs=foo&X=10&Y=20"
+                "&WIDTH=200&QUERY_LAYERS=foo&X=10&Y=20"
             },
             {"body": b"info", "headers": {"content-type": "text/plain"}},
         )
