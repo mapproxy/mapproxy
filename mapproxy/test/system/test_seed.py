@@ -309,8 +309,8 @@ class TestSeed(SeedTestBase):
         assert cache.is_cached(Tile((0, 0, 3)))
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-                            ['2.mbtile', '3.mbtile'],
-                            glob='*.mbtile')
+                            ['2.mbtiles', '3.mbtiles'],
+                            glob='*.mbtiles')
 
         # simulate that cleanup was called after creation of tiles
         time.sleep(1)
@@ -321,8 +321,8 @@ class TestSeed(SeedTestBase):
 
         # 3.mbtile file is still there
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-                            ['2.mbtile', '3.mbtile'],
-                            glob='*.mbtile')
+                            ['2.mbtiles', '3.mbtiles'],
+                            glob='*.mbtiles')
         assert cache.is_cached(Tile((0, 0, 2)))
         assert not cache.is_cached(Tile((0, 0, 3)))
 
@@ -343,15 +343,15 @@ class TestSeed(SeedTestBase):
         cleanup_tasks = seed_conf.cleanups(['sqlite_cache_remove_all'])
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-                            ['2.mbtile', '3.mbtile'],
-                            glob='*.mbtile')
+                            ['2.mbtiles', '3.mbtiles'],
+                            glob='*.mbtiles')
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
         # 3.mbtile file should be removed completely
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-                            ['3.mbtile'],
-                            glob='*.mbtile')
+                            ['3.mbtiles'],
+                            glob='*.mbtiles')
         assert not cache.is_cached(Tile((0, 0, 2)))
         assert cache.is_cached(Tile((0, 0, 3)))
 
