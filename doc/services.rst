@@ -32,7 +32,7 @@ Web Map Service (OGC WMS)
 
 The WMS server is accessible at ``/service``, ``/ows`` and ``/wms``  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
 
-See :doc:`inspire` for configuring INSPIRE metadata.
+See :ref:`inspire` for configuring INSPIRE metadata.
 
 The WMS service will use all configured :ref:`layers <layers>`.
 
