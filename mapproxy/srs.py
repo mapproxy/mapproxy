@@ -551,6 +551,23 @@ class _SRS(object):
     def __hash__(self):
         return hash(self.srs_code)
 
+    def to_ogc_url(self):
+        """Return a OGC SRS URL like http://www.opengis.net/def/crs/AUTH_NAME/[VERSION]/CODE"""
+        auth_name, code = self.srs_code.split(':')
+        version = 0
+        if auth_name == "OGC":
+            version = "1.3"
+            if code == "84":
+                code = "CRS84"
+        if auth_name.startswith("IAU_"):
+            version = auth_name[4:]
+            auth_name = "IAU"
+        return f"http://www.opengis.net/def/crs/{auth_name}/{version}/{code}"
+
+    def semi_major_metre(self):
+        """Return the semi major axis in meters of the ellipsoid underlying this SRS"""
+        return self.proj.ellipsoid.semi_major_metre
+
 
 if USE_PROJ4_API:
     _srs_impl = _SRS_Proj4_API

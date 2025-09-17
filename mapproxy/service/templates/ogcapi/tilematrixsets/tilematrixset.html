@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {% trans %}TileMatrixSet{% endtrans %} {% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="../tileMatrixSets">{% trans %}TileMatrixSets{% endtrans %}</a>
+/ <a href="../tileMatrixSets/{{ data['id'] }}?f=html">{{ data['id'] }}</a>
+{% endblock %}
+{% block body %}
+<section id="tilematrixset">
+
+  <h1>{{ data['id'] }} tile matrix set</h1>
+  <ul>
+    <li>CRS: <i>{{ data['crs'] }}</i></li>
+    <li>Uri: <i>{{ data['uri'] }}</i></li>
+    <li>Well Known Scale Set: <i>{{ data['wellKnownScaleSet'] }}</i></li>
+  </ul>
+
+</section>
+{% endblock %}

@@ -11,6 +11,7 @@ The following services are available:
 - :ref:`kml_service_label`
 - :ref:`wmts_service_label`
 - :ref:`demo_service_label`
+- :ref:`ogcapi_service_label`
 
 You need to add the service to the ``services`` section of your MapProxy configuration to enable it. Some services take additional options.
 
@@ -441,3 +442,98 @@ This service takes no further options::
 
   services:
       demo:
+
+
+.. index:: OGC API Maps and Tiles
+.. _ogcapi_service_label:
+
+OGC API Maps and Tiles Service
+------------------------------
+
+.. versionadded:: 5.1
+
+MapProxy implements `OGC API Maps - Part 1 - Core <https://docs.ogc.org/is/20-058/20-058.html>`__ and `OGC API Tiles - Part 1 - Core <https://docs.ogc.org/is/20-057/20-057.html>`__.
+
+The service is available at ``/ogcapi``.
+
+The minimum block to enable them is:
+.. code-block:: yaml
+
+  services:
+    ogcapi:
+
+The service takes the following additional options.
+
+``enable_tiles``
+""""""""""""""""
+
+Whether to enable OGC API Tiles support (``true``/``false``). Defaults to true.
+
+``enable_maps``
+""""""""""""""""
+
+Whether to enable OGC API Maps support (``true``/``false``). Defaults to true.
+
+``attribution``
+"""""""""""""""
+
+Adds an attribution (copyright) line to all map and tiles requests.
+
+``text``
+  The text line of the attribution (e.g. some copyright notice, etc).
+
+``md``
+""""""
+
+``md`` is for metadata. These fields are used for the response to the API and langing page requests.
+See the example below for all supported keys.
+
+``default_dataset_layers``
+""""""""""""""""""""""""""
+
+List of layer(s) that are used by default for dataset-wide "/map" and "/map/tiles"
+requests. If that option is not set, those endpoints are not available.
+
+
+An example showing all potential service metadata and configuration is:
+
+.. code-block:: yaml
+
+  services:
+    ogcapi:
+      enable_tiles: true
+      enable_maps: true
+      attribution:
+          text: "Copyright ME"
+      md:
+          identification:
+              title: MapProxy OGCAPI
+              description: Minimal MapProxy example
+              url: "http://example.com"
+              terms_of_service: "http://example.com"
+              keywords:
+                  - "OGC API"
+                  - Demo
+          provider:
+              name: Organization Name
+              url: "http://example.com/provider"
+          contact:
+              name: Jean Dupond
+              email: "jean.dupond@example.com"
+              address: "25, rue OSGeo"
+              city: "Spatial City"
+              stateorprovince: "Spatial State"
+              postalcode: "12345"
+              country: "Spatial country"
+              phone: "900-913"
+              fax: "+3312345678"
+              url: "http://example.com"
+              instructions: "Please don't contact me"
+          license:
+              name: "Do what you want"
+              url: "http://example.com"
+      default_dataset_layers: [layer1, layer2]
+
+
+In addition to those options, there are a few ``layers`` configuration options
+that are specific to OGC API Maps: :ref:`layer_nominal_scale` and :ref:`layer_compatible_srs`.
