@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {{ data['title'] }} {% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="../../../collections">Collections</a>
+/ <a href="..">{{ data['title'] | truncate( 25 ) }}</a>
+/ <a href="../map">Map</a>
+/ <a href="../map/metadata">Metadata</a>
+{% endblock %}
+{% block body %}
+    <section id="map-metadata">
+      <h1>{{ data['title'] }}</h1>
+      <h3>Map Metadata</h3>
+      <h4>Size</h4>
+      <ul>
+        <li>Width: {{ data['maxWidth'] }}</li>
+        <li>Height: {{ data['maxHeight'] }}</li>
+      </ul>
+      <h4>Extents</h4>
+      <h5>Spatial</h5>
+      <ul>
+        <li>Minx: {{ data['extent']['spatial']['bbox'][0] }}</li>
+        <li>Miny: {{ data['extent']['spatial']['bbox'][1] }}</li>
+        <li>Maxx: {{ data['extent']['spatial']['bbox'][2] }}</li>
+        <li>Maxy: {{ data['extent']['spatial']['bbox'][3] }}</li>
+        <li>CRS: {{ data['extent']['spatial']['crs'] }}</li>
+      </ul>
+      {% if data['extent']['temporal'] %}
+      <h5>Temporal</h5>
+      <ul>
+        <li>Begin: {{ data['extent']['temporal']['begin'] }}</li>
+        <li>Begin: {{ data['extent']['temporal']['end'] }}</li>
+      </ul>
+      <h4>Recommended Format</h4>
+      <ul>
+        <li>{{ data['recommendedFormat'] }}</li>
+      </ul>
+      {% endif %}
+    </section>
+{% endblock %}

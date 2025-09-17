@@ -501,6 +501,44 @@ mapproxy_yaml_spec = {
             'inspire_md': type_spec('type', inspire_md),
             'versions': [str()],
         },
+        'ogcapi': {
+            'enable_tiles': bool(),
+            'enable_maps': bool(),
+            'attribution': {
+                'text': str,
+            },
+            'md': {
+                'identification': {
+                    'title': str(),
+                    'description': str(),
+                    'url': str(),
+                    'terms_of_service': str(),
+                    'keywords': anything(),
+                },
+                'contact': {
+                    'name': str(),
+                    'email': str(),
+                    'address': str(),
+                    'city': str(),
+                    'stateorprovince': str(),
+                    'postalcode': str(),
+                    'country': str(),
+                    'phone': str(),
+                    'fax': str(),
+                    'url': str(),
+                    'instructions': str(),
+                },
+                'license': {
+                    required('name'): str(),
+                    'url': str(),
+                },
+                'provider': {
+                    'name': str(),
+                    'url': str(),
+                },
+            },
+            "default_dataset_layers": [str()],
+        }
     },
 
     'sources': {
@@ -638,7 +676,14 @@ mapproxy_yaml_spec = {
                     required('values'): [one_of(str, float, int)],
                     'default': one_of(str, float, int),
                 }
-            }
+            },
+            'compatible_srs': [str],
+            'extent': {
+                required('srs'): str,
+                required('bbox'): [number()],
+            },
+            "nominal_res": number(),
+            "nominal_scale": number(),
         })])
     ),
     # `parts` can be used for partial configurations that are referenced

@@ -1,0 +1,32 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {{ data['title'] }} {% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="{{ data['collections_path'] }}">{% trans %}Collections{% endtrans %}</a>
+/ <a href="../../../{{ data['id'] }}">{{ data['title'] }}</a>
+/ <a href="../../../{{ data['id'] }}/tiles">{% trans %}Tiles{% endtrans %}</a>
+/ <a href="../../../{{ data['id'] }}/tiles/{{ data['tileset'] }}">Tile Metadata</a>
+{% endblock %}
+{% block body %}
+    <section id="collection">
+      <h1>{{ data['tileset'] }} map tileset for {{ data['title'] }}</h1>
+      <p>
+      (View 
+      {% if data['tilejson_url'] %}
+        <a href="{{ data['tilejson_url'] }}">{% trans %}TileJSON{% endtrans %}</a> or 
+      {% endif %}
+      <a href="{{ data['json_url'] }}">{% trans %}JSON{% endtrans %}</a> representation)
+      </p>
+      <p>
+        <h2>Tile URL template:</h2>
+        <b>{{ data['collections_path'] }}</b>
+      </p>
+      {% if data['metadata'] %}
+      <h2>Metadata:</h2>
+      <ul>
+        {% for key in data['metadata'].keys() %}
+          <li>{{ key }} (<code>{{ data['metadata'][key] }}</code>)</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+{% endblock %}
