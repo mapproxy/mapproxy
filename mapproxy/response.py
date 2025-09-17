@@ -17,6 +17,7 @@
 Service responses.
 """
 
+import copy
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
 
@@ -26,13 +27,13 @@ class Response(object):
     default_content_type = 'text/plain'
     block_size = 1024 * 32
 
-    def __init__(self, response, status=None, content_type=None, mimetype=None):
+    def __init__(self, response, status=None, content_type=None, mimetype=None, headers=None):
         self.response = response
         if status is None:
             status = 200
         self.status = status
         self._timestamp = None
-        self.headers = {}
+        self.headers = copy.copy(headers) if headers else {}
         if mimetype:
             if mimetype.startswith('text/'):
                 content_type = mimetype + '; charset=' + self.charset

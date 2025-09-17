@@ -1994,7 +1994,10 @@ def cache_source_names(context, cache):
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
+        from mapproxy.layer import MapExtent
+        from mapproxy.srs import SRS
         from mapproxy.service.wms import WMSLayer
+        from mapproxy.grid.resolutions import res_to_ogc_scale
 
         sources = []
         fi_sources = []
@@ -2050,9 +2053,24 @@ class LayerConfiguration(ConfigurationBase):
         if 'dimensions' in self.conf.keys():
             dimensions = self.dimensions()
 
+        compatible_srs_list = self.conf.get('compatible_srs')
+        if compatible_srs_list:
+            compatible_srs_list = [SRS(srs) for srs in compatible_srs_list]
+
+        extent = self.conf.get('extent')
+        if extent:
+            extent = MapExtent(extent['bbox'], SRS(extent['srs']))
+
+        nominal_scale = self.conf.get('nominal_scale')
+        if not nominal_scale:
+            nominal_res = self.conf.get('nominal_res')
+            if nominal_res:
+                nominal_scale = res_to_ogc_scale(nominal_res)
+
         layer = WMSLayer(
             self.conf.get('name'), self.conf.get('title'), sources, fi_sources, lg_sources, res_range=res_range,
-            md=self.conf.get('md'), dimensions=dimensions)
+            md=self.conf.get('md'), dimensions=dimensions,
+            compatible_srs_list=compatible_srs_list, extent=extent, nominal_scale=nominal_scale)
         return layer
 
     @memoize
@@ -2400,6 +2418,63 @@ class ServiceConfiguration(ConfigurationBase):
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
 
         return server
+
+    def ogcapi_service(self, conf):
+        from mapproxy.service.ogcapi.server import OGCAPIServer
+
+        root_layer = self.context.wms_root_layer.wms_layer()
+        if not root_layer:
+            raise ConfigurationError("found no WMS layer")
+
+        enable_tiles = conf.get('enable_tiles', True)
+        enable_maps = conf.get('enable_maps', True)
+        attribution = conf.get('attribution')
+        md = conf.get('md', {})
+
+        concurrent_layer_renderer = self.context.globals.get_value(
+            'concurrent_layer_renderer', conf,
+            global_key='wms.concurrent_layer_renderer')
+
+        image_formats_names = self.context.globals.get_value('image_formats', conf,
+                                                             global_key='wms.image_formats')
+        image_formats = OrderedDict()
+        for format in image_formats_names:
+            opts = self.context.globals.image_options.image_opts({}, format)
+            if opts.format in image_formats:
+                log.warning('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
+                            opts.format)
+            image_formats[opts.format] = opts
+
+        max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
+                                                           global_key='wms.max_output_pixels')
+        if isinstance(max_output_pixels, list):
+            max_output_pixels = max_output_pixels[0] * max_output_pixels[1]
+
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60  # seconds
+
+        on_source_errors = self.context.globals.get_value('on_source_errors',
+                                                          conf, global_key='wms.on_source_errors')
+
+        default_dataset_layers = conf.get('default_dataset_layers', None)
+        if default_dataset_layers:
+            layers = root_layer.child_layers()
+            default_dataset_layers = [layers[id] for id in default_dataset_layers]
+
+        grid_configs = self.context.grids
+
+        return OGCAPIServer(root_layer,
+                            enable_tiles=enable_tiles,
+                            enable_maps=enable_maps,
+                            attribution=attribution,
+                            metadata=md,
+                            image_formats=image_formats,
+                            max_tile_age=max_tile_age,
+                            on_error=on_source_errors,
+                            concurrent_layer_renderer=concurrent_layer_renderer,
+                            max_output_pixels=max_output_pixels,
+                            grid_configs=grid_configs,
+                            default_dataset_layers=default_dataset_layers)
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer

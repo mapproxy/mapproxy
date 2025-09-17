@@ -13,7 +13,9 @@ install_requires = [
     'Pillow>=10.1;python_version=="3.12"',
     'Pillow>=11;python_version=="3.13"',
     'lxml>=6',
-    'shapely>=2'
+    'shapely>=2',
+    'jinja2',
+    'Babel',  # For jinja2
 ]
 
 

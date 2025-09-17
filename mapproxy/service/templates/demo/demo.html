@@ -31,6 +31,25 @@ jscript_openlayers=None
             <h2>About</h2>
             <p>MapProxy Version {{version}}</p>
             {{ extra_services_html_beginning }}
+            <h2>OGC API</h2>
+            {{if 'ogcapi' in services}}
+                <div class="capabilities">
+                    <span><a href="../ogcapi">Landing page (as HTML)</a></span>
+                    <span><a href="../ogcapi?f=json">(as JSON)</a></span>
+                </div>
+                <div class="capabilities">
+                    <span><a href="../ogcapi/api">API documentation (as HTML)</a></span>
+                    <span><a href="../ogcapi/api?f=json">(as JSON)</a></span>
+                </div>
+                <div class="capabilities">
+                    <span><a href="../ogcapi/collections"> Collections(as HTML)</a></span>
+                    <span><a href="../ogcapi/collections?f=json">(as JSON)</a></span>
+                </div>
+            {{else}}
+            <div class="capabilities">
+                <span>This service is not available with the current configuration.</span>
+            </div>
+            {{endif}}
             <h2>WMS</h2>
             {{if 'wms' in services}}
             <div class="capabilities">

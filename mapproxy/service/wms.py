@@ -16,7 +16,7 @@
 """
 WMS service handler
 """
-from functools import partial
+from functools import partial, reduce
 from html import escape
 from itertools import chain
 from math import sqrt
@@ -720,15 +720,25 @@ class WMSLayer(WMSLayerBase):
     layers = []
 
     def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
-                 res_range=None, md=None, dimensions=None):
+                 res_range=None, md=None, dimensions=None,
+                 compatible_srs_list=None, extent=None, nominal_scale=None):
         self.name = name
         self.title = title
         self.md = md or {}
         self.map_layers = map_layers
         self.info_layers = info_layers or []
         self.legend_layers = legend_layers or []
-        self.extent = merge_layer_extents(map_layers)
+        if extent:
+            self.extent = extent
+        else:
+            self.extent = merge_layer_extents(map_layers)
         self.dimensions = dimensions
+
+        self.compatible_srs_list = [self.extent.srs]
+        if compatible_srs_list:
+            for compatible_srs in compatible_srs_list:
+                if compatible_srs != self.extent.srs:
+                    self.compatible_srs_list.append(compatible_srs)
 
         if res_range is None:
             res_range = merge_layer_res_ranges(map_layers)
@@ -736,6 +746,7 @@ class WMSLayer(WMSLayerBase):
         self.queryable = True if info_layers else False
         self.has_legend = True if legend_layers else False
         self.dimensions = dimensions
+        self.nominal_scale = nominal_scale
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.map_layers)
@@ -804,6 +815,9 @@ class WMSGroupLayer(WMSLayerBase):
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
+        self.nominal_scale = max([layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
+        self.compatible_srs_list = list(reduce(lambda a, b: set(a) & set(b),
+                                               [layer.compatible_srs_list for layer in all_layers]))
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.layers)

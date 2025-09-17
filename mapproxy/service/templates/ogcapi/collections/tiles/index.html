@@ -1,0 +1,172 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {{ data['title'] }} {% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="{{ data['collections_path'] }}">{% trans %}Collections{% endtrans %}</a>
+/ <a href="../{{ data['id'] }}">{{ data['title'] }}</a>
+/ <a href="../{{ data['id'] }}/tiles">{% trans %}Tiles{% endtrans %}</a>
+{% endblock %}
+{% block extrahead %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.vectorgrid@latest/dist/Leaflet.VectorGrid.bundled.js"></script>
+{% endblock %}
+
+{% block body %}
+    <section id="collection">
+      <h1>{{ data['title'] }}</h1>
+      <p>{{ data['description'] }}</p>
+      <p>
+        {% for kw in data['keywords'] %}
+          <span class="badge text-bg-primary bg-primary">{{ kw }}</span>
+        {% endfor %}
+      </p>
+      <h3>Tiles</h3>
+      <div class="row">
+        <div class="col-md-2 col-sm-12">{% trans %}Tile Matrix Set{% endtrans %}</div>
+        <div class="col-md-8">
+          <select id="tilingScheme">
+            {% for tileset in data['tilesets'] %}
+            <option value="{{ tileset }}">{{ tileset }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+          <div class="col-md-2 col-sm-12">{% trans %}Metadata{% endtrans %}</div>
+          <div class="col-md-8"><a id="metadata_link" href="" target="_blank">Metadata</a></div>
+      </div>
+      <script>
+        var select = document.getElementById('tilingScheme');
+        let params = (new URL(document.location)).searchParams;
+        var scheme = params.get('scheme') ?? select.value;
+        if (scheme) {
+            select.value = scheme;
+            document.getElementById("metadata_link").href = "{{ config['server']['url'] }}/collections/{{ data['id'] }}/tiles/" + scheme + "/metadata";
+        }
+        select.addEventListener('change', ev => {
+          var scheme = ev.target.value;
+          console.log(scheme);
+          document.location.search = `scheme=${scheme}`;
+          document.getElementById("metadata_link").href = "{{ config['server']['url'] }}/collections/{{ data['id'] }}/tiles/" + scheme + "/metadata";
+        });
+        </script>
+      <br/>
+      <div class="row">
+        <div class="col-md-2 col-sm-12">Map</div>
+        <div class="col-md-8">
+          <div id="items-map"></div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block extrafoot %}
+    <script>
+    if (scheme !== "WorldCRS84Quad"){
+    var map = L.map('items-map').setView([{{ 45 }}, {{ -75 }}], 10);
+
+    map.addLayer(new L.TileLayer(
+        '{{ config["server"]["map"]["url"] }}', {
+            maxZoom: {{ data['maxzoom'] }},
+            attribution: '{{ config["server"]["map"]["attribution"] | safe }}'
+        }
+    ));
+
+    } else {
+
+    var map = L.map('items-map',{
+        crs: L.CRS.EPSG4326
+    }).setView([{{ 45 }}, {{ -75 }}], 10);
+
+    map.addLayer(new L.TileLayer(
+        '{{ config["server"]["map"]["url"] }}', {
+            maxZoom: {{ data['maxzoom'] }},
+            attribution: '{{ config["server"]["map"]["attribution"] | safe }}',
+            tileSize: L.point(512, 256)
+        }
+    ));
+    document.getElementById('items-map').insertAdjacentHTML(
+        'afterend', 
+        '<div style="margin-top: 1rem; text-align: center;">' +
+        '{% trans %}Warning: Basemap may be in a different projection{% endtrans %}' +
+        '</div>'
+    );
+
+    }
+    {% for link in data["links"] %}
+      {% if link["rel"] == "item" %}
+        var tilesUrl = '{{ link["href"] }}';
+      {% endif %}
+    {% endfor %}
+
+    var url = tilesUrl
+        .replace('{dataset}', '{{ data["id"] }}')
+        .replace('{tileMatrixSetId}', scheme)
+        .replace("tileMatrix", "z")
+    {% if data['tile_type'] == 'raster' %}
+        url = url
+            .replace("tileRow", "y")
+            .replace("tileCol", "x");
+        map.addLayer(new L.TileLayer(
+            url, {
+                maxZoom: {{ data['maxzoom'] }},
+                crs: 'EPSG:3857'
+            }
+        ));
+    {% elif data['tile_type'] == 'vector' %}
+        url = url
+            .replace("tileRow", "y")
+            .replace("tileCol", "x");
+        var VectorTileOptions = {
+            interactive: true,
+            rendererFactory: L.canvas.tile,
+            maxZoom: {{ data['maxzoom'] }},
+            indexMaxZoom: 5,
+            getFeatureId: function(feat) {
+                return feat.properties.id || feat.properties.fid || feat.properties.uri;
+            }
+        };
+
+        var highlight;
+        var clearHighlight = function() {
+            if (highlight) {
+                tilesPbfLayer.resetFeatureStyle(highlight);
+            }
+            highlight = null;
+        };
+
+        var tilesPbfLayer = L.vectorGrid.protobuf(url, VectorTileOptions)
+            .on('click', function(e) { // The .on method attaches an event handler
+                clearHighlight();
+                highlight = e.layer.properties.id || e.layer.properties.fid || e.layer.properties.uri;
+                tilesPbfLayer.setFeatureStyle(highlight, {
+                    weight: 2,
+                    color: 'red',
+                    opacity: 1,
+                    fillColor: 'red',
+                    fill: false,
+                    radius: 6,
+                    fillOpacity: 1
+                });
+
+                L.DomEvent.stop(e);
+            })
+            .addTo(map);
+
+        map.on('click', clearHighlight);
+    {% endif %}
+
+    bounds = L.latLngBounds([
+        [
+            {{ data['bounds'][1] }},
+            {{ data['bounds'][0] }}
+        ],[
+            {{ data['bounds'][3] }},
+            {{ data['bounds'][2] }}
+        ]
+    ]);
+    map.fitBounds(bounds, maxZoom={{ data['maxzoom']}});
+
+    </script>
+{% endblock %}

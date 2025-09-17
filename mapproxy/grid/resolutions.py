@@ -3,19 +3,19 @@ import math
 from mapproxy.util.bbox import bbox_size
 
 
-def deg_to_m(deg):
-    return deg * (6378137 * 2 * math.pi) / 360
+def deg_to_m(deg, semi_major_metre=6378137):
+    return deg * (semi_major_metre * 2 * math.pi) / 360
 
 
 OGC_PIXEL_SIZE = 0.00028  # m/px
 
 
-def ogc_scale_to_res(scale):
-    return scale * OGC_PIXEL_SIZE
+def ogc_scale_to_res(scale, metre_per_pixel=OGC_PIXEL_SIZE):
+    return scale * metre_per_pixel
 
 
-def res_to_ogc_scale(res):
-    return res / OGC_PIXEL_SIZE
+def res_to_ogc_scale(res, metre_per_pixel=OGC_PIXEL_SIZE):
+    return res / metre_per_pixel
 
 
 def get_resolution(bbox, size):
@@ -159,8 +159,8 @@ class ResolutionRange(object):
     def contains(self, bbox, size, srs):
         width, height = bbox_size(bbox)
         if srs.is_latlong:
-            width = deg_to_m(width)
-            height = deg_to_m(height)
+            width = deg_to_m(width, srs.semi_major_metre())
+            height = deg_to_m(height, srs.semi_major_metre())
 
         x_res = width/size[0]
         y_res = height/size[1]
