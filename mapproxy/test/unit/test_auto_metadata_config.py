@@ -124,7 +124,7 @@ class TestAutoMetadataConfigLoading:
         loaded_config = ProxyConfiguration(config)
 
         # Trigger layer processing by accessing the WMS layer
-        layer = loaded_config.layers['secure_layer'].wms_layer()
+        _ = loaded_config.layers['secure_layer'].wms_layer()
 
         # Verify metadata manager was called with auth config
         mock_manager_instance.get_wms_metadata.assert_called_once()
@@ -173,7 +173,7 @@ class TestAutoMetadataConfigLoading:
         loaded_config = ProxyConfiguration(config)
 
         # Trigger layer processing by accessing the WMS layer
-        layer = loaded_config.layers['complex_layer'].wms_layer()
+        _ = loaded_config.layers['complex_layer'].wms_layer()
 
         # Verify metadata manager was called
         mock_manager_instance.get_wms_metadata.assert_called_once()

@@ -1901,24 +1901,24 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
                                   this=this_layer, layers=layers, md=group_md)
         return layer
-    
+
     def _merge_group_auto_metadata(self, sublayers, this_layer):
         """Merge auto-fetched metadata from sublayers with group configuration."""
         manual_metadata = self.conf.get('md', {})
-        
+
         # Check if auto_metadata is enabled for the group
         if not manual_metadata.get('auto_metadata', False):
             return manual_metadata
-        
+
         # Collect metadata from sublayers that have auto_metadata enabled
         sublayer_abstracts = []
         sublayer_titles = []
-        
+
         # Process sublayers
         for sublayer in sublayers:
             if hasattr(sublayer, 'md') and sublayer.md:
                 md = sublayer.md
-                
+
                 # Check if this sublayer had auto_metadata enabled
                 # We can detect this by checking if it has auto-fetched content
                 if md.get('abstract') and md.get('title'):
@@ -1928,7 +1928,7 @@ class WMSLayerConfiguration(ConfigurationBase):
                     sublayer_abstracts.append(md['abstract'])
                 elif md.get('title'):
                     sublayer_titles.append(md['title'])
-        
+
         # Process this_layer if it exists
         if this_layer and hasattr(this_layer, 'md') and this_layer.md:
             md = this_layer.md
@@ -1939,22 +1939,22 @@ class WMSLayerConfiguration(ConfigurationBase):
                 sublayer_abstracts.append(md['abstract'])
             elif md.get('title'):
                 sublayer_titles.append(md['title'])
-        
+
         # Create aggregated metadata
         aggregated_metadata = manual_metadata.copy()
-        
+
         # Combine sublayer metadata if we found any
         if sublayer_abstracts:
             if 'abstract' not in manual_metadata or not manual_metadata['abstract']:
                 # Create combined abstract from sublayers
                 combined_abstract = ' + '.join(sublayer_abstracts)
                 aggregated_metadata['abstract'] = combined_abstract
-        
+
         if sublayer_titles and ('title' not in manual_metadata or not manual_metadata['title']):
             # If no manual title, create one from sublayer titles
             combined_title = ' + '.join(sublayer_titles)
             aggregated_metadata['title'] = combined_title
-        
+
         return aggregated_metadata
 
 
@@ -2064,55 +2064,56 @@ class LayerConfiguration(ConfigurationBase):
     def _merge_layer_auto_metadata(self):
         """Merge auto-fetched metadata with manual configuration for layer."""
         manual_metadata = self.conf.get('md', {})
-        
+
         # Check if auto_metadata is enabled
         if not manual_metadata.get('auto_metadata', False):
             return manual_metadata
-        
+
         # Import metadata manager and get singleton instance
         from mapproxy.source.metadata import get_metadata_manager, merge_auto_metadata
-        
+
         metadata_manager = get_metadata_manager()
         auto_metadata = {}
-        
+
         # Find WMS sources in layer sources
         wms_sources = self._find_wms_sources_in_layer()
-        
+
         for source_name, wms_config in wms_sources:
             try:
                 # Extract authentication config from source
                 auth_config = self._extract_auth_config(wms_config)
-                
+
                 # Get WMS URL and layer name
                 wms_url = wms_config['req']['url']
-                
+
                 # Try to determine target layer name
                 target_layer = self._determine_target_layer(source_name, wms_config)
-                
+
                 # Fetch metadata
                 fetched_metadata = metadata_manager.get_wms_metadata(
                     wms_url, auth_config, target_layer
                 )
-                
+
                 if fetched_metadata.get('layer'):
                     # Merge layer metadata
                     for key, value in fetched_metadata['layer'].items():
                         if value and key not in auto_metadata:
                             auto_metadata[key] = value
-                            
+
             except Exception as e:
                 # Log detailed error but don't block layer creation
                 error_type = type(e).__name__
                 log.warning(f"Failed to fetch auto metadata for source {source_name} ({error_type}): {e}")
-                log.debug(f"Auto metadata fetch failed for {source_name}, layer will work without metadata", exc_info=True)
-        
+                log.debug(f"Auto metadata fetch failed for {source_name}, "
+                          f"layer will work without metadata", exc_info=True)
+
         # Merge auto metadata with manual metadata (manual takes priority)
         return merge_auto_metadata(manual_metadata, auto_metadata)
-    
+
     def _find_wms_sources_in_layer(self):
         """Find all WMS sources used by this layer."""
         wms_sources = []
-        
+
         for source_spec in self.conf.get('sources', []):
             # Handle source specifications like "source_name:layer_name"
             if ':' in source_spec:
@@ -2120,48 +2121,48 @@ class LayerConfiguration(ConfigurationBase):
                 source_name = source_spec.split(':')[0]
             else:
                 source_name = source_spec
-            
+
             # Check direct sources
             if source_name in self.context.sources:
                 source_conf = self.context.sources[source_name].conf
                 if source_conf.get('type') == 'wms':
                     # Pass the full source_spec so we can extract layer info
                     wms_sources.append((source_spec, source_conf))
-            
+
             # Check sources behind caches
             elif source_name in self.context.caches:
                 cache_conf = self.context.caches[source_name].conf
                 cache_sources = cache_conf.get('sources', [])
-                
+
                 if isinstance(cache_sources, list):
                     for cache_source_name in cache_sources:
                         if cache_source_name in self.context.sources:
                             source_conf = self.context.sources[cache_source_name].conf
                             if source_conf.get('type') == 'wms':
                                 wms_sources.append((cache_source_name, source_conf))
-        
+
         return wms_sources
-    
+
     def _extract_auth_config(self, wms_config):
         """Extract authentication configuration from WMS source config."""
         auth_config = {}
-        
+
         # Check for HTTP basic auth
         http_conf = wms_config.get('http', {})
         if 'username' in wms_config and 'password' in wms_config:
             auth_config['username'] = wms_config['username']
             auth_config['password'] = wms_config['password']
-        
+
         # Check for headers (including Authorization)
         if 'headers' in http_conf:
             auth_config['headers'] = http_conf['headers']
-        
+
         return auth_config
-    
+
     def _determine_target_layer(self, source_name, wms_config):
         """Determine the target layer name from WMS config."""
         req_config = wms_config.get('req', {})
-        
+
         # Check for layers parameter in request
         if 'layers' in req_config:
             layers = req_config['layers']
@@ -2169,7 +2170,7 @@ class LayerConfiguration(ConfigurationBase):
                 return layers
             elif isinstance(layers, list) and layers:
                 return layers[0]  # Use first layer
-        
+
         # Check if source_name contains layer specification like "source_name:layer_name"
         # This handles formats like "source_lhm_plan:plan:g_fnp"
         if ':' in source_name:
@@ -2178,7 +2179,7 @@ class LayerConfiguration(ConfigurationBase):
                 # For "source_lhm_plan:plan:g_fnp", we want "g_fnp"
                 # For "source_lhm_plan:layer_name", we want "layer_name"
                 return parts[-1]  # Use the last part
-        
+
         # Fallback to source name or layer name if available
         return self.conf.get('name', source_name)
 
