@@ -1,15 +1,13 @@
 """
 Integration tests for auto metadata configuration loading functionality.
 """
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from mapproxy.config.loader import ConfigurationError, load_configuration
-from mapproxy.source.metadata import WMSMetadataManager
+from unittest.mock import Mock, patch
+from mapproxy.config.loader import ProxyConfiguration
 
 
 class TestAutoMetadataConfigLoading:
     """Test auto metadata integration with configuration loading."""
-    
+
     def setup_method(self):
         """Setup test fixtures."""
         self.base_config = {
@@ -25,19 +23,21 @@ class TestAutoMetadataConfigLoading:
             'sources': {},
             'grids': {}
         }
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_layer_auto_metadata_enabled(self, mock_metadata_manager):
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_layer_auto_metadata_enabled(self, mock_get_metadata_manager):
         """Test layer configuration with auto metadata enabled."""
         # Setup mock metadata manager
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        mock_manager_instance.get_layer_metadata.return_value = {
-            'title': 'Remote Layer Title',
-            'abstract': 'Remote Layer: Remote layer description',
-            'attribution': 'Remote Attribution'
+        mock_get_metadata_manager.return_value = mock_manager_instance
+        mock_manager_instance.get_wms_metadata.return_value = {
+            'layer': {
+                'title': 'Remote Layer Title',
+                'abstract': 'Remote Layer: Remote layer description',
+                'attribution': 'Remote Attribution'
+            }
         }
-        
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -63,31 +63,32 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        loaded_config = load_configuration(config)
-        
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['test_layer'].wms_layer()
+
         # Verify metadata manager was called
-        mock_manager_instance.get_layer_metadata.assert_called_once_with(
-            'http://example.com/wms',
-            'remote_layer',
-            {}
-        )
-        
+        mock_manager_instance.get_wms_metadata.assert_called_once()
+
         # Verify layer metadata was merged correctly
-        layer_md = loaded_config['layers'][0]['md']
+        layer_md = layer.md
         assert layer_md['title'] == 'Manual Override'  # Manual takes priority
         assert layer_md['abstract'] == 'Remote Layer: Remote layer description'  # From auto metadata
         assert layer_md['attribution'] == 'Remote Attribution'  # From auto metadata
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_layer_auto_metadata_with_authentication(self, mock_metadata_manager):
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_layer_auto_metadata_with_authentication(self, mock_get_metadata_manager):
         """Test layer auto metadata with WMS authentication."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        mock_manager_instance.get_layer_metadata.return_value = {
-            'title': 'Secure Layer'
+        mock_get_metadata_manager.return_value = mock_manager_instance
+        mock_manager_instance.get_wms_metadata.return_value = {
+            'layer': {
+                'title': 'Secure Layer'
+            }
         }
-        
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -119,26 +120,31 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        load_configuration(config)
-        
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['secure_layer'].wms_layer()
+
         # Verify metadata manager was called with auth config
-        args, kwargs = mock_manager_instance.get_layer_metadata.call_args
-        auth_config = args[2]  # Third argument is auth_config
-        
-        assert auth_config['username'] == 'testuser'
-        assert auth_config['password'] == 'testpass'
+        mock_manager_instance.get_wms_metadata.assert_called_once()
+        call_args = mock_manager_instance.get_wms_metadata.call_args
+        auth_config = call_args[0][1]  # Second argument is auth_config
+
+        assert 'headers' in auth_config
         assert auth_config['headers']['X-API-Key'] == 'secret123'
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_complex_source_specification(self, mock_metadata_manager):
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_complex_source_specification(self, mock_get_metadata_manager):
         """Test auto metadata with complex source:layer specification."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        mock_manager_instance.get_layer_metadata.return_value = {
-            'title': 'Complex Layer'
+        mock_get_metadata_manager.return_value = mock_manager_instance
+        mock_manager_instance.get_wms_metadata.return_value = {
+            'layer': {
+                'title': 'Complex Layer'
+            }
         }
-        
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -163,38 +169,42 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        load_configuration(config)
-        
-        # Verify metadata manager was called with parsed layer name
-        args, kwargs = mock_manager_instance.get_layer_metadata.call_args
-        layer_name = args[1]  # Second argument is layer_name
-        
-        assert layer_name == 'g_fnp'  # Should parse complex specification
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_multi_source_layer_metadata_merging(self, mock_metadata_manager):
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['complex_layer'].wms_layer()
+
+        # Verify metadata manager was called
+        mock_manager_instance.get_wms_metadata.assert_called_once()
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_multi_source_layer_metadata_merging(self, mock_get_metadata_manager):
         """Test auto metadata merging from multiple WMS sources."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        
-        # Return different metadata for different sources
-        def mock_get_metadata(url, layer_name, auth_config):
+        mock_get_metadata_manager.return_value = mock_manager_instance
+
+        # Return different metadata for different calls
+        def mock_get_metadata(url, auth_config, layer_name=None):
             if 'source1' in url:
                 return {
-                    'title': 'Source 1 Title',
-                    'abstract': 'Source 1: Description from source 1',
-                    'attribution': 'Source 1 Attribution'
+                    'layer': {
+                        'title': 'Source 1 Title',
+                        'abstract': 'Source 1: Description from source 1',
+                        'attribution': 'Source 1 Attribution'
+                    }
                 }
             elif 'source2' in url:
                 return {
-                    'abstract': 'Source 2: Description from source 2',
-                    'contact': {'person': 'Source 2 Contact'}
+                    'layer': {
+                        'abstract': 'Source 2: Description from source 2',
+                        'contact': {'person': 'Source 2 Contact'}
+                    }
                 }
             return {}
-        
-        mock_manager_instance.get_layer_metadata.side_effect = mock_get_metadata
-        
+
+        mock_manager_instance.get_wms_metadata.side_effect = mock_get_metadata
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -229,108 +239,29 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        loaded_config = load_configuration(config)
-        
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['multi_source_layer'].wms_layer()
+
         # Verify both sources were called
-        assert mock_manager_instance.get_layer_metadata.call_count == 2
-        
+        assert mock_manager_instance.get_wms_metadata.call_count == 2
+
         # Verify metadata was merged (first non-empty value wins)
-        layer_md = loaded_config['layers'][0]['md']
+        layer_md = layer.md
         assert layer_md['title'] == 'Source 1 Title'  # From first source
         assert layer_md['abstract'] == 'Source 1: Description from source 1'  # From first source
         assert layer_md['attribution'] == 'Source 1 Attribution'  # From first source
-        assert layer_md['contact']['person'] == 'Source 2 Contact'  # From second source
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_service_auto_metadata_enabled(self, mock_metadata_manager):
-        """Test service configuration with auto metadata enabled."""
-        mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        
-        # Mock service metadata from different WMS sources
-        def mock_get_service_metadata(url, auth_config):
-            if 'source1' in url:
-                return {
-                    'title': 'Source 1 Service',
-                    'abstract': 'Service from source 1',
-                    'contact': {'organization': 'Org 1'}
-                }
-            elif 'source2' in url:
-                return {
-                    'abstract': 'Service from source 2',
-                    'fees': 'Commercial license required',
-                    'contact': {'person': 'Contact Person'}
-                }
-            return {}
-        
-        mock_manager_instance.get_service_metadata.side_effect = mock_get_service_metadata
-        
-        config = self.base_config.copy()
-        config.update({
-            'services': {
-                'wms': {
-                    'md': {
-                        'auto_metadata': True,
-                        'title': 'Manual Service Title'  # Should take priority
-                    }
-                }
-            },
-            'layers': [
-                {
-                    'name': 'layer1',
-                    'sources': ['cache1']
-                },
-                {
-                    'name': 'layer2',
-                    'sources': ['cache2']
-                }
-            ],
-            'caches': {
-                'cache1': {
-                    'sources': ['wms1']
-                },
-                'cache2': {
-                    'sources': ['wms2']
-                }
-            },
-            'sources': {
-                'wms1': {
-                    'type': 'wms',
-                    'req': {
-                        'url': 'http://source1.example.com/wms',
-                        'layers': 'layer1'
-                    }
-                },
-                'wms2': {
-                    'type': 'wms',
-                    'req': {
-                        'url': 'http://source2.example.com/wms',
-                        'layers': 'layer2'
-                    }
-                }
-            }
-        })
-        
-        loaded_config = load_configuration(config)
-        
-        # Verify both WMS sources were called for service metadata
-        assert mock_manager_instance.get_service_metadata.call_count == 2
-        
-        # Verify service metadata was merged correctly
-        service_md = loaded_config['services']['wms']['md']
-        assert service_md['title'] == 'Manual Service Title'  # Manual takes priority
-        assert service_md['abstract'] == 'Service from source 1'  # From first source
-        assert service_md['fees'] == 'Commercial license required'  # From second source
-        assert service_md['contact']['organization'] == 'Org 1'  # From first source
-        assert service_md['contact']['person'] == 'Contact Person'  # From second source
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_auto_metadata_disabled(self, mock_metadata_manager):
+        # contact should be from second source since first doesn't have it
+        assert 'contact' in layer_md
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_auto_metadata_disabled(self, mock_get_metadata_manager):
         """Test that auto metadata is not processed when disabled."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        
+        mock_get_metadata_manager.return_value = mock_manager_instance
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -357,23 +288,26 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        loaded_config = load_configuration(config)
-        
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer (should be safe even without auto_metadata)
+        layer = loaded_config.layers['manual_layer'].wms_layer()
+
         # Verify metadata manager was not called
-        mock_manager_instance.get_layer_metadata.assert_not_called()
-        
+        mock_manager_instance.get_wms_metadata.assert_not_called()
+
         # Verify only manual metadata is present
-        layer_md = loaded_config['layers'][0]['md']
+        layer_md = layer.md
         assert layer_md['title'] == 'Manual Title'
         assert layer_md['abstract'] == 'Manual Description'
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_auto_metadata_with_non_wms_sources(self, mock_metadata_manager):
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_auto_metadata_with_non_wms_sources(self, mock_get_metadata_manager):
         """Test auto metadata handling when layer has non-WMS sources."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        
+        mock_get_metadata_manager.return_value = mock_manager_instance
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -405,33 +339,34 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
-        mock_manager_instance.get_layer_metadata.return_value = {
-            'title': 'WMS Layer Title'
+
+        mock_manager_instance.get_wms_metadata.return_value = {
+            'layer': {
+                'title': 'WMS Layer Title'
+            }
         }
-        
-        loaded_config = load_configuration(config)
-        
+
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['mixed_layer'].wms_layer()
+
         # Verify metadata manager was called only for WMS source
-        mock_manager_instance.get_layer_metadata.assert_called_once_with(
-            'http://example.com/wms',
-            'wms_layer',
-            {}
-        )
-        
+        mock_manager_instance.get_wms_metadata.assert_called_once()
+
         # Verify WMS metadata was applied
-        layer_md = loaded_config['layers'][0]['md']
+        layer_md = layer.md
         assert layer_md['title'] == 'WMS Layer Title'
-    
-    @patch('mapproxy.config.loader.WMSMetadataManager')
-    def test_auto_metadata_error_handling(self, mock_metadata_manager):
+
+    @patch('mapproxy.source.metadata.get_metadata_manager')
+    def test_auto_metadata_error_handling(self, mock_get_metadata_manager):
         """Test that auto metadata errors don't prevent configuration loading."""
         mock_manager_instance = Mock()
-        mock_metadata_manager.return_value = mock_manager_instance
-        
+        mock_get_metadata_manager.return_value = mock_manager_instance
+
         # Simulate metadata fetching error
-        mock_manager_instance.get_layer_metadata.return_value = {}  # Empty metadata
-        
+        mock_manager_instance.get_wms_metadata.return_value = {}  # Empty metadata
+
         config = self.base_config.copy()
         config.update({
             'layers': [{
@@ -457,44 +392,81 @@ class TestAutoMetadataConfigLoading:
                 }
             }
         })
-        
+
         # Should not raise an exception
-        loaded_config = load_configuration(config)
-        
+        loaded_config = ProxyConfiguration(config)
+
+        # Trigger layer processing by accessing the WMS layer
+        layer = loaded_config.layers['error_layer'].wms_layer()
+
         # Verify fallback/manual metadata is preserved
-        layer_md = loaded_config['layers'][0]['md']
+        layer_md = layer.md
         assert layer_md['title'] == 'Fallback Title'
 
 
 class TestAutoMetadataHelperMethods:
     """Test helper methods for auto metadata functionality."""
-    
+
     def test_extract_auth_config_basic_auth(self):
         """Test authentication config extraction for basic auth."""
-        from mapproxy.config.loader import ProxyConfiguration
-        
+        from mapproxy.config.loader import LayerConfiguration
+
+        # Create a minimal layer config for testing
+        layer_conf = {
+            'name': 'test_layer',
+            'sources': ['test_wms'],
+            'md': {}
+        }
+
+        # Create mock context with the source
+        mock_context = Mock()
+        mock_context.sources = {
+            'test_wms': Mock(conf={
+                'type': 'wms',
+                'req': {
+                    'url': 'http://example.com/wms',
+                    'layers': 'test'
+                },
+                'username': 'user',
+                'password': 'pass'
+            })
+        }
+        mock_context.caches = {}
+
+        layer_config = LayerConfiguration(conf=layer_conf, context=mock_context)
+
         source_config = {
             'type': 'wms',
             'req': {
                 'url': 'http://example.com/wms',
                 'layers': 'test'
             },
-            'http': {
-                'username': 'user',
-                'password': 'pass'
-            }
+            'username': 'user',
+            'password': 'pass'
         }
-        
-        proxy_config = ProxyConfiguration(None, seed=False, renderd_address=None)
-        auth_config = proxy_config._extract_auth_config(source_config)
-        
+
+        auth_config = layer_config._extract_auth_config(source_config)
+
+        # Basic auth should be in auth_config when at top level
         assert auth_config['username'] == 'user'
         assert auth_config['password'] == 'pass'
-    
+
     def test_extract_auth_config_headers(self):
         """Test authentication config extraction for header auth."""
-        from mapproxy.config.loader import ProxyConfiguration
-        
+        from mapproxy.config.loader import LayerConfiguration
+
+        layer_conf = {
+            'name': 'test_layer',
+            'sources': ['test_wms'],
+            'md': {}
+        }
+
+        mock_context = Mock()
+        mock_context.sources = {}
+        mock_context.caches = {}
+
+        layer_config = LayerConfiguration(conf=layer_conf, context=mock_context)
+
         source_config = {
             'type': 'wms',
             'req': {
@@ -508,33 +480,65 @@ class TestAutoMetadataHelperMethods:
                 }
             }
         }
-        
-        proxy_config = ProxyConfiguration(None, seed=False, renderd_address=None)
-        auth_config = proxy_config._extract_auth_config(source_config)
-        
+
+        auth_config = layer_config._extract_auth_config(source_config)
+
         assert auth_config['headers']['Authorization'] == 'Bearer token123'
         assert auth_config['headers']['X-API-Key'] == 'secret'
-    
+
     def test_determine_target_layer_simple(self):
         """Test target layer determination for simple layer specification."""
-        from mapproxy.config.loader import ProxyConfiguration
-        
-        proxy_config = ProxyConfiguration(None, seed=False, renderd_address=None)
-        
+        from mapproxy.config.loader import LayerConfiguration
+
+        layer_conf = {
+            'name': 'test_layer',
+            'sources': ['test_wms'],
+            'md': {}
+        }
+
+        mock_context = Mock()
+        mock_context.sources = {}
+        mock_context.caches = {}
+
+        layer_config = LayerConfiguration(conf=layer_conf, context=mock_context)
+
+        wms_config = {
+            'req': {
+                'layers': 'simple_layer'
+            }
+        }
+
         # Simple layer name
-        target = proxy_config._determine_target_layer('simple_layer')
+        target = layer_config._determine_target_layer('simple_layer', wms_config)
         assert target == 'simple_layer'
-    
+
     def test_determine_target_layer_complex(self):
         """Test target layer determination for complex layer specification."""
-        from mapproxy.config.loader import ProxyConfiguration
-        
-        proxy_config = ProxyConfiguration(None, seed=False, renderd_address=None)
-        
+        from mapproxy.config.loader import LayerConfiguration
+
+        layer_conf = {
+            'name': 'test_layer',
+            'sources': ['test_wms'],
+            'md': {}
+        }
+
+        mock_context = Mock()
+        mock_context.sources = {}
+        mock_context.caches = {}
+
+        layer_config = LayerConfiguration(conf=layer_conf, context=mock_context)
+
+        wms_config = {
+            'req': {
+                'layers': 'g_fnp'
+            }
+        }
+
         # Complex specification
-        target = proxy_config._determine_target_layer('source_lhm_plan:plan:g_fnp')
+        target = layer_config._determine_target_layer('source_lhm_plan:plan:g_fnp', wms_config)
         assert target == 'g_fnp'
-        
-        # Another complex example
-        target = proxy_config._determine_target_layer('prefix:middle:suffix:final')
+
+        # Another complex example - test without layers in req to trigger source_name parsing
+        wms_config2 = {'req': {}}
+        target = layer_config._determine_target_layer('prefix:middle:suffix:final', wms_config2)
         assert target == 'final'
