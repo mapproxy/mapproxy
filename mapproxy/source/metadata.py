@@ -300,7 +300,7 @@ class WMSMetadataManager:
             legend = layer.get('legend')
             if legend:
                 combined_metadata['attribution'] = {
-                    'title': f"Layers: {', '.join([l.get('name', '') for l in layers])}",
+                    'title': f"Layers: {', '.join([layer.get('name', '') for layer in layers])}",
                     'url': legend.get('url', '')
                 }
                 break
