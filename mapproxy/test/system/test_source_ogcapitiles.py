@@ -323,3 +323,161 @@ class TestOGCAPITilesSource(SysTest):
             )
             assert resp.content_type == "text/plain"
             assert resp.body == b"BBOX does not align to tile"
+
+
+class TestOGCAPITilesNonEarthSource(SysTest):
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "ogcapitiles_non_earth_source.yaml"
+
+    def test(self, app):
+        ogcapitiles.reset_cache = True
+
+        my_collection = {
+            "links": [
+                {
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/tilesets-map",
+                    "type": "application/json",
+                    "title": "Map tilesets available for this dataset (as JSON)",
+                    "href": "/ogcapi/collections/my_collection/map/tiles?f=json",
+                },
+            ],
+            "storageCrs": "http://www.opengis.net/def/crs/IAU/2015/30100",
+        }
+
+        tilesets = {
+            "tilesets": [
+                {
+                    "title": "my_collection",
+                    "crs": "http://www.opengis.net/def/crs/IAU/2015/30100",
+                    "dataType": "map",
+                    "links": [
+                        {
+                            "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+                            "type": "application/json",
+                            "title": "moon_grid definition (as JSON)",
+                            "href": "/ogcapi/tileMatrixSets/moon_grid",
+                        },
+                        {
+                            "rel": "self",
+                            "type": "application/json",
+                            "title": "moon_grid map tileset for my_collection (as JSON)",
+                            "href": "/ogcapi/collections/my_collection/map/tiles/moon_grid?f=json",
+                        },
+                    ],
+                },
+                {
+                    "title": "my_collection",
+                    "crs": "http://www.opengis.net/def/crs/IAU/2015/30100",
+                    "dataType": "map",
+                    "links": [
+                        {
+                            "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+                            "type": "application/json",
+                            "title": "moon_grid definition (as JSON)",
+                            "href": "/ogcapi/tileMatrixSets/moon_grid",
+                        },
+                        {
+                            "rel": "self",
+                            "type": "application/json",
+                            "title": "moon_grid map tileset for my_collection (as JSON)",
+                            "href": "/ogcapi/collections/my_collection/map/tiles/moon_grid?f=json",
+                        },
+                    ],
+                },
+            ]
+        }
+
+        moon_grid = {
+            "id": "moon_grid",
+            "title": "moon_grid",
+            "crs": "http://www.opengis.net/def/crs/IAU/2015/30100",
+            "orderedAxes": ["N", "E"],
+            "tileMatrices": [
+                {
+                    "id": "0",
+                    "scaleDenominator": 559082264.0287179,
+                    "cellSize": 1.40625,
+                    "cornerOfOrigin": "topLeft",
+                    "pointOfOrigin": [90, -180],
+                    "matrixWidth": 1,
+                    "matrixHeight": 1,
+                    "tileWidth": 256,
+                    "tileHeight": 256,
+                },
+                {
+                    "id": "1",
+                    "scaleDenominator": 279541132.01435894,
+                    "cellSize": 0.703125,
+                    "cornerOfOrigin": "topLeft",
+                    "pointOfOrigin": [90, -180],
+                    "matrixWidth": 2,
+                    "matrixHeight": 2,
+                    "tileWidth": 256,
+                    "tileHeight": 256,
+                },
+            ],
+        }
+
+        tiles = {
+            "title": "my_collection",
+            "crs": "http://www.opengis.net/def/crs/IAU/2015/30100",
+            "dataType": "map",
+            "links": [
+                {
+                    "rel": "item",
+                    "type": "image/png",
+                    "title": "moon_grid map tiles for my_collection (as PNG)",
+                    "href": "/ogcapi/collections/my_collection/map/tiles/moon_grid/{tileMatrix}/{tileRow}/{tileCol}.png",  # noqa
+                    "templated": True,
+                },
+            ],
+        }
+
+        with tmp_image((512, 256), format="png", color=(255, 0, 0)) as img:
+            expected_reqs = [
+                (
+                    {"path": r"/ogcapi/collections/my_collection"},
+                    {
+                        "body": bytes(json.dumps(my_collection).encode("UTF-8")),
+                        "headers": {"content-type": "application/json"},
+                    },
+                ),
+                (
+                    {"path": r"/ogcapi/collections/my_collection/map/tiles?f=json"},
+                    {
+                        "body": bytes(json.dumps(tilesets).encode("UTF-8")),
+                        "headers": {"content-type": "application/json"},
+                    },
+                ),
+                (
+                    {"path": r"/ogcapi/tileMatrixSets/moon_grid"},
+                    {
+                        "body": bytes(json.dumps(moon_grid).encode("UTF-8")),
+                        "headers": {"content-type": "application/json"},
+                    },
+                ),
+                (
+                    {
+                        "path": r"/ogcapi/collections/my_collection/map/tiles/moon_grid?f=json"
+                    },
+                    {
+                        "body": bytes(json.dumps(tiles).encode("UTF-8")),
+                        "headers": {"content-type": "application/json"},
+                    },
+                ),
+                (
+                    {
+                        "path": r"/ogcapi/collections/my_collection/map/tiles/moon_grid/1/0/1.png"
+                    },
+                    {"body": img.read(), "headers": {"content-type": "image/png"}},
+                ),
+            ]
+            with mock_httpd(("localhost", 42423), expected_reqs):
+                resp = app.get("/wmts/test/moon_grid/1/1/0.png")
+                assert resp.content_type == "image/png"
+                img = Image.open(BytesIO(resp.body))
+                assert img.format == "PNG"
+                assert img.width == 512
+                assert img.height == 256
+                assert img.getextrema() == ((255, 255), (0, 0), (0, 0))
