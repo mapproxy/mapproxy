@@ -689,4 +689,6 @@ def ogc_crs_url_to_auth_code(url):
         raise ValueError(f'{url} is not a OGC CRS URL')
 
     auth_name, version, code = url[len(prefix):].split('/')
+    if auth_name == "IAU":
+        return auth_name + "_" + version + ":" + code
     return auth_name + ':' + code
