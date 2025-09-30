@@ -779,6 +779,9 @@ grids:
     # ======= overwritten bbox:
     bbox: [-180, 60, -100, 70]
 
+  grid_custom:
+    res: [4,2,1]
+
 globals:
   http:
     client_timeout: 2
@@ -833,6 +836,9 @@ grids:
     bbox: [-167, 53, -141, 67]
     bbox_srs: 'EPSG:4326'
 
+  grid_custom:
+    res: [4,2,1]
+
 globals:
   http:
     client_timeout: 3
@@ -882,6 +888,10 @@ base: [%s]
                     assert grid_alaska.conf['srs'] == 'EPSG:4326'
                     assert grid_alaska.conf['bbox_srs'] == 'EPSG:4326'
                     assert grid_alaska.conf['origin'] == 'sw'
+
+                    grid_custom = config.grids['grid_custom']
+                    assert grid_custom is not None
+                    assert grid_custom.conf['res'] == [4, 2, 1]
 
                     wms = config.services.conf['wms']
                     assert wms is not None

@@ -17,6 +17,9 @@
 Configuration loading and system initializing.
 """
 from __future__ import division
+
+import json
+
 from mapproxy.util.fs import find_exec
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.util.py import memoize
@@ -2402,6 +2405,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
 
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
+        log.debug('Loaded configuration file', json.dumps(conf_dict, indent=2, sort_keys=True, default=str))
     except YAMLError as ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_options(conf_dict)
@@ -2457,7 +2461,7 @@ def merge_dict(conf, base):
                     base[k] = merge_dict(v, base[k])
             elif isinstance(base[k], list):
                 if v is not None:
-                    if k in ['bbox', 'tile_size', 'max_output_pixels', 'sources', 'grids']:
+                    if k in ['bbox', 'tile_size', 'max_output_pixels', 'sources', 'grids', 'res']:
                         base[k] = v
                     elif k in ['layers']:
                         base[k] = merge_layers(v, base[k])
