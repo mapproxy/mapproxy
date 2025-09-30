@@ -1,3 +1,22 @@
+5.1.0 2025-09-30
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+  - Added `query_layers` option to `wms_opts` to be able to configure the `QUERY_LAYERS` of the wms request
+  - Added workflow to republish docker images if the base image changed, i.e. for security updates
+
+Maintenance:
+
+  - Fixed some spelling and debug output
+  - Updated various dependencies
+
+Fixes:
+
+  - Fixes some errors in the json schema regarding `use_direct_level_from` and `use_direct_res_from`
+  - Fixes an error with merging resolutions of grids
+
+
 5.0.0 2025-06-18
 ~~~~~~~~~~~~~~~~
 
