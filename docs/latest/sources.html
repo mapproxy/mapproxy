@@ -53,7 +53,7 @@
     <link rel="prev" title="Services" href="services.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jun 18, 2025"/>
+    <meta name="docbuild:last-update" content="Sep 30, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.0.0</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">5.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -467,6 +467,8 @@ You need to set <code class="docutils literal notranslate"><span class="pre">tra
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">featureinfo_out_format</span></code></dt><dd><p>Output format returned by the XSLT script. By default MapProxy will use <code class="docutils literal notranslate"><span class="pre">featureinfo_format</span></code>.</p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">query_layers</span></code></dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">QUERY_LAYERS</span></code> for FeatureInfo requests. By default MapProxy will use the same as the LAYERS param.</p>
+</dd>
 </dl>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.12.0: </span><code class="docutils literal notranslate"><span class="pre">featureinfo_out_format</span></code></p>
@@ -484,14 +486,14 @@ You need to set <code class="docutils literal notranslate"><span class="pre">tra
 <section id="min-res-max-res-or-min-scale-max-scale">
 <span id="source-minmax-res"></span><h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code><a class="headerlink" href="#min-res-max-res-or-min-scale-max-scale" title="Link to this heading">#</a></h3>
 <p>Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (<code class="docutils literal notranslate"><span class="pre">min_res</span></code> is inclusive, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> exclusive). You can use either the resolution or the scale values, missing values will be interpreted as <cite>unlimited</cite>. Resolutions should be in meters per pixel.</p>
-<p>The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a <code class="docutils literal notranslate"><span class="pre">min/max_res</span></code> configuration.</p>
+<p>The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a <code class="docutils literal notranslate"><span class="pre">min/max_res</span></code> configuration.</p>
 <p>Please read <a class="reference internal" href="configuration.html#scale-resolution"><span class="std std-ref">scale vs. resolution</span></a> for some notes on <cite>scale</cite>.</p>
 </section>
 <section id="supported-srs">
 <span id="id2"></span><h3><code class="docutils literal notranslate"><span class="pre">supported_srs</span></code><a class="headerlink" href="#supported-srs" title="Link to this heading">#</a></h3>
 <p>A list with SRSs that the WMS source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.</p>
 <p>You don’t need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.</p>
-<p>If MapProxy needs to reproject and the source has multiple <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code>, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS. E.g when <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code> is <code class="docutils literal notranslate"><span class="pre">['EPSG:4326',</span> <span class="pre">'EPSG:31467']</span></code> caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).</p>
+<p>If MapProxy needs to reproject and the source has multiple <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code>, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS e.g. when <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code> is <code class="docutils literal notranslate"><span class="pre">['EPSG:4326',</span> <span class="pre">'EPSG:31467']</span></code> caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).</p>
 <blockquote>
 <div></div></blockquote>
 </section>
@@ -516,7 +518,7 @@ You need to set <code class="docutils literal notranslate"><span class="pre">tra
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">transparent_color_tolerance</span></code></p>
 <blockquote>
-<div><p>Tolerance for the <code class="docutils literal notranslate"><span class="pre">transparent_color</span></code> substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.</p>
+<div><p>Tolerance for the <code class="docutils literal notranslate"><span class="pre">transparent_color</span></code> substitution. The value defines the tolerance in each direction e.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">image</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">transparent_color</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#ffffff&#39;</span>
 <span class="w">  </span><span class="nt">transparent_color_tolerance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
@@ -588,7 +590,7 @@ It even works across multiple WMS sources as long as all have the same <code cla
 <p>You need to enable <code class="docutils literal notranslate"><span class="pre">transparent</span></code> for your source, if you use <code class="docutils literal notranslate"><span class="pre">on_error</span></code> responses with transparency.</p>
 <p><code class="docutils literal notranslate"><span class="pre">authorize_stale</span></code></p>
 <blockquote>
-<div><p>Set this to <code class="docutils literal notranslate"><span class="pre">True</span></code> if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error reponse, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (<code class="docutils literal notranslate"><span class="pre">False</span></code>) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.</p>
+<div><p>Set this to <code class="docutils literal notranslate"><span class="pre">True</span></code> if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error response, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (<code class="docutils literal notranslate"><span class="pre">False</span></code>) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.</p>
 </div></blockquote>
 <p>You need to enable <code class="docutils literal notranslate"><span class="pre">transparent</span></code> for your source, if you use <code class="docutils literal notranslate"><span class="pre">on_error</span></code> responses with transparency.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">my_tile_source</span><span class="p">:</span>
@@ -710,7 +712,7 @@ ArcGIS source too.</p>
 </section>
 <section id="tiles">
 <span id="tiles-label"></span><h2>Tiles<a class="headerlink" href="#tiles" title="Link to this heading">#</a></h2>
-<p>Use the type <code class="docutils literal notranslate"><span class="pre">tile</span></code> to request data from from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.</p>
+<p>Use the type <code class="docutils literal notranslate"><span class="pre">tile</span></code> to request data from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.</p>
 <section id="url">
 <h3><code class="docutils literal notranslate"><span class="pre">url</span></code><a class="headerlink" href="#url" title="Link to this heading">#</a></h3>
 <p>This source takes a <code class="docutils literal notranslate"><span class="pre">url</span></code> option that contains a URL template. The template format is <code class="docutils literal notranslate"><span class="pre">%(key_name)s</span></code>. MapProxy supports the following named variables in the URL:</p>
@@ -1052,7 +1054,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 18, 2025.
+  Last updated on Sep 30, 2025.
   <br/>
 </p>
   </div>
