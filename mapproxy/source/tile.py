@@ -79,7 +79,7 @@ class TiledSource(MapLayer):
                 resp = self.error_handler.handle(e.response_code, query)
                 if resp:
                     return resp
-            log.warning('could not retrieve tile: %s', e)
+            log.warning('could not retrieve tile (client: %s): %s', self.client, e, exc_info=True)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
 
