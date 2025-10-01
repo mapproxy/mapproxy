@@ -9,6 +9,13 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-24.04
