@@ -1,0 +1,15 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {% trans %}Conformance{% endtrans %} {% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="./conformance">{% trans %}Conformance{% endtrans %}</a>
+{% endblock %}
+{% block body %}
+    <section id="conformance">
+      <h2>{% trans %}Conformance{% endtrans %}</h2>
+      <ul>
+      {% for link in data['conformsTo'] %}
+          <li><a title="{{ link }}" href="{{ link }}">{{ link }}</a></li>
+      {% endfor %}
+      </ul>
+    </section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {% trans %}TileSets{% endtrans %} {% endblock %}
+{% block crumbs %}{{ super() }}
+{% if 'collection_path' in data %}
+/ <a href="{{ data['collections_path'] }}">{% trans %}Collections{% endtrans %}</a>
+/ <a href="{{ data['collection_path'] }}">{{ data['collection_title'] }}</a>
+{% endif %}
+/ <a href="{{ data['collection_tilesets_path'] }}">{% trans %}TileSets{% endtrans %}</a>
+{% endblock %}
+{% block body %}
+    <section id="tilesets">
+
+      <h2>{% trans %}Tile sets available for this collection{% endtrans %}</h2>
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>{% trans %}Title{% endtrans %}</th>
+                <th>{% trans %}Description{% endtrans %}</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for col in data['tilesets']  %}
+                <tr>
+                  <td data-label="name">
+                    <a  title="{{ col['tileMatrixSet'] | striptags | truncate }}"
+                      href="{{ data['collection_tilesets_path'] }}/{{ col.tileMatrixSet }}">
+                      <span>{{ col['tileMatrixSet'] | striptags | truncate }}</span></a>
+                  </td>
+                  <td data-label="description">
+                    {{ col['title'] | striptags | truncate }}
+                  </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+    </section>
+{% endblock %}

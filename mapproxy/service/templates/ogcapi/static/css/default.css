@@ -1,0 +1,75 @@
+.flat {
+    border: 0px;
+}
+
+header {
+    display: inline-block;
+}
+
+main {
+    background-color:white
+}
+
+.crumbs {
+    background-color:rgb(230, 230, 230);
+    padding: 6px;
+}
+
+.crumbs a {
+    padding: 0px 6px;
+    color:black;
+    text-decoration: none;
+/*    text-transform: capitalize;*/
+}
+
+#items-map, #collection-map {
+    width: 100%;
+    height: 400px;
+}
+
+#coverages-map {
+    width: 100%;
+    height: 80vh;
+}
+
+.c3-tooltip-container {
+    z-index: 300;
+}
+
+/* cancel mini-css header>button uppercase */
+header button, header [type="button"], header .button, header [role="button"] {
+    text-transform: none;
+}
+
+html, body {
+    background-color: #fff;
+}
+
+footer.sticky {
+    position: fixed;
+    width: 100%;
+}
+
+main {
+    padding-bottom: 65px; /* prevent from falling under the footer */
+}
+
+table:not(.horizontal) {
+    max-height: none;
+}
+
+mark.successful {
+  background-color: green;
+}
+
+mark.accepted {
+  background-color: default;
+}
+
+mark.failed {
+  background-color: red;
+}
+
+mark.running {
+  background-color: orange;
+}

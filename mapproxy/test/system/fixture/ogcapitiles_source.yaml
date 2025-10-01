@@ -1,0 +1,43 @@
+services:
+  tms:
+    use_grid_names: true
+    # origin for /tiles service
+    origin: 'nw'
+
+layers:
+  - name: test_cache
+    title: "test cache"
+    sources: [test_cache]
+
+  - name: test_cache_global
+    title: "test cache global"
+    sources: [test_cache_global]
+
+caches:
+  test_cache:
+    grids: [webmercator]
+    sources: [test_source]
+
+  test_cache_global:
+    grids: [webmercator]
+    sources: [test_source_global]
+
+sources:
+  test_source:
+    type: ogcapitiles
+    landingpage_url: http://localhost:42423/ogcapi
+    collection: "my_collection"
+    tile_matrix_set_id: "my_tms"
+
+  test_source_global:
+    type: ogcapitiles
+    landingpage_url: http://localhost:42423/ogcapi
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
+
+globals:
+  image:
+    paletted: False
+

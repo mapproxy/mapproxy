@@ -1,0 +1,23 @@
+services:
+  wms:
+    srs: ['IAU_2015:30100', 'IAU_2015:30110']
+    bbox_srs: ['IAU_2015:30100', 'IAU_2015:30110']
+
+layers:
+  - name: test
+    title: test
+    sources: [test]
+    extent:
+        srs: "IAU_2015:30100"
+        bbox: [-180,-90,180,90]
+
+sources:
+  test:
+    type: ogcapimaps
+    collection: my_collection
+    landingpage_url: http://localhost:42423/ogcapi
+
+globals:
+  image:
+    paletted: False
+

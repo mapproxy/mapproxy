@@ -1,0 +1,65 @@
+globals:
+  image:
+    paletted: False
+
+services:
+  ogcapi:
+      #attribution:
+      #    text: "Copyright ME"
+      md:
+          identification:
+              title: MapProxy OGCAPI
+              description: Minimal MapProxy example
+              url: "http://example.com"
+              terms_of_service: "http://example.com"
+              keywords:
+                  - "OGC API"
+                  - Demo
+          provider:
+              name: Organization Name
+              url: "http://example.com/provider"
+          contact:
+              name: Jean Dupond
+              email: "jean.dupond@example.com"
+              address: "25, rue OSGeo"
+              city: "Spatial City"
+              stateorprovince: "Spatial State"
+              postalcode: "12345"
+              country: "Spatial country"
+              phone: "900-913"
+              fax: "What's a fax ??"
+              url: "http://example.com"
+              instructions: "Please don't contact me"
+          license:
+              name: "Do what you want"
+              url: "http://example.com"
+      default_dataset_layers:
+        - test
+
+layers:
+  - name: test
+    title: title
+    md:
+        abstract: abstract
+        attribution:
+            title: "Copyright 2025 TyCoon"
+            url: http://example.com
+            logo:
+                url: "http://example.com/logo.png"
+    sources: [test]
+    compatible_srs: ["EPSG:3857"]
+    extent:
+      srs: "EPSG:4326"
+      bbox: [-180,-90,180,90]
+    nominal_scale: 100000000
+
+  - name: test_without_nominal_scale
+    title: title
+    sources: [test]
+
+sources:
+  test:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: test

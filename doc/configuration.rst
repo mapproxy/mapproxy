@@ -297,9 +297,66 @@ A list of caches for this layer. This list overrides ``sources`` for WMTS and TM
 
 Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
-The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
+The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator),
+or in the response to the OGC API Maps or Tiles GetCollection requests.
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+
+``extent``
+""""""""""
+
+.. versionadded:: 5.1
+
+By default the layer extent is derived from the grids of its sources, but it
+may also be more convenient to specify it with the ``srs`` and ``bbox`` subkeys.
+
+.. code-block:: yaml
+
+    layers:
+    - name: my_layer
+      title: My Titile
+      sources: [my_source]
+      extent:
+          srs: EPSG:4326
+          bbox: [2, 49, 3, 50]
+
+
+.. _layer_nominal_scale:
+
+``nominal_res`` or ``nominal_scale``
+""""""""""""""""""""""""""""""""""""
+
+.. versionadded:: 5.1
+
+That setting is required by some OGC API Maps map requests, to establish the
+nominal resolution of a layer, for example when one of the ``width`` or ``height`` query
+parameters is specified (not both), but the ``scale-denominator`` one is not.
+
+Resolutions should be in meters per pixel.
+
+.. _layer_compatible_srs:
+
+``compatible_srs``
+""""""""""""""""""
+
+.. versionadded:: 5.1
+
+List of SRS that are compatible as the ``crs`` query parameter of the OGC API Maps
+map requests. By default the SRS of the layer extent is implicitly added at the first
+position, and is considered as the native CRS returned in the response to the
+OGC API Maps or Tiles GetCollection requests.
+
+.. code-block:: yaml
+
+    layers:
+    - name: my_layer
+      title: My Titile
+      sources: [my_source]
+      extent:
+          srs: EPSG:4326
+          bbox: [2, 49, 3, 50]
+      compatible_srs: ["EPSG:4258", "EPSG:32631", "EPSG:3857"]
+
 
 ``legendurl``
 """""""""""""
