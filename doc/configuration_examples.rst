@@ -560,12 +560,9 @@ MapProxy will mark all layers that use this source as ``queryable``. It also wor
 
 FeatureInfo support is enabled by default for WMS. For :ref:`WMTS you need to enable FeatureInfo queries by configuring the supported formats <wmts_feature_info>`.
 
-
-.. note:: The more advanced features :ref:`require the lxml library <lxml_install>`.
-
 Concatenation
 -------------
-Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation when :ref:`lxml <lxml_install>` is available.
+Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation.
 
 HTML
 ~~~~
@@ -628,7 +625,7 @@ will result in:
 XSL Transformations
 -------------------
 
-MapProxy supports XSL transformations for more control over feature information. This also requires :ref:`lxml <lxml_install>`. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).
+MapProxy supports XSL transformations for more control over feature information. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).
 
 You can use XSLT for sources to convert all incoming documents to a single, uniform format and then use outgoing XSLT scripts to transform this format to either HTML or XML/GML output.
 

@@ -68,3 +68,16 @@ jobs:
       run: |
         export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
         pytest mapproxy
+
+  doc:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v5
+
+    - name: Install doc dependencies ⏬
+      run: pip install sphinx sphinx-book-theme sphinx-copybutton
+
+    - name: Run documentation build
+      run: sphinx-build doc/ docs -W
