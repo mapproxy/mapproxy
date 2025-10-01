@@ -36,9 +36,11 @@ class OWSServer(object):
     def handle(self, req):
         service = req.args.get('service')
         wmtver = req.args.get('wmtver')
+        request_arg = req.args.get('request')
         if not service:
-            if wmtver == '1.0.0':
+            if wmtver == '1.0.0' or request_arg == 'GetMap':
                 # WMS version 1.0.0 did not have a mandatory service parameter
+                # and for the `GetMap` request the service also is not mandatory
                 service = 'wms'
             else:
                 req.exception_handler = OWSExceptionHandler()
