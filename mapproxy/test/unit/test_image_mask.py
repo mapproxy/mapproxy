@@ -22,16 +22,7 @@ from mapproxy.srs import SRS
 from mapproxy.test.image import assert_img_colors_eq, create_image
 from mapproxy.util.coverage import load_limited_to
 
-import pytest
-
-try:
-    from shapely.geometry import Polygon
-
-    geom_support = True
-except ImportError:
-    geom_support = False
-
-pytestmark = pytest.mark.skipif(not geom_support, reason="requires shapely")
+from shapely.geometry import Polygon
 
 
 def coverage(geom, srs="EPSG:4326"):
