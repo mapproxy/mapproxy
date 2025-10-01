@@ -2405,7 +2405,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
 
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
-        log.debug('Loaded configuration file', json.dumps(conf_dict, indent=2, sort_keys=True, default=str))
+        log.debug('Loaded configuration file: %s', json.dumps(conf_dict, indent=2, sort_keys=True, default=str))
     except YAMLError as ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_options(conf_dict)

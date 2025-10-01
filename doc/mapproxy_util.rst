@@ -109,6 +109,10 @@ You need to pass the MapProxy configuration as an argument. The server will auto
 
   The server outputs debug logging information to the console.
 
+.. cmdoption:: --log-config
+
+  Supply a logging config.
+
 
 Example
 -------
