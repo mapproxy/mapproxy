@@ -17,6 +17,9 @@
 import operator
 import threading
 
+import shapely.geometry
+import shapely.prepared
+
 from mapproxy.util.bbox import bbox_intersects, bbox_contains
 from mapproxy.util.py import cached_property
 from mapproxy.util.geom import (
@@ -30,9 +33,6 @@ from mapproxy.srs import SRS
 import logging
 from functools import reduce
 log_config = logging.getLogger('mapproxy.config.coverage')
-
-import shapely.geometry
-import shapely.prepared
 
 
 def coverage(geom, srs, clip=False):

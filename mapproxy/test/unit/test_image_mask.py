@@ -22,8 +22,6 @@ from mapproxy.srs import SRS
 from mapproxy.test.image import assert_img_colors_eq, create_image
 from mapproxy.util.coverage import load_limited_to
 
-import pytest
-
 from shapely.geometry import Polygon
 
 

@@ -21,16 +21,16 @@ import codecs
 from functools import partial
 from contextlib import closing
 
-from mapproxy.grid.tile_grid import tile_grid
-
-import logging
-log_config = logging.getLogger('mapproxy.config.coverage')
-
 import shapely.wkt
 import shapely.geometry
 import shapely.ops
 import shapely.prepared
 from shapely.errors import ShapelyError
+
+from mapproxy.grid.tile_grid import tile_grid
+
+import logging
+log_config = logging.getLogger('mapproxy.config.coverage')
 
 
 class GeometryError(Exception):
