@@ -2,7 +2,7 @@ import math
 
 from mapproxy.grid import NoTiles, GridError, _create_tile_list, default_bboxs, grid_bbox, origin_from_string
 from mapproxy.grid.resolutions import aligned_resolutions, resolutions, pyramid_res_level, get_resolution
-from mapproxy.srs import get_epsg_num, SRS
+from mapproxy.srs import get_epsg_num, SRS, ogc_crs_url_to_auth_code
 from mapproxy.util.bbox import bbox_equals, bbox_intersects, merge_bbox
 from mapproxy.util.collections import ImmutableDictList
 
@@ -81,6 +81,87 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor,
                     origin=origin, name=name)
+
+
+class UnsupportedException(Exception):
+    def __init__(self, arg):
+        Exception.__init__(self, arg)
+
+
+def tile_grid_from_ogc_tile_matrix_set(ogc_tile_matrix_set):
+    """ Return a TileGrid instance from the JSON representation of a
+        OGC Two Dimensional Tile Matrix Set (https://docs.ogc.org/is/17-083r4/17-083r4.html)
+    """
+
+    srs = ogc_tile_matrix_set["crs"]
+    srs = SRS(ogc_crs_url_to_auth_code(srs))
+    tileMatrices = ogc_tile_matrix_set["tileMatrices"]
+    tileWidth = None
+    tileHeight = None
+    cornerOfOrigin = None
+    origin = None
+    bbox = None
+    res = []
+    grid_sizes = []
+    for tileMatrix in tileMatrices:
+        if "variableMatrixWidths" in tileMatrix:
+            raise UnsupportedException("Tile matrix with variableMatrixWidths are not supported")
+
+        cellSize = tileMatrix["cellSize"]
+        matrixWidth = tileMatrix["matrixWidth"]
+        matrixHeight = tileMatrix["matrixHeight"]
+
+        if tileWidth is None:
+            tileWidth = tileMatrix["tileWidth"]
+            tileHeight = tileMatrix["tileHeight"]
+            pointOfOrigin = tileMatrix["pointOfOrigin"]
+            if srs.is_axis_order_ne:
+                x = pointOfOrigin[1]
+                y = pointOfOrigin[0]
+            else:
+                x = pointOfOrigin[0]
+                y = pointOfOrigin[1]
+
+            cornerOfOrigin = tileMatrix["cornerOfOrigin"]
+            if cornerOfOrigin == "topLeft":
+                origin = 'ul'
+                bbox = [x,
+                        y - tileHeight * matrixHeight * cellSize,
+                        x + tileWidth * matrixWidth * cellSize,
+                        y]
+            elif cornerOfOrigin == "bottomLeft":
+                origin = 'll'
+                bbox = [x, y,
+                        x + tileWidth * matrixWidth * cellSize,
+                        y + tileHeight * matrixHeight * cellSize]
+            else:
+                raise UnsupportedException(f"Invalid cornerOfOrigin={cornerOfOrigin}")
+
+        else:
+            if tileWidth != tileMatrix["tileWidth"]:
+                raise UnsupportedException("Tile matrix set with varying tileWidth depending on tile matrix")
+            if tileHeight != tileMatrix["tileHeight"]:
+                raise UnsupportedException("Tile matrix set with varying tileHeight depending on tile matrix")
+            if pointOfOrigin != tileMatrix["pointOfOrigin"]:
+                raise UnsupportedException("Tile matrix set with varying pointOfOrigin depending on tile matrix")
+            if cornerOfOrigin != tileMatrix["cornerOfOrigin"]:
+                raise UnsupportedException("Tile matrix set with varying cornerOfOrigin depending on tile matrix")
+
+        res.append(cellSize)
+        grid_sizes.append((matrixWidth, matrixHeight))
+
+    tilegrid = TileGrid(srs=srs, bbox=bbox, tile_size=(tileWidth, tileHeight),
+                    res=res, is_geodetic=srs.is_latlong, origin=origin,
+                    name=ogc_tile_matrix_set["id"])
+
+    grids = []
+    idx = 0
+    for name, _ in tilegrid.resolutions.iteritems():
+        grids.append((name, grid_sizes[idx]))
+        idx += 1
+    tilegrid.grid_sizes = NamedGridList(grids)
+
+    return tilegrid
 
 
 class TileGrid(object):
