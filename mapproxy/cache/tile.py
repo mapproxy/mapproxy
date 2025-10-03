@@ -456,7 +456,7 @@ class TileCreator(object):
             except BlankImage:
                 return None
 
-         def get_map_from_source(source):
+        def get_map_from_source(source):
             try:
                 img = source.get_map(query)
             except BlankImage:
