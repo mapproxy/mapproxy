@@ -335,7 +335,7 @@ class MBTilesLevelCache(TileCacheBase):
 
         with self._mbtiles_lock:
             if level not in self._mbtiles:
-                mbtile_filename = os.path.join(self.cache_dir, '%s.mbtile' % level)
+                mbtile_filename = os.path.join(self.cache_dir, '%s.mbtiles' % level)
                 self._mbtiles[level] = MBTilesCache(
                     mbtile_filename,
                     with_timestamps=True,
