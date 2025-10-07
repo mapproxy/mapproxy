@@ -78,16 +78,16 @@ Volume-Mounts
 - ``/mapproxy/config/mapproxy.yaml``: MapProxy Config
 - ``/mapproxy/config/logging.ini``: Logging-Configuration
 - ``/mapproxy/config/cache_data``: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
-This can be achieved with `chmod -R a+r cache_data`
+  This can be achieved with `chmod -R a+r cache_data`
 
 
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 
 - ``MULTIAPP_MAPPROXY``: **This can only be used in nginx images.** If set to ``true``, MapProxy will start in multi app
-mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default is ``false``.
+  mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default is ``false``.
 - ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available apps on the root page.
-Default is ``false``.
+  Default is ``false``.
 
 
 Build your own image
