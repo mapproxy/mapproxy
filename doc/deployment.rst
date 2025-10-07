@@ -149,7 +149,7 @@ You need a server script that creates the MapProxy application (see :ref:`above 
 To start MapProxy with Waitress and our server script (without ``.py``)::
 
   cd /path/of/config.py/
-  waitress --listen 127.0.0.1:8080 config:application
+  waitress-serve --listen 127.0.0.1:8080 config:application
 
 
 uWSGI
