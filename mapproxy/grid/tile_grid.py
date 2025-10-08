@@ -94,7 +94,10 @@ def tile_grid_from_ogc_tile_matrix_set(ogc_tile_matrix_set):
     """
 
     srs = ogc_tile_matrix_set["crs"]
-    srs = SRS(ogc_crs_url_to_auth_code(srs))
+    try:
+        srs = SRS(ogc_crs_url_to_auth_code(srs))
+    except Exception:
+        raise UnsupportedException(f"CRS {srs} is not supported")
     tileMatrices = ogc_tile_matrix_set["tileMatrices"]
     tileWidth = None
     tileHeight = None

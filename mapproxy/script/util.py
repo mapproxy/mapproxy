@@ -32,6 +32,7 @@ from mapproxy.script.export import export_command
 from mapproxy.script.grids import grids_command
 from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
+from mapproxy.script.gridconf_from_ogcapitilematrixset import gridconf_from_ogcapitilematrixset_command
 from mapproxy.version import version
 
 
@@ -324,7 +325,11 @@ commands = {
     'defrag-compact-cache': {
         'func': defrag_command,
         'help': 'De-fragmentate compact caches.'
-    }
+    },
+    'gridconf-from-ogcapitilematrixset': {
+        'func': gridconf_from_ogcapitilematrixset_command,
+        'help': 'Export OGC API TileMatrixSet as MapProxy grid configuration.'
+    },
 }
 
 
