@@ -17,9 +17,16 @@
 
 
 def find_href_in_links(links, rel, preferred_media_type):
+    ogc_rel_prefix = "http://www.opengis.net/def/rel/ogc/1.0/"
+    rels = [rel]
+    if rel.startswith(ogc_rel_prefix):
+        # Also accept CURIEs
+        len_ogc_rel_prefix = len(ogc_rel_prefix)
+        rels.append("[ogc-rel:" + rel[len_ogc_rel_prefix:] + "]")
+
     href = None
     for link in links:
-        if link["rel"] == rel:
+        if link["rel"] in rels:
             if "type" in link and link["type"] == preferred_media_type:
                 href = link["href"]
                 break

@@ -30,7 +30,7 @@ def test_find_href_in_links():
             "href": "/ogcapi/collections/my_collection/map.png",
         },
         {
-            "rel": "http://www.opengis.net/def/rel/ogc/1.0/map",
+            "rel": "[ogc-rel:map]",
             "type": "image/jpeg",
             "title": "Default map (as JPG)",
             "href": "/ogcapi/collections/my_collection/map.jpg",
