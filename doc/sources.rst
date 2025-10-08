@@ -36,7 +36,7 @@ See below for a detailed description of each service.
 WMS
 """
 
-Use the type ``wms`` to for WMS servers.
+Use the type ``wms`` for WMS servers.
 
 ``req``
 ^^^^^^^
@@ -654,9 +654,10 @@ Example:
 OGC API Tiles
 """""""""""""
 
-.. versionadded:: 5.1.0
+Use the type ``ogcapitiles`` for servers implementing `OGC API Tiles <https://docs.ogc.org/is/20-057/20-057.html>`__.
 
-Use the type ``ogcapitiles`` to for servers implementing `OGC API Tiles <https://docs.ogc.org/is/20-057/20-057.html>`__.
+.. warning:: Only map/raster tiles are supported, not vector tiles.
+
 Note that this source must be wrapped into a MapProxy :ref:`cache <caches>` to be usable by un-tiled services like WMS.
 
 ``landingpage_url``
@@ -702,9 +703,7 @@ Example configuration
 OGC API Maps
 """"""""""""
 
-.. versionadded:: 5.1.0
-
-Use the type ``ogcapimaps`` to for servers implementing `OGC API Maps <https://docs.ogc.org/is/20-058/20-058.html>`__.
+Use the type ``ogcapimaps`` for servers implementing `OGC API Maps <https://docs.ogc.org/is/20-058/20-058.html>`__.
 
 ``landingpage_url``
 ^^^^^^^^^^^^^^^^^^^
@@ -742,6 +741,8 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
 [optional] 
 
 See :ref:`image_options` for other options.
+
+Additionally to the image options, the following parameters can be used:
 
 ``transparent_color``
 

@@ -33,7 +33,7 @@ class TestOGCAPITilesSource(SysTest):
         return "ogcapitiles_source.yaml"
 
     def test_global_same_tiling_scheme(self, app):
-        ogcapitiles.reset_cache = True
+        ogcapitiles.reset_config_cache = True
 
         landing_page = {
             "links": [
@@ -192,7 +192,7 @@ class TestOGCAPITilesSource(SysTest):
                 assert img.getextrema() == ((0, 0), (255, 255), (0, 0))
 
     def test_collection_not_same_tiling_scheme(self, app):
-        ogcapitiles.reset_cache = True
+        ogcapitiles.reset_config_cache = True
 
         my_collection = {
             "links": [

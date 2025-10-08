@@ -36,7 +36,7 @@ import logging
 log = logging.getLogger("mapproxy.source.ogcapimaps")
 
 # For testing
-reset_cache = False
+reset_config_cache = False
 
 
 class OGCAPIMapsSource(WMSLikeSource):
@@ -78,9 +78,9 @@ class OGCAPIMapsSource(WMSLikeSource):
 
         self.lock = Lock()
         # Below variables are protected under the lock
-        self._reset_caches()
+        self._reset_config_caches()
 
-    def _reset_caches(self):
+    def _reset_config_caches(self):
         self.has_got_maps_list = False
         self.map_format_to_href = {}
         if not self.supported_srs_from_config:
@@ -93,10 +93,10 @@ class OGCAPIMapsSource(WMSLikeSource):
     def _get_maps_list(self):
         with self.lock:
             # Used by tests to avoid caching of "metadata"
-            global reset_cache
-            if reset_cache:
-                reset_cache = False
-                self._reset_caches()
+            global reset_config_cache
+            if reset_config_cache:
+                reset_config_cache = False
+                self._reset_config_caches()
 
             if self.has_got_maps_list:
                 return
@@ -134,6 +134,11 @@ class OGCAPIMapsSource(WMSLikeSource):
                     self.map_format_to_href[
                         mimetype[len_image_prefix:]
                     ] = self._build_url(href)
+
+            if len(self.map_format_to_href) == 0:
+                ex = SourceError(f"Could not retrieve a map link in {url} response")
+                log.error(ex)
+                raise ex
 
             supported_srs = set()
             if "crs" in j:
@@ -182,9 +187,9 @@ class OGCAPIMapsSource(WMSLikeSource):
             )
         if query.srs.srs_code != "EPSG:4326":
             req.params["bbox-crs"] = self.map_crs_code_to_url[query.srs.srs_code]
-        if not (
-            query.srs.srs_code == "EPSG:4326"
-            and len(self.supported_srs.supported_srs) == 1
+        if (
+            query.srs.srs_code != "EPSG:4326"
+            or len(self.supported_srs.supported_srs) != 1
         ):
             req.params["crs"] = self.map_crs_code_to_url[query.srs.srs_code]
         req.params["width"] = query.size[0]

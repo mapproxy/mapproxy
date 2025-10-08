@@ -43,7 +43,7 @@ log = logging.getLogger("mapproxy.source.ogcapitiles")
 log_config = logging.getLogger("mapproxy.config")
 
 # For testing
-reset_cache = False
+reset_config_cache = False
 
 
 class OGCAPITilesSource(MapLayer):
@@ -74,9 +74,9 @@ class OGCAPITilesSource(MapLayer):
 
         self.lock = Lock()
         # Below variables are protected under the lock
-        self._reset_caches()
+        self._reset_config_caches()
 
-    def _reset_caches(self):
+    def _reset_config_caches(self):
         self.has_got_tileset_list = False
         self.map_crs_to_tilesets_list = {}
         self.map_srs_to_grid_and_template_url = {}
@@ -88,10 +88,10 @@ class OGCAPITilesSource(MapLayer):
     def _get_tileset_list(self):
         with self.lock:
             # Used by tests to avoid caching of "metadata"
-            global reset_cache
-            if reset_cache:
-                reset_cache = False
-                self._reset_caches()
+            global reset_config_cache
+            if reset_config_cache:
+                reset_config_cache = False
+                self._reset_config_caches()
 
             if self.has_got_tileset_list:
                 return
@@ -155,17 +155,15 @@ class OGCAPITilesSource(MapLayer):
                 if tileset["dataType"] != "map":
                     continue
 
-                ok = False
+                user_matrix_set_found = False
                 if self.tile_matrix_set_id:
                     tileset_links = tileset["links"]
                     for link in tileset_links:
                         if "href" in link and self.tile_matrix_set_id in link["href"]:
-                            ok = True
+                            user_matrix_set_found = True
                             break
-                else:
-                    ok = True
 
-                if ok:
+                if user_matrix_set_found or not self.tile_matrix_set_id:
                     crs = normalize_srs_code(ogc_crs_url_to_auth_code(tileset["crs"]))
                     if crs not in self.map_crs_to_tilesets_list:
                         self.map_crs_to_tilesets_list[crs] = []
