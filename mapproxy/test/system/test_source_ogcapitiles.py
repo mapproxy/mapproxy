@@ -287,86 +287,39 @@ class TestOGCAPITilesSource(SysTest):
             ],
         }
 
-        with tmp_image(
-            (256, 256), format="png", color=(255, 0, 0)
-        ) as red_img, tmp_image(
-            (256, 256), format="png", color=(0, 255, 0)
-        ) as green_img, tmp_image(
-            (256, 256), format="png", color=(0, 0, 255)
-        ) as blue_img, tmp_image(
-            (256, 256), format="png", color=(255, 255, 0)
-        ) as yellow_img:
-            expected_reqs = [
-                (
-                    {"path": r"/ogcapi/collections/my_collection"},
-                    {
-                        "body": bytes(json.dumps(my_collection).encode("UTF-8")),
-                        "headers": {"content-type": "application/json"},
-                    },
-                ),
-                (
-                    {"path": r"/ogcapi/collections/my_collection/map/tiles?f=json"},
-                    {
-                        "body": bytes(json.dumps(tilesets).encode("UTF-8")),
-                        "headers": {"content-type": "application/json"},
-                    },
-                ),
-                (
-                    {"path": r"/ogcapi/tileMatrixSets/my_tms"},
-                    {
-                        "body": bytes(json.dumps(my_tms).encode("UTF-8")),
-                        "headers": {"content-type": "application/json"},
-                    },
-                ),
-                (
-                    {
-                        "path": r"/ogcapi/collections/my_collection/map/tiles/my_tms?f=json"
-                    },
-                    {
-                        "body": bytes(json.dumps(tiles).encode("UTF-8")),
-                        "headers": {"content-type": "application/json"},
-                    },
-                ),
-                (
-                    {
-                        "path": r"/ogcapi/collections/my_collection/map/tiles/my_tms/0/0/0.png"
-                    },
-                    {"body": red_img.read(), "headers": {"content-type": "image/png"}},
-                ),
-                (
-                    {
-                        "path": r"/ogcapi/collections/my_collection/map/tiles/my_tms/0/0/1.png"
-                    },
-                    {
-                        "body": green_img.read(),
-                        "headers": {"content-type": "image/png"},
-                    },
-                ),
-                (
-                    {
-                        "path": r"/ogcapi/collections/my_collection/map/tiles/my_tms/0/1/0.png"
-                    },
-                    {"body": blue_img.read(), "headers": {"content-type": "image/png"}},
-                ),
-                (
-                    {
-                        "path": r"/ogcapi/collections/my_collection/map/tiles/my_tms/0/1/1.png"
-                    },
-                    {
-                        "body": yellow_img.read(),
-                        "headers": {"content-type": "image/png"},
-                    },
-                ),
-            ]
-            with mock_httpd(("localhost", 42423), expected_reqs, unordered=True):
-                resp = app.get("/tiles/test_cache/webmercator/0/0/0.png")
-                assert resp.content_type == "image/png"
-                # open('/tmp/tmp.png', 'wb').write(resp.body)
-                img = Image.open(BytesIO(resp.body))
-                assert img.format == "PNG"
-                assert img.width == 256
-                assert img.height == 256
-                assert img.getpixel((64, 64)) == (255, 0, 0)
-                assert img.getpixel((128 + 64, 64)) == (0, 255, 0)
-                assert img.getpixel((64, 128 + 64)) == (0, 0, 255)
-                assert img.getpixel((128 + 64, 128 + 64)) == (255, 255, 0)
+        expected_reqs = [
+            (
+                {"path": r"/ogcapi/collections/my_collection"},
+                {
+                    "body": bytes(json.dumps(my_collection).encode("UTF-8")),
+                    "headers": {"content-type": "application/json"},
+                },
+            ),
+            (
+                {"path": r"/ogcapi/collections/my_collection/map/tiles?f=json"},
+                {
+                    "body": bytes(json.dumps(tilesets).encode("UTF-8")),
+                    "headers": {"content-type": "application/json"},
+                },
+            ),
+            (
+                {"path": r"/ogcapi/tileMatrixSets/my_tms"},
+                {
+                    "body": bytes(json.dumps(my_tms).encode("UTF-8")),
+                    "headers": {"content-type": "application/json"},
+                },
+            ),
+            (
+                {"path": r"/ogcapi/collections/my_collection/map/tiles/my_tms?f=json"},
+                {
+                    "body": bytes(json.dumps(tiles).encode("UTF-8")),
+                    "headers": {"content-type": "application/json"},
+                },
+            ),
+        ]
+        with mock_httpd(("localhost", 42423), expected_reqs, unordered=True):
+            resp = app.get(
+                "/tiles/test_cache/webmercator/0/0/0.png", expect_errors=True
+            )
+            assert resp.content_type == "text/plain"
+            assert resp.body == b"BBOX does not align to tile"

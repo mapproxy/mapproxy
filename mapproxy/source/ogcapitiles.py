@@ -15,13 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 import json
 import sys
 from threading import Lock
 
 from mapproxy.client.http import HTTPClientError
-from mapproxy.config.loader import CacheConfiguration
 from mapproxy.grid.tile_grid import tile_grid_from_ogc_tile_matrix_set
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import (
@@ -29,9 +27,8 @@ from mapproxy.layer import (
     MapExtent,
     DefaultMapExtent,
     MapLayer,
-    CacheMapLayer,
 )
-from mapproxy.source import SourceError
+from mapproxy.source import SourceError, InvalidSourceQuery
 from mapproxy.srs import ogc_crs_url_to_auth_code
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.ogcapi import (
@@ -43,6 +40,7 @@ from mapproxy.util.ogcapi import (
 import logging
 
 log = logging.getLogger("mapproxy.source.ogcapitiles")
+log_config = logging.getLogger("mapproxy.config")
 
 # For testing
 reset_cache = False
@@ -51,8 +49,6 @@ reset_cache = False
 class OGCAPITilesSource(MapLayer):
     def __init__(
         self,
-        source_name,
-        configuration_context,
         landingpage_url,
         collection,
         http_client,
@@ -63,11 +59,6 @@ class OGCAPITilesSource(MapLayer):
         res_range=None,
     ):
         MapLayer.__init__(self, image_opts=image_opts)
-        self.source_name = source_name
-        self.configuration_context = copy.copy(configuration_context)
-        self.configuration_context.grids = {}
-        self.configuration_context.sources = {}
-        self.configuration_context.caches = {}
         self.landingpage_url = landingpage_url.rstrip("/")
         self.collection = collection
         self.http_client = http_client
@@ -290,78 +281,53 @@ class OGCAPITilesSource(MapLayer):
             self.map_srs_to_grid_and_template_url[key] = grid_and_template_url
             return grid_and_template_url
 
-    def _get_cache_map_layer(self, grid):
-        with self.lock:
-            if grid.name in self.map_grid_name_to_cachemaplayer:
-                return self.map_grid_name_to_cachemaplayer[grid.name]
-
-            class WrappedGridConfig:
-                def __init__(self, grid):
-                    self.grid = grid
-                    self.conf = {"srs": grid.srs.srs_code}
-
-                def tile_grid(self):
-                    return self.grid
-
-            class WrappedSourceConfig:
-                def __init__(self, sourceObj):
-                    self.sourceObj = sourceObj
-
-                def source(self, params=None):
-                    return self.sourceObj
-
-            cache_conf = {
-                "name": self.source_name + "_source_cache",
-                "sources": ["this_source"],
-                "grids": [grid.name],
-            }
-            configuration_context = copy.copy(self.configuration_context)
-            configuration_context.grids = {grid.name: WrappedGridConfig(grid)}
-            configuration_context.sources = {"this_source": WrappedSourceConfig(self)}
-            cache_config = CacheConfiguration(cache_conf, configuration_context)
-            _, _, tile_manager = cache_config.caches()[0]
-            cacheMapLayer = CacheMapLayer(tile_manager, image_opts=self.image_opts)
-
-            self.map_grid_name_to_cachemaplayer[grid.name] = cacheMapLayer
-
-            return cacheMapLayer
-
-    def _try_single_tile_request(self, query, grid, template_url):
-        if grid.tile_size == query.size and grid.srs == query.srs:
-            if self.res_range and not self.res_range.contains(
-                query.bbox, query.size, query.srs
-            ):
-                raise BlankImage()
-            if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-                raise BlankImage()
-
-            _bbox, grid, tiles = grid.get_affected_tiles(query.bbox, query.size)
-
-            if grid == (1, 1):
-                x, y, z = next(tiles)
-                tile_url = (
-                    template_url.replace("{tileMatrix}", str(z))
-                    .replace("{tileRow}", str(y))
-                    .replace("{tileCol}", str(x))
-                )
-                try:
-                    return self.http_client.open_image(tile_url)
-                except HTTPClientError as e:
-                    if self.error_handler:
-                        resp = self.error_handler.handle(e.response_code, query)
-                        if resp:
-                            return resp
-                    log.warning("could not retrieve tile: %s", e)
-                    reraise_exception(SourceError(e.args[0]), sys.exc_info())
-
     def get_map(self, query):
         self._get_tileset_list()
         image_mime_type = "image/" + query.format
         grid, template_url = self._get_grid_and_template_url_from_srs(
             query.srs, image_mime_type
         )
-        single_tile = self._try_single_tile_request(query, grid, template_url)
-        if single_tile:
-            return single_tile
 
-        return self._get_cache_map_layer(grid).get_map(query)
+        if grid.tile_size != query.size:
+            ex = InvalidSourceQuery(
+                "tile size of cache and tile source do not match: %s != %s"
+                % (grid.tile_size, query.size)
+            )
+            log_config.error(ex)
+            raise ex
+
+        if grid.srs != query.srs:
+            ex = InvalidSourceQuery(
+                "SRS of cache and tile source do not match: %r != %r"
+                % (grid.srs, query.srs)
+            )
+            log_config.error(ex)
+            raise ex
+
+        if self.res_range and not self.res_range.contains(
+            query.bbox, query.size, query.srs
+        ):
+            raise BlankImage()
+        if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
+            raise BlankImage()
+
+        _bbox, grid, tiles = grid.get_affected_tiles(query.bbox, query.size)
+
+        if grid != (1, 1):
+            raise InvalidSourceQuery("BBOX does not align to tile")
+
+        x, y, z = next(tiles)
+        tile_url = (
+            template_url.replace("{tileMatrix}", str(z))
+            .replace("{tileRow}", str(y))
+            .replace("{tileCol}", str(x))
+        )
+        try:
+            return self.http_client.open_image(tile_url)
+        except HTTPClientError as e:
+            if self.error_handler:
+                resp = self.error_handler.handle(e.response_code, query)
+                if resp:
+                    return resp
+            log.warning("could not retrieve tile: %s", e)
+            reraise_exception(SourceError(e.args[0]), sys.exc_info())

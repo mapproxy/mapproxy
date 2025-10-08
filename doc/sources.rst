@@ -657,7 +657,7 @@ OGC API Tiles
 .. versionadded:: 5.1.0
 
 Use the type ``ogcapitiles`` to for servers implementing `OGC API Tiles <https://docs.ogc.org/is/20-057/20-057.html>`__.
-Note that this source can be used directly by un-tiled services like WMS.
+Note that this source must be wrapped into a MapProxy :ref:`cache <caches>` to be usable by un-tiled services like WMS.
 
 ``landingpage_url``
 ^^^^^^^^^^^^^^^^^^^

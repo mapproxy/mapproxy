@@ -1075,7 +1075,7 @@ class TileSourceConfiguration(SourceConfiguration):
 
 
 class OGCAPITilesSourceConfiguration(SourceConfiguration):
-    supports_meta_tiles = True
+    supports_meta_tiles = False
     source_type = ('ogcapitiles',)
     defaults = {}
 
@@ -1095,8 +1095,7 @@ class OGCAPITilesSourceConfiguration(SourceConfiguration):
         error_handler = self.on_error_handler()
         res_range = resolution_range(self.conf)
 
-        return OGCAPITilesSource(self.conf['name'], self.context,
-                                 landingpage_url,
+        return OGCAPITilesSource(landingpage_url,
                                  collection, http_client,
                                  tile_matrix_set_id=tile_matrix_set_id,
                                  coverage=coverage,
