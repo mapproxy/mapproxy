@@ -21,6 +21,7 @@ MapProxy Documentation
    services
    sources
    caches
+   auto_metadata
    seed
    coverages
    mapproxy_util

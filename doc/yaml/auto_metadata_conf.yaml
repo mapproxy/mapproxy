@@ -1,0 +1,194 @@
+# Auto Metadata Configuration Example
+# 
+# This configuration demonstrates the automatic metadata inheritance capabilities
+# of MapProxy, allowing layer-level metadata to be automatically fetched from WMS sources.
+
+services:
+  wms:
+    # Standard WMS service configuration
+    md:
+      title: "Regional Mapping Service"
+      contact:
+        organization: "Regional GIS Department"
+  
+  wmts:
+    restful: true
+    kvp: false
+
+layers:
+  # Layer with auto metadata from single WMS source
+  - name: administrative_boundaries
+    title: Administrative Boundaries
+    sources: [admin_cache]
+    md:
+      auto_metadata: true
+      # title, abstract, attribution, contact will be inherited from WMS source
+
+  # Layer with auto metadata from multiple WMS sources
+  - name: combined_cadastral
+    title: Combined Cadastral Data
+    sources: [public_cadastral_cache, private_cadastral_cache]
+    md:
+      auto_metadata: true
+      title: "Public and Private Cadastral Data"  # Manual override
+      # Other metadata fields will be merged from both WMS sources
+
+  # Layer with complex source specification and authentication
+  - name: planning_data
+    title: Urban Planning Data
+    sources: [planning_cache]
+    md:
+      auto_metadata: true
+      # Metadata will be extracted from the 'g_fnp' layer in the WMS source
+
+  # Layer with manual metadata (auto_metadata not enabled)
+  - name: base_map
+    title: Base Map
+    sources: [base_cache]
+    md:
+      title: "Manual Base Map Title"
+      abstract: "Manually configured base map layer"
+      # No auto metadata inheritance
+
+  # Layer mixing WMS and non-WMS sources
+  - name: hybrid_layer
+    title: Hybrid Data Layer
+    sources: [tile_cache, wms_cache]
+    md:
+      auto_metadata: true
+      # Only WMS sources will contribute to auto metadata
+
+caches:
+  admin_cache:
+    sources: [admin_wms]
+    grids: [GLOBAL_MERCATOR]
+
+  public_cadastral_cache:
+    sources: [public_cadastral_wms]
+    grids: [GLOBAL_MERCATOR]
+
+  private_cadastral_cache:
+    sources: [private_cadastral_wms]
+    grids: [GLOBAL_MERCATOR]
+
+  planning_cache:
+    sources: [planning_wms]
+    grids: [GLOBAL_MERCATOR]
+
+  base_cache:
+    sources: [base_wms]
+    grids: [GLOBAL_MERCATOR]
+
+  tile_cache:
+    sources: [tile_source]
+    grids: [GLOBAL_MERCATOR]
+
+  wms_cache:
+    sources: [hybrid_wms]
+    grids: [GLOBAL_MERCATOR]
+
+sources:
+  # Public WMS source with auto metadata
+  admin_wms:
+    type: wms
+    req:
+      url: https://maps.bavaria.de/wms/alkis_flaech
+      layers: administrative_boundaries
+      transparent: true
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+  # Public cadastral WMS
+  public_cadastral_wms:
+    type: wms
+    req:
+      url: https://geoportal.bayern.de/wms/alkis
+      layers: public_parcels
+      transparent: true
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+  # Private WMS with authentication
+  private_cadastral_wms:
+    type: wms
+    req:
+      url: https://secure.example.com/wms
+      layers: private_parcels
+      transparent: true
+    http:
+      username: cadastral_user
+      password: secure_password
+      headers:
+        X-API-Key: "private-cadastral-api-key"
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+  # WMS with complex layer specification
+  planning_wms:
+    type: wms
+    req:
+      url: https://geoportal.muenchen.de/wms
+      layers: source_lhm_plan:plan:g_fnp  # Complex specification
+      transparent: true
+    http:
+      username: planning_user
+      password: planning_password
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+  # Manual WMS without auto metadata
+  base_wms:
+    type: wms
+    req:
+      url: https://public.example.com/wms
+      layers: base_layer
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+  # Non-WMS tile source
+  tile_source:
+    type: tile
+    url: https://tiles.example.com/%(z)s/%(x)s/%(y)s.png
+    grid: GLOBAL_MERCATOR
+
+  # Additional WMS for hybrid layer
+  hybrid_wms:
+    type: wms
+    req:
+      url: https://hybrid.example.com/wms
+      layers: overlay_data
+      transparent: true
+    supported_srs: ['EPSG:4326', 'EPSG:3857']
+
+grids:
+  GLOBAL_MERCATOR:
+    base: GLOBAL_MERCATOR
+    num_levels: 20
+
+globals:
+  cache:
+    base_dir: './cache_data'
+    lock_dir: './cache_data/locks'
+  
+  image:
+    resampling_method: bilinear
+    jpeg_quality: 85
+
+# Auto Metadata Feature Summary:
+#
+# Layer-Level Auto Metadata:
+# - administrative_boundaries: Inherits all metadata from admin_wms source
+# - combined_cadastral: Merges metadata from public and private WMS sources
+# - planning_data: Extracts metadata from complex layer specification with auth
+# - hybrid_layer: Only inherits from WMS sources, ignores tile sources
+#
+# Authentication Support:
+# - HTTP Basic Auth (username/password)
+# - HTTP Headers (API keys, tokens)
+# - Credentials automatically used for metadata fetching
+#
+# Metadata Fields Inherited:
+# - title: Layer title
+# - abstract: Description (with automatic title prepending)
+# - attribution: Attribution information
+# - contact: Contact details (person, organization, email, phone, etc.)
+#
+# Priority Order:
+# 1. Manual configuration (highest priority)
+# 2. Auto metadata from WMS sources
+# 3. MapProxy defaults (lowest priority)

@@ -270,6 +270,7 @@ inspire_md = {
 }
 
 wms_130_layer_md = {
+    'title': str,
     'abstract': str,
     'keyword_list': [
         {
@@ -287,6 +288,8 @@ wms_130_layer_md = {
             'format': str,
         }
     },
+    'contact': anything(),
+    'auto_metadata': bool(),
     'identifier': [
         {
             'url': str,
