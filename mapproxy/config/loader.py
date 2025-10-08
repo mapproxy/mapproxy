@@ -1125,6 +1125,9 @@ class OGCAPIMapsSourceConfiguration(SourceConfiguration):
             'image.transparent_color_tolerance', self.conf)
         if transparent_color:
             transparent_color = parse_color(transparent_color)
+        bgcolor = self.conf.get('bgcolor', None)
+        if bgcolor:
+            bgcolor = parse_color(bgcolor)
 
         coverage = self.coverage()
         image_opts = self.image_opts()
@@ -1139,7 +1142,8 @@ class OGCAPIMapsSourceConfiguration(SourceConfiguration):
                                 supported_srs=self.supported_srs(),
                                 transparent=transparent,
                                 transparent_color=transparent_color,
-                                transparent_color_tolerance=transparent_color_tolerance)
+                                transparent_color_tolerance=transparent_color_tolerance,
+                                bgcolor=bgcolor)
 
 
 def file_ext(mimetype):

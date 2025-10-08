@@ -105,7 +105,7 @@ class TestOGCAPIMapsSource(SysTest):
                      "EPSG%2F0%2F3857&"
                      "crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2F"
                      "EPSG%2F0%2F3857&"
-                     "width=512&height=510&transparent=true&bgcolor=0xFF00FF"},
+                     "width=512&height=510&transparent=true"},
                     {"body": img.read(), "headers": {"content-type": "image/png"}},
                 ),
             ]
@@ -157,7 +157,7 @@ class TestOGCAPIMapsWithSupportedSRSSource(SysTest):
                      "EPSG%2F0%2F3857&"
                      "crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2F"
                      "EPSG%2F0%2F3857&"
-                     "width=512&height=510&transparent=true&bgcolor=0xFF00FF"},
+                     "width=512&height=510&bgcolor=0xFF00FF"},
                     {"body": img.read(), "headers": {"content-type": "image/png"}},
                 ),
             ]

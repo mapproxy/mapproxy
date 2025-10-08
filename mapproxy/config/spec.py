@@ -609,6 +609,7 @@ mapproxy_yaml_spec = {
                     'transparent_color': one_of(str(), [number()]),
                     'transparent_color_tolerance': number(),
                 }),
+                'bgcolor': one_of(str(), [number()]),
             }),
         })
     },

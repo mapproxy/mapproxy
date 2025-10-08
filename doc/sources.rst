@@ -757,6 +757,14 @@ See :ref:`image_options` for other options.
       transparent_color: '#ffffff'
       transparent_color_tolerance: 20
 
+``bgcolor``
+^^^^^^^^^^^
+
+[optional]
+
+Specify a color that should be passed to the ``bgcolor`` query parameter of a GetMap OGC API Maps request. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``), with in that order red, green, blue and, optionally, alpha components.
+
+.. note:: OGC API Maps ``bgcolor`` query parameter uses an alpha, red, green, blue order. MapProxy takes care of component reordering.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
@@ -771,5 +779,6 @@ Example configuration
     supported_srs: ["EPSG:4326", "EPSG:3857"]
     image:
         transparent_color: '#ffffff'
+    bgcolor: '#0000ff'
 
 

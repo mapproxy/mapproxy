@@ -53,6 +53,7 @@ class OGCAPIMapsSource(WMSLikeSource):
         transparent=None,
         transparent_color=None,
         transparent_color_tolerance=None,
+        bgcolor=None,
     ):
         WMSLikeSource.__init__(
             self,
@@ -69,6 +70,7 @@ class OGCAPIMapsSource(WMSLikeSource):
         self.http_client = http_client
         if transparent is not None:
             self.image_opts.transparent = transparent
+        self.bgcolor = bgcolor
         self.supported_srs = supported_srs
         self.supported_srs_from_config = (
             self.supported_srs is not None and len(self.supported_srs.supported_srs) > 0
@@ -189,12 +191,12 @@ class OGCAPIMapsSource(WMSLikeSource):
         req.params["height"] = query.size[1]
         if self.image_opts.transparent:
             req.params["transparent"] = "true"
-        if self.transparent_color:
-            if len(self.transparent_color) == 4:
-                r, g, b, a = self.transparent_color
+        if self.bgcolor:
+            if len(self.bgcolor) == 4:
+                r, g, b, a = self.bgcolor
                 req.params["bgcolor"] = "0x%02X%02X%02X%02X" % (a, r, g, b)
             else:
-                r, g, b = self.transparent_color
+                r, g, b = self.bgcolor
                 req.params["bgcolor"] = "0x%02X%02X%02X" % (r, g, b)
         resp = self.http_client.open(req.complete_url)
         return resp
