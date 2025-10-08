@@ -120,3 +120,55 @@ class TestOGCAPIMapsSource(SysTest):
                 assert img.width == 512
                 assert img.height == 256
                 assert img.getextrema() == ((255, 255), (0, 0), (0, 0))
+
+
+class TestOGCAPIMapsWithSupportedSRSSource(SysTest):
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "ogcapimaps_source_with_supported_srs.yaml"
+
+    def test(self, app):
+        my_collection = {
+            "links": [
+                {
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/map",
+                    "type": "image/png",
+                    "title": "Map available for this dataset (as PNG)",
+                    "href": "/ogcapi/collections/my_collection/map.png",
+                },
+            ]
+        }
+
+        with tmp_image((512, 510), format="png", color=(255, 0, 0)) as img:
+            expected_reqs = [
+                (
+                    {"path": r"/ogcapi/collections/my_collection"},
+                    {
+                        "body": bytes(json.dumps(my_collection).encode("UTF-8")),
+                        "headers": {"content-type": "application/json"},
+                    },
+                ),
+                (
+                    {"path":
+                     r"/ogcapi/collections/my_collection/map.png?"
+                     "bbox=-20037508.342789244,-19971868.880408566,"
+                     "20037508.342789244,19971868.880408566&"
+                     "bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2F"
+                     "EPSG%2F0%2F3857&"
+                     "crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2F"
+                     "EPSG%2F0%2F3857&"
+                     "width=512&height=510&transparent=true&bgcolor=0xFF00FF"},
+                    {"body": img.read(), "headers": {"content-type": "image/png"}},
+                ),
+            ]
+            with mock_httpd(("localhost", 42423), expected_reqs, bbox_aware_query_comparator=True):
+                resp = app.get(
+                    "/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&"
+                    "LAYERS=test_source&BBOX=-85,-180,85,180&CRS=EPSG:4326&"
+                    "WIDTH=512&HEIGHT=256&FORMAT=image/png&STYLES=")
+                assert resp.content_type == "image/png"
+                img = Image.open(BytesIO(resp.body))
+                assert img.format == "PNG"
+                assert img.width == 512
+                assert img.height == 256
+                assert img.getextrema() == ((255, 255), (0, 0), (0, 0))

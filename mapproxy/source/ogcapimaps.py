@@ -49,6 +49,7 @@ class OGCAPIMapsSource(WMSLikeSource):
         image_opts=None,
         error_handler=None,
         res_range=None,
+        supported_srs=None,
         transparent=None,
         transparent_color=None,
         transparent_color_tolerance=None,
@@ -68,6 +69,10 @@ class OGCAPIMapsSource(WMSLikeSource):
         self.http_client = http_client
         if transparent is not None:
             self.image_opts.transparent = transparent
+        self.supported_srs = supported_srs
+        self.supported_srs_from_config = (
+            self.supported_srs is not None and len(self.supported_srs.supported_srs) > 0
+        )
 
         self.lock = Lock()
         # Below variables are protected under the lock
@@ -76,7 +81,8 @@ class OGCAPIMapsSource(WMSLikeSource):
     def _reset_caches(self):
         self.has_got_maps_list = False
         self.map_format_to_href = {}
-        self.supported_srs = set()
+        if not self.supported_srs_from_config:
+            self.supported_srs = set()
         self.map_crs_code_to_url = {}
 
     def _build_url(self, href):
@@ -122,8 +128,9 @@ class OGCAPIMapsSource(WMSLikeSource):
                     mimetype,
                 )
                 if href:
+                    len_image_prefix = len("image/")
                     self.map_format_to_href[
-                        mimetype[len("image/"):]
+                        mimetype[len_image_prefix:]
                     ] = self._build_url(href)
 
             supported_srs = set()
@@ -144,7 +151,11 @@ class OGCAPIMapsSource(WMSLikeSource):
                 ] = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
                 supported_srs.add("EPSG:4326")
 
-            self.supported_srs = SupportedSRS([SRS(crs) for crs in supported_srs])
+            if self.supported_srs_from_config:
+                for srs in self.supported_srs.supported_srs:
+                    self.map_crs_code_to_url[srs.srs_code] = srs.to_ogc_url()
+            else:
+                self.supported_srs = SupportedSRS([SRS(crs) for crs in supported_srs])
 
     def get_map(self, query):
         self._get_maps_list()

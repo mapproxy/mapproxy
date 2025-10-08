@@ -717,6 +717,15 @@ of the OGC API server.
 
 [optional] The name of the collection from which to get tiles from. If not specified, the map related link from the landing page will be used (if existing).
 
+``supported_srs``
+^^^^^^^^^^^^^^^^^
+
+A list with SRSs that the source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.
+
+If this list is not specified, it will be retrieved from the metadata in the collection description.
+
+If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS e.g. when ``supported_srs`` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).
+
 ``coverage``
 ^^^^^^^^^^^^
 
@@ -759,6 +768,7 @@ Example configuration
     landingpage_url: http://example.com/ogcapi
     transparent: true
     collection: my_collection_name
+    supported_srs: ["EPSG:4326", "EPSG:3857"]
     image:
         transparent_color: '#ffffff'
 

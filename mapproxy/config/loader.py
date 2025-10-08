@@ -1136,6 +1136,7 @@ class OGCAPIMapsSourceConfiguration(SourceConfiguration):
                                 image_opts=image_opts,
                                 error_handler=error_handler,
                                 res_range=res_range,
+                                supported_srs=self.supported_srs(),
                                 transparent=transparent,
                                 transparent_color=transparent_color,
                                 transparent_color_tolerance=transparent_color_tolerance)

@@ -603,6 +603,7 @@ mapproxy_yaml_spec = {
             'ogcapimaps': combined(source_commons, {
                 required('landingpage_url'): str(),
                 'collection': str(),
+                'supported_srs': [str()],
                 'transparent': bool(),
                 'image': combined(image_opts, {
                     'transparent_color': one_of(str(), [number()]),
