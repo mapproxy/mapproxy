@@ -80,7 +80,13 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         return decode(etree.tostring(self._etree, encoding=encoding, xml_declaration=False), encoding)
 
     def _parse_content(self):
-        return etree.parse(StringIO(self.content) if isinstance(self.content, str) else BytesIO(self.content))
+        if isinstance(self.content, str) and self.content.lstrip().startswith('<?xml'):
+            # Convert back to bytes if it has XML declaration
+            return etree.parse(BytesIO(self.content.encode('utf-8')))
+        elif isinstance(self.content, str):
+            return etree.parse(StringIO(self.content))
+        else:
+            return etree.parse(BytesIO(self.content))
 
     @classmethod
     def combine(cls, docs):
