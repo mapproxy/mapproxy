@@ -659,6 +659,8 @@ Use the type ``ogcapitiles`` for servers implementing `OGC API Tiles <https://do
 .. warning:: Only map/raster tiles are supported, not vector tiles.
 
 Note that this source must be wrapped into a MapProxy :ref:`cache <caches>` to be usable by un-tiled services like WMS.
+There exists a helper command to get the grids from the OGC API in MapProxy format:
+:ref:`mapproxy_util_gridconf_from_ogcapitilematrixset`.
 
 ``landingpage_url``
 ^^^^^^^^^^^^^^^^^^^
@@ -746,7 +748,8 @@ Additionally to the image options, the following parameters can be used:
 
 ``transparent_color``
 
-  Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``).
+  Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``), with in that order red, green, blue and, optionally, alpha components.
+  Values for red, green, blue and alpha must be between 0 and 255 (or ``00`` and ``ff`` in hexadecimal).
 
 ``transparent_color_tolerance``
 
@@ -764,6 +767,7 @@ Additionally to the image options, the following parameters can be used:
 [optional]
 
 Specify a color that should be passed to the ``bgcolor`` query parameter of a GetMap OGC API Maps request. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``), with in that order red, green, blue and, optionally, alpha components.
+Values for red, green, blue and alpha must be between 0 and 255 (or ``00`` and ``ff`` in hexadecimal).
 
 .. note:: OGC API Maps ``bgcolor`` query parameter uses an alpha, red, green, blue order. MapProxy takes care of component reordering.
 

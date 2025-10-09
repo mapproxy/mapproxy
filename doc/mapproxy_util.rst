@@ -606,10 +606,10 @@ Defragment bundle files from ``map1_cache`` and ``map2_cache`` when they have mo
 ``gridconf-from-ogcapitilematrixset``
 =====================================
 
-This sub-command outputs in the standard output the ``grids`` section of the
-:file:`mapproxy.yml` configuration file from the tile matrix sets exposed in
-a OGC API service that implements OGC API Tiles. Only tilesets that are compatible
-with grids supported by MapProxy will be exported.
+This sub-command let you output the tile matrix sets exposed in an OGC API
+service that implements OGC API Tiles in the standard format of the ``grids``
+section of the :file:`mapproxy.yml` configuration file. Only tilesets that are
+compatible with grids supported by MapProxy will be exported.
 
 .. program:: mapproxy-util gridconf-from-ogcapitilematrixset
 

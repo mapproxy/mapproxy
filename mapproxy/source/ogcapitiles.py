@@ -95,7 +95,6 @@ class OGCAPITilesSource(MapLayer):
 
             if self.has_got_tileset_list:
                 return
-            self.has_got_tileset_list = True
 
             headers = {"Accept": "application/json"}
 
@@ -151,23 +150,27 @@ class OGCAPITilesSource(MapLayer):
                 log.error(ex)
                 raise ex
 
-            for tileset in j["tilesets"]:
-                if tileset["dataType"] != "map":
-                    continue
+            map_tilesets_candidates = filter(
+                lambda t: t["dataType"] == "map", j["tilesets"]
+            )
 
-                user_matrix_set_found = False
-                if self.tile_matrix_set_id:
+            if self.tile_matrix_set_id:
+                user_matrix_sets = []
+                for tileset in map_tilesets_candidates:
                     tileset_links = tileset["links"]
                     for link in tileset_links:
                         if "href" in link and self.tile_matrix_set_id in link["href"]:
-                            user_matrix_set_found = True
+                            user_matrix_sets.append(tileset)
                             break
+                map_tilesets_candidates = user_matrix_sets
 
-                if user_matrix_set_found or not self.tile_matrix_set_id:
-                    crs = normalize_srs_code(ogc_crs_url_to_auth_code(tileset["crs"]))
-                    if crs not in self.map_crs_to_tilesets_list:
-                        self.map_crs_to_tilesets_list[crs] = []
-                    self.map_crs_to_tilesets_list[crs].append(tileset)
+            for tileset in map_tilesets_candidates:
+                crs = normalize_srs_code(ogc_crs_url_to_auth_code(tileset["crs"]))
+                if crs not in self.map_crs_to_tilesets_list:
+                    self.map_crs_to_tilesets_list[crs] = []
+                self.map_crs_to_tilesets_list[crs].append(tileset)
+
+            self.has_got_tileset_list = True
 
     def _get_grid_and_template_url_from_tileset(self, tileset, image_mime_type):
         links = tileset["links"]
@@ -250,26 +253,6 @@ class OGCAPITilesSource(MapLayer):
                     except Exception as e:
                         log.info(f"Exception while evaluating tileset {tileset}: {e}")
                         pass
-
-            else:
-                # Iterate over all potential tilesets and select the first one
-                # we can parse
-                for tileset_crs, tileset_list in self.map_crs_to_tilesets_list.items():
-                    for tileset in tileset_list:
-                        try:
-                            grid_and_template_url = (
-                                self._get_grid_and_template_url_from_tileset(
-                                    tileset, image_mime_type
-                                )
-                            )
-                            break
-                        except Exception as e:
-                            log.info(
-                                f"Exception while evaluating tileset {tileset}: {e}"
-                            )
-                            pass
-                    if grid_and_template_url:
-                        break
 
             if grid_and_template_url is None:
                 ex = SourceError(f"Cannot find a valid tile matrix set for {query_srs}")

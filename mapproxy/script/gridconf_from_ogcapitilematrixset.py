@@ -26,7 +26,11 @@ from mapproxy.grid.tile_grid import (
     UnsupportedException,
 )
 from mapproxy.script.conf.utils import MapProxyYAMLDumper
-from mapproxy.util.ogcapi import find_href_in_links, build_absolute_url
+from mapproxy.util.ogcapi import (
+    find_href_in_links,
+    build_absolute_url,
+    normalize_srs_code,
+)
 
 
 def gridconf_from_ogcapitilematrixset_command(args=None):
@@ -97,10 +101,7 @@ def get_gridconf(landing_page_url):
                 print(f"Cannot handle {tilematrixset_url}: {e}", file=sys.stderr)
                 continue
             grid_dict = {}
-            if grid.srs.srs_code == "OGC:CRS84":
-                grid_dict["srs"] = "EPSG:4326"
-            else:
-                grid_dict["srs"] = grid.srs.srs_code
+            grid_dict["srs"] = normalize_srs_code(grid.srs.srs_code)
             grid_dict["bbox"] = grid.bbox
             grid_dict["origin"] = grid.origin
             grid_dict["tile_size"] = [x for x in grid.tile_size]
