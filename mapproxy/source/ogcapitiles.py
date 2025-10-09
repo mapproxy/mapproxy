@@ -159,7 +159,9 @@ class OGCAPITilesSource(MapLayer):
                 for tileset in map_tilesets_candidates:
                     tileset_links = tileset["links"]
                     for link in tileset_links:
-                        if "href" in link and self.tile_matrix_set_id in link["href"]:
+                        if "href" in link and link["href"].split("?")[0].endswith(
+                            "/" + self.tile_matrix_set_id
+                        ):
                             user_matrix_sets.append(tileset)
                             break
                 map_tilesets_candidates = user_matrix_sets
