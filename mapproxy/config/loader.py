@@ -1994,7 +1994,6 @@ def cache_source_names(context, cache):
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
-        from mapproxy.layer import MapExtent
         from mapproxy.srs import SRS
         from mapproxy.service.wms import WMSLayer
         from mapproxy.grid.resolutions import res_to_ogc_scale
@@ -2057,10 +2056,6 @@ class LayerConfiguration(ConfigurationBase):
         if compatible_srs_list:
             compatible_srs_list = [SRS(srs) for srs in compatible_srs_list]
 
-        extent = self.conf.get('extent')
-        if extent:
-            extent = MapExtent(extent['bbox'], SRS(extent['srs']))
-
         nominal_scale = self.conf.get('nominal_scale')
         if not nominal_scale:
             nominal_res = self.conf.get('nominal_res')
@@ -2070,7 +2065,7 @@ class LayerConfiguration(ConfigurationBase):
         layer = WMSLayer(
             self.conf.get('name'), self.conf.get('title'), sources, fi_sources, lg_sources, res_range=res_range,
             md=self.conf.get('md'), dimensions=dimensions,
-            compatible_srs_list=compatible_srs_list, extent=extent, nominal_scale=nominal_scale)
+            compatible_srs_list=compatible_srs_list, nominal_scale=nominal_scale)
         return layer
 
     @memoize

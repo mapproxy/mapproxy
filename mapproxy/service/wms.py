@@ -726,17 +726,14 @@ class WMSLayer(WMSLayerBase):
 
     def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
                  res_range=None, md=None, dimensions=None,
-                 compatible_srs_list=None, extent=None, nominal_scale=None):
+                 compatible_srs_list=None, nominal_scale=None):
         self.name = name
         self.title = title
         self.md = md or {}
         self.map_layers = map_layers
         self.info_layers = info_layers or []
         self.legend_layers = legend_layers or []
-        if extent:
-            self.extent = extent
-        else:
-            self.extent = merge_layer_extents(map_layers)
+        self.extent = merge_layer_extents(map_layers)
         self.dimensions = dimensions
 
         self.compatible_srs_list = [self.extent.srs]
