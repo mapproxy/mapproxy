@@ -305,8 +305,6 @@ Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sc
 ``extent``
 """"""""""
 
-.. versionadded:: 5.1
-
 By default the layer extent is derived from the grids of its sources, but it
 may also be more convenient to specify it with the ``srs`` and ``bbox`` subkeys.
 
@@ -326,8 +324,6 @@ may also be more convenient to specify it with the ``srs`` and ``bbox`` subkeys.
 ``nominal_res`` or ``nominal_scale``
 """"""""""""""""""""""""""""""""""""
 
-.. versionadded:: 5.1
-
 That setting is required by some OGC API Maps map requests, to establish the
 nominal resolution of a layer, for example when one of the ``width`` or ``height`` query
 parameters is specified (not both), but the ``scale-denominator`` one is not.
@@ -338,8 +334,6 @@ Resolutions should be in meters per pixel.
 
 ``compatible_srs``
 """"""""""""""""""
-
-.. versionadded:: 5.1
 
 List of SRS that are compatible as the ``crs`` query parameter of the OGC API Maps
 map requests. By default the SRS of the layer extent is implicitly added at the first

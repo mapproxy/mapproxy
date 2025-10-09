@@ -450,8 +450,6 @@ This service takes no further options::
 OGC API Maps and Tiles Service
 ------------------------------
 
-.. versionadded:: 5.1
-
 MapProxy implements `OGC API Maps - Part 1 - Core <https://docs.ogc.org/is/20-058/20-058.html>`__ and `OGC API Tiles - Part 1 - Core <https://docs.ogc.org/is/20-057/20-057.html>`__.
 
 The service is available at ``/ogcapi``.
