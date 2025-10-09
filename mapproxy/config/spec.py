@@ -678,10 +678,6 @@ mapproxy_yaml_spec = {
                 }
             },
             'compatible_srs': [str],
-            'extent': {
-                required('srs'): str,
-                required('bbox'): [number()],
-            },
             "nominal_res": number(),
             "nominal_scale": number(),
         })])

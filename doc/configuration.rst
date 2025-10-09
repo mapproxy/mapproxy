@@ -302,23 +302,6 @@ or in the response to the OGC API Maps or Tiles GetCollection requests.
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
-``extent``
-""""""""""
-
-By default the layer extent is derived from the grids of its sources, but it
-may also be more convenient to specify it with the ``srs`` and ``bbox`` subkeys.
-
-.. code-block:: yaml
-
-    layers:
-    - name: my_layer
-      title: My Titile
-      sources: [my_source]
-      extent:
-          srs: EPSG:4326
-          bbox: [2, 49, 3, 50]
-
-
 .. _layer_nominal_scale:
 
 ``nominal_res`` or ``nominal_scale``
