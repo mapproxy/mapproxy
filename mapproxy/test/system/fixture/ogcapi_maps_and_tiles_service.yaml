@@ -48,9 +48,6 @@ layers:
                 url: "http://example.com/logo.png"
     sources: [test]
     compatible_srs: ["EPSG:3857"]
-    extent:
-      srs: "EPSG:4326"
-      bbox: [-180,-90,180,90]
     nominal_scale: 100000000
 
   - name: test_without_nominal_scale
@@ -63,3 +60,6 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: test
+    coverage:
+      srs: "EPSG:4326"
+      bbox: [-180,-90,180,90]
