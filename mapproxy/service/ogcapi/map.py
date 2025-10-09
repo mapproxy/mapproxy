@@ -145,6 +145,7 @@ def get_bbox_center_or_subset_crs(crs, layer, param_name):
             raise OGCAPIServer.invalid_parameter(f"{param_name} is not a valid CRS")
     else:
         if layer.extent.srs.srs_code.startswith("EPSG:"):
+            # Default CRS for an earth projection
             return SRS("OGC:CRS84")
         else:
             return layer.extent.srs.get_geographic_srs()
