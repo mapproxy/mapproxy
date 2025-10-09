@@ -27,7 +27,7 @@ from mapproxy.service.ogcapi.constants import (
     F_HTML,
     MEDIA_TYPE_OPENAPI_3_0,
 )
-from mapproxy.service.ogcapi.server import OGCAPIServer, l10n
+from mapproxy.service.ogcapi.server import OGCAPIServer
 from mapproxy.version import __version__
 
 
@@ -82,17 +82,17 @@ def api(server: OGCAPIServer, req: Request):
 
     title = _get(cfg, "metadata", "identification", "title")
     if title:
-        info["title"] = l10n.translate(title, locale_)
+        info["title"] = title
     else:
         info["title"] = "OGCAPI implementation"
 
     description = _get(cfg, "metadata", "identification", "description")
     if description:
-        info["description"] = l10n.translate(description, locale_)
+        info["description"] = description
 
     keywords = _get(cfg, "metadata", "identification", "keywords")
     if keywords:
-        info["x-keywords"] = l10n.translate(keywords, locale_)
+        info["x-keywords"] = keywords
 
     terms_of_service = _get(cfg, "metadata", "identification", "terms_of_service")
     if terms_of_service:
@@ -120,7 +120,7 @@ def api(server: OGCAPIServer, req: Request):
     ]
     server_description = _get(cfg, "metadata", "identification", "description")
     if server_description:
-        oas["servers"][0]["description"] = l10n.translate(server_description, locale_)
+        oas["servers"][0]["description"] = server_description
 
     OPENAPI_YAML = {
         "oapim-1": "https://schemas.opengis.net/ogcapi/maps/part1/1.0/openapi/ogcapi-maps-1.bundled.json",  # noqa
@@ -671,9 +671,7 @@ def api(server: OGCAPIServer, req: Request):
 
     tags_server = {
         "name": "server",
-        "description": l10n.translate(description, locale_)
-        if description
-        else "OGCAPI implementation",  # noqa
+        "description": description if description else "OGCAPI implementation",  # noqa
     }
     identification_url = _get(cfg, "metadata", "identification", "url")
     if identification_url:

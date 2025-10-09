@@ -40,12 +40,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class l10n:
-    @staticmethod
-    def translate(msg, locale_):
-        return msg
-
-
 def static_filename(name):
     if base_config().template_dir:
         return os.path.join(base_config().template_dir, name)
