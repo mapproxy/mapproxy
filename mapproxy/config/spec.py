@@ -594,6 +594,23 @@ mapproxy_yaml_spec = {
             }),
             'debug': {
             },
+            'ogcapitiles': combined(source_commons, {
+                required('landingpage_url'): str(),
+                'collection': str(),
+                'tile_matrix_set_id': str(),
+                'image': image_opts,
+            }),
+            'ogcapimaps': combined(source_commons, {
+                required('landingpage_url'): str(),
+                'collection': str(),
+                'supported_srs': [str()],
+                'transparent': bool(),
+                'image': combined(image_opts, {
+                    'transparent_color': one_of(str(), [number()]),
+                    'transparent_color_tolerance': number(),
+                }),
+                'bgcolor': one_of(str(), [number()]),
+            }),
         })
     },
 

@@ -1,0 +1,33 @@
+services:
+  wms:
+
+layers:
+  - name: test_source
+    title: "test cache"
+    sources: [test_source]
+
+  - name: test_source_global
+    title: "test source global"
+    sources: [test_source_global]
+
+sources:
+  test_source:
+    type: ogcapimaps
+    landingpage_url: http://localhost:42423/ogcapi
+    collection: "my_collection"
+    transparent: true
+    image:
+        transparent_color: "#FF00FF"
+
+  test_source_global:
+    type: ogcapimaps
+    landingpage_url: http://localhost:42423/ogcapi
+
+grids:
+    webmercator:
+        base: GLOBAL_WEBMERCATOR
+
+globals:
+  image:
+    paletted: False
+

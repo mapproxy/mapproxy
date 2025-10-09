@@ -33,7 +33,7 @@ The current sub-commands are:
 - :ref:`mapproxy_util_export`
 - :ref:`mapproxy_defrag_compact_cache`
 - ``autoconfig`` (see :ref:`mapproxy_util_autoconfig`)
-
+- :ref:`mapproxy_util_gridconf_from_ogcapitilematrixset`
 
 .. _mapproxy_util_create:
 
@@ -603,3 +603,98 @@ Defragment bundle files from ``map1_cache`` and ``map2_cache`` when they have mo
     --min-percent 20 \
     --min-mb 5 \
     --caches map1_cache,map2_cache
+
+
+.. _mapproxy_util_gridconf_from_ogcapitilematrixset:
+
+``gridconf-from-ogcapitilematrixset``
+=====================================
+
+This sub-command let you output the tile matrix sets exposed in an OGC API
+service that implements OGC API Tiles in the standard format of the ``grids``
+section of the :file:`mapproxy.yml` configuration file. Only tilesets that are
+compatible with grids supported by MapProxy will be exported.
+
+.. program:: mapproxy-util gridconf-from-ogcapitilematrixset
+
+
+Required arguments:
+
+.. cmdoption::   --url=URL
+
+  The URL to the OGC API landing page.
+
+
+Examples
+--------
+
+::
+
+    mapproxy-util gridconf-from-ogcapitilematrixset   https://maps.gnosis.earth/ogcapi
+
+    Cannot handle https://maps.gnosis.earth/ogcapi/tileMatrixSets/CDB1GlobalGrid?f=json: Tile matrix with variableMatrixWidths are not supported
+    Cannot handle https://maps.gnosis.earth/ogcapi/tileMatrixSets/GNOSISGlobalGrid?f=json: Tile matrix with variableMatrixWidths are not supported
+    Cannot handle https://maps.gnosis.earth/ogcapi/tileMatrixSets/GoogleCRS84Quad?f=json: Tile matrix set with varying pointOfOrigin depending on tile matrix
+    Cannot handle https://maps.gnosis.earth/ogcapi/tileMatrixSets/ISEA9R?f=json: CRS http://www.opengis.net/def/crs/OGC/0/153456 is not supported
+    Configuration to add to mapproxy.yml:
+
+    grids:
+      GlobalCRS84Pixel:
+        bbox: [-180, -422, 332, 90]
+        origin: ul
+        res: [2, 1, 0.5, 0.333333333333333, 0.166666666666667, 0.0833333333333333, 0.0333333333333333,
+          0.0166666666666667, 0.00833333333333333, 0.00416666666666667, 0.0013888888888889,
+          0.00083333333333333, 0.00027777777777778, 0.0001388888888889, 8.333333333333e-05,
+          2.777777777778e-05, 8.33333333333e-06, 2.77777777778e-06, 8.3333333333e-07,
+          2.7777777778e-07, 8.333333333e-08, 2.777777778e-08, 8.33333333e-09, 2.77777778e-09,
+          1.3888889e-09]
+        srs: EPSG:4326
+        tile_size: [256, 256]
+      GlobalCRS84Scale:
+        bbox: [-180, -231.95619782843647, 463.91239565687295, 90]
+        origin: ul
+        res: [1.25764139776733, 0.628820698883665, 0.251528279553466, 0.125764139776733,
+          0.0628820698883665, 0.0251528279553466, 0.0125764139776733, 0.00628820698883665,
+          0.00251528279553466, 0.00125764139776733, 0.00062882069888367, 0.00025152827955347,
+          0.00012576413977673, 6.288206988837e-05, 2.515282795535e-05, 1.257641397767e-05,
+          6.28820698884e-06, 2.51528279553e-06, 1.25764139777e-06, 6.2882069888e-07, 2.5152827955e-07,
+          1.2576413978e-07, 6.28820699e-08, 2.515282796e-08, 1.257641398e-08, 6.288207e-09,
+          2.5152828e-09]
+        srs: EPSG:4326
+        tile_size: [256, 256]
+      WebMercatorQuad:
+        bbox: [-20037508.3427892, -20037508.342789043, 20037508.342789043, 20037508.3427892]
+        origin: ul
+        res: [156543.03392804, 78271.5169640205, 39135.7584820102, 19567.879241005, 9783.93962050256,
+          4891.96981025128, 2445.98490512564, 1222.99245256282, 611.49622628141, 305.748113140705,
+          152.874056570353, 76.4370282851763, 38.218514142588, 19.109257071294, 9.55462853564703,
+          4.77731426782352, 2.38865713391176, 1.19432856695588, 0.59716428347794, 0.29858214173897,
+          0.149291070869485, 0.0746455354347424, 0.0373227677173712, 0.0186613838586856,
+          0.0093306919293428, 0.0046653459646714, 0.0023326729823357, 0.00116633649116785,
+          0.00058316824558393, 0.00029158412279196]
+        srs: EPSG:3857
+        tile_size: [256, 256]
+      WorldCRS84Quad:
+        bbox: [-180, -90.0, 180.0, 90]
+        origin: ul
+        res: [0.703125, 0.3515625, 0.17578125, 0.087890625, 0.0439453125, 0.02197265625,
+          0.010986328125, 0.0054931640625, 0.00274658203125, 0.001373291015625, 0.0006866455078125,
+          0.00034332275390625, 0.00017166137695312, 8.583068847656e-05, 4.291534423828e-05,
+          2.145767211914e-05, 1.072883605957e-05, 5.3644180298e-06, 2.6822090149e-06,
+          1.34110450745e-06, 6.7055225372e-07, 3.3527612686e-07, 1.6763806343e-07, 8.381903172e-08,
+          4.190951586e-08, 2.095475793e-08, 1.047737896e-08, 5.23868948e-09, 2.61934474e-09,
+          1.30967237e-09]
+        srs: EPSG:4326
+        tile_size: [256, 256]
+      WorldMercatorWGS84Quad:
+        bbox: [-20037508.3427892, -20037508.342789043, 20037508.342789043, 20037508.3427892]
+        origin: ul
+        res: [156543.03392804, 78271.5169640205, 39135.7584820102, 19567.879241005, 9783.93962050256,
+          4891.96981025128, 2445.98490512564, 1222.99245256282, 611.49622628141, 305.748113140705,
+          152.874056570353, 76.4370282851763, 38.218514142588, 19.109257071294, 9.55462853564703,
+          4.77731426782352, 2.38865713391176, 1.19432856695588, 0.59716428347794, 0.29858214173897,
+          0.149291070869485, 0.0746455354347424, 0.0373227677173712, 0.0186613838586856,
+          0.0093306919293428, 0.0046653459646714, 0.0023326729823357, 0.00116633649116785,
+          0.00058316824558393, 0.00029158412279196]
+        srs: EPSG:3395
+        tile_size: [256, 256]

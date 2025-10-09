@@ -1077,6 +1077,77 @@ class TileSourceConfiguration(SourceConfiguration):
                            error_handler=error_handler, res_range=res_range)
 
 
+class OGCAPITilesSourceConfiguration(SourceConfiguration):
+    supports_meta_tiles = False
+    source_type = ('ogcapitiles',)
+    defaults = {}
+
+    def source(self, params=None):
+        from mapproxy.source.ogcapitiles import OGCAPITilesSource
+
+        landingpage_url = self.conf['landingpage_url']
+
+        http_client, landingpage_url = self.http_client(landingpage_url)
+
+        collection = self.conf.get('collection', None)
+
+        tile_matrix_set_id = self.conf.get('tile_matrix_set_id', None)
+
+        coverage = self.coverage()
+        image_opts = self.image_opts()
+        error_handler = self.on_error_handler()
+        res_range = resolution_range(self.conf)
+
+        return OGCAPITilesSource(landingpage_url,
+                                 collection, http_client,
+                                 tile_matrix_set_id=tile_matrix_set_id,
+                                 coverage=coverage,
+                                 image_opts=image_opts,
+                                 error_handler=error_handler,
+                                 res_range=res_range)
+
+
+class OGCAPIMapsSourceConfiguration(SourceConfiguration):
+    supports_meta_tiles = True
+    source_type = ('ogcapimaps',)
+    defaults = {}
+
+    def source(self, params=None):
+        from mapproxy.source.ogcapimaps import OGCAPIMapsSource
+
+        landingpage_url = self.conf['landingpage_url']
+
+        http_client, landingpage_url = self.http_client(landingpage_url)
+
+        collection = self.conf.get('collection', None)
+
+        transparent = self.conf.get('transparent', None)
+        transparent_color = (self.conf.get('image') or {}).get('transparent_color')
+        transparent_color_tolerance = self.context.globals.get_value(
+            'image.transparent_color_tolerance', self.conf)
+        if transparent_color:
+            transparent_color = parse_color(transparent_color)
+        bgcolor = self.conf.get('bgcolor', None)
+        if bgcolor:
+            bgcolor = parse_color(bgcolor)
+
+        coverage = self.coverage()
+        image_opts = self.image_opts()
+        error_handler = self.on_error_handler()
+        res_range = resolution_range(self.conf)
+
+        return OGCAPIMapsSource(landingpage_url,
+                                collection, http_client, coverage=coverage,
+                                image_opts=image_opts,
+                                error_handler=error_handler,
+                                res_range=res_range,
+                                supported_srs=self.supported_srs(),
+                                transparent=transparent,
+                                transparent_color=transparent_color,
+                                transparent_color_tolerance=transparent_color_tolerance,
+                                bgcolor=bgcolor)
+
+
 def file_ext(mimetype):
     from mapproxy.request.base import split_mime_type
     _mime_class, format, _options = split_mime_type(mimetype)
@@ -1099,6 +1170,8 @@ source_configuration_types = {
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
     'mapnik': MapnikSourceConfiguration,
+    'ogcapitiles': OGCAPITilesSourceConfiguration,
+    'ogcapimaps': OGCAPIMapsSourceConfiguration,
 }
 
 

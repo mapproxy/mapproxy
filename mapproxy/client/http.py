@@ -159,10 +159,32 @@ class HTTPClient(object):
 
         self.opener = create_url_opener(ssl_ca_certs, url, username, password,
                                         insecure=insecure, manage_cookies=manage_cookies)
-        self.header_list = headers.items() if headers else []
+        self.headers = headers if headers else {}
         self.hide_error_details = hide_error_details
 
-    def open(self, url, data=None, method=None) -> Any:
+    def open(self, url, data=None, method=None, headers=None) -> Any:
+
+        """
+        Open a url and return a HTTP response.
+
+        Parameters
+        ----------
+        url : string
+            URL
+        data : object | None
+            additional data to send to the server.
+        method : string | None
+             HTTP request method that will be used.
+        headers : dict | None
+            Dictionary with key:value pairs to pass as headers. This is
+            merged with the headers potentially passed to the constructor of
+            HTTPClient.
+
+        Returns
+        -------
+        A slightly modified http.client.HTTPResponse object.
+        """
+
         code = None
         result = None
         start_time = time.time()
@@ -172,7 +194,8 @@ class HTTPClient(object):
         except ValueError as e:
             err = self.handle_url_exception(url, 'URL not correct', e.args[0])
             reraise_exception(err, sys.exc_info())
-        for key, value in self.header_list:
+        headers = self.headers | (headers if headers else {})
+        for key, value in headers.items():
             req.add_header(key, value)
         if method:
             req.method = method

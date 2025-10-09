@@ -213,3 +213,11 @@ class TestSupportedSRS(object):
         assert supported.best_srs(SRS(25832)) == SRS(25832)
         assert supported.best_srs(SRS(25831)) == SRS(25832)
         assert supported.best_srs(SRS(3857)) == SRS(25832)
+
+
+def test_ogc_crs_url_to_auth_code():
+
+    assert srs.ogc_crs_url_to_auth_code("http://www.opengis.net/def/crs/EPSG/0/3857") == "EPSG:3857"
+
+    with pytest.raises(ValueError):
+        srs.ogc_crs_url_to_auth_code("invalid")
