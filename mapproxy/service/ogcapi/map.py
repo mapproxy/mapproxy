@@ -17,9 +17,9 @@
 
 from collections import OrderedDict
 import copy
+import re
 from typing import Optional
 
-from mapproxy.grid.resolutions import ogc_scale_to_res, deg_to_m
 from mapproxy.image import (
     bbox_position_in_image,
     SubImageSource,
@@ -33,6 +33,11 @@ from mapproxy.layer import MapQuery, MapExtent
 from mapproxy.response import Response
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG
+from mapproxy.service.ogcapi.map_utils import (
+    compute_width_height_bbox,
+    get_aspect_ratio,
+    get_width_height_from_default_size,
+)
 from mapproxy.service.ogcapi.server import OGCAPIServer, get_image_format
 from mapproxy.service.wms import LayerRenderer, WMSLayer, WMSGroupLayer
 from mapproxy.srs import SRS, ogc_crs_url_to_auth_code
@@ -57,8 +62,6 @@ W3C_BGCOLORS = {
     "aqua": "#00FFFF",
 }
 
-DEFAULT_SIZE = 1024
-
 
 def ogcapi_srs_to_srs(s: str):
     """Convert a OGC SRS, expressed either as a OGC CRS URL, "
@@ -74,121 +77,6 @@ def ogcapi_srs_to_srs(s: str):
     else:
         # Unsafe CURIE
         return SRS(s)
-
-
-def res_display_res_m_per_px_to_crs_res(res_display_res_m_per_px, crs: SRS):
-    """Convert a resolution expressed in metre/pixel to the geospatial units
-    of the CRS/pixel.
-    """
-
-    if crs.is_latlong:
-        return res_display_res_m_per_px / deg_to_m(
-            1, semi_major_metre=crs.semi_major_metre()
-        )
-    else:
-        return res_display_res_m_per_px
-
-
-def scale_denominator_to_crs_res(scale_denominator, display_res_m_per_px, crs: SRS):
-    """Convert a OGC scale denominator to the CRS resolution."""
-    return res_display_res_m_per_px_to_crs_res(
-        ogc_scale_to_res(scale_denominator, display_res_m_per_px), crs
-    )
-
-
-def get_crs_res(
-    server: OGCAPIServer,
-    req: Request,
-    scale_denominator,
-    display_res_m_per_px,
-    layer,
-    crs: SRS,
-):
-    """Return the resolution in CRS unit/pixel of the request from the
-    "scale-denominator" parameter of the request,
-    or the nominal_scale attribute of the layer (from user configuration).
-    """
-    if scale_denominator:
-        res = scale_denominator_to_crs_res(scale_denominator, display_res_m_per_px, crs)
-    else:
-        if layer.nominal_scale:
-            res = res_display_res_m_per_px_to_crs_res(
-                ogc_scale_to_res(layer.nominal_scale, display_res_m_per_px), crs
-            )
-        else:
-            raise OGCAPIServer.exception(
-                "InternalError",
-                f"Layer {layer.name} lacks a mominal_res/nominal_scale setting",
-                status=500,
-            )
-    return res
-
-
-def get_aspect_ratio(a_bbox):
-    """Return the radio width/height of a (georeferenced) bounding box."""
-    return (a_bbox[2] - a_bbox[0]) / (a_bbox[3] - a_bbox[1])
-
-
-def get_center(a_bbox):
-    """Return the center of a bounding box."""
-    return [(a_bbox[0] + a_bbox[2]) / 2, (a_bbox[1] + a_bbox[3]) / 2]
-
-
-def compute_bbox(center, width, height, res):
-    """Compute a bounding box from its center, the (width, height) in pixels
-    and the resolution (in CRS unit/pixel).
-    """
-    width_geo = compute_width_geo(width, res)
-    height_geo = compute_height_geo(height, res)
-    return [
-        center[0] - width_geo / 2,
-        center[1] - height_geo / 2,
-        center[0] + width_geo / 2,
-        center[1] + height_geo / 2,
-    ]
-
-
-def compute_width_geo(width, res):
-    """Compute the width in geospatial units from the width in pixel and the
-    resolution (in CRS unit/pixel).
-    """
-    return width * res
-
-
-def compute_width_from_geo(width_geo, res):
-    """Compute the width in pixels from the width in geospatial units and the
-    resolution (in CRS unit/pixel).
-    """
-    return round(width_geo / res)
-
-
-def compute_height_geo(height, res):
-    """Compute the height in geospatial units from the height in pixel and the
-    resolution (in CRS unit/pixel).
-    """
-    return height * res
-
-
-def compute_height_from_geo(height_geo, res):
-    """Compute the height in pixels from the height in geospatial units and the
-    resolution (in CRS unit/pixel).
-    """
-
-    return round(height_geo / res)
-
-
-def width_from_height(height, aspect_ratio):
-    """Compute the width in pixel from the height in pixel preserving the
-    aspect ratio.
-    """
-    return round(height * aspect_ratio)
-
-
-def height_from_width(width, aspect_ratio):
-    """Compute the height in pixel from the width in pixel preserving the
-    aspect ratio.
-    """
-    return round(width / aspect_ratio)
 
 
 def subset_to_bbox(subset):
@@ -208,14 +96,11 @@ def subset_to_bbox(subset):
     bbox = [None, None, None, None]
     for subset_part in subset:
         subset_part = subset_part.lower()
-        tmp = subset_part.split("(")
-        if len(tmp) != 2:
+        pattern = re.compile("^(\\w+)\\(([^)]+)\\)$")
+        match = pattern.match(subset_part)
+        if match is None:
             raise OGCAPIServer.invalid_parameter(f"Invalid subset part {subset_part}")
-        axis_name = tmp[0]
-        range_part = tmp[1]
-        if not range_part.endswith(")"):
-            raise OGCAPIServer.invalid_parameter(f"Invalid subset part {subset_part}")
-        range_part = range_part[:-1]
+        axis_name, range_part = match.groups()
         range_part = range_part.split(":")
         if len(range_part) != 2:
             raise OGCAPIServer.invalid_parameter(
@@ -263,32 +148,6 @@ def get_bbox_center_or_subset_crs(crs, layer, param_name):
             return SRS("OGC:CRS84")
         else:
             return layer.extent.srs.get_geographic_srs()
-
-
-def get_width_height_from_default_size(aspect_ratio):
-    """Return a tuple (width, height) following the aspect_ratio and such
-    that max(width, height) <= DEFAULT_SIZE
-    """
-    if aspect_ratio >= 1:
-        width = DEFAULT_SIZE
-        height = height_from_width(width, aspect_ratio)
-    else:
-        height = DEFAULT_SIZE
-        width = width_from_height(height, aspect_ratio)
-    return width, height
-
-
-def get_width_height_from_width_height_default_size(width, height, aspect_ratio):
-    """Return a tuple (width, height) following the aspect_ratio.
-    The input width or height can be None.
-    """
-    if not width and not height:
-        width, height = get_width_height_from_default_size(aspect_ratio)
-    elif width and not height:
-        height = height_from_width(width, aspect_ratio)
-    elif height and not width:
-        width = width_from_height(height, aspect_ratio)
-    return width, height
 
 
 def get_headers(server: OGCAPIServer, query: MapQuery):
@@ -391,16 +250,7 @@ def get_map_query(
         except ValueError:
             raise OGCAPIServer.invalid_parameter("crs is not a valid CRS")
 
-        found = False
-        if layer.extent.srs.srs_code.startswith("EPSG:"):
-            if crs == SRS(4326) or crs == SRS("OGC:CRS84"):
-                found = True
-        if not found:
-            for compatible_srs in layer.compatible_srs_list:
-                if crs == compatible_srs:
-                    found = True
-                    break
-        if not found:
+        if crs not in layer.compatible_srs_list:
             raise OGCAPIServer.invalid_parameter("crs is incompatible with this layer")
     else:
         crs = layer.compatible_srs_list[0]
@@ -427,11 +277,12 @@ def get_map_query(
             bbox = [float(x) for x in bbox.split(",")]
             if len(bbox) != 4 and len(bbox) != 6:
                 raise ValueError
-        except ValueError:
+        except ValueError:  # catch ValueError from float or local raise
             raise OGCAPIServer.invalid_parameter(
                 "bbox must be a list of 4 or 6 numeric values"
             )
         if len(bbox) == 6:
+            # Ignore minz / maxz
             bbox = [bbox[0], bbox[1], bbox[3], bbox[4]]
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
             raise OGCAPIServer.invalid_parameter(
@@ -439,8 +290,7 @@ def get_map_query(
             )
 
         if bbox_crs.is_axis_order_ne:
-            new_bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
-            bbox = new_bbox
+            bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
 
         try:
             bbox = MapExtent(bbox, bbox_crs).transform(crs).bbox
@@ -456,7 +306,7 @@ def get_map_query(
             center = [float(x) for x in center.split(",")]
             if len(center) != 2:
                 raise ValueError
-        except ValueError:
+        except ValueError:  # catch ValueError from float or local raise
             raise OGCAPIServer.invalid_parameter(
                 "center must be a list of 2 numeric values"
             )
@@ -502,104 +352,21 @@ def get_map_query(
 
     # For all cases below, cf Table 9
     # "Parameter combinations for implementations supporting both Subsetting and Scaling"
-    elif (width or height) and not (center or bbox or scale_denominator):
-        whole_bbox = layer.extent.transform(crs).bbox
-        aspect_ratio = get_aspect_ratio(whole_bbox)
-        center = get_center(whole_bbox)
-        res = get_crs_res(
-            server, req, scale_denominator, display_res_m_per_px, layer, crs
-        )
-        if width and not height:
-            height = height_from_width(width, aspect_ratio)
-        elif height and not width:
-            width = width_from_height(height, aspect_ratio)
-        bbox = compute_bbox(center, width, height, res)
-
-    elif bbox and not (scale_denominator or width or height):
-        aspect_ratio = get_aspect_ratio(bbox)
-        width, height = get_width_height_from_default_size(aspect_ratio)
-
-    elif center and not (scale_denominator or width or height):
-        whole_bbox = layer.extent.transform(crs).bbox
-        aspect_ratio = get_aspect_ratio(whole_bbox)
-        res = get_crs_res(
-            server, req, scale_denominator, display_res_m_per_px, layer, crs
-        )
-        width, height = get_width_height_from_default_size(aspect_ratio)
-        bbox = compute_bbox(center, width, height, res)
-
-    elif center and (width or height) and not scale_denominator:
-        whole_bbox = layer.extent.transform(crs).bbox
-        aspect_ratio = get_aspect_ratio(whole_bbox)
-        res = get_crs_res(
-            server, req, scale_denominator, display_res_m_per_px, layer, crs
-        )
-        width, height = get_width_height_from_width_height_default_size(
-            width, height, aspect_ratio
-        )
-        bbox = compute_bbox(center, width, height, res)
-
-    elif scale_denominator and not bbox:
-        whole_bbox = layer.extent.transform(crs).bbox
-        aspect_ratio = get_aspect_ratio(whole_bbox)
-        if not center:
-            center = get_center(whole_bbox)
-        width, height = get_width_height_from_width_height_default_size(
-            width, height, aspect_ratio
-        )
-        res = get_crs_res(
-            server, req, scale_denominator, display_res_m_per_px, layer, crs
-        )
-        bbox = compute_bbox(center, width, height, res)
-
-    elif bbox:
-        if width and height:
-            # Completely specified (WMS case)
-            pass
-        elif width or height:
-            aspect_ratio = get_aspect_ratio(bbox)
-            width, height = get_width_height_from_width_height_default_size(
-                width, height, aspect_ratio
-            )
-        else:
-            assert scale_denominator
-            width_geo = bbox[2] - bbox[0]
-            height_geo = bbox[3] - bbox[1]
-            res = get_crs_res(
-                server, req, scale_denominator, display_res_m_per_px, layer, crs
-            )
-            width = compute_width_from_geo(width_geo, res)
-            height = compute_height_from_geo(height_geo, res)
-
-    elif center:
-        assert scale_denominator
-        assert width or height
-        if not (width and height):
-            whole_bbox = layer.extent.transform(crs).bbox
-            aspect_ratio = get_aspect_ratio(whole_bbox)
-            width, height = get_width_height_from_width_height_default_size(
-                width, height, aspect_ratio
-            )
-        res = get_crs_res(
-            server, req, scale_denominator, display_res_m_per_px, layer, crs
-        )
-        bbox = compute_bbox(center, width, height, res)
-
     else:
-        # I don't think this should happen since hopefully all above cases
-        # encompass all the possible cases, but that's not so obvious !
-        raise OGCAPIServer.exception(
-            "InternalError",
-            "unexpected combination of query parameters",
-            status=500,
+        width, height, bbox = compute_width_height_bbox(
+            server,
+            req,
+            width,
+            height,
+            bbox,
+            crs,
+            center,
+            scale_denominator,
+            display_res_m_per_px,
+            layer,
         )
 
-    if width == 0:
-        width = 1
-    if height == 0:
-        height = 1
-
-    log.info(f"width={width}, height={height}, bbox={bbox}, crs={crs}")
+    log.debug(f"width={width}, height={height}, bbox={bbox}, crs={crs}")
     assert width
     assert height
     assert bbox
@@ -609,15 +376,15 @@ def get_map_query(
     query = MapQuery(bbox, (width, height), crs, format=format)
 
     image_opts = server.image_formats[FORMAT_TYPES[format]].copy()
-    bgcolor, transparent = get_bgcolor_and_transparent(server, req)
+    bgcolor = get_bgcolor(server, req)
     if bgcolor:
         image_opts.bgcolor = bgcolor
-    image_opts.transparent = transparent
+    image_opts.transparent = get_transparent(req, bgcolor)
 
     return query, image_opts
 
 
-def get_bgcolor_and_transparent(server: OGCAPIServer, req: Request):
+def get_bgcolor(server: OGCAPIServer, req: Request):
     bgcolor = req.args.get("bgcolor", None)
     if bgcolor:
         bgcolor = bgcolor.lower()
@@ -650,6 +417,10 @@ def get_bgcolor_and_transparent(server: OGCAPIServer, req: Request):
             else:
                 raise OGCAPIServer.invalid_parameter("invalid value for bgcolor")
 
+    return bgcolor
+
+
+def get_transparent(req: Request, bgcolor):
     transparent = req.args.get("transparent", None)
     if transparent is not None:
         if transparent == "true":
@@ -661,7 +432,7 @@ def get_bgcolor_and_transparent(server: OGCAPIServer, req: Request):
     elif bgcolor:
         transparent = True
 
-    return bgcolor, transparent
+    return transparent
 
 
 def render_map(
@@ -769,9 +540,11 @@ def render_map(
     )
 
 
-def get_map(server: OGCAPIServer, req: Request, coll_id: Optional[str], map_filename: str):
+def get_map(
+    server: OGCAPIServer, req: Request, coll_id: Optional[str], map_filename: str
+):
     log = server.log
-    log.info(f"Map for {coll_id}")
+    log.debug(f"Map for {coll_id}")
 
     allowed_args = set(
         [

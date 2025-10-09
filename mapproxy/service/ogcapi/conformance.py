@@ -22,7 +22,7 @@ from mapproxy.service.ogcapi.constants import F_JSON, F_HTML
 
 def conformance(server: OGCAPIServer, req: Request):
     log = server.log
-    log.info("Conformance")
+    log.debug("Conformance")
 
     for arg in req.args:
         if arg != "f":

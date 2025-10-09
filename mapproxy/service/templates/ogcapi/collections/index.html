@@ -31,33 +31,4 @@
               </tbody>
             </table>
     </section>
-    <!-- Disabled by mapproxy
-    <section id="record-collections">
-      <h1>{% trans %}Record collections in this service{% endtrans %}</h1>
-            <table class="table table-striped table-bordered">
-              <thead>
-              <tr>
-                <th>{% trans %}Name{% endtrans %}</th>
-                <th>{% trans %}Description{% endtrans %}</th>
-              </tr>
-              </thead>
-              <tbody>
-                {% for col in data['collections']  %}
-                {% if col.get('itemType') == 'record' %}
-                <tr>
-                  <td data-label="name">
-                    <a rel="http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog" title="{{ col['title'] | striptags | truncate }}"
-                      href="{{ data['collections_path'] }}/{{ col.id }}">
-                      <span>{{ col['title'] | striptags | truncate }}</span></a>
-                  </td>
-                  <td data-label="description">
-                    {{ col['description'] | striptags | truncate }}
-                  </td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-              </tbody>
-            </table>
-    </section>
-    -->
 {% endblock %}

@@ -33,7 +33,7 @@ from mapproxy.service.ogcapi.constants import (
     F_PNG,
     F_JPEG,
 )
-from mapproxy.jinja2_templates import render_j2_template
+from mapproxy.util.jinja2_templates import render_j2_template
 
 import logging
 
@@ -122,14 +122,10 @@ class OGCAPIServer(Server):
             type, encoding = mimetypes.guess_type(filename)
             return Response(open(filename, "rb"), content_type=type)
 
-        len_ogcapi = len("/ogcapi")
-        path = req.path[len_ogcapi:]
-        if path.startswith("/"):
-            path = path[1:]
-        if path.endswith("/"):
-            path = path[:-1]
-        path_components = path.split("/") if path else []
-        log.info(f"Handle request: {path_components} {req.args}")
+        path_components = req.path.strip("/").split("/")[1:]
+        log.debug(f"Handle request: {path_components} {req.args}")
+
+        map_filenames = ["map", "map.png", "map.jpg", "map.jpeg"]
 
         try:
             if len(path_components) == 0:
@@ -161,7 +157,7 @@ class OGCAPIServer(Server):
                 self.enable_maps
                 and len(path_components) == 3
                 and path_components[0] == "collections"
-                and path_components[2] in ("map", "map.png", "map.jpg")
+                and path_components[2] in map_filenames
             ):
                 from mapproxy.service.ogcapi.map import get_map
 
@@ -170,12 +166,7 @@ class OGCAPIServer(Server):
             if (
                 self.enable_maps
                 and len(path_components) == 1
-                and path_components[0]
-                in (
-                    "map",
-                    "map.png",
-                    "map.jpg",
-                )
+                and path_components[0] in map_filenames
             ):
                 from mapproxy.service.ogcapi.map import get_map
 

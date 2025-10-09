@@ -18,7 +18,6 @@
 import json
 import mapproxy.service as service_package
 
-from mapproxy.jinja2_templates import render_j2_template
 from mapproxy.request.base import Request
 from mapproxy.response import Response
 from mapproxy.service.ogcapi.constants import (
@@ -28,6 +27,7 @@ from mapproxy.service.ogcapi.constants import (
     MEDIA_TYPE_OPENAPI_3_0,
 )
 from mapproxy.service.ogcapi.server import OGCAPIServer
+from mapproxy.util.jinja2_templates import render_j2_template
 from mapproxy.version import __version__
 
 
@@ -41,7 +41,7 @@ def _get(d: dict, *path):
 
 def api(server: OGCAPIServer, req: Request):
     log = server.log
-    log.info("API page")
+    log.debug("API page")
 
     for arg in req.args:
         if arg not in ("f", "ui"):

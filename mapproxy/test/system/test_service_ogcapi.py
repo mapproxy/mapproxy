@@ -910,7 +910,8 @@ class TestOGCAPIMapsService(TestOGCAPIService):
             "type": "Not Found",
         }
 
-    def test_collection_map_jpeg(self, app):
+    @pytest.mark.parametrize("extension", ["jpg", "jpeg"])
+    def test_collection_map_jpeg(self, app, extension):
         with tmp_image((1, 1), format="jpeg", color=(255, 0, 0)) as img:
             img_bytes = img.read()
 
@@ -924,7 +925,7 @@ class TestOGCAPIMapsService(TestOGCAPIService):
             ("localhost", 42423), [expected_req], bbox_aware_query_comparator=True
         ):
             resp = app.get(
-                "/ogcapi/collections/test/map.jpg", {"width": 1, "height": 1}
+                f"/ogcapi/collections/test/map.{extension}", {"width": 1, "height": 1}
             )
             assert resp.content_type == "image/jpeg"
             img = Image.open(BytesIO(resp.body))
@@ -1500,7 +1501,7 @@ class TestOGCAPIMapsService(TestOGCAPIService):
             ({"subset": "lon(-180:180),lat(-90:"}, "Invalid subset part lat(-90:"),
             (
                 {"subset": "lon(-180:180),lat()"},
-                "Only intervals are supported in subset part lat()",
+                "Invalid subset part lat()",
             ),
             ({"bbox": "-180,-90,180"}, "bbox must be a list of 4 or 6 numeric values"),
             (

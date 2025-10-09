@@ -8,10 +8,7 @@
 {% endblock %}
 
 {% block extrahead %}
-<!--
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
--->
+
 <script src="../demo/static/ol.js"></script>
 <script src="../demo/static/proj4.min.js"></script>
 <link rel="stylesheet" href="../demo/static/ol.css"/>
@@ -52,63 +49,6 @@
           </ul>
           {% endif %}
       {% endfor %}
-
-      {% if data['itemType'] == 'feature' or data['itemType'] == 'record' %}
-      <h3>{% trans %}Browse{% endtrans %}</h3>
-      <ul>
-        <li>
-          <div>
-            <a title="{% trans %}Browse Items{% endtrans %}" href="{{ data['collections_path'] }}/{{ data['id'] }}/items">
-              {% trans %}Browse through the items of{% endtrans %} "{{ data['title'] }}"</a></div>
-        </li>
-      </ul>
-      <h3>{% trans %}Queryables{% endtrans %}</h3>
-      <ul>
-        <li>
-          <div>
-            <a title="{% trans %}Display Queryables{% endtrans %}" href="{{ data['collections_path'] }}/{{ data['id'] }}/queryables">
-              {% trans %}Display Queryables of{% endtrans %} "{{ data['title'] }}"</a></div>
-        </li>
-      </ul>
-      <h3>{% trans %}Schema{% endtrans %}</h3>
-      <ul>
-        <li>
-          <div>
-            <a title="{% trans %}Display Schema{% endtrans %}" href="{{ data['collections_path'] }}/{{ data['id'] }}/schema">
-              {% trans %}Display Schema of{% endtrans %} "{{ data['title'] }}"</a></div>
-        </li>
-      </ul>
-      {% for provider in config['resources'][data['id']]['providers'] %}
-        {% if 'tile' in provider['type'] %}
-      <h3>{% trans %}Tiles{% endtrans %}</h3>
-      <ul>
-        <li>
-          <div>
-            <a title="{% trans %}Display Tiles{% endtrans %}" href="{{ data['collections_path'] }}/{{ data['id'] }}/tiles">{% trans %}Display Tiles of{% endtrans %} "{{ data['title'] }}"</a>
-          </div>
-        </li>
-      </ul>
-        {% endif %}
-      {% endfor %}
-      {% endif  %}
-
-      {% if 'parameter_names' in data %}
-      <h3>Parameters</h3>
-      <table class="table table-striped table-bordered">
-        <tr>
-          <th>id</th>
-          <th>name</th>
-          <th>units</th>
-        </tr>
-        {% for parameter in data['parameter_names'].values() %}
-        <tr>
-          <td>{{ parameter['id'] }}</td>
-          <td>{{ parameter['name'] }}</td>
-          <td>{{ parameter['unit']['symbol']['value'] }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-      {% endif %}
 
       <h3>{% trans %}Links{% endtrans %}</h3>
       <ul>
@@ -215,93 +155,3 @@
 </script>
 {% endblock %}
 
-<!--
-{% block extrafootX %}
-    <script>
-    var map = L.map('collection-map').setView([{{ 0 }}, {{ 0 }}], 1);
-
-   {# if this collection has a map representation, add it to the map #}
-   {% for link in data['links'] %}
-      {% if link['rel'] == 'http://www.opengis.net/def/rel/ogc/1.0/map' and link['href'] %}
-        L.tileLayer.wms("{{ link['href'] }}", {"opacity": .7, "transparent": true, "crs": L.CRS.EPSG4326}).addTo(map);
-      {% endif %}
-    {% endfor %}
-
-
-    var bbox_layer = L.polygon([
-      ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][0] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][3] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}'],
-      ['{{ data['extent']['spatial']['bbox'][0][1] }}', '{{ data['extent']['spatial']['bbox'][0][2] }}']
-    ]);
-
-    map.addLayer(bbox_layer);
-    map.fitBounds(bbox_layer.getBounds(), {maxZoom: 10});
-
-    // Allow to get bbox query parameter of a rectangular area specified by
-    // dragging the mouse while pressing the Ctrl key
-    var firstCorner;
-    var secondCorner;
-    var currentBoundingBox;
-    var boundingBox;
-    var drawingBoundingBox = false;
-
-    map.on('mousedown', setFirstCorner);
-    map.on('mouseup', setSecondCorner);
-    map.on('mousemove', drawCurrentBoundingBox);
-    map.on('click', boundingBoxInfo);
-
-    function boundingBoxInfo(e) {
-        if (map.hasLayer(boundingBox)) {
-            var bboxCoords = boundingBox.getBounds().toBBoxString();
-            L.popup({maxWidth:"auto"})
-            .setLatLng(boundingBox.getBounds().getCenter())
-            .setContent(`bbox=${bboxCoords}`)
-            .addTo(map);
-        }
-    }
-
-    function setFirstCorner(e) {
-        if (e.originalEvent.ctrlKey) {
-            if (map.hasLayer(boundingBox)) {
-                map.removeLayer(boundingBox);
-            }
-            map.dragging.disable();
-            firstCorner = e.latlng;
-            drawingBoundingBox = true;
-        } else if (map.hasLayer(boundingBox) && !boundingBox.getBounds().contains(e.latlng)) {
-        map.removeLayer(boundingBox);
-        }
-    }
-
-    function setSecondCorner(e) {
-        if (map.hasLayer(currentBoundingBox)) {
-             map.removeLayer(currentBoundingBox);
-        }
-        if (e.originalEvent.ctrlKey) {
-            if (drawingBoundingBox) {
-                drawingBoundingBox = false;
-                secondCorner = e.latlng;
-                var bounds = [firstCorner, secondCorner];
-                boundingBox = L.rectangle(bounds, {color:"#ff7800", weight:1});
-                boundingBox.addTo(map);
-            }
-        }
-        drawingBoundingBox = false;
-        map.dragging.enable();
-    }
-
-    function drawCurrentBoundingBox(e) {
-        if (drawingBoundingBox) {
-            if (map.hasLayer(currentBoundingBox)) {
-                map.removeLayer(currentBoundingBox);
-            }
-            secondCorner = e.latlng;
-            var bounds = [firstCorner, secondCorner];
-            currentBoundingBox = L.rectangle(bounds, {dashArray:"4 1", weight:0.4});
-            currentBoundingBox.addTo(map);
-        }
-    }
-    </script>
-{% endblock %}
--->

@@ -52,8 +52,6 @@ def json_serial(obj: Any) -> str:
         return int(obj)
     elif type(obj).__name__ in ["float32", "float64"]:
         return float(obj)
-    # elif isinstance(obj, l10n.Locale):
-    #     return l10n.locale2str(obj)
     elif isinstance(obj, (pathlib.PurePath, Path)):
         return str(obj)
     elif isinstance(obj, uuid.UUID):
@@ -224,7 +222,6 @@ def render_j2_template(
 
     env.filters["to_json"] = to_json
     env.filters["format_datetime"] = format_datetime
-    # env.filters['format_duration'] = format_duration
     env.filters["human_size"] = human_size
     env.globals.update(to_json=to_json)
 
@@ -237,8 +234,6 @@ def render_j2_template(
     env.filters["filter_dict_by_key_value"] = filter_dict_by_key_value
     env.globals.update(filter_dict_by_key_value=filter_dict_by_key_value)
 
-    # locale_dir = config['server'].get('locale_dir', 'locale')
-    # LOGGER.debug(f'Locale directory: {locale_dir}')
     locale_dir = "."
     translations = Translations.load(locale_dir, [locale_])
     env.install_gettext_translations(translations)
@@ -251,7 +246,6 @@ def render_j2_template(
 
     return template.render(
         config=config,
-        # config=l10n.translate_struct(config, locale_, True),
         data=data,
         locale=locale_,
         version=__version__,
