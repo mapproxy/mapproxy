@@ -233,7 +233,9 @@
       <southBoundLatitude>{{ extent[1] }}</southBoundLatitude>
       <northBoundLatitude>{{ extent[3] }}</northBoundLatitude>
     </EX_GeographicBoundingBox>
+    {{if include_crs_84}}
     <BoundingBox CRS="CRS:84" minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
+    {{endif}}
     {{for srs_code, bbox in layer_srs_bbox(layer, epsg_axis_order=True)}}
     <BoundingBox CRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
