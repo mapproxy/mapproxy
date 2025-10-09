@@ -29,7 +29,7 @@ from mapproxy.service.ogcapi.constants import (
 
 def landing_page(server: OGCAPIServer, req: Request):
     log = server.log
-    log.info("Landing page")
+    log.debug("Landing page")
 
     for arg in req.args:
         if arg != "f":

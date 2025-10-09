@@ -139,3 +139,14 @@ def bbox_contains(one, two):
         return True
 
     return False
+
+
+def bbox_from_center(center_x, center_y, width, height):
+    """Compute a bounding box from its center, and its width and height
+    """
+    return (
+        center_x - width / 2,
+        center_y - height / 2,
+        center_x + width / 2,
+        center_y + height / 2,
+    )

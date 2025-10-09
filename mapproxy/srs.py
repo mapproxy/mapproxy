@@ -564,7 +564,7 @@ class _SRS(object):
             auth_name = "IAU"
         return f"http://www.opengis.net/def/crs/{auth_name}/{version}/{code}"
 
-    def semi_major_metre(self):
+    def semi_major_meters(self):
         """Return the semi major axis in meters of the ellipsoid underlying this SRS"""
         return self.proj.ellipsoid.semi_major_metre
 

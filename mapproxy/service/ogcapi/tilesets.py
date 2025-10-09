@@ -120,7 +120,7 @@ def _base_tileset(
 
 def tilesets(server: OGCAPIServer, req: Request, coll_id: Optional[str]):
     log = server.log
-    log.info("TileSets")
+    log.debug("TileSets")
 
     for arg in req.args:
         if arg != "f":
@@ -202,7 +202,7 @@ def tilesets(server: OGCAPIServer, req: Request, coll_id: Optional[str]):
 
 def tileset(server: OGCAPIServer, req: Request, coll_id: str, tms_name: str):
     log = server.log
-    log.info("TileSet")
+    log.debug("TileSet")
 
     for arg in req.args:
         if arg != "f":

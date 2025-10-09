@@ -159,7 +159,7 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
 
 def collections(server: OGCAPIServer, req: Request):
     log = server.log
-    log.info("Collections page")
+    log.debug("Collections page")
 
     for arg in req.args:
         if arg != "f":
@@ -196,7 +196,7 @@ def collections(server: OGCAPIServer, req: Request):
 
 def collection(server: OGCAPIServer, req: Request, coll_id: str):
     log = server.log
-    log.info(f"Collection page for {coll_id}")
+    log.debug(f"Collection page for {coll_id}")
 
     for arg in req.args:
         if arg != "f":

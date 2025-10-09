@@ -21,11 +21,12 @@ from mapproxy.service.ogcapi.server import OGCAPIException, OGCAPIServer
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG
 from mapproxy.service.ogcapi.map import (
     render_map,
-    get_bgcolor_and_transparent,
+    get_bgcolor,
+    get_transparent,
     get_width_height,
     check_width_height,
-    scale_denominator_to_crs_res,
 )
+from mapproxy.service.ogcapi.map_utils import scale_denominator_to_crs_res
 from mapproxy.service.ogcapi.server import get_image_format
 from mapproxy.service.wms import WMSGroupLayer
 
@@ -40,7 +41,7 @@ def tile(
     col_ext: str,
 ):
     log = server.log
-    log.info("Tile")
+    log.debug("Tile")
 
     allowed_args = set(
         [
@@ -188,10 +189,10 @@ def tile(
     query = MapQuery(bbox, (renderWidth, renderHeight), tile_grid.srs, format=format)
 
     image_opts = server.image_formats[FORMAT_TYPES[format]].copy()
-    bgcolor, transparent = get_bgcolor_and_transparent(server, req)
+    bgcolor = get_bgcolor(server, req)
     if bgcolor:
         image_opts.bgcolor = bgcolor
-    image_opts.transparent = transparent
+    image_opts.transparent = get_transparent(req, bgcolor)
 
     if coll_id:
         layer = server.layers[coll_id]

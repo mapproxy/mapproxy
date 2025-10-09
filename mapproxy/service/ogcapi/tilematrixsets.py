@@ -23,7 +23,7 @@ from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_JSON, F_HTML
 
 def tilematrixsets(server: OGCAPIServer, req: Request):
     log = server.log
-    log.info("TileMatrixSets")
+    log.debug("TileMatrixSets")
 
     for arg in req.args:
         if arg != "f":
