@@ -43,7 +43,6 @@
     </ows:ServiceContact>
   </ows:ServiceProvider>
 {{endif}}
-{{if restful}}
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -51,7 +50,7 @@
           <ows:Get xlink:href="{{service.url}}?">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
-                <ows:Value>RESTful</ows:Value>
+                <ows:Value>{{if restful}}RESTful{{else}}KVP{{endif}}</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
@@ -64,7 +63,7 @@
           <ows:Get xlink:href="{{service.url}}?">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
-                <ows:Value>RESTful</ows:Value>
+                <ows:Value>{{if restful}}RESTful{{else}}KVP{{endif}}</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
@@ -77,7 +76,7 @@
           <ows:Get xlink:href="{{service.url}}?">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
-                <ows:Value>RESTful</ows:Value>
+                <ows:Value>{{if restful}}RESTful{{else}}KVP{{endif}}</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
@@ -85,50 +84,6 @@
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-{{endif}}
-{{if not restful}}
-  <ows:OperationsMetadata>
-    <ows:Operation name="GetCapabilities">
-      <ows:DCP>
-        <ows:HTTP>
-          <ows:Get xlink:href="{{service.url}}?">
-            <ows:Constraint name="GetEncoding">
-              <ows:AllowedValues>
-                <ows:Value>KVP</ows:Value>
-              </ows:AllowedValues>
-            </ows:Constraint>
-          </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
-          <ows:Get xlink:href="{{service.url}}?">
-            <ows:Constraint name="GetEncoding">
-              <ows:AllowedValues>
-                <ows:Value>KVP</ows:Value>
-              </ows:AllowedValues>
-            </ows:Constraint>
-          </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetFeatureInfo">
-      <ows:DCP>
-        <ows:HTTP>
-          <ows:Get xlink:href="{{service.url}}?">
-            <ows:Constraint name="GetEncoding">
-              <ows:AllowedValues>
-                <ows:Value>KVP</ows:Value>
-              </ows:AllowedValues>
-            </ows:Constraint>
-          </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-  </ows:OperationsMetadata>
-{{endif}}
   <Contents>
 {{for layer in layers}}
     <Layer>
