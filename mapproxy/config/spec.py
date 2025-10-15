@@ -507,6 +507,8 @@ mapproxy_yaml_spec = {
             'attribution': {
                 'text': str,
             },
+            'on_source_errors': str(),
+            'max_output_pixels': one_of(number(), [number()]),
             'md': {
                 'identification': {
                     'title': str(),

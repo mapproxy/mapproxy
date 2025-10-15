@@ -64,6 +64,10 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
                     col["attribution"] = f"[{attribution_title}]({attribution_url})"
                 col["attributionMediaType"] = "text/markdown"
 
+    #  The OGC API Common specfication required that the
+    # ``"extent": { "spatial": { "bbox": [ [xmin,ymin,xmax,ymal] ] }`` property
+    # is always presented in CRS84 (or for planetary datasets in the applicable
+    # global geographic CRS, that you then set as a ``crs`` child member of crs.
     if layer.extent.srs.srs_code.startswith("EPSG:"):
         bbox_crs = SRS(4326)
     else:
@@ -75,6 +79,9 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
     if bbox_crs.srs_code != "EPSG:4326":
         col["extent"]["spatial"]["crs"] = bbox_crs.to_ogc_url()
 
+    # When the native bbox is not in CRS84/EPSG:4326, you can add an optional
+    # "extent"["spatial"]["storageCrsBbox"] member to express it also in its #
+    # native CRS.
     if layer.extent.srs != bbox_crs:
         col["extent"]["spatial"]["storageCrsBbox"] = [layer.extent.bbox]
 

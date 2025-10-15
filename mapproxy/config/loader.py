@@ -2419,7 +2419,7 @@ class ServiceConfiguration(ConfigurationBase):
 
         root_layer = self.context.wms_root_layer.wms_layer()
         if not root_layer:
-            raise ConfigurationError("found no WMS layer")
+            raise ConfigurationError("found no layer")
 
         enable_tiles = conf.get('enable_tiles', True)
         enable_maps = conf.get('enable_maps', True)
@@ -2428,20 +2428,21 @@ class ServiceConfiguration(ConfigurationBase):
 
         concurrent_layer_renderer = self.context.globals.get_value(
             'concurrent_layer_renderer', conf,
-            global_key='wms.concurrent_layer_renderer')
+            global_key='ogcapi.concurrent_layer_renderer')
 
         image_formats_names = self.context.globals.get_value('image_formats', conf,
-                                                             global_key='wms.image_formats')
+                                                             global_key='ogcapi.image_formats')
         image_formats = OrderedDict()
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
-                log.warning('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
+                log.warning('duplicate mime-type for OGCAPI image_formats: '
+                            '"%s" already configured, will use last format',
                             opts.format)
             image_formats[opts.format] = opts
 
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
-                                                           global_key='wms.max_output_pixels')
+                                                           global_key='ogcapi.max_output_pixels')
         if isinstance(max_output_pixels, list):
             max_output_pixels = max_output_pixels[0] * max_output_pixels[1]
 
@@ -2449,7 +2450,7 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60  # seconds
 
         on_source_errors = self.context.globals.get_value('on_source_errors',
-                                                          conf, global_key='wms.on_source_errors')
+                                                          conf, global_key='ogcapi.on_source_errors')
 
         default_dataset_layers = conf.get('default_dataset_layers', None)
         if default_dataset_layers:

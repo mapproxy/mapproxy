@@ -492,10 +492,6 @@ class Capabilities(object):
         self.srs_extents = limit_srs_extents(srs_extents, srs)
         self.inspire_md = inspire_md
         self.max_output_pixels = max_output_pixels
-        self.include_crs_84 = False
-        for srs_item in srs:
-            if SRS(srs_item).srs_code.startswith("EPSG:"):
-                self.include_crs_84 = True
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         for srs, extent in self.srs_extents.items():
@@ -563,7 +559,6 @@ class Capabilities(object):
             inspire_md=inspire_md,
             max_output_size=max_output_size,
             escape=escape,
-            include_crs_84=self.include_crs_84,
         )
         # strip blank lines
         doc = '\n'.join(x for x in doc.split('\n') if x.rstrip())

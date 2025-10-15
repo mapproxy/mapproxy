@@ -515,7 +515,7 @@ def render_map(
     # image before it's wrapped up in a response
     result = server.decorate_img(
         result,
-        "wms.map",
+        "ogcapi.map",
         list(actual_layers.keys()),
         req.environ,
         (query.srs.srs_code, query.bbox),

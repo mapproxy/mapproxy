@@ -21,7 +21,7 @@
     <meta name="description" content="{{ config['metadata']['identification']['title'] }}">
     <meta name="keywords" content="{{ config['metadata']['identification']['keywords']|join(',') }}">
     <link rel="shortcut icon" href="{{ icon }}" type="image/x-icon">
-    <link rel="stylesheet" href="../demo/static/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ config['server']['url'] }}/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ config['server']['url'] }}/static/css/default.css">
     <meta name="twitter:image:src"   content="{% block thumb %}{% endblock %}{% if not self.thumb() %}{{ logo }}{% endif %}" />
     <meta property="og:image"        content="{{ self.thumb() }}{% if not self.thumb() %}{{ logo }}{% endif %}" />

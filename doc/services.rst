@@ -492,6 +492,19 @@ See the example below for all supported keys.
 List of layer(s) that are used by default for dataset-wide "/map" and "/map/tiles"
 requests. If that option is not set, those endpoints are not available.
 
+``on_source_errors``
+""""""""""""""""""""
+
+Configure what MapProxy should do when one or more sources return errors or no response at all (e.g. timeout). The default is ``notify``, which adds a text line in the image response for each erroneous source, but only if a least one source was successful. When ``on_source_errors`` is set to ``raise``, MapProxy will return an OGCAPI errorn in any error case.
+
+
+``max_output_pixels``
+"""""""""""""""""""""
+
+The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to ``[4000, 4000]`` which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).
+
+See also :ref:`globals.cache.max_tile_limit <max_tile_limit>` for the maximum number of tiles MapProxy will merge together for each layer.
+
 
 An example showing all potential service metadata and configuration is:
 
