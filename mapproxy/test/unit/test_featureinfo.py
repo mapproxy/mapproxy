@@ -160,7 +160,7 @@ class TestHTMLFeatureInfoDocs(object):
 
     def test_combine(self):
         docs = [
-            HTMLFeatureInfoDoc(b"<html><head><title>Hello<body><p>baz</p><p>baz2"),
+            HTMLFeatureInfoDoc(b"<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>"),
             HTMLFeatureInfoDoc(b"<p>foo</p>"),
             HTMLFeatureInfoDoc(b"<body><p>bar</p></body>"),
         ]
@@ -176,7 +176,7 @@ class TestHTMLFeatureInfoDocs(object):
         docs = [
             HTMLFeatureInfoDoc("<p>foo</p>"),
             HTMLFeatureInfoDoc("<body><p>bar</p></body>"),
-            HTMLFeatureInfoDoc("<html><head><title>Hello<body><p>baz</p><p>baz2"),
+            HTMLFeatureInfoDoc("<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>"),
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
 

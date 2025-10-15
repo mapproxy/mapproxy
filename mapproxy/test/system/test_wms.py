@@ -753,7 +753,7 @@ class TestWMS111(SysTest):
             self.common_fi_req.params["info_format"] = "text/html"
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/html"
-            assert resp.body == b"<html><body><p>info</p></body></html>"
+            assert resp.body == b"<html><body>info</body></html>"
             assert resp.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     def test_get_featureinfo_info_format_special_chars(self, app):
@@ -771,7 +771,7 @@ class TestWMS111(SysTest):
             self.common_fi_req.params["info_format"] = "text/html"
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/html"
-            assert resp.body == encode(u"<html><body><p>äüß▼</p></body></html>")
+            assert resp.body == encode(u"<html><body>äüß▼</body></html>")
             assert resp.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     def test_get_featureinfo_130(self, app):
