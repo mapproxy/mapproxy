@@ -37,8 +37,8 @@ from mapproxy.util.coverage import load_limited_to
 import logging
 log = logging.getLogger(__name__)
 
-
-get_template = template_loader(__package__, 'templates')
+env = {'bunch': bunch}
+get_template = template_loader(__package__, 'templates', namespace=env)
 
 
 class TileServer(Server):
