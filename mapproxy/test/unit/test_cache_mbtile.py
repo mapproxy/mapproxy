@@ -109,24 +109,24 @@ class TestMBTileLevelCache(TileCacheTestBase):
         assert_files_in_dir(self.cache_dir, [])
 
         self.cache.store_tile(self.create_tile((0, 0, 1)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles'], glob='*.mbtiles')
 
         self.cache.store_tile(self.create_tile((0, 0, 5)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '5.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles', '5.mbtiles'], glob='*.mbtiles')
 
     def test_remove_level_files(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles', '2.mbtiles'], glob='*.mbtiles')
 
         self.cache.remove_level_tiles_before(1, remove_all=True)
-        assert_files_in_dir(self.cache_dir, ['2.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['2.mbtiles'], glob='*.mbtiles')
 
     def test_remove_level_tiles_before(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
 
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles', '2.mbtiles'], glob='*.mbtiles')
         assert self.cache.is_cached(Tile((0, 0, 1)))
 
         self.cache.remove_level_tiles_before(1, timestamp=time.time() - 60)
@@ -135,7 +135,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
         self.cache.remove_level_tiles_before(1, timestamp=time.time() + 60)
         assert not self.cache.is_cached(Tile((0, 0, 1)))
 
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles', '2.mbtiles'], glob='*.mbtiles')
         assert self.cache.is_cached(Tile((0, 0, 2)))
 
     def test_bulk_store_tiles_with_different_levels(self):
@@ -146,7 +146,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
             self.create_tile((1, 0, 1)),
         ], dimensions=None)
 
-        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
+        assert_files_in_dir(self.cache_dir, ['1.mbtiles', '2.mbtiles'], glob='*.mbtiles')
         assert self.cache.is_cached(Tile((0, 0, 1)))
         assert self.cache.is_cached(Tile((1, 0, 1)))
         assert self.cache.is_cached(Tile((0, 0, 2)))
