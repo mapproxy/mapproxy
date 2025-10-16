@@ -6,6 +6,39 @@ Configuration examples
 
 This document will show you some usage scenarios of MapProxy and will explain some combinations of configuration options that might be useful for you.
 
+.. _auto_metadata_examples:
+
+Automatic metadata inheritance
+==============================
+
+MapProxy can automatically inherit metadata from WMS sources, eliminating the need to manually configure layer metadata. This is particularly useful when working with external WMS services.
+
+See :doc:`auto_metadata` for complete documentation and detailed examples.
+
+Quick example:
+
+.. code-block:: yaml
+
+  layers:
+    - name: remote_layer
+      sources: [remote_cache]
+      md:
+        auto_metadata: true  # Inherit layer metadata from WMS source
+
+  caches:
+    remote_cache:
+      sources: [remote_wms]
+
+  sources:
+    remote_wms:
+      type: wms
+      req:
+        url: https://external.wms.server/service
+        layers: external_layer
+      http:
+        username: user  # Auth credentials used for metadata fetching
+        password: pass
+
 .. _merge_layers:
 
 Merge multiple layers

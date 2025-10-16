@@ -95,9 +95,6 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo_out_format``
   Output format returned by the XSLT script. By default MapProxy will use ``featureinfo_format``.
 
-``query_layers``
-  The ``QUERY_LAYERS`` for FeatureInfo requests. By default MapProxy will use the same as the LAYERS param.
-
 .. versionadded:: 1.12.0
   ``featureinfo_out_format``
 
@@ -196,6 +193,24 @@ You can configure the following HTTP related options for this source:
 - ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
+
+``auto_metadata``
+^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.17.0
+
+MapProxy can automatically inherit metadata from WMS sources by fetching GetCapabilities documents. This eliminates the need to manually configure layer metadata. The auto metadata feature can be used with any WMS source and supports authentication.
+
+Auto metadata is configured at the layer level, not the source level. See :doc:`auto_metadata` for complete documentation and configuration examples.
+
+The following metadata fields are automatically inherited:
+
+- ``title`` - Layer title from WMS GetCapabilities
+- ``abstract`` - Layer description (with automatic title prepending)
+- ``attribution`` - Layer attribution information
+- ``contact`` - Layer contact information
+
+Authentication credentials configured for the WMS source (``username``, ``password``, ``headers``) are automatically used for metadata fetching.
 
 .. _tagged_source_names:
 
