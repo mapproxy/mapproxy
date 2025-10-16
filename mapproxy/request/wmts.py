@@ -420,23 +420,20 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(url_converter, fi_url_converter):
+def wmts_rest_request_parser(url_converter, fi_url_converter, req):
     tile_req_re = url_converter.regexp()
     fi_req_re = fi_url_converter.regexp()
 
-    def wmts_request(req):
-        if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
-            return WMTS100RestCapabilitiesRequest(req)
+    if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
+        return WMTS100RestCapabilitiesRequest(req)
 
-        match = tile_req_re.search(req.path)
+    match = tile_req_re.search(req.path)
+    if not match:
+        match = fi_req_re.search(req.path)
         if not match:
-            match = fi_req_re.search(req.path)
-            if not match:
-                raise RequestError('invalid request (%s)' % (req.path))
+            raise RequestError('invalid request (%s)' % (req.path))
 
-            req_vars = match.groupdict()
-            return WMTS100RestFeatureInfoRequest(req, req_vars, fi_url_converter)
         req_vars = match.groupdict()
-        return WMTS100RestTileRequest(req, req_vars, url_converter)
-
-    return wmts_request
+        return WMTS100RestFeatureInfoRequest(req, req_vars, fi_url_converter)
+    req_vars = match.groupdict()
+    return WMTS100RestTileRequest(req, req_vars, url_converter)
