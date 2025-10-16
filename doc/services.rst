@@ -230,6 +230,9 @@ Here is an example TMS request: ``/tms/1.0.0/base/EPSG900913/3/1/0.png``. ``png`
 
 A request to ``/tms/1.0.0`` will return the TMS metadata as XML. ``/tms/1.0.0/layername`` will return information about the bounding box, resolutions and tile size of this specific layer.
 
+``md``
+""""""
+``md`` is for metadata. These fields are used for the TMS ``Capabilities`` responses. See the example below for all supported keys. If no special md block is provided here than the entries of the wms md block are used.  
 
 ``use_grid_names``
 """"""""""""""""""
