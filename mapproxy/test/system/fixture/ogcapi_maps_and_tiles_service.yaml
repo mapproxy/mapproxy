@@ -6,6 +6,7 @@ services:
   ogcapi:
       #attribution:
       #    text: "Copyright ME"
+      map_srs: ["EPSG:3857"]
       md:
           identification:
               title: MapProxy OGCAPI
@@ -47,7 +48,6 @@ layers:
             logo:
                 url: "http://example.com/logo.png"
     sources: [test]
-    compatible_srs: ["EPSG:3857"]
     nominal_scale: 100000000
 
   - name: test_without_nominal_scale

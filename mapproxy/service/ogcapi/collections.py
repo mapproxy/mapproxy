@@ -89,7 +89,7 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
     if layer.extent.srs.srs_code.startswith("EPSG:"):
         crs.append(SRS("OGC:CRS84").to_ogc_url())
         crs.append(SRS(4326).to_ogc_url())
-    for srs in layer.compatible_srs_list:
+    for srs in server.map_srs:
         if srs.srs_code != "EPSG:4326":
             crs.append(srs.to_ogc_url())
     col["crs"] = crs

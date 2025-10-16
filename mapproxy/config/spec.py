@@ -504,6 +504,7 @@ mapproxy_yaml_spec = {
         'ogcapi': {
             'enable_tiles': bool(),
             'enable_maps': bool(),
+            'map_srs': [str()],
             'attribution': {
                 'text': str,
             },
@@ -679,7 +680,6 @@ mapproxy_yaml_spec = {
                     'default': one_of(str, float, int),
                 }
             },
-            'compatible_srs': [str],
             "nominal_res": number(),
             "nominal_scale": number(),
         })])

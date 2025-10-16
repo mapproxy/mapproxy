@@ -313,28 +313,6 @@ parameters is specified (not both), but the ``scale-denominator`` one is not.
 
 Resolutions should be in meters per pixel.
 
-.. _layer_compatible_srs:
-
-``compatible_srs``
-""""""""""""""""""
-
-List of SRS that are compatible as the ``crs`` query parameter of the OGC API Maps
-map requests. By default the SRS of the layer extent is implicitly added at the first
-position, and is considered as the native CRS returned in the response to the
-OGC API Maps or Tiles GetCollection requests.
-
-.. code-block:: yaml
-
-    layers:
-    - name: my_layer
-      title: My Titile
-      sources: [my_source]
-      extent:
-          srs: EPSG:4326
-          bbox: [2, 49, 3, 50]
-      compatible_srs: ["EPSG:4258", "EPSG:32631", "EPSG:3857"]
-
-
 ``legendurl``
 """""""""""""
 

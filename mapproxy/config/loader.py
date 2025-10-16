@@ -1994,7 +1994,6 @@ def cache_source_names(context, cache):
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
-        from mapproxy.srs import SRS
         from mapproxy.service.wms import WMSLayer
         from mapproxy.grid.resolutions import res_to_ogc_scale
 
@@ -2052,10 +2051,6 @@ class LayerConfiguration(ConfigurationBase):
         if 'dimensions' in self.conf.keys():
             dimensions = self.dimensions()
 
-        compatible_srs_list = self.conf.get('compatible_srs')
-        if compatible_srs_list:
-            compatible_srs_list = [SRS(srs) for srs in compatible_srs_list]
-
         nominal_scale = self.conf.get('nominal_scale')
         if not nominal_scale:
             nominal_res = self.conf.get('nominal_res')
@@ -2065,7 +2060,7 @@ class LayerConfiguration(ConfigurationBase):
         layer = WMSLayer(
             self.conf.get('name'), self.conf.get('title'), sources, fi_sources, lg_sources, res_range=res_range,
             md=self.conf.get('md'), dimensions=dimensions,
-            compatible_srs_list=compatible_srs_list, nominal_scale=nominal_scale)
+            nominal_scale=nominal_scale)
         return layer
 
     @memoize
@@ -2415,6 +2410,7 @@ class ServiceConfiguration(ConfigurationBase):
         return server
 
     def ogcapi_service(self, conf):
+        from mapproxy.srs import SRS
         from mapproxy.service.ogcapi.server import OGCAPIServer
 
         root_layer = self.context.wms_root_layer.wms_layer()
@@ -2459,6 +2455,12 @@ class ServiceConfiguration(ConfigurationBase):
 
         grid_configs = self.context.grids
 
+        map_srs = self.context.globals.get_value('map_srs', conf, global_key='ogcapi.map_srs')
+        if map_srs:
+            map_srs = [SRS(srs) for srs in map_srs]
+        else:
+            map_srs = []
+
         return OGCAPIServer(root_layer,
                             enable_tiles=enable_tiles,
                             enable_maps=enable_maps,
@@ -2470,6 +2472,7 @@ class ServiceConfiguration(ConfigurationBase):
                             concurrent_layer_renderer=concurrent_layer_renderer,
                             max_output_pixels=max_output_pixels,
                             grid_configs=grid_configs,
+                            map_srs=map_srs,
                             default_dataset_layers=default_dataset_layers)
 
     def demo_service(self, conf):

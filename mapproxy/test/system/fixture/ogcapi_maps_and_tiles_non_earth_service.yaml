@@ -4,12 +4,12 @@ globals:
 
 services:
   ogcapi:
+    map_srs: ["IAU_2015:30100", "IAU_2015:30110"]  # Moon (2015) - Sphere / Ocentric / Equirectangular
 
 layers:
   - name: test
     title: title
     sources: [test]
-    compatible_srs: ["IAU_2015:30110"]  # Moon (2015) - Sphere / Ocentric / Equirectangular
     nominal_scale: 100000000
 
 sources:

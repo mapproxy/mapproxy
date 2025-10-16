@@ -5,6 +5,7 @@ globals:
 services:
   ogcapi:
       enable_tiles: False
+      map_srs:  ["EPSG:4326", "EPSG:3857"]
       #attribution:
       #    text: "Copyright ME"
       md:
@@ -48,7 +49,6 @@ layers:
             logo:
                 url: "http://example.com/logo.png"
     sources: [test]
-    compatible_srs: ["EPSG:3857"]
     nominal_scale: 100000000
 
   - name: test_without_nominal_scale

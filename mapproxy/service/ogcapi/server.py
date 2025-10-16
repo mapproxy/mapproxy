@@ -75,6 +75,7 @@ class OGCAPIServer(Server):
         concurrent_layer_renderer=1,
         max_output_pixels=None,
         grid_configs=None,
+        map_srs=None,
         default_dataset_layers=None,
     ):
         Server.__init__(self)
@@ -102,6 +103,7 @@ class OGCAPIServer(Server):
                 if name == "GLOBAL_WEBMERCATOR":
                     name = "WebMercatorQuad"
                 self.grid_configs[name] = conf
+        self.map_srs = map_srs if map_srs else []
         self.default_dataset_layers = default_dataset_layers
         self.response_headers = {}
         self.log = log

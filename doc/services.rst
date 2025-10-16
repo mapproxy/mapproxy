@@ -472,6 +472,15 @@ Whether to enable OGC API Tiles support (``true``/``false``). Defaults to true.
 
 Whether to enable OGC API Maps support (``true``/``false``). Defaults to true.
 
+``map_srs``
+"""""""""""
+
+The ``map_srs`` option defines which SRS the OGC API Maps service supports.
+
+The default value is::
+
+   map_srs: ['EPSG:4326', 'EPSG:3857']
+
 ``attribution``
 """""""""""""""
 
@@ -514,6 +523,7 @@ An example showing all potential service metadata and configuration is:
     ogcapi:
       enable_tiles: true
       enable_maps: true
+      map_srs: ["EPSG:4326", "EPSG:3857"]
       attribution:
           text: "Copyright ME"
       md:
@@ -546,5 +556,5 @@ An example showing all potential service metadata and configuration is:
       default_dataset_layers: [layer1, layer2]
 
 
-In addition to those options, there are a few ``layers`` configuration options
-that are specific to OGC API Maps: :ref:`layer_nominal_scale` and :ref:`layer_compatible_srs`.
+In addition to those options, there is a ``layers`` configuration option
+which is specific to OGC API Maps: :ref:`layer_nominal_scale`.

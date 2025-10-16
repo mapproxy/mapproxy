@@ -40,7 +40,6 @@ class DummyLayer(MapLayer):
         self.requested = False
         self.queried = False
         self.nominal_scale = None
-        self.compatible_srs_list = []
 
     def get_map(self, query):
         self.requested = True

@@ -16,7 +16,7 @@
 """
 WMS service handler
 """
-from functools import partial, reduce
+from functools import partial
 from html import escape
 from itertools import chain
 from math import sqrt
@@ -721,7 +721,7 @@ class WMSLayer(WMSLayerBase):
 
     def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
                  res_range=None, md=None, dimensions=None,
-                 compatible_srs_list=None, nominal_scale=None):
+                 nominal_scale=None):
         self.name = name
         self.title = title
         self.md = md or {}
@@ -730,13 +730,6 @@ class WMSLayer(WMSLayerBase):
         self.legend_layers = legend_layers or []
         self.extent = merge_layer_extents(map_layers)
         self.dimensions = dimensions
-
-        self.compatible_srs_list = [self.extent.srs]
-        if compatible_srs_list:
-            for compatible_srs in compatible_srs_list:
-                if compatible_srs != self.extent.srs:
-                    self.compatible_srs_list.append(compatible_srs)
-
         if res_range is None:
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
@@ -813,8 +806,6 @@ class WMSGroupLayer(WMSLayerBase):
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
         self.nominal_scale = max([layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
-        self.compatible_srs_list = list(reduce(lambda a, b: set(a) & set(b),
-                                               [layer.compatible_srs_list for layer in all_layers]))
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.layers)

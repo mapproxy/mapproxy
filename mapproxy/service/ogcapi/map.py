@@ -251,10 +251,12 @@ def get_map_query(
         except ValueError:
             raise OGCAPIServer.invalid_parameter("crs is not a valid CRS")
 
-        if crs not in layer.compatible_srs_list:
+        if crs not in server.map_srs:
             raise OGCAPIServer.invalid_parameter("crs is incompatible with this layer")
+    elif len(server.map_srs) > 0:
+        crs = server.map_srs[0]
     else:
-        crs = layer.compatible_srs_list[0]
+        crs = SRS(4326)
 
     if subset:
         subset_crs = get_bbox_center_or_subset_crs(subset_crs, layer, "subset-crs")
