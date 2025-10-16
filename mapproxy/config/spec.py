@@ -510,6 +510,7 @@ mapproxy_yaml_spec = {
             },
             'on_source_errors': str(),
             'max_output_pixels': one_of(number(), [number()]),
+            'image_formats': [str()],
             'concurrent_layer_renderer': number(),
             'md': {
                 'identification': {
