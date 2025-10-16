@@ -116,7 +116,6 @@ class OGCAPIServer(Server):
                 return Response("file not found", content_type="text/plain", status=404)
             filename = req.path.lstrip("/")
             filename = static_filename(filename)
-            filename = str(filename).replace("templates/ogcapi/demo", "templates/demo")
             if not os.path.isfile(filename):
                 return Response("file not found", content_type="text/plain", status=404)
             type, encoding = mimetypes.guess_type(filename)
