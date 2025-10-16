@@ -1,3 +1,22 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[[tool.mypy.overrides]]
+module = "mapproxy.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "mapproxy.service.*"
+ignore_errors = false
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+markers = [
+  "online: marks tests that require a working internet connection (deselect with '-m \"not online\"')"
+]
+
+[tool.flake8]
+exclude = [".git", ".idea", "build", "dist", "MapProxy.egg-info"]
+max-line-length = 120
+extend-ignore = ["E128"]
