@@ -250,7 +250,7 @@ Full example
   services:
     tms:
       origin: 'sw'
-      use_grid_names: true"
+      use_grid_names: true
       md:
         title: MapProxy TMS Proxy
         abstract: This is the fantastic MapProxy.
