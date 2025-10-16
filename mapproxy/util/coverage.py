@@ -17,10 +17,12 @@
 import operator
 import threading
 
+import shapely.geometry
+import shapely.prepared
+
 from mapproxy.util.bbox import bbox_intersects, bbox_contains
 from mapproxy.util.py import cached_property
 from mapproxy.util.geom import (
-    require_geom_support,
     load_polygon_lines,
     transform_geometry,
     bbox_polygon,
@@ -32,13 +34,6 @@ import logging
 from functools import reduce
 log_config = logging.getLogger('mapproxy.config.coverage')
 
-try:
-    import shapely.geometry
-    import shapely.prepared
-except ImportError:
-    # missing Shapely is handled by require_geom_support
-    pass
-
 
 def coverage(geom, srs, clip=False):
     if isinstance(geom, (list, tuple)):
@@ -48,7 +43,6 @@ def coverage(geom, srs, clip=False):
 
 
 def load_limited_to(limited_to):
-    require_geom_support()
     srs = SRS(limited_to['srs'])
     geom = limited_to['geometry']
 

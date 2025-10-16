@@ -32,7 +32,6 @@ from mapproxy.util.geom import (
     load_geojson,
     load_expire_tiles,
     transform_geometry,
-    geom_support,
     bbox_polygon,
     build_multipolygon,
 )
@@ -46,9 +45,6 @@ from mapproxy.util.coverage import (
 from mapproxy.layer import MapExtent, DefaultMapExtent
 from mapproxy.test.helper import TempFile
 from mapproxy.util.coverage import BBOXCoverage
-
-pytestmark = pytest.mark.skipif(not geom_support,
-                                reason="requires Shapely")
 
 
 VALID_POLYGON1 = b"""POLYGON ((953296.704552185838111 7265916.626927595585585,
