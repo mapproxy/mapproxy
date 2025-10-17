@@ -1,4 +1,4 @@
-name: Running mapproxy lint
+name: Running mapproxy lint and static type checking
 
 on:
   workflow_dispatch:
@@ -29,5 +29,14 @@ jobs:
         with:
           python-version: 3.12
 
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-tests.txt
+
       - name: flake8 Lint
-        uses: py-actions/flake8@v2
+        run: |
+          flake8
+
+      - name: mypy Static Type Checking
+        run: |
+          mypy mapproxy
