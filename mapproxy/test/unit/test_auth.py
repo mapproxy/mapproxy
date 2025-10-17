@@ -40,6 +40,7 @@ class DummyLayer(MapLayer):
         self.name = name
         self.requested = False
         self.queried = False
+        self.nominal_scale = None
 
     def get_map(self, query):
         self.requested = True

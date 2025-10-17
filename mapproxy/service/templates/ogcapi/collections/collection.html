@@ -1,0 +1,157 @@
+{% extends "_base.html" %}
+{% block title %}{{ super() }} {{ data['title'] }} {% endblock %}
+{% block desc %}{{ data.get('description','') | truncate(250) }}{% endblock %}
+{% block tags %}{{ data.get('keywords',[]) | join(',') }}{% endblock %}
+{% block crumbs %}{{ super() }}
+/ <a href="{{ data['collections_path'] }}">{% trans %}Collections{% endtrans %}</a>
+/ <a href="./{{ data['id'] }}">{{ data['title'] | truncate( 25 ) }}</a>
+{% endblock %}
+
+{% block extrahead %}
+
+<script src="{{ config['server']['url'] }}/../demo/static/ol.js"></script>
+<script src="{{ config['server']['url'] }}/../demo/static/proj4.min.js"></script>
+<link rel="stylesheet" href="{{ config['server']['url'] }}/../demo/static/ol.css"/>
+
+{% endblock %}
+
+{% block body %}
+    <section id="collection">
+      <div class="row">
+        <div class="col-sm">
+          <h1>{{ data['title'] }}</h1>
+          <p>{{ data['description'] }}</p>
+          <p>
+            {% for kw in data['keywords'] %}
+              <span class="badge text-bg-primary bg-primary">{{ kw }}</span>
+            {% endfor %}
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+           <div id='collection-map' style="height:500px"></div>
+        </div>
+      </div>
+
+      {% set ns = namespace(header_printed=false) %}
+      {% for link in data['links'] %}
+          {% if link['rel'] == 'license' %}
+          {% if not ns.header_printed %}
+          <h3>{% trans %}License{% endtrans %}</h3>
+          {% set ns.header_printed = true %}
+          {% endif %}
+          <ul>
+            <li>
+              <div>
+                <a title="{{ link['title'] }}" href="{{ link['href'] }}">{{ link['title'] or link['href'] }}<a>
+            </li>
+          </ul>
+          {% endif %}
+      {% endfor %}
+
+      <h3>{% trans %}Links{% endtrans %}</h3>
+      <ul>
+      {% for link in data['links'] %}
+          <li>
+            <a title="{{ link['rel'] }}" href="{{ link['href'] }}">
+            <span>{{ link['title'] }}</span> (<span>{{ link['type'] }}</span>)
+            </a></li>
+      {% endfor %}
+      </ul>
+      {% if data['crs'] and data['storageCrs'] %}
+      <h3>{% trans %}Reference Systems{% endtrans %}</h3>
+      <ul>
+      {% for crs in data['crs'] %}
+          <li>
+            <a title="{{ crs }}" href="{{ crs }}"><span>{{ crs }}</span></a>
+            </li>
+      {% endfor %}
+      </ul>
+      <h3>{% trans %}Storage CRS{% endtrans %}</h3>
+      <ul>
+          <li>
+            {% trans %}CRS{% endtrans %}: <a title="{{ data['storageCrs'] }}" href="{{ data['storageCrs'] }}"><span>{{ data['storageCrs'] }}</span></a>
+          </li>
+        <li>
+          {% trans %}Epoch{% endtrans %}: <span>{{ data['storageCrsCoordinateEpoch'] or '_(not specified)' }}</span></a>
+        </li>
+      </ul>
+     {% endif %}
+
+    </section>
+{% endblock %}
+
+{% block extrafoot %}
+
+<script type="text/javascript">
+{% for link in data['links'] %}
+  {% if link['rel'] == 'http://www.opengis.net/def/rel/ogc/1.0/map' and link['href'] and link['type'] == 'image/png' %}
+
+    async function init() {
+
+        const srs = "{{ data['srs'] }}";
+        const extent = {{ data['extent'] }};
+
+        if (!ol.proj.get(srs)) {
+            const allDefs = await import('./static/proj4defs.js');
+            const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
+            if (!allDefs.defs[srsNum]) {
+                alert("The preview map does not support this coordinate system");
+                return;
+            }
+            proj4.defs(srs, allDefs.defs[srsNum]);
+            ol.proj.proj4.register(proj4);
+        }
+
+        const source = new ol.source.ImageWMS({
+            url: "{{ link['href'] }}",
+            params: {
+                'VERSION': '1.1.1',
+                'TRANSPARENT': true,
+                'CRS': "{{ data['srs'] }}"
+            }
+        });
+
+        const background_source = new ol.source.XYZ({
+            url: "{{ data['background_url'] }}"
+        });
+
+        const layers = [
+            new ol.layer.Tile({
+                source: background_source
+            }),
+            new ol.layer.Image({source})
+        ];
+        const map = new ol.Map({
+            layers: layers,
+            target: 'collection-map',
+            view: new ol.View({
+                projection: "{{ data['srs'] }}"
+            })
+        });
+        map.getView().fit(extent);
+
+        setDimension = (dimension, value) => {
+            const update = {};
+            const key = dimension.toUpperCase();
+            update[key] = value;
+            source.updateParams(update);
+        }
+
+        zoomToFullExtent = () => {
+            map.getView().fit(extent);
+        }
+
+        toogleBackgroundMap = () => {
+            layers[0].setVisible(!layers[0].getVisible());
+        }
+    }
+  {% endif %}
+{% endfor %}
+
+    window.addEventListener("load", init);
+
+</script>
+{% endblock %}
+

@@ -558,7 +558,7 @@ class Capabilities(object):
             layer_llbbox=self.layer_llbbox,
             inspire_md=inspire_md,
             max_output_size=max_output_size,
-            escape=escape
+            escape=escape,
         )
         # strip blank lines
         doc = '\n'.join(x for x in doc.split('\n') if x.rstrip())
@@ -720,7 +720,8 @@ class WMSLayer(WMSLayerBase):
     layers = []
 
     def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
-                 res_range=None, md=None, dimensions=None):
+                 res_range=None, md=None, dimensions=None,
+                 nominal_scale=None):
         self.name = name
         self.title = title
         self.md = md or {}
@@ -729,13 +730,13 @@ class WMSLayer(WMSLayerBase):
         self.legend_layers = legend_layers or []
         self.extent = merge_layer_extents(map_layers)
         self.dimensions = dimensions
-
         if res_range is None:
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
         self.has_legend = True if legend_layers else False
         self.dimensions = dimensions
+        self.nominal_scale = nominal_scale
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.map_layers)
@@ -804,6 +805,7 @@ class WMSGroupLayer(WMSLayerBase):
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
+        self.nominal_scale = max([layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.layers)

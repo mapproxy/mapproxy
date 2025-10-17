@@ -1,0 +1,29 @@
+globals:
+  image:
+    paletted: False
+
+services:
+  ogcapi:
+    map_srs: ["IAU_2015:30100", "IAU_2015:30110"]  # Moon (2015) - Sphere / Ocentric / Equirectangular
+
+layers:
+  - name: test
+    title: title
+    sources: [test]
+    nominal_scale: 100000000
+
+sources:
+  test:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: test
+    coverage:
+      srs: "IAU_2015:30100"             # Moon (2015) - Sphere / Ocentric
+      bbox: [-180,-90,180,90]
+
+grids:
+    moon_grid:
+        origin: ul
+        srs: "IAU_2015:30100"
+        bbox: [-180,-90,180,90]

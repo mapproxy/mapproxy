@@ -24,6 +24,15 @@ wms = dict(
     concurrent_layer_renderer=1,
     max_output_pixels=4000*4000,
 )
+
+# Global settings for OGCAPI Maps and Tiles service
+ogcapi = dict(
+    image_formats=['image/png', 'image/jpeg'],
+    map_srs=set(['EPSG:4326', 'EPSG:3857']),
+    concurrent_layer_renderer=1,
+    max_output_pixels=4000*4000,
+)
+
 debug_mode = False
 
 background = dict(

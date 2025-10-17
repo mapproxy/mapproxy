@@ -248,6 +248,10 @@ class Request(object):
         return scheme
 
     @cached_property
+    def accept_header(self):
+        return self.environ.get('HTTP_ACCEPT', '')
+
+    @cached_property
     def host_url(self):
         return '%s://%s/' % (self.url_scheme, self.host)
 

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="{{ (locale|lower)[:2] }}" dir="{% trans %}text_direction{% endtrans %}" >
+
+{% if config['server']['icon'] %}
+{% set icon = config['server']['icon'] %}
+{% else %}
+{% set icon = config['server']['url'] + '/static/img/favicon.ico' %}
+{% endif %}
+
+{% if config['server']['logo'] %}
+{% set logo = config['server']['logo'] %}
+{% else %}
+{% set logo = config['server']['url'] + '/static/img/logo.png' %}
+{% endif %}
+
+  <head>
+    <meta charset="{{ config['server']['encoding'] }}">
+    <title>{% block title %}{% endblock %}{% if not self.title() %}{{ config['metadata']['identification']['title'] }}{% endif %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="language" content="{{ config['server']['language'] }}">
+    <meta name="description" content="{{ config['metadata']['identification']['title'] }}">
+    <meta name="keywords" content="{{ config['metadata']['identification']['keywords']|join(',') }}">
+    <link rel="shortcut icon" href="{{ icon }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ config['server']['url'] }}/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ config['server']['url'] }}/static/css/default.css">
+    <meta name="twitter:image:src"   content="{% block thumb %}{% endblock %}{% if not self.thumb() %}{{ logo }}{% endif %}" />
+    <meta property="og:image"        content="{{ self.thumb() }}{% if not self.thumb() %}{{ logo }}{% endif %}" />
+    <meta name="twitter:site"        content="{{ config['metadata']['identification']['title'] }}" />
+    <meta property="og:site_name"    content="{{ config['metadata']['identification']['title'] }}" />    
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="{{ self.title() }}{% if not self.title() %}{{ config['metadata']['identification']['title'] }}{% endif %}" />
+    <meta property="og:title"        content="{{ self.title() }}{% if not self.title() %}{{ config['metadata']['identification']['title'] }}{% endif %}" />
+    <meta name="twitter:description" content="{{ config['metadata']['identification']['description'] }}" />
+    <meta property="og:description"  content="{{ config['metadata']['identification']['description'] }}" />
+
+    <meta property="og:type" content="website" />
+    {% for link in data['links'] %}
+      {% if (link['rel']=="self" and link['type']=="text/html") %}
+      <link rel="canonical" href="{{ link['href'].split('?')[0] }}?f=html" />
+      {% elif (link['rel']!="canonical") %}
+      <link rel="{{ link['rel'] }}" type="{{ link['type'] }}" title="{{ link['title'] }}" href="{{ link['href'] }}"/>
+      {% endif %}
+    {% endfor %}
+    {% block extrahead %}
+    {% endblock %}
+  </head>
+  <body>
+  <div class="bg-light sticky-top border-bottom">
+    <div class="container">
+      <header class="d-flex flex-wrap align-items-center py-3 justify-content-between">
+        <a href="{{ config['server']['url'] }}"
+          class="d-flex align-items-center mb-3 mb-md-0 text-dark text-decoration-none">
+          <img src="{{ logo }}"
+            title="{{ config['metadata']['identification']['title'] }}" style="height:40px;vertical-align: middle;" /></a>
+        <ul class="nav nav-pills">
+          {% if config['metadata']['contact'] and config['metadata']['contact']['email']  %}
+          <li class="nav-item">
+            <a href="mailto:{{ config['metadata']['contact']['email'] }}" class="nav-link" aria-current="page">{% trans %}Contact{% endtrans%}</a>
+          </li>
+          {% endif %}
+          {% if config['server']['admin'] %}
+          <li class="nav-item">
+            <a href="{{ config['server']['url'] }}/admin/config" class="nav-link" aria-current="page">{% trans %}Admin{% endtrans %}</a>
+          </li>
+         {% endif %}
+          <!--
+            Add additional menu items here
+            <a href="https://pygeoapi.io" class="nav-link">About</a>
+          -->
+        </ul>
+      </header>
+    </div>
+  </div>
+  <div class="crumbs">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+        {% block crumbs %}
+        <a href="{{ config['server']['url'] }}">{% trans %}Home{% endtrans %}</a>
+        {% endblock %}
+        <span style="float: inline-end">
+          {% set links_found = namespace(json=0, jsonld=0) %}
+
+          {% for link in data['links'] %}
+          {% if link['rel'] == 'alternate' and link['type'] and link['type'] in ['application/json', 'application/geo+json', 'application/prs.coverage+json'] %}
+          {% set links_found.json = 1 %}
+          <a href="{{ link['href'] }}">{% trans %}json{% endtrans %}</a>
+          {% elif link['rel'] == 'alternate' and link['type'] and link['type'] == 'application/ld+json' %}
+          {% set links_found.jsonld = 1 %}
+          <a href="{{ link['href'] }}">{% trans %}jsonld{% endtrans %}</a>
+          {% endif %}
+          {% endfor %}
+
+          {% if links_found.json == 0 %}
+          <a href="?f=json">{% trans %}json{% endtrans %}</a>
+          {% endif %}
+
+        </span>
+        </div>
+      </div>
+    </div>
+    </div>
+    <main>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <br/>
+          {% block body %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+    </main>
+    <footer class="sticky-bottom bg-light d-flex justify-content-center align-items-center py-3 px-3 border-top">
+      <div class="text-center w-100">
+        {% trans %}Powered by {% endtrans %}
+        <a title="mapproxy" href="https://mapproxy.org/"><img src="{{ config['server']['url'] }}/static/img/logo.png" class="mx-1" title="mapproxy logo" style="height:24px;vertical-align: middle;" /> MapProxy</a>
+        {{ version }}
+        <br>
+        (HTML theming based on <a title="mapproxy" href="https://pygeoapi.io/"><img src="/ogcapi/static/img/pygeoapi-logo.png" class="mx-1" title="pygeoapi logo" style="height:24px;vertical-align: middle;" /></a>)
+      </div>
+    </footer> 
+    {% block extrafoot %}
+    {% endblock %}
+
+  </body>
+</html>

@@ -1,7 +1,11 @@
 import math
+from typing import Optional
 
-from mapproxy.grid import NoTiles, GridError, _create_tile_list, default_bboxs, grid_bbox, origin_from_string
-from mapproxy.grid.resolutions import aligned_resolutions, resolutions, pyramid_res_level, get_resolution
+from mapproxy.grid import (NoTiles, GridError, _create_tile_list, default_bboxs,
+                           grid_bbox, origin_from_string)
+from mapproxy.grid.resolutions import (aligned_resolutions, resolutions,
+                                       pyramid_res_level, get_resolution,
+                                       res_to_ogc_scale)
 from mapproxy.srs import get_epsg_num, SRS, ogc_crs_url_to_auth_code
 from mapproxy.util.bbox import bbox_equals, bbox_intersects, merge_bbox
 from mapproxy.util.collections import ImmutableDictList
@@ -596,3 +600,56 @@ def is_float(x):
         return True
     except TypeError:
         return False
+
+
+def tile_grid_to_ogc_tile_matrix_set(tile_grid: TileGrid,
+                                     id: str,
+                                     title: Optional[str],
+                                     uri: Optional[str] = None,
+                                     wellKnownScaleSet: Optional[str] = None):
+
+    srs = tile_grid.srs
+    if srs.srs_code == "EPSG:4326":
+        srs = SRS("OGC:CRS84")
+    elif srs.srs_code == "EPSG:900913":
+        srs = SRS("EPSG:3857")
+    tms = {
+        "id": id,
+        "title": title,
+        "crs": srs.to_ogc_url()
+    }
+    if uri:
+        tms["uri"] = uri
+    if wellKnownScaleSet:
+        tms["wellKnownScaleSet"] = wellKnownScaleSet
+
+    tileMatrices = []
+    for level in range(tile_grid.levels):
+        cellSize = tile_grid.resolutions[level]
+        cornerOfOrigin = "topLeft" if tile_grid.origin == "ul" else "bottomLeft"
+        if tile_grid.origin == "ul":
+            pointOfOrigin = [tile_grid.bbox[0], tile_grid.bbox[3]]
+        else:
+            pointOfOrigin = [tile_grid.bbox[0], tile_grid.bbox[1]]
+        if srs.is_axis_order_ne:
+            pointOfOrigin = [pointOfOrigin[1], pointOfOrigin[0]]
+        tileWidth = tile_grid.tile_size[0]
+        tileHeight = tile_grid.tile_size[1]
+        matrixWidth = tile_grid.grid_sizes[level][0]
+        matrixHeight = tile_grid.grid_sizes[level][1]
+        tm = {
+            "id": str(level),
+            "cellSize": cellSize,
+            "scaleDenominator": res_to_ogc_scale(cellSize),
+            "cornerOfOrigin": cornerOfOrigin,
+            "pointOfOrigin": pointOfOrigin,
+            "matrixWidth": matrixWidth,
+            "matrixHeight": matrixHeight,
+            "tileWidth": tileWidth,
+            "tileHeight": tileHeight,
+        }
+        tileMatrices.append(tm)
+
+    tms["tileMatrices"] = tileMatrices
+
+    return tms
