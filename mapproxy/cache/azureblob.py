@@ -28,9 +28,9 @@ try:
     from azure.storage.blob import BlobServiceClient, ContentSettings
     from azure.core.exceptions import AzureError
 except ImportError:
-    BlobServiceClient = None
-    ContentSettings = None
-    AzureError = None
+    BlobServiceClient = None  # type: ignore
+    ContentSettings = None  # type: ignore
+    AzureError = None  # type: ignore
 
 import logging
 log = logging.getLogger('mapproxy.cache.azureblob')

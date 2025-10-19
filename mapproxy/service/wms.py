@@ -16,11 +16,12 @@
 """
 WMS service handler
 """
+from abc import ABC, abstractmethod
 from html import escape
 from itertools import chain
 from math import sqrt
 from collections import OrderedDict
-from typing import Mapping
+from typing import Any
 
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
@@ -622,7 +623,7 @@ class LayerRenderer(object):
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
-                    reraise(ex)
+                    raise reraise(ex)
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
@@ -645,7 +646,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    reraise(ex)
+                    raise reraise(ex)
 
         if render_layers and not rendered:
             errors = '\n'.join(errors)
@@ -675,7 +676,7 @@ class LayerRenderer(object):
             return layer, None
 
 
-class WMSLayerBase(object):
+class WMSLayerBase(ABC):
     """
     Base class for WMS layer (layer groups and leaf layers).
     """
@@ -687,7 +688,7 @@ class WMSLayerBase(object):
     layers: list[str] = []
 
     "metadata dictionary with tile, name, etc."
-    md: Mapping[str, object] = {}
+    md: dict[str, Any] = {}
 
     "True if .info() is supported"
     queryable = False
@@ -700,7 +701,17 @@ class WMSLayerBase(object):
     "resolution range (i.e. ScaleHint) of the layer"
     res_range = None
     "MapExtend of the layer"
-    extent = None
+    extent: MapExtent
+    name: str
+    title: str
+
+    @abstractmethod
+    def is_opaque(self, query):
+        pass
+
+    @abstractmethod
+    def renders_query(self, query):
+        pass
 
     def map_layers_for_query(self, query):
         raise NotImplementedError()
@@ -718,6 +729,7 @@ class WMSLayer(WMSLayerBase):
 
     Combines map, info and legend sources with metadata.
     """
+
     is_active = True
     layers = []
 

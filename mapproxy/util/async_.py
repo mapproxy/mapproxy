@@ -16,7 +16,7 @@
 try:
     import Queue
 except ImportError:
-    import queue as Queue
+    import queue as Queue  # type: ignore
 
 import sys
 import threading

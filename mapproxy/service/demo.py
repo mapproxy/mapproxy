@@ -39,7 +39,7 @@ from mapproxy.util.escape import escape_html
 from mapproxy.template import template_loader, bunch
 
 try:
-    import importlib_resources as importlib_resources  # type: ignore
+    import importlib_resources as importlib_resources
 except ImportError:
     from importlib import resources as importlib_resources  # type: ignore
 

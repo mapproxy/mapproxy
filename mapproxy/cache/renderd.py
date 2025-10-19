@@ -18,15 +18,13 @@ import hashlib
 
 try:
     import json
-    json
 except ImportError:
-    json = None
+    json = None  # type: ignore
 
 try:
     import requests
-    requests
 except ImportError:
-    requests = None
+    requests = None  # type: ignore
 
 from mapproxy.client.log import log_request
 from mapproxy.cache.tile import TileCreator, Tile

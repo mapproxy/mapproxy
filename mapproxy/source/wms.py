@@ -75,7 +75,7 @@ class WMSLikeSource(MapLayer):
                 if resp:
                     return resp
             log.warning('could not retrieve WMS map: %s', e.full_msg or e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
     def _get_map(self, query):
         format = self.image_opts.format

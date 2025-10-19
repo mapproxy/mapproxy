@@ -15,7 +15,7 @@
 import itertools
 import json
 import os.path
-from typing import List, Dict, Set, Tuple, Union, Iterable
+from typing import Iterable, Optional, cast
 
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import Draft202012Validator
@@ -37,7 +37,7 @@ TAGGED_SOURCE_TYPES = [
 ]
 
 
-def get_error_messages(errors: Iterable[ValidationError]) -> List[str]:
+def get_error_messages(errors: Iterable[ValidationError]) -> list[str]:
     msgs = []
     for error in errors:
         path = error.json_path.replace('$', 'root')
@@ -48,7 +48,7 @@ def get_error_messages(errors: Iterable[ValidationError]) -> List[str]:
     return msgs
 
 
-def validate(conf_dict: Dict) -> List[str]:
+def validate(conf_dict: dict) -> list[str]:
     validator = Draft202012Validator(schema=schema)
     errors_iter = validator.iter_errors(conf_dict)
     errors = [] if errors_iter is None else get_error_messages(errors_iter)
@@ -61,13 +61,13 @@ def validate(conf_dict: Dict) -> List[str]:
         return errors + list(itertools.chain.from_iterable(_validate_layer(conf_dict, layer) for layer in layers_conf))
 
 
-def _validate_layer(conf_dict: Dict, layer: Dict) -> List[str]:
-    layer_sources: List[str] = layer.get('sources', [])
-    tile_sources: List[str] = layer.get('tile_sources', [])
-    child_layers: List[Dict] = layer.get('layers', [])
+def _validate_layer(conf_dict: dict, layer: dict) -> list[str]:
+    layer_sources: list[str] = layer.get('sources', [])
+    tile_sources: list[str] = layer.get('tile_sources', [])
+    child_layers: list[dict] = layer.get('layers', [])
 
-    caches_conf: Dict = conf_dict.get('caches', {})
-    sources_conf: Dict = conf_dict.get('sources', {})
+    caches_conf: dict = conf_dict.get('caches', {})
+    sources_conf: dict = conf_dict.get('sources', {})
 
     errors = []
 
@@ -100,15 +100,15 @@ def _validate_layer(conf_dict: Dict, layer: Dict) -> List[str]:
     return errors
 
 
-def _split_tagged_source(source_name: str) -> Tuple[str, List[str]]:
+def _split_tagged_source(source_name: str) -> tuple[str, Optional[list[str]]]:
     layers = None
     if ':' in str(source_name):
-        source_name, layers = str(source_name).split(':', 1)
-        layers = layers.split(',') if layers is not None else None
+        source_name, layers_str = str(source_name).split(':', 1)
+        layers = layers_str.split(',') if layers_str is not None else None
     return source_name, layers
 
 
-def _validate_source(conf_dict: Dict, name: str, source: Dict, layers: List[str]) -> List[str]:
+def _validate_source(conf_dict: dict, name: str, source: dict, layers: Optional[list[str]]) -> list[str]:
     source_type = source.get('type')
     if source_type == 'wms':
         return _validate_wms_source(name, source, layers)
@@ -119,7 +119,7 @@ def _validate_source(conf_dict: Dict, name: str, source: Dict, layers: List[str]
     return []
 
 
-def _validate_wms_source(name: str, source: Dict, layers: List[str]) -> List[str]:
+def _validate_wms_source(name: str, source: dict, layers: Optional[list[str]]) -> list[str]:
     errors = []
     if source['req'].get('layers') is None and layers is None:
         errors.append("Missing 'layers' for source '%s'" % (
@@ -134,10 +134,11 @@ def _validate_wms_source(name: str, source: Dict, layers: List[str]) -> List[str
     return errors
 
 
-def _validate_mapserver_source(conf_dict: Dict, name: str, source: Dict, layers: List[str]) -> List[str]:
-    globals_conf: Dict = conf_dict.get('globals')
-    errors = []
-    mapserver: Dict = source.get('mapserver')
+def _validate_mapserver_source(conf_dict: dict[str, dict], name: str, source: dict,
+                               layers: Optional[list[str]]) -> list[str]:
+    globals_conf = cast(dict, conf_dict.get('globals'))
+    errors: list[str] = []
+    mapserver = cast(dict, source.get('mapserver'))
     if mapserver is None:
         if (
                 not globals_conf or
@@ -162,15 +163,16 @@ def _validate_mapserver_source(conf_dict: Dict, name: str, source: Dict, layers:
     return errors
 
 
-def _validate_mapnik_source(name: str, source: Dict, layers: List[str]) -> List[str]:
-    if source.get('layers') and layers is not None:
-        return _validate_tagged_layer_source(name, source.get('layers'), layers)
+def _validate_mapnik_source(name: str, source: dict, layers: Optional[list[str]]) -> list[str]:
+    source_layers = source.get('layers')
+    if source_layers is not None and layers is not None:
+        return _validate_tagged_layer_source(name, source_layers, layers)
     return []
 
 
 def _validate_tagged_layer_source(
-        name: str, supported_layers: Union[str, List[str]], requested_layers: List[str]) -> List[str]:
-    errors = []
+        name: str, supported_layers: str | list[str], requested_layers: list[str]) -> list[str]:
+    errors: list[str] = []
     if isinstance(supported_layers, str):
         supported_layers = supported_layers.split(',')
     if not set(requested_layers).issubset(set(supported_layers)):
@@ -181,7 +183,7 @@ def _validate_tagged_layer_source(
     return errors
 
 
-def _validate_cache(conf_dict: Dict, name: str, cache: Dict) -> List[str]:
+def _validate_cache(conf_dict: dict, name: str, cache: dict) -> list[str]:
     errors = []
     if isinstance(cache.get('sources', []), dict):
         errors += _validate_bands(name, set(cache['sources'].keys()))
@@ -202,13 +204,16 @@ def _validate_cache(conf_dict: Dict, name: str, cache: Dict) -> List[str]:
     return errors
 
 
-def _validate_cache_source(conf_dict: Dict, cache_name: str, source_name: str) -> List[str]:
+def _validate_cache_source(conf_dict: dict, cache_name: str, source_name: str) -> list[str]:
     errors = []
-    sources_conf: Dict = conf_dict.get('sources', {})
-    caches_conf: Dict = conf_dict.get('caches', {})
+    sources_conf: dict = conf_dict.get('sources', {})
+    caches_conf: dict = conf_dict.get('caches', {})
     source_name, layers = _split_tagged_source(source_name)
     if sources_conf and source_name in sources_conf:
         source = sources_conf.get(source_name)
+        if source is None:
+            errors.append(f"Did not find source with name {source_name}")
+            return errors
         if layers is not None and source.get('type') not in TAGGED_SOURCE_TYPES:
             errors.append(
                 f"Found tagged source '{source_name}' in cache '{cache_name}' but tagged sources only supported for"
@@ -226,7 +231,7 @@ def _validate_cache_source(conf_dict: Dict, cache_name: str, source_name: str) -
     return errors
 
 
-def _validate_bands(cache_name: str, bands: Set[str]) -> List[str]:
+def _validate_bands(cache_name: str, bands: set[str]) -> list[str]:
     if 'l' in bands and len(bands) > 1:
         return [
             f"Cannot combine 'l' band with bands in cache '{cache_name}'"
@@ -234,7 +239,7 @@ def _validate_bands(cache_name: str, bands: Set[str]) -> List[str]:
     return []
 
 
-def _get_known_grids(conf_dict: Dict) -> Set[str]:
+def _get_known_grids(conf_dict: dict) -> set[str]:
     grids_conf = conf_dict.get('grids')
     known_grids = set(mapproxy.config.defaults.grids.keys())
     if grids_conf:

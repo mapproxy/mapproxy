@@ -15,7 +15,7 @@ from importlib import resources as importlib_resources
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from jinja2.exceptions import TemplateNotFound
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from mapproxy.config.config import base_config
 from mapproxy.version import __version__
@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-def json_serial(obj: Any) -> str:
+def json_serial(obj: Any) -> Any:
     """
     helper function to convert to JSON non-default
     types (source: https://stackoverflow.com/a/22238613)
@@ -111,18 +111,19 @@ def human_size(nbytes: int) -> str:
 
     suffixes = ["B", "K", "M", "G", "T", "P"]
 
+    fnbytes = float(nbytes)
     i = 0
 
-    while nbytes >= 1024 and i < len(suffixes) - 1:
-        nbytes /= 1024.0
+    while fnbytes >= 1024 and i < len(suffixes) - 1:
+        fnbytes /= 1024.0
         i += 1
 
     if suffixes[i] == "K":
-        f = str(int(nbytes)).rstrip("0").rstrip(".")
+        f = str(int(fnbytes)).rstrip("0").rstrip(".")
     elif suffixes[i] == "B":
-        return nbytes
+        return str(fnbytes)
     else:
-        f = f"{nbytes:.1f}".rstrip("0").rstrip(".")
+        f = f"{fnbytes:.1f}".rstrip("0").rstrip(".")
 
     return f"{f}{suffixes[i]}"
 
@@ -185,10 +186,10 @@ def filter_dict_by_key_value(dict_: dict, key: str, value: str) -> dict:
 def render_j2_template(
     config: dict,
     module_name: str,
-    template_root: Path,
-    template: Path,
+    template_root: str,
+    template_path: str,
     data: dict,
-    locale_: str = None,
+    locale_: Optional[str] = None,
 ) -> str:
     """
     render Jinja2 template
@@ -196,7 +197,7 @@ def render_j2_template(
     :param config: dict of configuration
     :param module_name: module name from which to get templates
     :param template_root: template (relative path to module_name)
-    :param template: template (relative path to template_root)
+    :param template_path: template (relative path to template_root)
     :param data: dict of data
     :param locale_: the requested output Locale
 
@@ -235,13 +236,13 @@ def render_j2_template(
     env.globals.update(filter_dict_by_key_value=filter_dict_by_key_value)
 
     locale_dir = "."
-    translations = Translations.load(locale_dir, [locale_])
+    translations = Translations.load(locale_dir, [locale_] if locale_ is not None else [])
     env.install_gettext_translations(translations)
 
     try:
-        template = env.get_template(template)
+        template = env.get_template(template_path)
     except TemplateNotFound:
-        LOGGER.debug(f"template {template} not found")
+        LOGGER.debug(f"template {template_path} not found")
         raise
 
     return template.render(

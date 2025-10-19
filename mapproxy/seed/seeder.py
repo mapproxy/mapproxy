@@ -23,7 +23,7 @@ from itertools import zip_longest
 try:
     import Queue
 except ImportError:
-    import queue as Queue
+    import queue as Queue  # type: ignore
 
 from mapproxy.config import base_config
 from mapproxy.grid.meta_grid import MetaGrid

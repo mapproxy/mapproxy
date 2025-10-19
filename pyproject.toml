@@ -2,13 +2,15 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[[tool.mypy.overrides]]
-module = "mapproxy.*"
-ignore_errors = true
+[tool.mypy]
+disable_error_code = ["import-untyped", "import-not-found"]
 
 [[tool.mypy.overrides]]
-module = "mapproxy.service.*"
-ignore_errors = false
+module = [
+    "mapproxy.util.ext.*",
+    "mapproxy.test.*"
+]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"

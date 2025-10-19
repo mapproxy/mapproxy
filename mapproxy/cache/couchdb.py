@@ -35,7 +35,7 @@ from threading import Lock
 try:
     import requests
 except ImportError:
-    requests = None
+    requests = None  # type: ignore
 
 
 import logging

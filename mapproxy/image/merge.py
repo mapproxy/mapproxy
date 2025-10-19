@@ -43,9 +43,6 @@ class LayerMerger(object):
         if img is not None:
             self.layers.append((img, coverage))
 
-
-class LayerMerger(LayerMerger):
-
     def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.

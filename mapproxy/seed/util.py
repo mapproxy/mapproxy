@@ -25,7 +25,7 @@ from datetime import datetime
 try:
     import cPickle as pickle
 except ImportError:
-    import pickle
+    import pickle  # type: ignore
 
 from mapproxy.layer import map_extent_from_grid
 from mapproxy.util.fs import write_atomic

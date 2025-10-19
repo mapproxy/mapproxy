@@ -20,14 +20,14 @@ from typing import Optional
 from mapproxy.grid.resolutions import ogc_scale_to_res, deg_to_m
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.server import OGCAPIServer
-from mapproxy.service.wms import WMSLayer
-from mapproxy.srs import SRS
+from mapproxy.service.wms import WMSLayerBase
+from mapproxy.srs import _SRS
 from mapproxy.util.bbox import bbox_from_center
 
 DEFAULT_SIZE = 1024
 
 
-def res_display_res_m_per_px_to_crs_res(res_display_res_m_per_px, crs: SRS):
+def res_display_res_m_per_px_to_crs_res(res_display_res_m_per_px, crs: _SRS):
     """Convert a resolution expressed in meter/pixel to the geospatial units
     of the CRS/pixel.
     """
@@ -40,7 +40,7 @@ def res_display_res_m_per_px_to_crs_res(res_display_res_m_per_px, crs: SRS):
         return res_display_res_m_per_px
 
 
-def scale_denominator_to_crs_res(scale_denominator, display_res_m_per_px, crs: SRS):
+def scale_denominator_to_crs_res(scale_denominator, display_res_m_per_px, crs: _SRS):
     """Convert a OGC scale denominator to the CRS resolution."""
     return res_display_res_m_per_px_to_crs_res(
         ogc_scale_to_res(scale_denominator, display_res_m_per_px), crs
@@ -53,7 +53,7 @@ def get_crs_res(
     scale_denominator,
     display_res_m_per_px,
     layer,
-    crs: SRS,
+    crs: _SRS,
 ):
     """Return the resolution in CRS unit/pixel of the request from the
     "scale-denominator" parameter of the request,
@@ -173,7 +173,7 @@ def compute_width_height_bbox(
     center,
     scale_denominator,
     display_res_m_per_px,
-    layer: WMSLayer,
+    layer: WMSLayerBase,
 ):
     """Returns a tuple (width, height, bbox) from query parameters of a map
     request.
