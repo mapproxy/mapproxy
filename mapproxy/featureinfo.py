@@ -38,7 +38,7 @@ class FeatureInfoDoc(object):
 class TextFeatureInfoDoc(FeatureInfoDoc):
     info_type = "text"
 
-    def __init__(self, content: str | bytes):
+    def __init__(self, content: Union[str, bytes]):
         self.content = content
 
     def as_string(self) -> str:
@@ -58,7 +58,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     defaultEncoding = "UTF-8"
     _etree: Optional[etree._ElementTree] = None
 
-    def __init__(self, content: str | bytes):
+    def __init__(self, content: Union[str, bytes]):
         if isinstance(content, (str, bytes)):
             self.content = content
         else:
