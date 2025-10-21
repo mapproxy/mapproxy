@@ -103,7 +103,7 @@ jobs:
         run: |
           pip install -r requirements-tests.txt
 
-      - name: mypy Static Typechecking
+      - name: flake8 Lint
         run: |
           flake8
 
