@@ -15,7 +15,7 @@
 import itertools
 import json
 import os.path
-from typing import Iterable, Optional, cast
+from typing import Iterable, Optional, cast, Union
 
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import Draft202012Validator
@@ -171,7 +171,7 @@ def _validate_mapnik_source(name: str, source: dict, layers: Optional[list[str]]
 
 
 def _validate_tagged_layer_source(
-        name: str, supported_layers: str | list[str], requested_layers: list[str]) -> list[str]:
+        name: str, supported_layers: Union[str, list[str]], requested_layers: list[str]) -> list[str]:
     errors: list[str] = []
     if isinstance(supported_layers, str):
         supported_layers = supported_layers.split(',')

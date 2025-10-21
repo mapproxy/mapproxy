@@ -19,14 +19,14 @@ import json
 
 from functools import reduce
 from io import StringIO, BytesIO
-from typing import Optional
+from typing import Optional, Union
 
 from lxml import etree, html
 
 
 class FeatureInfoDoc(object):
     content_type = None
-    content: None | str | bytes = None
+    content: Union[None, str, bytes] = None
 
     def as_etree(self):
         raise NotImplementedError()
@@ -38,7 +38,7 @@ class FeatureInfoDoc(object):
 class TextFeatureInfoDoc(FeatureInfoDoc):
     info_type = "text"
 
-    def __init__(self, content: str | bytes):
+    def __init__(self, content: Union[str, bytes]):
         self.content = content
 
     def as_string(self) -> str:
@@ -58,7 +58,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     defaultEncoding = "UTF-8"
     _etree: Optional[etree._ElementTree] = None
 
-    def __init__(self, content: str | bytes):
+    def __init__(self, content: Union[str, bytes]):
         if isinstance(content, (str, bytes)):
             self.content = content
         else:
@@ -80,7 +80,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
             self._etree = self._parse_content()
         return self._etree
 
-    def _serialize_etree(self) -> str | bytes:
+    def _serialize_etree(self) -> Union[str, bytes]:
         _etree = self.as_etree()
         encoding = _etree.docinfo.encoding if \
             _etree.docinfo.encoding else self.defaultEncoding

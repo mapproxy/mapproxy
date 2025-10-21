@@ -17,7 +17,7 @@
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
 from html import escape
-from typing import Optional
+from typing import Optional, Union
 
 from mapproxy.response import Response
 from mapproxy.template import template_loader
@@ -103,7 +103,7 @@ class XMLExceptionHandler(ExceptionHandler):
     The HTTP status code.
     """
 
-    status_codes: dict[str | None, int] = {}
+    status_codes: dict[Union[str, None], int] = {}
     """
     Mapping of exceptionCodes to status_codes. If not defined
     status_code is used.
