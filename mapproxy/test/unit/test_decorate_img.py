@@ -15,7 +15,7 @@
 
 from collections import OrderedDict
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image import ImageSource

@@ -19,7 +19,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image

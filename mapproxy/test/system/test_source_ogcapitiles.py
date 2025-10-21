@@ -20,7 +20,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image
 from mapproxy.test.system import SysTest

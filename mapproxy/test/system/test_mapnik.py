@@ -19,7 +19,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.test.system import SysTest
 
 

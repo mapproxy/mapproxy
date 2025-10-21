@@ -21,7 +21,8 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image, ImageDraw, PIL_VERSION_TUPLE
+import PIL
+from PIL import Image, ImageDraw
 from mapproxy.image import (
     BlankImageSource,
     GeoReference,
@@ -57,6 +58,9 @@ from mapproxy.test.image import (
 PNG_FORMAT = ImageOptions(format="image/png")
 JPEG_FORMAT = ImageOptions(format="image/jpeg")
 TIFF_FORMAT = ImageOptions(format="image/tiff")
+
+PIL_VERSION = getattr(PIL, '__version__') or getattr(PIL, 'PILLOW_VERSION')
+PIL_VERSION_TUPLE = tuple(int(i) for i in PIL_VERSION.split("."))
 
 
 class TestImageSource(object):
@@ -112,7 +116,6 @@ class TestImageSource(object):
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
 
-    @pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
     def test_tiff_compression(self):
         def encoded_size(encoding_options):
             ir = ImageSource(create_debug_img((100, 100)), PNG_FORMAT)
@@ -593,7 +596,6 @@ def assert_geotiff_tags(img, expected_origin, expected_pixel_res, srs, projected
     assert tags[TIFF_GEOKEYDIRECTORYTAG][3*4+3] == srs
 
 
-@pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
 @pytest.mark.parametrize("compression", ['jpeg', 'raw', 'tiff_lzw'])
 class TestGeoTIFF(object):
 

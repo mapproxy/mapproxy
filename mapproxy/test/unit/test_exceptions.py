@@ -15,7 +15,7 @@
 
 from io import BytesIO
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.exception import RequestError
 from mapproxy.request import url_decode
 from mapproxy.request.base import Request

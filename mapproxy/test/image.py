@@ -21,11 +21,7 @@ import tempfile
 from io import BytesIO
 from contextlib import contextmanager
 
-from mapproxy.compat.image import (
-    Image,
-    ImageDraw,
-    ImageColor,
-)
+from PIL import Image, ImageDraw, ImageColor
 
 
 def assert_image_mode(img, mode):

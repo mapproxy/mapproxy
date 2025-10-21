@@ -25,7 +25,7 @@ from io import BytesIO
 import pytest
 
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.test.image import is_png
 from mapproxy.test.system import SysTest
 

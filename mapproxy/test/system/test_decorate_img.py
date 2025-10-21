@@ -17,7 +17,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.image import ImageSource
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100TileRequest
