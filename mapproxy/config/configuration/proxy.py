@@ -184,18 +184,11 @@ class ProxyConfiguration(object):
         self.services = ServiceConfiguration(self.configuration.get('services', {}), context=self)
 
     def configured_services(self):
-        with self:
-            return self.services.services()
-
-    def __enter__(self):
-        # push local base_config onto config stack
         import mapproxy.config.config
         mapproxy.config.config._config.push(self.base_config)
-
-    def __exit__(self, type, value, traceback):
-        # pop local base_config from mapproxy.config stack
-        import mapproxy.config.config
+        services = self.services.services()
         mapproxy.config.config._config.pop()
+        return services
 
     @property
     def base_config(self):
