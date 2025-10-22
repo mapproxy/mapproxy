@@ -16,15 +16,8 @@
 import time
 import hashlib
 
-try:
-    import json
-except ImportError:
-    json = None  # type: ignore
-
-try:
-    import requests
-except ImportError:
-    requests = None  # type: ignore
+import json
+import requests
 
 from mapproxy.client.log import log_request
 from mapproxy.cache.tile import TileCreator, Tile

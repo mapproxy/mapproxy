@@ -21,11 +21,7 @@ import stat
 import math
 import time
 from datetime import datetime
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle  # type: ignore
+import pickle
 
 from mapproxy.layer import map_extent_from_grid
 from mapproxy.util.fs import write_atomic
