@@ -1,3 +1,38 @@
+6.0.0 2025-10-22
+~~~~~~~~~~~~~~~~
+
+Breaking:
+
+  - The extension for mbtiles used in MapProxy was wrong. It used `.mbtile` instead of `.mbtiles`. Existing files in
+    caches have to be renamed! Here is a small script to change all files in a directory recursively:
+    `find . -type f -name "*.mbtile" -exec sh -c 'mv "$1" "${1%.mbtile}.mbtiles"' _ {} \;`
+  - lxml was updated. The new version is much stricter in its inputs and administrators might have to adjust
+    featureinfo services to output valid HTML.
+
+Improvements:
+
+  - New source types `ogcapitiles` and `ogcapimaps` are now available! See docs for further information.
+  - New util `gridconf-from-ogcapitilematrixset` to fetch grids from an OGC API compliant web service was added.
+    See docs for further information.
+  - MapProxy now offers an OGCAPI compliant service for OGC API Maps and OGC API Tiles. Including landing page and
+    preview maps! See docs for further information.
+  - The `SERVICE` parameter for WMS `GetMap` requests is no longer mandatory as according to spec.
+  - Added test pipeline for the documentation.
+  - The GitHub actions now have better fitting permissions, improving the security.
+  - WMTS capabilities now include `OperationsMetadata` for restful mode.
+  - TMS capabilities now include metadata similar to WMS and WMTS.
+
+Maintenance:
+
+  - Some fixes in the documentation.
+  - As shapely is no longer optional, code to check for its existence has been removed.
+
+Fixes:
+
+  - An error regarding unicode strings in the featureinfo parsing was fixed.
+  - An error in the debug logging of configurations was fixed
+
+
 5.1.1 2025-10-01
 ~~~~~~~~~~~~~~~~
 
