@@ -20,14 +20,16 @@ Layers that can get maps/infos from different sources/caches.
 
 from __future__ import division
 
+from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.grid.resolutions import merge_resolution_range
 from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.proj import ProjError
-from mapproxy.srs import SRS, make_lin_transf, SupportedSRS
-from mapproxy.util.bbox import bbox_contains, bbox_intersects, merge_bbox, bbox_equals
+from mapproxy.srs import SupportedSRS
+from mapproxy.util.bbox import bbox_equals
+from mapproxy.query import MapQuery
 
 import logging
 from functools import reduce
@@ -122,62 +124,6 @@ class InfoLayer(object):
         raise NotImplementedError
 
 
-class MapQuery(object):
-    """
-    Internal query for a map with a specific extent, size, srs, etc.
-    """
-
-    def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False, dimensions=None):
-        self.bbox = bbox
-        self.size = size
-        self.srs = srs
-        self.format = format
-        self.transparent = transparent
-        self.tiled_only = tiled_only
-        self.dimensions = dimensions or {}
-
-    def dimensions_for_params(self, params):
-        """
-        Return subset of the dimensions.
-
-        >>> mq = MapQuery(None, None, None, dimensions={'Foo': 1, 'bar': 2})
-        >>> mq.dimensions_for_params(set(['FOO', 'baz']))
-        {'Foo': 1}
-        """
-        params = [p.lower() for p in params]
-        return dict((k, v) for k, v in self.dimensions.items() if k.lower() in params)
-
-    def __repr__(self):
-        info = self.__dict__
-        serialized_dimensions = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.dimensions.items()])
-        info["serialized_dimensions"] = serialized_dimensions
-        return ("MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s,"
-                " dimensions={%(serialized_dimensions)s)}") % info
-
-
-class InfoQuery(object):
-    def __init__(self, bbox, size, srs, pos, info_format, format=None,
-                 feature_count=None):
-        self.bbox = bbox
-        self.size = size
-        self.srs = srs
-        self.pos = pos
-        self.info_format = info_format
-        self.format = format
-        self.feature_count = feature_count
-
-    @property
-    def coord(self):
-        return make_lin_transf((0, 0, self.size[0], self.size[1]), self.bbox)(self.pos)
-
-
-class LegendQuery(object):
-    def __init__(self, format, scale):
-        self.format = format
-        self.scale = scale
-
-
 class Dimension(list):
     def __init__(self, identifier, values, default=None):
         self.identifier = identifier
@@ -185,142 +131,6 @@ class Dimension(list):
             default = values[0]
         self.default = default
         list.__init__(self, values)
-
-
-def map_extent_from_grid(grid):
-    """
-    >>> from mapproxy.grid.tile_grid import tile_grid_for_epsg
-    >>> map_extent_from_grid(tile_grid_for_epsg('EPSG:900913'))
-    ... #doctest: +NORMALIZE_WHITESPACE
-    MapExtent((-20037508.342789244, -20037508.342789244,
-               20037508.342789244, 20037508.342789244), SRS('EPSG:900913'))
-    """
-    return MapExtent(grid.bbox, grid.srs)
-
-
-class MapExtent(object):
-    """
-    >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
-    >>> me.llbbox
-    (5, 45, 15, 55)
-    >>> [int(x) for x in me.bbox_for(SRS(900913))]
-    [556597, 5621521, 1669792, 7361866]
-    >>> [int(x) for x in me.bbox_for(SRS(4326))]
-    [5, 45, 15, 55]
-    """
-    is_default = False
-
-    def __init__(self, bbox, srs):
-        self._llbbox = None
-        self.bbox = bbox
-        self.srs = srs
-
-    @property
-    def llbbox(self):
-        if not self._llbbox:
-            self._llbbox = self.srs.transform_bbox_to(self.srs.get_geographic_srs(), self.bbox)
-        return self._llbbox
-
-    def bbox_for(self, srs):
-        if srs == self.srs:
-            return self.bbox
-
-        return self.srs.transform_bbox_to(srs, self.bbox)
-
-    def __repr__(self):
-        return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
-
-    def __eq__(self, other):
-        if not isinstance(other, MapExtent):
-            return NotImplemented
-
-        if self.srs != other.srs:
-            return False
-
-        if self.bbox != other.bbox:
-            return False
-
-        return True
-
-    def __ne__(self, other):
-        if not isinstance(other, MapExtent):
-            raise NotImplementedError
-        return not self.__eq__(other)
-
-    def __add__(self, other):
-        if not isinstance(other, MapExtent):
-            raise NotImplementedError
-        if other.is_default:
-            return self
-        if self.is_default:
-            return other
-        return MapExtent(merge_bbox(self.llbbox, other.llbbox), self.srs.get_geographic_srs())
-
-    def contains(self, other):
-        if not isinstance(other, MapExtent):
-            raise NotImplementedError
-        if self.is_default:
-            # DefaultMapExtent contains everything
-            return True
-        return bbox_contains(self.bbox, other.bbox_for(self.srs))
-
-    def intersects(self, other):
-        if not isinstance(other, MapExtent):
-            raise NotImplementedError
-        return bbox_intersects(self.bbox, other.bbox_for(self.srs))
-
-    def intersection(self, other):
-        """
-        Returns the intersection of `self` and `other`.
-
-        >>> e = DefaultMapExtent().intersection(MapExtent((0, 0, 10, 10), SRS(4326)))
-        >>> e.bbox, e.srs
-        ((0, 0, 10, 10), SRS('EPSG:4326'))
-        """
-        if not self.intersects(other):
-            return None
-
-        source = self.bbox
-        sub = other.bbox_for(self.srs)
-
-        return MapExtent((
-            max(source[0], sub[0]),
-            max(source[1], sub[1]),
-            min(source[2], sub[2]),
-            min(source[3], sub[3])),
-            self.srs)
-
-    def transform(self, srs):
-        return MapExtent(self.bbox_for(srs), srs)
-
-
-class DefaultMapExtent(MapExtent):
-    """
-    Default extent that covers the whole world.
-    Will not affect other extents when added.
-
-    >>> m1 = MapExtent((0, 0, 10, 10), SRS(4326))
-    >>> m2 = MapExtent((10, 0, 20, 10), SRS(4326))
-    >>> m3 = DefaultMapExtent()
-    >>> (m1 + m2).bbox
-    (0, 0, 20, 10)
-    >>> (m1 + m3).bbox
-    (0, 0, 10, 10)
-    """
-    is_default = True
-
-    def __init__(self):
-        MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
-
-
-def merge_layer_extents(layers):
-    if not layers:
-        return DefaultMapExtent()
-    layers = layers[:]
-    extent = layers.pop().extent
-    for layer in layers:
-        extent = extent + layer.extent
-    return extent
 
 
 class ResolutionConditional(MapLayer):

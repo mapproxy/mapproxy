@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from mapproxy.service.wms import limit_srs_extents
-from mapproxy.layer import DefaultMapExtent, MapExtent
+from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.srs import SRS
 
 

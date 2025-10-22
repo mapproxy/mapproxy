@@ -15,7 +15,7 @@
 
 import pytest
 
-from mapproxy.layer import MapExtent
+from mapproxy.extent import MapExtent
 from mapproxy.srs import SRS
 
 try:

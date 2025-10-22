@@ -22,7 +22,8 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
-from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer, MapLayer
+from mapproxy.layer import BlankImage, CacheMapLayer, MapLayer
+from mapproxy.extent import map_extent_from_grid
 from mapproxy.util.py import reraise_exception
 
 import logging

@@ -25,7 +25,8 @@ from io import BytesIO
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, MapLayer
+from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception

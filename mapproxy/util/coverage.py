@@ -114,7 +114,7 @@ class BBOXCoverage(object):
 
     @property
     def extent(self):
-        from mapproxy.layer import MapExtent
+        from mapproxy.extent import MapExtent
 
         return MapExtent(self.bbox, self.srs)
 
@@ -188,7 +188,7 @@ class GeomCoverage(object):
 
     @property
     def extent(self):
-        from mapproxy.layer import MapExtent
+        from mapproxy.extent import MapExtent
         return MapExtent(self.bbox, self.srs)
 
     @property
