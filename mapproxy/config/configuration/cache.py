@@ -441,7 +441,7 @@ class CacheConfiguration(ConfigurationBase):
 
     def source(self, params=None, tile_grid=None, tiled_only=False):
         from mapproxy.source.tile import CacheSource
-        from mapproxy.layer import map_extent_from_grid
+        from mapproxy.extent import map_extent_from_grid
 
         caches = self.caches()
         if len(caches) > 1:
@@ -552,7 +552,7 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.cache.tile import TileManager
         from mapproxy.cache.base import TileLocker
         from mapproxy.image.opts import compatible_image_options
-        from mapproxy.layer import map_extent_from_grid, merge_layer_extents
+        from mapproxy.extent import merge_layer_extents, map_extent_from_grid
 
         base_image_opts = self.image_opts()
         if (self.conf.get('format') == 'mixed' and

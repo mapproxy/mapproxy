@@ -327,7 +327,7 @@ class ServiceConfiguration(ConfigurationBase):
 
 
 def extents_for_srs(bbox_srs):
-    from mapproxy.layer import DefaultMapExtent, MapExtent
+    from mapproxy.extent import DefaultMapExtent, MapExtent
     from mapproxy.srs import SRS
     extents = {}
     for srs in bbox_srs:
