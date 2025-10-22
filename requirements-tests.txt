@@ -1,5 +1,5 @@
 attrs==19.3.0;python_version<"3.10"
-attrs==23.2.0;python_version>="3.10"
+attrs==25.4.0;python_version>="3.10"
 aws-sam-translator==1.91.0
 aws-xray-sdk==2.12.1
 azure-storage-blob>=12.9.0
