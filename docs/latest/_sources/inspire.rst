@@ -1,6 +1,4 @@
-.. _inpire:
-
-.. highlight:: yaml
+.. _inspire:
 
 INSPIRE View Service
 ====================

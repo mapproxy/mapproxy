@@ -36,12 +36,6 @@ MapProxy and most dependencies can be installed with the ``pip`` command. `Read 
 
 This might take a minute.
 
-Dependencies
-------------
-
-Read :ref:`dependency_details` for more information about all dependencies.
-
-
 Pillow and YAML
 ~~~~~~~~~~~~~~~
 

@@ -53,7 +53,7 @@
     <link rel="prev" title="Deployment" href="deployment.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -861,13 +861,9 @@ The path can either be absolute (e.g. <code class="docutils literal notranslate"
 </div>
 <p>MapProxy will mark all layers that use this source as <code class="docutils literal notranslate"><span class="pre">queryable</span></code>. It also works for sources that are used with caching.</p>
 <p>FeatureInfo support is enabled by default for WMS. For <a class="reference internal" href="services.html#wmts-feature-info"><span class="std std-ref">WMTS you need to enable FeatureInfo queries by configuring the supported formats</span></a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The more advanced features <span class="xref std std-ref">require the lxml library</span>.</p>
-</div>
 <section id="concatenation">
 <h3>Concatenation<a class="headerlink" href="#concatenation" title="Link to this heading">#</a></h3>
-<p>Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation when <span class="xref std std-ref">lxml</span> is available.</p>
+<p>Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation.</p>
 <section id="html">
 <h4>HTML<a class="headerlink" href="#html" title="Link to this heading">#</a></h4>
 <p>Multiple HTML documents are put into the HTML <code class="docutils literal notranslate"><span class="pre">body</span></code> of the first document.
@@ -914,7 +910,7 @@ MapProxy creates the HTML skeleton if it is missing.</p>
 </section>
 <section id="xsl-transformations">
 <h3>XSL Transformations<a class="headerlink" href="#xsl-transformations" title="Link to this heading">#</a></h3>
-<p>MapProxy supports XSL transformations for more control over feature information. This also requires <span class="xref std std-ref">lxml</span>. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).</p>
+<p>MapProxy supports XSL transformations for more control over feature information. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).</p>
 <p>You can use XSLT for sources to convert all incoming documents to a single, uniform format and then use outgoing XSLT scripts to transform this format to either HTML or XML/GML output.</p>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h4>
@@ -1345,7 +1341,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>

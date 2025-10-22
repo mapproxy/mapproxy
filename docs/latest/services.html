@@ -53,7 +53,7 @@
     <link rel="prev" title="Configuration" href="configuration.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -353,15 +353,16 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-grid-names"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Full example</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openlayers">OpenLayers</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#google-maps">Google Maps</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-tile-services-wmts">Web Map Tile Services (WMTS)</a><ul class="nav section-nav flex-column">
@@ -375,6 +376,17 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-demo-service">MapProxy Demo Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-maps-and-tiles-service">OGC API Maps and Tiles Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiles"><code class="docutils literal notranslate"><span class="pre">enable_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-maps"><code class="docutils literal notranslate"><span class="pre">enable_maps</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#map-srs"><code class="docutils literal notranslate"><span class="pre">map_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">attribution</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-dataset-layers"><code class="docutils literal notranslate"><span class="pre">default_dataset_layers</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code></a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -395,6 +407,7 @@ document.write(`
 <li><p><a class="reference internal" href="#kml-service-label"><span class="std std-ref">Keyhole Markup Language (OGC KML)</span></a></p></li>
 <li><p><a class="reference internal" href="#wmts-service-label"><span class="std std-ref">Web Map Tile Services (WMTS)</span></a></p></li>
 <li><p><a class="reference internal" href="#demo-service-label"><span class="std std-ref">MapProxy Demo Service</span></a></p></li>
+<li><p><a class="reference internal" href="#ogcapi-service-label"><span class="std std-ref">OGC API Maps and Tiles Service</span></a></p></li>
 </ul>
 <p>You need to add the service to the <code class="docutils literal notranslate"><span class="pre">services</span></code> section of your MapProxy configuration to enable it. Some services take additional options.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
@@ -408,7 +421,7 @@ document.write(`
 <section id="web-map-service-ogc-wms">
 <span id="wms-service-label"></span><span id="index-0"></span><h2>Web Map Service (OGC WMS)<a class="headerlink" href="#web-map-service-ogc-wms" title="Link to this heading">#</a></h2>
 <p>The WMS server is accessible at <code class="docutils literal notranslate"><span class="pre">/service</span></code>, <code class="docutils literal notranslate"><span class="pre">/ows</span></code> and <code class="docutils literal notranslate"><span class="pre">/wms</span></code>  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.</p>
-<p>See <a class="reference internal" href="inspire.html"><span class="doc">INSPIRE View Service</span></a> for configuring INSPIRE metadata.</p>
+<p>See <a class="reference internal" href="inspire.html#inspire"><span class="std std-ref">INSPIRE View Service</span></a> for configuring INSPIRE metadata.</p>
 <p>The WMS service will use all configured <a class="reference internal" href="configuration.html#id1"><span class="std std-ref">layers</span></a>.</p>
 <p>The service takes the following additional option.</p>
 <section id="attribution">
@@ -428,7 +441,7 @@ document.write(`
 </section>
 <section id="inspire-md">
 <span id="wms-inpire-md"></span><h3><code class="docutils literal notranslate"><span class="pre">inspire_md</span></code><a class="headerlink" href="#inspire-md" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">inspire_md</span></code> is for inspire metadata. See <span class="xref std std-ref">inspire</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">inspire_md</span></code> is for inspire metadata. See <a class="reference internal" href="inspire.html#inspire"><span class="std std-ref">INSPIRE View Service</span></a></p>
 </section>
 <section id="srs">
 <span id="wms-srs"></span><h3><code class="docutils literal notranslate"><span class="pre">srs</span></code><a class="headerlink" href="#srs" title="Link to this heading">#</a></h3>
@@ -558,6 +571,10 @@ document.write(`
 <p>The TMS service will use all configured <a class="reference internal" href="configuration.html#id1"><span class="std std-ref">layers</span></a> that have a name and single cached source. Any layer grouping will be flattened.</p>
 <p>Here is an example TMS request: <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/base/EPSG900913/3/1/0.png</span></code>. <code class="docutils literal notranslate"><span class="pre">png</span></code> is the internal format of the cached tiles. <code class="docutils literal notranslate"><span class="pre">base</span></code> is the name of the layer and <code class="docutils literal notranslate"><span class="pre">EPSG900913</span></code> is the SRS of the layer. The tiles are also available under the layer name <code class="docutils literal notranslate"><span class="pre">base_EPSG900913</span></code> when <code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code> is false or unset.</p>
 <p>A request to <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0</span></code> will return the TMS metadata as XML. <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/layername</span></code> will return information about the bounding box, resolutions and tile size of this specific layer.</p>
+<section id="id2">
+<h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">md</span></code> is for metadata. These fields are used for the TMS <code class="docutils literal notranslate"><span class="pre">Capabilities</span></code> responses. See the example below for all supported keys. If no special md block is provided here than the entries of the wms md block are used.</p>
+</section>
 <section id="use-grid-names">
 <h3><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code><a class="headerlink" href="#use-grid-names" title="Link to this heading">#</a></h3>
 <div class="versionadded">
@@ -566,11 +583,29 @@ document.write(`
 <p>When set to <cite>true</cite>, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
 Tiles will then be available under <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer/mygrid/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer/EPSG1234/</span></code> or <code class="docutils literal notranslate"><span class="pre">/tms/1.0.0/mylayer_EPSG1234/</span></code>.</p>
 </section>
-<section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h3>
+<section id="id3">
+<h3>Full example<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">origin</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;sw&#39;</span>
 <span class="w">    </span><span class="nt">use_grid_names</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">md</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy TMS Proxy</span>
+<span class="w">      </span><span class="nt">abstract</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This is the fantastic MapProxy.</span>
+<span class="w">      </span><span class="nt">contact</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">person</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Your Name Here</span>
+<span class="w">        </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Technical Director</span>
+<span class="w">        </span><span class="nt">organization</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FakeOrg</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fakestreet 123</span>
+<span class="w">        </span><span class="nt">city</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Somewhere</span>
+<span class="w">        </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">XYZ</span>
+<span class="w">        </span><span class="nt">postcode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span>
+<span class="w">        </span><span class="nt">country</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Germany</span>
+<span class="w">        </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+49(0)000-000000-0</span>
+<span class="w">        </span><span class="nt">fax</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">+49(0)000-000000-0</span>
+<span class="w">        </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">you@example.org</span>
+<span class="w">      </span><span class="nt">keyword_list</span><span class="p">:</span>
+<span class="w">       </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">keywords</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="s">&quot;View</span><span class="nv"> </span><span class="s">Service&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">MapProxy</span><span class="p p-Indicator">]</span>
 </pre></div>
 </div>
 </section>
@@ -605,16 +640,16 @@ TMS begins with two or four tiles by default, depending on the SRS. MapProxy sup
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.5.0: </span>The initial KML is also available at <code class="docutils literal notranslate"><span class="pre">/kml/layername_EPSG1234</span></code> and <code class="docutils literal notranslate"><span class="pre">/kml/layername/EPSG1234</span></code>.</p>
 </div>
-<section id="id2">
-<h3><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code><a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code><a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.5.0.</span></p>
 </div>
 <p>When set to <cite>true</cite>, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
 Tiles will then be available under <code class="docutils literal notranslate"><span class="pre">/kml/mylayer/mygrid/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">/kml/mylayer/EPSG1234/</span></code>.</p>
 </section>
-<section id="id3">
-<h3>Example<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h3>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">kml</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">use_grid_names</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -718,6 +753,103 @@ with the following configuration:</p>
 </dl>
 </div></blockquote>
 </section>
+<section id="ogc-api-maps-and-tiles-service">
+<span id="ogcapi-service-label"></span><span id="index-8"></span><h2>OGC API Maps and Tiles Service<a class="headerlink" href="#ogc-api-maps-and-tiles-service" title="Link to this heading">#</a></h2>
+<p>MapProxy implements <a class="reference external" href="https://docs.ogc.org/is/20-058/20-058.html">OGC API Maps - Part 1 - Core</a> and <a class="reference external" href="https://docs.ogc.org/is/20-057/20-057.html">OGC API Tiles - Part 1 - Core</a>.</p>
+<p>The service is available at <code class="docutils literal notranslate"><span class="pre">/ogcapi</span></code>.</p>
+<p>The minimum block to enable them is:
+.. code-block:: yaml</p>
+<blockquote>
+<div><dl class="simple">
+<dt>services:</dt><dd><p>ogcapi:</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>The service takes the following additional options.</p>
+<section id="enable-tiles">
+<h3><code class="docutils literal notranslate"><span class="pre">enable_tiles</span></code><a class="headerlink" href="#enable-tiles" title="Link to this heading">#</a></h3>
+<p>Whether to enable OGC API Tiles support (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>). Defaults to true.</p>
+</section>
+<section id="enable-maps">
+<h3><code class="docutils literal notranslate"><span class="pre">enable_maps</span></code><a class="headerlink" href="#enable-maps" title="Link to this heading">#</a></h3>
+<p>Whether to enable OGC API Maps support (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>). Defaults to true.</p>
+</section>
+<section id="map-srs">
+<h3><code class="docutils literal notranslate"><span class="pre">map_srs</span></code><a class="headerlink" href="#map-srs" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">map_srs</span></code> option defines which SRS the OGC API Maps service supports.</p>
+<p>The default value is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">map_srs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="s1">&#39;EPSG:3857&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3><code class="docutils literal notranslate"><span class="pre">attribution</span></code><a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<p>Adds an attribution (copyright) line to all map and tiles requests.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">text</span></code></dt><dd><p>The text line of the attribution (e.g. some copyright notice, etc).</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3><code class="docutils literal notranslate"><span class="pre">md</span></code><a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">md</span></code> is for metadata. These fields are used for the response to the API and langing page requests.
+See the example below for all supported keys.</p>
+</section>
+<section id="default-dataset-layers">
+<h3><code class="docutils literal notranslate"><span class="pre">default_dataset_layers</span></code><a class="headerlink" href="#default-dataset-layers" title="Link to this heading">#</a></h3>
+<p>List of layer(s) that are used by default for dataset-wide “/map” and “/map/tiles”
+requests. If that option is not set, those endpoints are not available.</p>
+</section>
+<section id="id7">
+<h3><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code><a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<p>Configure what MapProxy should do when one or more sources return errors or no response at all (e.g. timeout). The default is <code class="docutils literal notranslate"><span class="pre">notify</span></code>, which adds a text line in the image response for each erroneous source, but only if a least one source was successful. When <code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code> is set to <code class="docutils literal notranslate"><span class="pre">raise</span></code>, MapProxy will return an OGCAPI errorn in any error case.</p>
+</section>
+<section id="id8">
+<h3><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code><a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<p>The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to <code class="docutils literal notranslate"><span class="pre">[4000,</span> <span class="pre">4000]</span></code> which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).</p>
+<p>See also <a class="reference internal" href="configuration.html#max-tile-limit"><span class="std std-ref">globals.cache.max_tile_limit</span></a> for the maximum number of tiles MapProxy will merge together for each layer.</p>
+<p>An example showing all potential service metadata and configuration is:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ogcapi</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enable_tiles</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">enable_maps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">map_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;EPSG:4326&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;EPSG:3857&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">attribution</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">text</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Copyright</span><span class="nv"> </span><span class="s">ME&quot;</span>
+<span class="w">    </span><span class="nt">md</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">identification</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MapProxy OGCAPI</span>
+<span class="w">            </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Minimal MapProxy example</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://example.com&quot;</span>
+<span class="w">            </span><span class="nt">terms_of_service</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://example.com&quot;</span>
+<span class="w">            </span><span class="nt">keywords</span><span class="p">:</span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;OGC</span><span class="nv"> </span><span class="s">API&quot;</span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Demo</span>
+<span class="w">        </span><span class="nt">provider</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Organization Name</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://example.com/provider&quot;</span>
+<span class="w">        </span><span class="nt">contact</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Jean Dupond</span>
+<span class="w">            </span><span class="nt">email</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;jean.dupond@example.com&quot;</span>
+<span class="w">            </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;25,</span><span class="nv"> </span><span class="s">rue</span><span class="nv"> </span><span class="s">OSGeo&quot;</span>
+<span class="w">            </span><span class="nt">city</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Spatial</span><span class="nv"> </span><span class="s">City&quot;</span>
+<span class="w">            </span><span class="nt">stateorprovince</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Spatial</span><span class="nv"> </span><span class="s">State&quot;</span>
+<span class="w">            </span><span class="nt">postalcode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12345&quot;</span>
+<span class="w">            </span><span class="nt">country</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Spatial</span><span class="nv"> </span><span class="s">country&quot;</span>
+<span class="w">            </span><span class="nt">phone</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;900-913&quot;</span>
+<span class="w">            </span><span class="nt">fax</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;+3312345678&quot;</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://example.com&quot;</span>
+<span class="w">            </span><span class="nt">instructions</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Please</span><span class="nv"> </span><span class="s">don&#39;t</span><span class="nv"> </span><span class="s">contact</span><span class="nv"> </span><span class="s">me&quot;</span>
+<span class="w">        </span><span class="nt">license</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Do</span><span class="nv"> </span><span class="s">what</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">want&quot;</span>
+<span class="w">            </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://example.com&quot;</span>
+<span class="w">    </span><span class="nt">default_dataset_layers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">layer1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">layer2</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>In addition to those options, there is a <code class="docutils literal notranslate"><span class="pre">layers</span></code> configuration option
+which is specific to OGC API Maps: <a class="reference internal" href="configuration.html#layer-nominal-scale"><span class="std std-ref">nominal_res or nominal_scale</span></a>.</p>
+</section>
+</section>
 </section>
 
 
@@ -783,15 +915,16 @@ with the following configuration:</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#use-grid-names"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Full example</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openlayers">OpenLayers</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#google-maps">Google Maps</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Example</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">use_grid_names</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example">Example</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-map-tile-services-wmts">Web Map Tile Services (WMTS)</a><ul class="nav section-nav flex-column">
@@ -805,6 +938,17 @@ with the following configuration:</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-demo-service">MapProxy Demo Service</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-maps-and-tiles-service">OGC API Maps and Tiles Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiles"><code class="docutils literal notranslate"><span class="pre">enable_tiles</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-maps"><code class="docutils literal notranslate"><span class="pre">enable_maps</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#map-srs"><code class="docutils literal notranslate"><span class="pre">map_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">attribution</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-dataset-layers"><code class="docutils literal notranslate"><span class="pre">default_dataset_layers</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">on_source_errors</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8"><code class="docutils literal notranslate"><span class="pre">max_output_pixels</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
@@ -838,7 +982,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>

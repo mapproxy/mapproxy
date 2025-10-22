@@ -11,6 +11,7 @@ The following services are available:
 - :ref:`kml_service_label`
 - :ref:`wmts_service_label`
 - :ref:`demo_service_label`
+- :ref:`ogcapi_service_label`
 
 You need to add the service to the ``services`` section of your MapProxy configuration to enable it. Some services take additional options.
 
@@ -32,7 +33,7 @@ Web Map Service (OGC WMS)
 
 The WMS server is accessible at ``/service``, ``/ows`` and ``/wms``  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
 
-See :doc:`inspire` for configuring INSPIRE metadata.
+See :ref:`inspire` for configuring INSPIRE metadata.
 
 The WMS service will use all configured :ref:`layers <layers>`.
 
@@ -230,6 +231,9 @@ Here is an example TMS request: ``/tms/1.0.0/base/EPSG900913/3/1/0.png``. ``png`
 
 A request to ``/tms/1.0.0`` will return the TMS metadata as XML. ``/tms/1.0.0/layername`` will return information about the bounding box, resolutions and tile size of this specific layer.
 
+``md``
+""""""
+``md`` is for metadata. These fields are used for the TMS ``Capabilities`` responses. See the example below for all supported keys. If no special md block is provided here than the entries of the wms md block are used.  
 
 ``use_grid_names``
 """"""""""""""""""
@@ -239,14 +243,32 @@ A request to ``/tms/1.0.0`` will return the TMS metadata as XML. ``/tms/1.0.0/la
 When set to `true`, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
 Tiles will then be available under ``/tms/1.0.0/mylayer/mygrid/`` instead of ``/tms/1.0.0/mylayer/EPSG1234/`` or ``/tms/1.0.0/mylayer_EPSG1234/``.
 
-Example
-"""""""
+Full example
+""""""""""""
 
 .. code-block:: yaml
 
   services:
     tms:
+      origin: 'sw'
       use_grid_names: true
+      md:
+        title: MapProxy TMS Proxy
+        abstract: This is the fantastic MapProxy.
+        contact:
+          person: Your Name Here
+          position: Technical Director
+          organization: FakeOrg
+          address: Fakestreet 123
+          city: Somewhere
+          state: XYZ
+          postcode: 12345
+          country: Germany
+          phone: +49(0)000-000000-0
+          fax: +49(0)000-000000-0
+          email: you@example.org
+        keyword_list:
+         - keywords:   ["View Service", MapProxy]
 
 
 .. index:: OpenLayers
@@ -441,3 +463,119 @@ This service takes no further options::
 
   services:
       demo:
+
+
+.. index:: OGC API Maps and Tiles
+.. _ogcapi_service_label:
+
+OGC API Maps and Tiles Service
+------------------------------
+
+MapProxy implements `OGC API Maps - Part 1 - Core <https://docs.ogc.org/is/20-058/20-058.html>`__ and `OGC API Tiles - Part 1 - Core <https://docs.ogc.org/is/20-057/20-057.html>`__.
+
+The service is available at ``/ogcapi``.
+
+The minimum block to enable them is:
+.. code-block:: yaml
+
+  services:
+    ogcapi:
+
+The service takes the following additional options.
+
+``enable_tiles``
+""""""""""""""""
+
+Whether to enable OGC API Tiles support (``true``/``false``). Defaults to true.
+
+``enable_maps``
+""""""""""""""""
+
+Whether to enable OGC API Maps support (``true``/``false``). Defaults to true.
+
+``map_srs``
+"""""""""""
+
+The ``map_srs`` option defines which SRS the OGC API Maps service supports.
+
+The default value is::
+
+   map_srs: ['EPSG:4326', 'EPSG:3857']
+
+``attribution``
+"""""""""""""""
+
+Adds an attribution (copyright) line to all map and tiles requests.
+
+``text``
+  The text line of the attribution (e.g. some copyright notice, etc).
+
+``md``
+""""""
+
+``md`` is for metadata. These fields are used for the response to the API and langing page requests.
+See the example below for all supported keys.
+
+``default_dataset_layers``
+""""""""""""""""""""""""""
+
+List of layer(s) that are used by default for dataset-wide "/map" and "/map/tiles"
+requests. If that option is not set, those endpoints are not available.
+
+``on_source_errors``
+""""""""""""""""""""
+
+Configure what MapProxy should do when one or more sources return errors or no response at all (e.g. timeout). The default is ``notify``, which adds a text line in the image response for each erroneous source, but only if a least one source was successful. When ``on_source_errors`` is set to ``raise``, MapProxy will return an OGCAPI errorn in any error case.
+
+
+``max_output_pixels``
+"""""""""""""""""""""
+
+The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to ``[4000, 4000]`` which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).
+
+See also :ref:`globals.cache.max_tile_limit <max_tile_limit>` for the maximum number of tiles MapProxy will merge together for each layer.
+
+
+An example showing all potential service metadata and configuration is:
+
+.. code-block:: yaml
+
+  services:
+    ogcapi:
+      enable_tiles: true
+      enable_maps: true
+      map_srs: ["EPSG:4326", "EPSG:3857"]
+      attribution:
+          text: "Copyright ME"
+      md:
+          identification:
+              title: MapProxy OGCAPI
+              description: Minimal MapProxy example
+              url: "http://example.com"
+              terms_of_service: "http://example.com"
+              keywords:
+                  - "OGC API"
+                  - Demo
+          provider:
+              name: Organization Name
+              url: "http://example.com/provider"
+          contact:
+              name: Jean Dupond
+              email: "jean.dupond@example.com"
+              address: "25, rue OSGeo"
+              city: "Spatial City"
+              stateorprovince: "Spatial State"
+              postalcode: "12345"
+              country: "Spatial country"
+              phone: "900-913"
+              fax: "+3312345678"
+              url: "http://example.com"
+              instructions: "Please don't contact me"
+          license:
+              name: "Do what you want"
+              url: "http://example.com"
+      default_dataset_layers: [layer1, layer2]
+
+
+In addition to those options, there is a ``layers`` configuration option
+which is specific to OGC API Maps: :ref:`layer_nominal_scale`.

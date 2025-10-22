@@ -53,7 +53,7 @@
     <link rel="prev" title="mapproxy-util autoconfig" href="mapproxy_util_autoconfig.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -497,7 +497,7 @@ Accepts either a port number or <code class="docutils literal notranslate"><span
 <p>You need a server script that creates the MapProxy application (see <a class="reference internal" href="#server-script"><span class="std std-ref">above</span></a>). The script needs to be in the directory from where you start <code class="docutils literal notranslate"><span class="pre">waitress</span></code> and it needs to end with <code class="docutils literal notranslate"><span class="pre">.py</span></code>.</p>
 <p>To start MapProxy with Waitress and our server script (without <code class="docutils literal notranslate"><span class="pre">.py</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">of</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="o">/</span>
-<span class="n">waitress</span> <span class="o">--</span><span class="n">listen</span> <span class="mf">127.0.0.1</span><span class="p">:</span><span class="mi">8080</span> <span class="n">config</span><span class="p">:</span><span class="n">application</span>
+<span class="n">waitress</span><span class="o">-</span><span class="n">serve</span> <span class="o">--</span><span class="n">listen</span> <span class="mf">127.0.0.1</span><span class="p">:</span><span class="mi">8080</span> <span class="n">config</span><span class="p">:</span><span class="n">application</span>
 </pre></div>
 </div>
 </section>
@@ -729,7 +729,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>

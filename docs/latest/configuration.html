@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -344,6 +344,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-sources"><code class="docutils literal notranslate"><span class="pre">tile_sources</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-max-res-or-min-scale-max-scale"><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nominal-res-or-nominal-scale"><code class="docutils literal notranslate"><span class="pre">nominal_res</span></code> or <code class="docutils literal notranslate"><span class="pre">nominal_scale</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
@@ -683,8 +684,16 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 <section id="min-res-max-res-or-min-scale-max-scale">
 <h3><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code><a class="headerlink" href="#min-res-max-res-or-min-scale-max-scale" title="Link to this heading">#</a></h3>
 <p>Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (<code class="docutils literal notranslate"><span class="pre">min_res</span></code> is inclusive, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> exclusive). You can use either the resolution or the scale values, missing values will be interpreted as <cite>unlimited</cite>. Resolutions should be in meters per pixel.</p>
-<p>The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).</p>
+<p>The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator),
+or in the response to the OGC API Maps or Tiles GetCollection requests.</p>
 <p>Please read <a class="reference internal" href="#scale-resolution"><span class="std std-ref">scale vs. resolution</span></a> for some notes on <cite>scale</cite>.</p>
+</section>
+<section id="nominal-res-or-nominal-scale">
+<span id="layer-nominal-scale"></span><h3><code class="docutils literal notranslate"><span class="pre">nominal_res</span></code> or <code class="docutils literal notranslate"><span class="pre">nominal_scale</span></code><a class="headerlink" href="#nominal-res-or-nominal-scale" title="Link to this heading">#</a></h3>
+<p>That setting is required by some OGC API Maps map requests, to establish the
+nominal resolution of a layer, for example when one of the <code class="docutils literal notranslate"><span class="pre">width</span></code> or <code class="docutils literal notranslate"><span class="pre">height</span></code> query
+parameters is specified (not both), but the <code class="docutils literal notranslate"><span class="pre">scale-denominator</span></code> one is not.</p>
+<p>Resolutions should be in meters per pixel.</p>
 </section>
 <section id="legendurl">
 <h3><code class="docutils literal notranslate"><span class="pre">legendurl</span></code><a class="headerlink" href="#legendurl" title="Link to this heading">#</a></h3>
@@ -1609,6 +1618,7 @@ was not changed.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sources"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-sources"><code class="docutils literal notranslate"><span class="pre">tile_sources</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#min-res-max-res-or-min-scale-max-scale"><code class="docutils literal notranslate"><span class="pre">min_res</span></code>, <code class="docutils literal notranslate"><span class="pre">max_res</span></code> or <code class="docutils literal notranslate"><span class="pre">min_scale</span></code>, <code class="docutils literal notranslate"><span class="pre">max_scale</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nominal-res-or-nominal-scale"><code class="docutils literal notranslate"><span class="pre">nominal_res</span></code> or <code class="docutils literal notranslate"><span class="pre">nominal_scale</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#legendurl"><code class="docutils literal notranslate"><span class="pre">legendurl</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#md"><code class="docutils literal notranslate"><span class="pre">md</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dimensions"><code class="docutils literal notranslate"><span class="pre">dimensions</span></code></a></li>
@@ -1732,7 +1742,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>

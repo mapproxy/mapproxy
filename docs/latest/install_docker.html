@@ -53,7 +53,7 @@
     <link rel="prev" title="Installation on Windows" href="install_windows.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -416,18 +416,18 @@ If you do not supply a mapproxy config file the image will create a default seed
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/mapproxy.yaml</span></code>: MapProxy Config</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/logging.ini</span></code>: Logging-Configuration</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/cache_data</span></code>: Cache Data dir. Make sure that this directory is writable for the mapproxy image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/mapproxy/config/cache_data</span></code>: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
+This can be achieved with <cite>chmod -R a+r cache_data</cite></p></li>
 </ul>
-<p>This can be achieved with <cite>chmod -R a+r cache_data</cite></p>
 </section>
 <section id="environment-variables">
 <h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_MAPPROXY</span></code>: <strong>This can only be used in nginx images.</strong> If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will start in multi app</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_MAPPROXY</span></code>: <strong>This can only be used in nginx images.</strong> If set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy will start in multi app
+mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.
+Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 </ul>
-<p>mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.
-- <code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.
-Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </section>
 </section>
 <section id="build-your-own-image">
@@ -531,7 +531,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>

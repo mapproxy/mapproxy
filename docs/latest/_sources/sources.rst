@@ -11,6 +11,8 @@ MapProxy supports the following sources:
 - :ref:`mapserver_label`
 - :ref:`mapnik_label`
 - :ref:`debug_label`
+- :ref:`ogcapitiles_label`
+- :ref:`ogcapimaps_label`
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
 
@@ -34,7 +36,7 @@ See below for a detailed description of each service.
 WMS
 """
 
-Use the type ``wms`` to for WMS servers.
+Use the type ``wms`` for WMS servers.
 
 ``req``
 ^^^^^^^
@@ -645,4 +647,143 @@ Example:
 
   debug_source:
     type: debug
+
+
+.. _ogcapitiles_label:
+
+OGC API Tiles
+"""""""""""""
+
+Use the type ``ogcapitiles`` for servers implementing `OGC API Tiles <https://docs.ogc.org/is/20-057/20-057.html>`__.
+
+.. warning:: Only map/raster tiles are supported, not vector tiles.
+
+Note that this source must be wrapped into a MapProxy :ref:`cache <caches>` to be usable by un-tiled services like WMS.
+There exists a helper command to get the grids from the OGC API in MapProxy format:
+:ref:`mapproxy_util_gridconf_from_ogcapitilematrixset`.
+
+``landingpage_url``
+^^^^^^^^^^^^^^^^^^^
+
+[required] The URL of the `landing page <https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389>`__
+of the OGC API server.
+
+``collection``
+^^^^^^^^^^^^^^
+
+[optional] The name of the collection from which to get tiles from. If not specified, the tile related links from the landing page will be used (if existing).
+
+``tile_matrix_set_id``
+^^^^^^^^^^^^^^^^^^^^^^
+
+[optional] A tile matrix set id, as indicated by the ``id`` member in the response to the ``/ogcapi/tileMatrixSets`` page. When specifying it, the source will only consider this tile matrix set to get tiles. Otherwise it will determine automatically which tile matrix set among those availables can be used to satisfy the incoming request. Example of commons tile matrix sets are ``GlobalCRS84Pixel`` or ``WebMercatorQuad``.
+
+``coverage``
+^^^^^^^^^^^^
+
+[optional] Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``image``
+^^^^^^^^^
+
+See :ref:`image_options`.
+
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: yaml
+
+  my_ogcapitiles_source:
+    type: ogcapitiles
+    landingpage_url: http://example.com/ogcapi
+    collection: my_collection_name
+
+
+.. _ogcapimaps_label:
+
+OGC API Maps
+""""""""""""
+
+Use the type ``ogcapimaps`` for servers implementing `OGC API Maps <https://docs.ogc.org/is/20-058/20-058.html>`__.
+
+``landingpage_url``
+^^^^^^^^^^^^^^^^^^^
+
+[required] The URL of the `landing page <https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389>`__
+of the OGC API server.
+
+``collection``
+^^^^^^^^^^^^^^
+
+[optional] The name of the collection from which to get tiles from. If not specified, the map related link from the landing page will be used (if existing).
+
+``supported_srs``
+^^^^^^^^^^^^^^^^^
+
+A list with SRSs that the source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.
+
+If this list is not specified, it will be retrieved from the metadata in the collection description.
+
+If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS e.g. when ``supported_srs`` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).
+
+``coverage``
+^^^^^^^^^^^^
+
+[optional]  Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``transparent``
+^^^^^^^^^^^^^^^
+
+[optional]  Can be set to ``true`` if you want to use this source as an overlay.
+
+``image``
+^^^^^^^^^
+
+[optional] 
+
+See :ref:`image_options` for other options.
+
+Additionally to the image options, the following parameters can be used:
+
+``transparent_color``
+
+  Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``), with in that order red, green, blue and, optionally, alpha components.
+  Values for red, green, blue and alpha must be between 0 and 255 (or ``00`` and ``ff`` in hexadecimal).
+
+``transparent_color_tolerance``
+
+  Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction e.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+
+  .. code-block:: yaml
+
+    image:
+      transparent_color: '#ffffff'
+      transparent_color_tolerance: 20
+
+``bgcolor``
+^^^^^^^^^^^
+
+[optional]
+
+Specify a color that should be passed to the ``bgcolor`` query parameter of a GetMap OGC API Maps request. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``), with in that order red, green, blue and, optionally, alpha components.
+Values for red, green, blue and alpha must be between 0 and 255 (or ``00`` and ``ff`` in hexadecimal).
+
+.. note:: OGC API Maps ``bgcolor`` query parameter uses an alpha, red, green, blue order. MapProxy takes care of component reordering.
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: yaml
+
+  my_ogcapimaps_source:
+    type: ogcapimaps
+    landingpage_url: http://example.com/ogcapi
+    transparent: true
+    collection: my_collection_name
+    supported_srs: ["EPSG:4326", "EPSG:3857"]
+    image:
+        transparent_color: '#ffffff'
+    bgcolor: '#0000ff'
+
 

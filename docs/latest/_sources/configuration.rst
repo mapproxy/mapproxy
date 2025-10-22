@@ -297,9 +297,21 @@ A list of caches for this layer. This list overrides ``sources`` for WMTS and TM
 
 Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
-The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
+The values will also appear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator),
+or in the response to the OGC API Maps or Tiles GetCollection requests.
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+
+.. _layer_nominal_scale:
+
+``nominal_res`` or ``nominal_scale``
+""""""""""""""""""""""""""""""""""""
+
+That setting is required by some OGC API Maps map requests, to establish the
+nominal resolution of a layer, for example when one of the ``width`` or ``height`` query
+parameters is specified (not both), but the ``scale-denominator`` one is not.
+
+Resolutions should be in meters per pixel.
 
 ``legendurl``
 """""""""""""

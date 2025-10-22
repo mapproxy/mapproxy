@@ -53,7 +53,7 @@
     <link rel="prev" title="Services" href="services.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 01, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 22, 2025"/>
   </head>
   
   
@@ -115,7 +115,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">5.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -388,6 +388,26 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debug">Debug</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-tiles">OGC API Tiles</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#landingpage-url"><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#collection"><code class="docutils literal notranslate"><span class="pre">collection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-matrix-set-id"><code class="docutils literal notranslate"><span class="pre">tile_matrix_set_id</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17"><code class="docutils literal notranslate"><span class="pre">coverage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Example configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-maps">OGC API Maps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20"><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id21"><code class="docutils literal notranslate"><span class="pre">collection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22"><code class="docutils literal notranslate"><span class="pre">supported_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23"><code class="docutils literal notranslate"><span class="pre">coverage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id24"><code class="docutils literal notranslate"><span class="pre">transparent</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id25"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bgcolor"><code class="docutils literal notranslate"><span class="pre">bgcolor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Example configuration</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -409,6 +429,8 @@ document.write(`
 <li><p><a class="reference internal" href="#mapserver-label"><span class="std std-ref">Mapserver</span></a></p></li>
 <li><p><a class="reference internal" href="#mapnik-label"><span class="std std-ref">Mapnik</span></a></p></li>
 <li><p><a class="reference internal" href="#debug-label"><span class="std std-ref">Debug</span></a></p></li>
+<li><p><a class="reference internal" href="#ogcapitiles-label"><span class="std std-ref">OGC API Tiles</span></a></p></li>
+<li><p><a class="reference internal" href="#ogcapimaps-label"><span class="std std-ref">OGC API Maps</span></a></p></li>
 </ul>
 <p>You need to choose a unique name for each configured source. This name will be used to reference the source in the <code class="docutils literal notranslate"><span class="pre">caches</span></code> and <code class="docutils literal notranslate"><span class="pre">layers</span></code> configuration.</p>
 <p>The sources section looks like:</p>
@@ -425,7 +447,7 @@ document.write(`
 <p>See below for a detailed description of each service.</p>
 <section id="wms">
 <span id="wms-label"></span><h2>WMS<a class="headerlink" href="#wms" title="Link to this heading">#</a></h2>
-<p>Use the type <code class="docutils literal notranslate"><span class="pre">wms</span></code> to for WMS servers.</p>
+<p>Use the type <code class="docutils literal notranslate"><span class="pre">wms</span></code> for WMS servers.</p>
 <section id="req">
 <h3><code class="docutils literal notranslate"><span class="pre">req</span></code><a class="headerlink" href="#req" title="Link to this heading">#</a></h3>
 <p>This describes the WMS source. The only required options are <code class="docutils literal notranslate"><span class="pre">url</span></code> and <code class="docutils literal notranslate"><span class="pre">layers</span></code>.
@@ -921,6 +943,118 @@ This is useful to determine a fixed set of resolutions for the <code class="docu
 </pre></div>
 </div>
 </section>
+<section id="ogc-api-tiles">
+<span id="ogcapitiles-label"></span><h2>OGC API Tiles<a class="headerlink" href="#ogc-api-tiles" title="Link to this heading">#</a></h2>
+<p>Use the type <code class="docutils literal notranslate"><span class="pre">ogcapitiles</span></code> for servers implementing <a class="reference external" href="https://docs.ogc.org/is/20-057/20-057.html">OGC API Tiles</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Only map/raster tiles are supported, not vector tiles.</p>
+</div>
+<p>Note that this source must be wrapped into a MapProxy <a class="reference internal" href="configuration.html#caches"><span class="std std-ref">cache</span></a> to be usable by un-tiled services like WMS.
+There exists a helper command to get the grids from the OGC API in MapProxy format:
+<a class="reference internal" href="mapproxy_util.html#mapproxy-util-gridconf-from-ogcapitilematrixset"><span class="std std-ref">gridconf-from-ogcapitilematrixset</span></a>.</p>
+<section id="landingpage-url">
+<h3><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code><a class="headerlink" href="#landingpage-url" title="Link to this heading">#</a></h3>
+<p>[required] The URL of the <a class="reference external" href="https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389">landing page</a>
+of the OGC API server.</p>
+</section>
+<section id="collection">
+<h3><code class="docutils literal notranslate"><span class="pre">collection</span></code><a class="headerlink" href="#collection" title="Link to this heading">#</a></h3>
+<p>[optional] The name of the collection from which to get tiles from. If not specified, the tile related links from the landing page will be used (if existing).</p>
+</section>
+<section id="tile-matrix-set-id">
+<h3><code class="docutils literal notranslate"><span class="pre">tile_matrix_set_id</span></code><a class="headerlink" href="#tile-matrix-set-id" title="Link to this heading">#</a></h3>
+<p>[optional] A tile matrix set id, as indicated by the <code class="docutils literal notranslate"><span class="pre">id</span></code> member in the response to the <code class="docutils literal notranslate"><span class="pre">/ogcapi/tileMatrixSets</span></code> page. When specifying it, the source will only consider this tile matrix set to get tiles. Otherwise it will determine automatically which tile matrix set among those availables can be used to satisfy the incoming request. Example of commons tile matrix sets are <code class="docutils literal notranslate"><span class="pre">GlobalCRS84Pixel</span></code> or <code class="docutils literal notranslate"><span class="pre">WebMercatorQuad</span></code>.</p>
+</section>
+<section id="id17">
+<h3><code class="docutils literal notranslate"><span class="pre">coverage</span></code><a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<p>[optional] Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See <a class="reference internal" href="coverages.html"><span class="doc">coverages</span></a> for more information.</p>
+</section>
+<section id="id18">
+<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<p>See <a class="reference internal" href="configuration.html#image-options"><span class="std std-ref">Image Format Options</span></a>.</p>
+</section>
+<section id="id19">
+<h3>Example configuration<a class="headerlink" href="#id19" title="Link to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">my_ogcapitiles_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ogcapitiles</span>
+<span class="w">  </span><span class="nt">landingpage_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.com/ogcapi</span>
+<span class="w">  </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_collection_name</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="ogc-api-maps">
+<span id="ogcapimaps-label"></span><h2>OGC API Maps<a class="headerlink" href="#ogc-api-maps" title="Link to this heading">#</a></h2>
+<p>Use the type <code class="docutils literal notranslate"><span class="pre">ogcapimaps</span></code> for servers implementing <a class="reference external" href="https://docs.ogc.org/is/20-058/20-058.html">OGC API Maps</a>.</p>
+<section id="id20">
+<h3><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code><a class="headerlink" href="#id20" title="Link to this heading">#</a></h3>
+<p>[required] The URL of the <a class="reference external" href="https://docs.ogc.org/is/19-072/19-072.html#_7c772474-7037-41c9-88ca-5c7e95235389">landing page</a>
+of the OGC API server.</p>
+</section>
+<section id="id21">
+<h3><code class="docutils literal notranslate"><span class="pre">collection</span></code><a class="headerlink" href="#id21" title="Link to this heading">#</a></h3>
+<p>[optional] The name of the collection from which to get tiles from. If not specified, the map related link from the landing page will be used (if existing).</p>
+</section>
+<section id="id22">
+<h3><code class="docutils literal notranslate"><span class="pre">supported_srs</span></code><a class="headerlink" href="#id22" title="Link to this heading">#</a></h3>
+<p>A list with SRSs that the source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.</p>
+<p>If this list is not specified, it will be retrieved from the metadata in the collection description.</p>
+<p>If MapProxy needs to reproject and the source has multiple <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code>, then it will use the first projected SRS for requests in a projected SRS, or the first geographic SRS for requests in a geographic SRS e.g. when <code class="docutils literal notranslate"><span class="pre">supported_srs</span></code> is <code class="docutils literal notranslate"><span class="pre">['EPSG:4326',</span> <span class="pre">'EPSG:31467']</span></code> caches with EPSG:3857 (projected, meter) will use EPSG:31467 (projected, meter) and not EPSG:4326 (geographic, lat/long).</p>
+</section>
+<section id="id23">
+<h3><code class="docutils literal notranslate"><span class="pre">coverage</span></code><a class="headerlink" href="#id23" title="Link to this heading">#</a></h3>
+<p>[optional]  Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See <a class="reference internal" href="coverages.html"><span class="doc">coverages</span></a> for more information.</p>
+</section>
+<section id="id24">
+<h3><code class="docutils literal notranslate"><span class="pre">transparent</span></code><a class="headerlink" href="#id24" title="Link to this heading">#</a></h3>
+<p>[optional]  Can be set to <code class="docutils literal notranslate"><span class="pre">true</span></code> if you want to use this source as an overlay.</p>
+</section>
+<section id="id25">
+<h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id25" title="Link to this heading">#</a></h3>
+<p>[optional]</p>
+<p>See <a class="reference internal" href="configuration.html#image-options"><span class="std std-ref">Image Format Options</span></a> for other options.</p>
+<p>Additionally to the image options, the following parameters can be used:</p>
+<p><code class="docutils literal notranslate"><span class="pre">transparent_color</span></code></p>
+<blockquote>
+<div><p>Specify a color that should be converted to full transparency. Can be either a list of color values (<code class="docutils literal notranslate"><span class="pre">[255,</span> <span class="pre">255,</span> <span class="pre">255]</span></code>) or a hex string (<code class="docutils literal notranslate"><span class="pre">#ffffff</span></code>), with in that order red, green, blue and, optionally, alpha components.
+Values for red, green, blue and alpha must be between 0 and 255 (or <code class="docutils literal notranslate"><span class="pre">00</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code> in hexadecimal).</p>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">transparent_color_tolerance</span></code></p>
+<blockquote>
+<div><p>Tolerance for the <code class="docutils literal notranslate"><span class="pre">transparent_color</span></code> substitution. The value defines the tolerance in each direction e.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">image</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">transparent_color</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#ffffff&#39;</span>
+<span class="w">  </span><span class="nt">transparent_color_tolerance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="bgcolor">
+<h3><code class="docutils literal notranslate"><span class="pre">bgcolor</span></code><a class="headerlink" href="#bgcolor" title="Link to this heading">#</a></h3>
+<p>[optional]</p>
+<p>Specify a color that should be passed to the <code class="docutils literal notranslate"><span class="pre">bgcolor</span></code> query parameter of a GetMap OGC API Maps request. Can be either a list of color values (<code class="docutils literal notranslate"><span class="pre">[255,</span> <span class="pre">255,</span> <span class="pre">255]</span></code>) or a hex string (<code class="docutils literal notranslate"><span class="pre">#ffffff</span></code>), with in that order red, green, blue and, optionally, alpha components.
+Values for red, green, blue and alpha must be between 0 and 255 (or <code class="docutils literal notranslate"><span class="pre">00</span></code> and <code class="docutils literal notranslate"><span class="pre">ff</span></code> in hexadecimal).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OGC API Maps <code class="docutils literal notranslate"><span class="pre">bgcolor</span></code> query parameter uses an alpha, red, green, blue order. MapProxy takes care of component reordering.</p>
+</div>
+</section>
+<section id="id26">
+<h3>Example configuration<a class="headerlink" href="#id26" title="Link to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">my_ogcapimaps_source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ogcapimaps</span>
+<span class="w">  </span><span class="nt">landingpage_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.com/ogcapi</span>
+<span class="w">  </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_collection_name</span>
+<span class="w">  </span><span class="nt">supported_srs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;EPSG:4326&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;EPSG:3857&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">transparent_color</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#ffffff&#39;</span>
+<span class="w">  </span><span class="nt">bgcolor</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#0000ff&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
@@ -1021,6 +1155,26 @@ This is useful to determine a fixed set of resolutions for the <code class="docu
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debug">Debug</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-tiles">OGC API Tiles</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#landingpage-url"><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#collection"><code class="docutils literal notranslate"><span class="pre">collection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-matrix-set-id"><code class="docutils literal notranslate"><span class="pre">tile_matrix_set_id</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17"><code class="docutils literal notranslate"><span class="pre">coverage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Example configuration</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ogc-api-maps">OGC API Maps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20"><code class="docutils literal notranslate"><span class="pre">landingpage_url</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id21"><code class="docutils literal notranslate"><span class="pre">collection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22"><code class="docutils literal notranslate"><span class="pre">supported_srs</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23"><code class="docutils literal notranslate"><span class="pre">coverage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id24"><code class="docutils literal notranslate"><span class="pre">transparent</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id25"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bgcolor"><code class="docutils literal notranslate"><span class="pre">bgcolor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Example configuration</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
@@ -1054,7 +1208,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 01, 2025.
+  Last updated on Oct 22, 2025.
   <br/>
 </p>
   </div>
