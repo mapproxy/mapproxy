@@ -16,7 +16,7 @@
 # limitations under the License.
 from typing import Optional
 
-from mapproxy.layer import MapQuery
+from mapproxy.query import MapQuery
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.server import OGCAPIException, OGCAPIServer
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG

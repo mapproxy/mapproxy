@@ -29,7 +29,7 @@ from mapproxy.request.wmts import (
     URLTemplateConverter,
     FeatureInfoURLTemplateConverter,
 )
-from mapproxy.layer import InfoQuery
+from mapproxy.query import InfoQuery
 from mapproxy.featureinfo import combine_docs
 from mapproxy.service.base import Server
 from mapproxy.response import Response

@@ -15,7 +15,7 @@
 
 from __future__ import division
 
-from mapproxy.layer import MapQuery, InfoQuery
+from mapproxy.query import MapQuery, InfoQuery
 from mapproxy.srs import SRS
 from mapproxy.service.wms import combined_layers
 from mapproxy.source.wms import WMSSource
