@@ -24,10 +24,7 @@ import yaml
 import pytest
 
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import (
-    load_configuration,
-    merge_dict,
-)
+from mapproxy.config.loader import load_configuration, merge_dict
 from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.config.configuration.proxy import ProxyConfiguration
 from mapproxy.cache.tile import TileManager
