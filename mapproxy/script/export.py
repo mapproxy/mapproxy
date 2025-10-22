@@ -26,10 +26,11 @@ import yaml
 from mapproxy.srs import SRS
 from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import (
-    load_configuration, ConfigurationError,
-    CacheConfiguration, GridConfiguration,
-    ProxyConfiguration
+    load_configuration
 )
+from mapproxy.config.configuration.base import ConfigurationError
+from mapproxy.config.configuration.cache import CacheConfiguration
+from mapproxy.config.configuration.grid import GridConfiguration
 from mapproxy.util.coverage import BBOXCoverage
 from mapproxy.seed.util import ProgressLog, format_bbox
 from mapproxy.seed.seeder import SeedTask, seed_task
@@ -37,8 +38,7 @@ from mapproxy.config import spec as conf_spec
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 
 __all__ = [
-    'SRS', 'load_coverage', 'load_configuration', 'ConfigurationError', 'CacheConfiguration', 'GridConfiguration',
-    'ProxyConfiguration', 'BBOXCoverage']
+    'SRS', 'load_coverage', 'load_configuration', 'BBOXCoverage']
 
 
 def parse_levels(level_str):
