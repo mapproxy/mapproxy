@@ -27,7 +27,8 @@ from logging.config import fileConfig
 from subprocess import Popen
 from optparse import OptionParser, OptionValueError
 
-from mapproxy.config.loader import load_configuration, ConfigurationError
+from mapproxy.config.loader import load_configuration
+from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed, SeedInterrupted
 from mapproxy.seed.cleanup import cleanup
