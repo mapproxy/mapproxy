@@ -41,7 +41,7 @@ def _create_tile_list(xs, ys, level, grid_size):
 
 
 class _default_bboxs(object):
-    _defaults = {
+    _defaults: dict[int, tuple[float, float, float, float]] = {
         4326: (-180, -90, 180, 90),
     }
     for epsg_num in (900913, 3857, 102100, 102113):

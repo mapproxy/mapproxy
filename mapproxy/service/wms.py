@@ -16,11 +16,12 @@
 """
 WMS service handler
 """
-from functools import partial
+from abc import ABC, abstractmethod
 from html import escape
 from itertools import chain
 from math import sqrt
 from collections import OrderedDict
+from typing import Any
 
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
@@ -56,8 +57,7 @@ class WMSServer(Server):
     service = 'wms'
     fi_transformers = None
 
-    def __init__(self, root_layer, md, srs, image_formats,
-                 request_parser=None, tile_layers=None, attribution=None,
+    def __init__(self, root_layer, md, srs, image_formats, tile_layers=None, attribution=None,
                  info_types=None, strict=False, on_error='raise',
                  concurrent_layer_renderer=1, max_output_pixels=None,
                  srs_extents=None, max_tile_age=None,
@@ -65,7 +65,7 @@ class WMSServer(Server):
                  inspire_md=None,
                  ):
         Server.__init__(self)
-        self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
+        self.versions = versions
         self.root_layer = root_layer
         self.layers = root_layer.child_layers()
         self.tile_layers = tile_layers or {}
@@ -81,6 +81,9 @@ class WMSServer(Server):
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
         self.inspire_md = inspire_md
+
+    def parse_request(self, req):
+        return wms_request(req, strict=self.strict, versions=self.versions)
 
     def map(self, map_request):
         self.check_map_request(map_request)
@@ -620,7 +623,7 @@ class LayerRenderer(object):
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
-                    reraise(ex)
+                    raise reraise(ex)
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
@@ -643,7 +646,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    reraise(ex)
+                    raise reraise(ex)
 
         if render_layers and not rendered:
             errors = '\n'.join(errors)
@@ -673,7 +676,7 @@ class LayerRenderer(object):
             return layer, None
 
 
-class WMSLayerBase(object):
+class WMSLayerBase(ABC):
     """
     Base class for WMS layer (layer groups and leaf layers).
     """
@@ -682,10 +685,10 @@ class WMSLayerBase(object):
     is_active = True
 
     "list of sublayers"
-    layers = []
+    layers: list[str] = []
 
     "metadata dictionary with tile, name, etc."
-    md = {}
+    md: dict[str, Any] = {}
 
     "True if .info() is supported"
     queryable = False
@@ -698,7 +701,17 @@ class WMSLayerBase(object):
     "resolution range (i.e. ScaleHint) of the layer"
     res_range = None
     "MapExtend of the layer"
-    extent = None
+    extent: MapExtent
+    name: str
+    title: str
+
+    @abstractmethod
+    def is_opaque(self, query):
+        pass
+
+    @abstractmethod
+    def renders_query(self, query):
+        pass
 
     def map_layers_for_query(self, query):
         raise NotImplementedError()
@@ -716,6 +729,7 @@ class WMSLayer(WMSLayerBase):
 
     Combines map, info and legend sources with metadata.
     """
+
     is_active = True
     layers = []
 

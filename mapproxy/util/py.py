@@ -24,7 +24,7 @@ def reraise_exception(new_exc, exc_info):
     Reraise exception (`new_exc`) with the given `exc_info`.
     """
     _exc_class, _exc, tb = exc_info
-    raise new_exc.with_traceback(tb)
+    return new_exc.with_traceback(tb)
 
 
 def reraise(exc_info):
@@ -32,7 +32,7 @@ def reraise(exc_info):
     Reraise exception from exc_info`.
     """
     exc_class, exc, tb = exc_info
-    raise exc.with_traceback(tb)
+    return exc.with_traceback(tb)
 
 
 class cached_property(object):

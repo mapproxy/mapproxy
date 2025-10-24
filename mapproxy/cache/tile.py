@@ -418,7 +418,7 @@ class TileCreator(object):
                     if self.is_stale(tile):
                         self.cache.load_tile(tile)
                     else:
-                        reraise_exception(e, sys.exc_info())
+                        raise reraise_exception(e, sys.exc_info())
                 if not source:
                     return []
                 if source.authorize_stale and self.is_stale(tile):
@@ -556,7 +556,7 @@ class TileCreator(object):
                     else:
                         ex = tile_task.exception
                         async_pool.shutdown(True)
-                        reraise(ex)
+                        raise reraise(ex)
 
                 self.cache.store_tiles([t for t in tiles if t.cacheable], dimensions=self.dimensions)
                 return tiles

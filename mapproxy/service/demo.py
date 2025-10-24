@@ -21,13 +21,11 @@ from __future__ import division
 import logging
 import re
 
-try:
-    import importlib_resources
-except ImportError:
-    from importlib import resources as importlib_resources
 import os
 import mimetypes
 from collections import defaultdict, OrderedDict
+
+from urllib import request as urllib2
 
 from mapproxy.config.config import base_config
 from mapproxy.exception import RequestError
@@ -38,10 +36,13 @@ from mapproxy.srs import SRS, get_epsg_num
 from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
 from mapproxy.source.wms import WMSSource
 from mapproxy.util.escape import escape_html
-
-from urllib import request as urllib2
-
 from mapproxy.template import template_loader, bunch
+
+try:
+    import importlib_resources as importlib_resources
+except ImportError:
+    from importlib import resources as importlib_resources  # type: ignore
+
 env = {'bunch': bunch}
 get_template = template_loader(__package__, 'templates', namespace=env)
 
@@ -95,7 +96,7 @@ def static_filename(name):
 class DemoServer(Server):
     names = ('demo',)
 
-    def __init__(self, layers, md, request_parser=None, tile_layers=None,
+    def __init__(self, layers, md, tile_layers=None,
                  srs=None, image_formats=None, services=None, restful_template=None, background=None):
         Server.__init__(self)
         self.layers = layers

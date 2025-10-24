@@ -111,12 +111,12 @@ class OGCAPIMapsSource(WMSLikeSource):
                 resp = self.http_client.open(url, headers=headers)
             except HTTPClientError as e:
                 log.warning(f"Cannot retrieve {url}: %s", e)
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
             try:
                 j = json.loads(resp.read().decode("utf-8"))
             except Exception as e:
                 log.warning(f"Cannot parse response to {url} as JSON: %s", e)
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
             if "links" not in j:
                 ex = SourceError(f"Could not retrieve 'links' in {url} response")
