@@ -18,8 +18,7 @@ Image and tile manipulation (transforming, merging, etc).
 """
 import json
 from collections import namedtuple
-from mapproxy.compat.image import Image, ImageColor, ImageChops, ImageMath
-from mapproxy.compat.image import has_alpha_composite_support
+from PIL import Image, ImageColor, ImageChops, ImageMath
 from mapproxy.image import BlankImageSource, ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
@@ -85,10 +84,7 @@ class LayerMerger(LayerMerger):
             if layer_coverage and layer_coverage.clip:
                 img = mask_image(img, bbox, bbox_srs, layer_coverage)
 
-            if result.mode != 'RGBA':
-                merge_composite = False
-            else:
-                merge_composite = has_alpha_composite_support()
+            merge_composite = result.mode == 'RGBA'
 
             if 'transparency' in img.info:
                 # non-paletted PNGs can have a fixed transparency value

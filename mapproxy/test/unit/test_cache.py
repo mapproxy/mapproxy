@@ -33,7 +33,7 @@ from mapproxy.cache.file import FileCache
 from mapproxy.cache.tile import Tile, TileManager
 from mapproxy.client.http import HTTPClient
 from mapproxy.client.wms import WMSClient
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.config.coverage import load_coverage
 from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.grid.resolutions import resolution_range

@@ -20,7 +20,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image, ImageDraw, ImageColor
+from PIL import Image, ImageDraw, ImageColor
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100TileRequest
 from mapproxy.test.image import check_format, is_transparent

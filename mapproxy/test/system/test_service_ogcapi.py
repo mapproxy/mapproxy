@@ -20,10 +20,10 @@ import json
 import jsonschema
 from io import BytesIO
 import sys
+from PIL import Image
 
 import pytest
 
-from mapproxy.compat.image import Image
 from mapproxy.srs import SRS
 import mapproxy.test as test_module
 from mapproxy.test.http import mock_httpd

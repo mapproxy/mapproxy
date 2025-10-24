@@ -16,7 +16,7 @@
 
 from __future__ import print_function
 
-from mapproxy.compat.image import Image, ImageDraw, ImageColor, ImageFont
+from PIL import Image, ImageDraw, ImageColor, ImageFont
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.message import TextDraw, message_image

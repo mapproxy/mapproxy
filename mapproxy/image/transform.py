@@ -15,7 +15,8 @@
 
 from __future__ import division
 
-from mapproxy.compat.image import Image, transform_uses_center
+from PIL import Image
+
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf
 from mapproxy.util.bbox import bbox_equals
@@ -128,13 +129,6 @@ class ImageTransformer(object):
         Do a 'real' transformation with a transformed mesh (see above).
         """
 
-        # more recent versions of Pillow use center coordinates for
-        # transformations, we manually need to add half a pixel otherwise
-        if transform_uses_center():
-            use_center_px = False
-        else:
-            use_center_px = True
-
         meshes = transform_meshes(
             src_size=src_img.size,
             src_bbox=src_bbox,
@@ -143,7 +137,7 @@ class ImageTransformer(object):
             dst_bbox=dst_bbox,
             dst_srs=self.dst_srs,
             max_px_err=self.max_px_err,
-            use_center_px=use_center_px,
+            use_center_px=False,
         )
 
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)

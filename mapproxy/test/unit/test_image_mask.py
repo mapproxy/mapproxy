@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.compat.image import Image, ImageDraw
+from PIL import Image, ImageDraw
 from mapproxy.image import ImageSource
 from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.merge import LayerMerger

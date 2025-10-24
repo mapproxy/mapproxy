@@ -20,7 +20,7 @@ from io import BytesIO
 import pytest
 import json
 
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.request.base import BaseRequest
 from mapproxy.request.wms import (
     WMS111MapRequest,

@@ -20,7 +20,8 @@ import io
 from io import BytesIO
 
 
-from mapproxy.compat.image import Image, ImageChops, ImageFileDirectory_v2, TiffTags
+from PIL import Image, ImageChops
+from PIL.TiffImagePlugin import ImageFileDirectory_v2, TiffTags
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
 from mapproxy.srs import make_lin_transf, get_epsg_num

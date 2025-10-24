@@ -26,7 +26,7 @@ import pytest
 
 from mapproxy.image import ImageSource
 from mapproxy.srs import SRS
-from mapproxy.compat.image import Image
+from PIL import Image
 from mapproxy.request.wms import (
     WMS100MapRequest,
     WMS111MapRequest,
