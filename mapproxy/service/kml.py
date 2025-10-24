@@ -83,7 +83,6 @@ class KMLServer(Server):
     OGC KML 2.2 Server
     """
     names = ('kml',)
-    request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
 
     def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False):
@@ -92,6 +91,9 @@ class KMLServer(Server):
         self.md = md
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
+
+    def parse_request(self, req):
+        return kml_request(req)
 
     def map(self, map_request):
         """

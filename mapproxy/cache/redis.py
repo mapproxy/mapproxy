@@ -27,9 +27,9 @@ from mapproxy.cache.base import (
 )
 
 try:
-    import redis
+    import redis  # type: ignore
 except ImportError:
-    redis = None
+    redis = None  # type: ignore
 
 
 import logging

@@ -109,11 +109,11 @@ class WMTSTileRequestParams(RequestParams):
 
 class WMTSRequest(BaseRequest):
     request_params = WMTSTileRequestParams
-    request_handler_name = None
-    fixed_params = {}
-    expected_param = []
-    non_strict_params = set()
-    xml_exception_handler = None
+    request_handler_name: str
+    fixed_params: dict[str, str] = {}
+    expected_param: list[str] = []
+    non_strict_params: set[str] = set()
+    xml_exception_handler: XMLExceptionHandler
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict
@@ -139,7 +139,7 @@ class WMTS100TileRequest(WMTSRequest):
     request_params = WMTSTileRequestParams
     request_handler_name = 'tile'
     fixed_params = {'request': 'GetTile', 'version': '1.0.0', 'service': 'WMTS'}
-    xml_exception_handler = WMTS100ExceptionHandler
+    xml_exception_handler = WMTS100ExceptionHandler()
     expected_param = ['version', 'request', 'layer', 'style', 'tilematrixset',
                       'tilematrix', 'tilerow', 'tilecol', 'format']
 
@@ -180,7 +180,7 @@ class WMTS100TileRequest(WMTSRequest):
 
     @property
     def exception_handler(self):
-        return self.xml_exception_handler()
+        return self.xml_exception_handler
 
     def copy(self):
         return self.__class__(param=self.params.copy(), url=self.url)
@@ -335,7 +335,7 @@ class WMTS100RestTileRequest(TileRequest):
     """
     Class for RESTful WMTS requests.
     """
-    xml_exception_handler = WMTS100ExceptionHandler
+    xml_exception_handler = WMTS100ExceptionHandler()
     request_handler_name = 'tile'
     origin = 'nw'
 
@@ -362,14 +362,14 @@ class WMTS100RestTileRequest(TileRequest):
 
     @property
     def exception_handler(self):
-        return self.xml_exception_handler()
+        return self.xml_exception_handler
 
 
 class WMTS100RestFeatureInfoRequest(TileRequest):
     """
     Class for RESTful WMTS FeatureInfo requests.
     """
-    xml_exception_handler = WMTS100ExceptionHandler
+    xml_exception_handler = WMTS100ExceptionHandler()
     request_handler_name = 'featureinfo'
 
     def __init__(self, request, req_vars, url_converter=None):
@@ -397,7 +397,7 @@ class WMTS100RestFeatureInfoRequest(TileRequest):
 
     @property
     def exception_handler(self):
-        return self.xml_exception_handler()
+        return self.xml_exception_handler
 
 
 RESTFUL_CAPABILITIES_PATH = '/1.0.0/WMTSCapabilities.xml'
@@ -407,7 +407,7 @@ class WMTS100RestCapabilitiesRequest(object):
     """
     Class for RESTful WMTS capabilities requests.
     """
-    xml_exception_handler = WMTS100ExceptionHandler
+    xml_exception_handler = WMTS100ExceptionHandler()
     request_handler_name = 'capabilities'
     capabilities_template = 'wmts100capabilities.xml'
 
@@ -417,26 +417,23 @@ class WMTS100RestCapabilitiesRequest(object):
 
     @property
     def exception_handler(self):
-        return self.xml_exception_handler()
+        return self.xml_exception_handler
 
 
-def make_wmts_rest_request_parser(url_converter, fi_url_converter):
+def wmts_rest_request_parser(url_converter, fi_url_converter, req):
     tile_req_re = url_converter.regexp()
     fi_req_re = fi_url_converter.regexp()
 
-    def wmts_request(req):
-        if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
-            return WMTS100RestCapabilitiesRequest(req)
+    if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
+        return WMTS100RestCapabilitiesRequest(req)
 
-        match = tile_req_re.search(req.path)
+    match = tile_req_re.search(req.path)
+    if not match:
+        match = fi_req_re.search(req.path)
         if not match:
-            match = fi_req_re.search(req.path)
-            if not match:
-                raise RequestError('invalid request (%s)' % (req.path))
+            raise RequestError('invalid request (%s)' % (req.path))
 
-            req_vars = match.groupdict()
-            return WMTS100RestFeatureInfoRequest(req, req_vars, fi_url_converter)
         req_vars = match.groupdict()
-        return WMTS100RestTileRequest(req, req_vars, url_converter)
-
-    return wmts_request
+        return WMTS100RestFeatureInfoRequest(req, req_vars, fi_url_converter)
+    req_vars = match.groupdict()
+    return WMTS100RestTileRequest(req, req_vars, url_converter)

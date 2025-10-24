@@ -16,6 +16,8 @@
 # limitations under the License.
 
 import json
+from typing import Any, cast
+
 import mapproxy.service as service_package
 
 from mapproxy.request.base import Request
@@ -75,9 +77,7 @@ def api(server: OGCAPIServer, req: Request):
             status=200,
         )
 
-    locale_ = None
-
-    oas = {"openapi": "3.0.2", "tags": []}
+    oas: dict[str, Any] = {"openapi": "3.0.2", "tags": []}
     info = {"version": __version__}
 
     title = _get(cfg, "metadata", "identification", "title")
@@ -405,9 +405,10 @@ def api(server: OGCAPIServer, req: Request):
         }
 
         if server.enable_maps:
-            paths[
+            parameters = cast(list, paths[
                 "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"
-            ]["get"]["parameters"] += [
+            ]["get"]["parameters"])
+            parameters += [
                 {
                     "$ref": f"{OPENAPI_YAML['oapim-1']}#/components/parameters/scale-denominator"
                 },
@@ -578,9 +579,10 @@ def api(server: OGCAPIServer, req: Request):
         }
 
         if server.enable_maps:
-            paths["/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"][
+            parameters = cast(list, paths["/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"][
                 "get"
-            ]["parameters"] += [
+            ]["parameters"])
+            parameters += [
                 {
                     "$ref": f"{OPENAPI_YAML['oapim-1']}#/components/parameters/scale-denominator"
                 },
@@ -685,7 +687,7 @@ def api(server: OGCAPIServer, req: Request):
         "responses": {
             "200": {"description": "Successful operation"},
         },
-        "parameters": _get_openapi_parameters(server, cfg=cfg, locale_=locale_),
+        "parameters": _get_openapi_parameters(server),
     }
 
     return Response(
@@ -696,8 +698,8 @@ def api(server: OGCAPIServer, req: Request):
     )
 
 
-def _get_openapi_parameters(server: OGCAPIServer, cfg: dict, locale_: str):
-    parameters = {
+def _get_openapi_parameters(server: OGCAPIServer):
+    parameters: dict[str, Any] = {
         "f": {
             "name": "f",
             "in": "query",

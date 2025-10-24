@@ -125,11 +125,11 @@ WEBMERCATOR_EPSG = set(('EPSG:900913', 'EPSG:3857',
 class _SRS_Proj4_API(object):
     # http://trac.openlayers.org/wiki/SphericalMercator
     proj_init = {
-        'EPSG:4326': lambda: Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +over'),
-        'CRS:84': lambda: Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +over'),
+        'EPSG:4326': lambda: Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +over'),  # type: ignore
+        'CRS:84': lambda: Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +over'),  # type: ignore
     }
     for _epsg in WEBMERCATOR_EPSG:
-        proj_init[_epsg] = lambda: Proj(
+        proj_init[_epsg] = lambda: Proj(  # type: ignore
             '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
             '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
             '+nadgrids=@null +no_defs +over')
@@ -568,6 +568,8 @@ class _SRS(object):
         """Return the semi major axis in meters of the ellipsoid underlying this SRS"""
         return self.proj.ellipsoid.semi_major_metre
 
+
+_srs_impl: type
 
 if USE_PROJ4_API:
     _srs_impl = _SRS_Proj4_API

@@ -84,7 +84,7 @@ def serve_develop_command(args):
     else:
         setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
-    from mapproxy.config.loader import ConfigurationError
+    from mapproxy.config.configuration.base import ConfigurationError
     from mapproxy.util.ext.serving import run_simple
     try:
         app = make_wsgi_app(mapproxy_conf, debug=options.debug)
@@ -176,7 +176,7 @@ def create_command(args):
 
 
 class CreateCommand(object):
-    templates = {
+    templates: dict[str, dict[str, dict]] = {
         'base-config': {},
         'wsgi-app': {},
         'log-ini': {},

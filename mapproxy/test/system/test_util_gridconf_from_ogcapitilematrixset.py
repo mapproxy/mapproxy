@@ -19,7 +19,7 @@ import copy
 import json
 import yaml
 
-from mapproxy.config.loader import ProxyConfiguration
+from mapproxy.config.configuration.proxy import ProxyConfiguration
 from mapproxy.script.gridconf_from_ogcapitilematrixset import (
     gridconf_from_ogcapitilematrixset_command,
 )
