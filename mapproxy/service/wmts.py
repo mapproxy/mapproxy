@@ -22,13 +22,14 @@ import re
 from functools import partial
 import logging
 from collections import OrderedDict
+from typing import Optional
 
 from mapproxy.request.wmts import (
-    wmts_request, make_wmts_rest_request_parser,
+    wmts_request, wmts_rest_request_parser,
     URLTemplateConverter,
     FeatureInfoURLTemplateConverter,
 )
-from mapproxy.layer import InfoQuery
+from mapproxy.query import InfoQuery
 from mapproxy.featureinfo import combine_docs
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -43,17 +44,19 @@ log = logging.getLogger(__name__)
 
 
 class WMTSServer(Server):
-    service = 'wmts'
+    service: Optional[str] = 'wmts'
 
-    def __init__(self, layers, md, request_parser=None, max_tile_age=None, info_formats=None):
+    def __init__(self, layers, md, max_tile_age=None, info_formats=None):
         Server.__init__(self)
-        self.request_parser = request_parser or wmts_request
         self.md = md
         self.max_tile_age = max_tile_age
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
         self.fi_transformers = None
         self.info_formats = info_formats or {}
+
+    def parse_request(self, req):
+        return wmts_request(req)
 
     def _matrix_sets(self, layers):
         sets = {}
@@ -231,7 +234,7 @@ class WMTSRestServer(WMTSServer):
     """
     OGC WMTS 1.0.0 RESTful Server
     """
-    service = None
+    service: Optional[str] = None
     names = ('wmts',)
     request_methods = ('tile', 'capabilities')
     default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
@@ -245,9 +248,12 @@ class WMTSRestServer(WMTSServer):
         self.info_formats = info_formats or {}
         self.url_converter = URLTemplateConverter(self.template)
         self.fi_url_converter = FeatureInfoURLTemplateConverter(self.fi_template)
-        self.request_parser = make_wmts_rest_request_parser(self.url_converter, self.fi_url_converter)
         self.capabilities_class = partial(
             RestfulCapabilities, url_converter=self.url_converter, fi_url_converter=self.fi_url_converter)
+
+    def parse_request(self, req):
+        return wmts_rest_request_parser(
+            url_converter=self.url_converter, fi_url_converter=self.fi_url_converter, req=req)
 
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default

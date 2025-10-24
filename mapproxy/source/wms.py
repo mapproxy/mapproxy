@@ -22,7 +22,9 @@ from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_p
 from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
+from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.extent import MapExtent, DefaultMapExtent
+from mapproxy.query import MapQuery, LegendQuery
 from mapproxy.source import InfoSource, SourceError, LegendSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util.py import reraise_exception
@@ -75,7 +77,7 @@ class WMSLikeSource(MapLayer):
                 if resp:
                     return resp
             log.warning('could not retrieve WMS map: %s', e.full_msg or e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
     def _get_map(self, query):
         format = self.image_opts.format

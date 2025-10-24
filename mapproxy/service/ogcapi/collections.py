@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
 from mapproxy.config.config import base_config
 from mapproxy.grid.resolutions import res_to_ogc_scale
@@ -40,7 +41,7 @@ def _get(d: dict, *path):
 
 def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
     id = layer.name
-    col = {}
+    col: dict[str, Any] = {}
     col["dataType"] = "map"
     col["id"] = id
     col["title"] = layer.title

@@ -14,8 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
-from mapproxy.layer import MapQuery
+from mapproxy.query import MapQuery
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.server import OGCAPIException, OGCAPIServer
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG
@@ -34,10 +35,10 @@ from mapproxy.service.wms import WMSGroupLayer
 def tile(
     server: OGCAPIServer,
     req: Request,
-    coll_id: str,
+    coll_id: Optional[str],
     tms_name: str,
-    z: str,
-    row: str,
+    z_str: str,
+    row_str: str,
     col_ext: str,
 ):
     log = server.log
@@ -86,7 +87,7 @@ def tile(
     width, height = get_width_height(server, req)
 
     try:
-        z = int(z)
+        z = int(z_str)
         if z < 0 or z >= tile_grid.levels:
             raise ValueError
     except ValueError:
@@ -149,7 +150,7 @@ def tile(
     matrixHeight = tile_grid.grid_sizes[z][1]
 
     try:
-        row = int(row)
+        row = int(row_str)
         if row < 0 or row >= matrixHeight:
             raise ValueError
     except ValueError:
@@ -159,12 +160,12 @@ def tile(
 
     dot_pos = col_ext.find(".")
     if dot_pos > 0:
-        col = col_ext[0:dot_pos]
+        col_str = col_ext[0:dot_pos]
     else:
-        col = col_ext
+        col_str = col_ext
 
     try:
-        col = int(col)
+        col = int(col_str)
         if col < 0 or col >= matrixWidth:
             raise ValueError
     except ValueError:

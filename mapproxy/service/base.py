@@ -16,13 +16,13 @@
 """
 Service handler (WMS, TMS, etc.).
 """
+
 from mapproxy.exception import RequestError
 
 
-class Server(object):
-    names = tuple()
-    def request_parser(x): return None
-    request_methods = ()
+class Server:
+    names: tuple[str, ...] = ()
+    request_methods: tuple[str, ...] = ()
 
     def handle(self, req):
         try:
@@ -33,7 +33,7 @@ class Server(object):
             return e.render()
 
     def parse_request(self, req):
-        return self.request_parser(req)
+        return None
 
     def decorate_img(self, image, service, layers, environ, query_extent):
         """ Callback that allows the ImageSource associated with a response to

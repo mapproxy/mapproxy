@@ -17,6 +17,7 @@
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
 from html import escape
+from typing import Optional, Union
 
 from mapproxy.response import Response
 from mapproxy.template import template_loader
@@ -88,10 +89,10 @@ class XMLExceptionHandler(ExceptionHandler):
     """
     Mixin class for tempita-based template renderer.
     """
-    template_file = None
+    template_file: Optional[str] = None
     """The filename of the tempita xml template"""
 
-    content_type = None
+    content_type: Optional[str] = None
     """
     The mime type of the exception response (use this or mimetype).
     The content_type is sent as defined here.
@@ -102,13 +103,13 @@ class XMLExceptionHandler(ExceptionHandler):
     The HTTP status code.
     """
 
-    status_codes = {}
+    status_codes: dict[Union[str, None], int] = {}
     """
     Mapping of exceptionCodes to status_codes. If not defined
     status_code is used.
     """
 
-    mimetype = None
+    mimetype: Optional[str] = None
     """
     The mime type of the exception response. (use this or content_type).
     A character encoding might be added to the mimetype (like text/xml;charset=UTF-8)

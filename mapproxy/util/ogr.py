@@ -195,10 +195,7 @@ ogr = gdal = None
 def try_osgeoogr_import():
     global ogr, gdal
     try:
-        from osgeo import ogr
-        ogr
-        from osgeo import gdal
-        gdal
+        from osgeo import ogr, gdal
     except ImportError:
         return
     return OSGeoOGRShapeReader

@@ -42,7 +42,7 @@ from mapproxy.util.coverage import (
     diff_coverage,
     intersection_coverage,
 )
-from mapproxy.layer import MapExtent, DefaultMapExtent
+from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.test.helper import TempFile
 from mapproxy.util.coverage import BBOXCoverage
 

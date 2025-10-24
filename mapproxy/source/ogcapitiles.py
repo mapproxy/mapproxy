@@ -22,12 +22,8 @@ from threading import Lock
 from mapproxy.client.http import HTTPClientError
 from mapproxy.grid.tile_grid import tile_grid_from_ogc_tile_matrix_set
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import (
-    BlankImage,
-    MapExtent,
-    DefaultMapExtent,
-    MapLayer,
-)
+from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError, InvalidSourceQuery
 from mapproxy.srs import ogc_crs_url_to_auth_code
 from mapproxy.util.py import reraise_exception
@@ -105,12 +101,12 @@ class OGCAPITilesSource(MapLayer):
                 resp = self.http_client.open(url, headers=headers)
             except HTTPClientError as e:
                 log.warning(f"Cannot retrieve {url}: %s", e)
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
             try:
                 j = json.loads(resp.read().decode("utf-8"))
             except Exception as e:
                 log.warning(f"Cannot parse response to {url} as JSON: %s", e)
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
             if "links" not in j:
                 ex = SourceError(f"Could not retrieve 'links' in {url} response")
@@ -134,14 +130,14 @@ class OGCAPITilesSource(MapLayer):
                 resp = self.http_client.open(tilesets_map_url, headers=headers)
             except HTTPClientError as e:
                 log.warning(f"Cannot retrieve {tilesets_map_url}: %s", e)
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
             try:
                 j = json.loads(resp.read().decode("utf-8"))
             except Exception as e:
                 log.warning(
                     f"Cannot parse response to {tilesets_map_url} as JSON: %s", e
                 )
-                reraise_exception(SourceError(e.args[0]), sys.exc_info())
+                raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
             if "tilesets" not in j:
                 ex = SourceError(
@@ -203,24 +199,24 @@ class OGCAPITilesSource(MapLayer):
             resp = self.http_client.open(tiling_scheme_url, headers=headers)
         except HTTPClientError as e:
             log.warning(f"Cannot retrieve {tiling_scheme_url}: %s", e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
         try:
             tile_matrix_set = json.loads(resp.read().decode("utf-8"))
         except Exception as e:
             log.warning(f"Cannot parse response to {tiling_scheme_url} as JSON: %s", e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
         grid = tile_grid_from_ogc_tile_matrix_set(tile_matrix_set)
 
         try:
             resp = self.http_client.open(tileset_url, headers=headers)
         except HTTPClientError as e:
             log.warning(f"Cannot retrieve {tileset_url}: %s", e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
         try:
             tileset_full = json.loads(resp.read().decode("utf-8"))
         except Exception as e:
             log.warning(f"Cannot parse response to {tileset_url} as JSON: %s", e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
         template_href = find_href_in_links(
             tileset_full["links"], "item", image_mime_type
@@ -313,4 +309,4 @@ class OGCAPITilesSource(MapLayer):
                 if resp:
                     return resp
             log.warning("could not retrieve tile: %s", e)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())

@@ -24,15 +24,12 @@ import yaml
 import pytest
 
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import (
-    ProxyConfiguration,
-    load_configuration,
-    merge_dict,
-    ConfigurationError,
-)
+from mapproxy.config.loader import load_configuration, merge_dict
+from mapproxy.config.configuration.base import ConfigurationError
+from mapproxy.config.configuration.proxy import ProxyConfiguration
 from mapproxy.cache.tile import TileManager
 from mapproxy.config.spec import validate_options
-from mapproxy.layer import MapExtent
+from mapproxy.extent import MapExtent
 from mapproxy.seed.spec import validate_seed_conf
 from mapproxy.srs import SRS
 from mapproxy.test.helper import TempFile
@@ -620,7 +617,8 @@ sources:
         url: http://foo
         layers: base
 """
-        from mapproxy.config.loader import plugin_services, register_service_configuration
+        from mapproxy.config.configuration.service import register_service_configuration
+        from mapproxy.config.configuration.service import plugin_services
         from mapproxy.service.base import Server
 
         class MyExtraServiceServer(Server):
@@ -663,8 +661,9 @@ sources:
     type: my_extra_source
     foo: bar
 """
-        from mapproxy.config.loader import source_configuration_types, register_source_configuration
-        from mapproxy.config.loader import SourceConfiguration
+        from mapproxy.config.configuration.source import register_source_configuration
+        from mapproxy.config.configuration.source import source_configuration_types
+        from mapproxy.config.configuration.source import SourceConfiguration
 
         class my_source_configuration(SourceConfiguration):
             source_type = ('my_extra_source',)

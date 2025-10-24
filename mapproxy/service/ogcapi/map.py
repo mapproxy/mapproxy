@@ -29,7 +29,8 @@ from mapproxy.image import (
 from mapproxy.image.merge import LayerMerger
 from mapproxy.image.message import attribution_image
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapQuery, MapExtent
+from mapproxy.extent import MapExtent
+from mapproxy.query import MapQuery
 from mapproxy.response import Response
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG
@@ -39,7 +40,7 @@ from mapproxy.service.ogcapi.map_utils import (
     get_width_height_from_default_size,
 )
 from mapproxy.service.ogcapi.server import OGCAPIServer, get_image_format
-from mapproxy.service.wms import LayerRenderer, WMSLayer, WMSGroupLayer
+from mapproxy.service.wms import LayerRenderer, WMSGroupLayer, WMSLayerBase
 from mapproxy.srs import SRS, ogc_crs_url_to_auth_code
 
 # Cf https://www.w3.org/wiki/CSS/Properties/color/keywords
@@ -211,8 +212,8 @@ def check_width_height(server: OGCAPIServer, req: Request, width: int, height: i
 
 
 def get_map_query(
-    server: OGCAPIServer, req: Request, layer: WMSLayer, format: str
-) -> (MapQuery, ImageOptions):
+    server: OGCAPIServer, req: Request, layer: WMSLayerBase, format: str
+) -> tuple[MapQuery, ImageOptions]:
     """Return a tuple (MapQuery, ImageOptions) from the incoming request"""
     log = server.log
 
@@ -443,7 +444,7 @@ def render_map(
     req: Request,
     query: MapQuery,
     image_opts: ImageOptions,
-    layer: WMSLayer,
+    layer: WMSLayerBase,
 ) -> Response:
     """Return the image in a Response object from the query."""
 
@@ -468,7 +469,7 @@ def render_map(
         )
         query = MapQuery(sub_bbox, sub_size, query.srs, query.format)
 
-    actual_layers = OrderedDict()
+    actual_layers: OrderedDict = OrderedDict()
     # only add if layer renders the query
     if layer.renders_query(query):
         # if layer is not transparent and will be rendered,

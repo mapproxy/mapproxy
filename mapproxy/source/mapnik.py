@@ -25,7 +25,8 @@ from io import BytesIO
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, MapLayer
+from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
@@ -33,11 +34,10 @@ from mapproxy.util.async_ import run_non_blocking
 
 try:
     import mapnik
-    mapnik
 except ImportError:
     try:
         # for 2.0 alpha/rcs and first 2.0 release
-        import mapnik2 as mapnik
+        import mapnik2 as mapnik  # type: ignore
     except ImportError:
         mapnik = None
 
@@ -117,7 +117,7 @@ class MapnikSource(MapLayer):
             resp = self.render(query)
         except RuntimeError as ex:
             log.error('could not render Mapnik map: %s', ex)
-            reraise_exception(SourceError(ex.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(ex.args[0]), sys.exc_info())
         resp.opacity = self.opacity
         return resp
 

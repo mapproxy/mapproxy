@@ -21,7 +21,8 @@ import optparse
 
 
 from mapproxy.config import local_base_config
-from mapproxy.config.loader import load_configuration, ConfigurationError
+from mapproxy.config.loader import load_configuration
+from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.seed.config import (
     load_seed_tasks_conf, SeedConfigurationError, SeedingConfiguration
 )

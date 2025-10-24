@@ -19,14 +19,14 @@ import json
 
 from functools import reduce
 from io import StringIO, BytesIO
-from typing import List, Union
+from typing import Optional, Union
 
 from lxml import etree, html
 
 
 class FeatureInfoDoc(object):
     content_type = None
-    content: Union[str, bytes] = None
+    content: Union[None, str, bytes] = None
 
     def as_etree(self):
         raise NotImplementedError()
@@ -42,10 +42,13 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
         self.content = content
 
     def as_string(self) -> str:
-        return self.content if isinstance(self.content, str) else decode(self.content)
+        if isinstance(self.content, str):
+            return self.content
+        else:
+            return decode(self.content)  # type: ignore[arg-type]
 
     @classmethod
-    def combine(cls, docs: List[FeatureInfoDoc]):
+    def combine(cls, docs: list[FeatureInfoDoc]):
         result_content = [doc.as_string() for doc in docs]
         return cls("\n".join(result_content))
 
@@ -53,7 +56,7 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = "xml"
     defaultEncoding = "UTF-8"
-    _etree = None
+    _etree: Optional[etree._ElementTree] = None
 
     def __init__(self, content: Union[str, bytes]):
         if isinstance(content, (str, bytes)):
@@ -67,17 +70,22 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     def as_string(self):
         if self.content is None:
             self.content = self._serialize_etree()
-        return self.content if isinstance(self.content, str) else decode(self.content)
+        if isinstance(self.content, str):
+            return self.content
+        else:
+            return decode(self.content)  # type: ignore[arg-type]
 
     def as_etree(self):
         if self._etree is None:
             self._etree = self._parse_content()
         return self._etree
 
-    def _serialize_etree(self) -> str:
-        encoding = self._etree.docinfo.encoding if \
-            self._etree.docinfo.encoding else self.defaultEncoding
-        return decode(etree.tostring(self._etree, encoding=encoding, xml_declaration=False), encoding)
+    def _serialize_etree(self) -> Union[str, bytes]:
+        _etree = self.as_etree()
+        encoding = _etree.docinfo.encoding if \
+            _etree.docinfo.encoding else self.defaultEncoding
+        as_string = etree.tostring(_etree, encoding=encoding, xml_declaration=False)
+        return decode(as_string, encoding)  # type: ignore[arg-type]
 
     def _parse_content(self):
         if isinstance(self.content, str) and self.content.lstrip().startswith('<?xml'):

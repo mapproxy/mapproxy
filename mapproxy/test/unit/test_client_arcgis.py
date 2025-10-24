@@ -16,7 +16,7 @@
 from io import BytesIO
 
 from mapproxy.client.arcgis import ArcGISInfoClient
-from mapproxy.layer import InfoQuery
+from mapproxy.query import InfoQuery
 from mapproxy.request.arcgis import ArcGISIdentifyRequest
 from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.http import assert_query_eq

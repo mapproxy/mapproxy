@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Any
 
 from mapproxy.config.config import base_config
 from mapproxy.request.base import Request
@@ -32,9 +32,9 @@ from mapproxy.service.wms import WMSGroupLayer
 
 
 def _base_tileset(
-    server: OGCAPIServer, req: Request, is_html: bool, coll_id: str, tms_name: str
+    server: OGCAPIServer, req: Request, is_html: bool, coll_id: Optional[str], tms_name: str
 ):
-    tileset = {}
+    tileset: dict[str, Any] = {}
     tileset["title"] = (
         f"{coll_id} with {tms_name} tile matrix set"
         if coll_id
@@ -144,7 +144,7 @@ def tilesets(server: OGCAPIServer, req: Request, coll_id: Optional[str]):
     is_html = server.is_html_req(req)
 
     title_end = f"for {coll_id}" if coll_id else "for the whole dataset"
-    json_resp = {
+    json_resp: dict[str, Any] = {
         "links": [
             {
                 "rel": ("self" if not is_html else "alternate"),
@@ -200,7 +200,7 @@ def tilesets(server: OGCAPIServer, req: Request, coll_id: Optional[str]):
     return server.create_json_or_html_response(req, json_resp, "tilesets/index.html")
 
 
-def tileset(server: OGCAPIServer, req: Request, coll_id: str, tms_name: str):
+def tileset(server: OGCAPIServer, req: Request, coll_id: Optional[str], tms_name: str):
     log = server.log
     log.debug("TileSet")
 
