@@ -16,6 +16,7 @@ install_requires = [
     'shapely>=2',
     'jinja2',
     'Babel',  # For jinja2
+    'python-dateutil',  # For jinja2
 ]
 
 
