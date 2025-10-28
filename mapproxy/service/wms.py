@@ -56,8 +56,7 @@ class WMSServer(Server):
     service = 'wms'
     fi_transformers = None
 
-    def __init__(self, root_layer, md, srs, image_formats,
-                 request_parser=None, tile_layers=None, attribution=None,
+    def __init__(self, root_layer, md, srs, image_formats, tile_layers=None, attribution=None,
                  info_types=None, strict=False, on_error='raise',
                  concurrent_layer_renderer=1, max_output_pixels=None,
                  srs_extents=None, max_tile_age=None,
@@ -65,7 +64,7 @@ class WMSServer(Server):
                  inspire_md=None,
                  ):
         Server.__init__(self)
-        self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
+        self.versions = versions
         self.root_layer = root_layer
         self.layers = root_layer.child_layers()
         self.tile_layers = tile_layers or {}
@@ -81,6 +80,9 @@ class WMSServer(Server):
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
         self.inspire_md = inspire_md
+
+    def parse_request(self, req):
+        return wms_request(req, strict=self.strict, versions=self.versions)
 
     def map(self, map_request):
         self.check_map_request(map_request)

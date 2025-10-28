@@ -50,7 +50,6 @@ class TileServer(Server):
     accordingly (eg. False if first level is one tile)
     """
     names = ('tiles', 'tms')
-    request_parser = staticmethod(tile_request)
     request_methods = ('map', 'tms_capabilities, tms_root_resource')
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
@@ -63,6 +62,9 @@ class TileServer(Server):
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
         self.origin = origin
+
+    def parse_request(self, req):
+        return tile_request(req)
 
     def map(self, tile_request):
         """

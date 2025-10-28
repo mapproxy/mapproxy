@@ -19,7 +19,7 @@ from mapproxy.request.wmts import (
     URLTemplateConverter,
     FeatureInfoURLTemplateConverter,
     InvalidWMTSTemplate,
-    make_wmts_rest_request_parser,
+    wmts_rest_request_parser,
     WMTS100RestTileRequest,
     WMTS100RestFeatureInfoRequest,
 )
@@ -117,18 +117,19 @@ def test_template_converter_dimensions():
     assert converter.dimensions == ["Dim1", "Dim2"]
 
 
-class TestRestRequestParser(object):
+def parser(req):
+    return wmts_rest_request_parser(
+        url_converter=URLTemplateConverter(
+            "/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
+        ),
+        fi_url_converter=FeatureInfoURLTemplateConverter(
+            "/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}"
+        ),
+        req=req
+    )
 
-    @pytest.fixture
-    def parser(self):
-        return make_wmts_rest_request_parser(
-            URLTemplateConverter(
-                "/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}"
-            ),
-            FeatureInfoURLTemplateConverter(
-                "/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}"
-            ),
-        )
+
+class TestRestRequestParser(object):
 
     @pytest.mark.parametrize(
         "url,tile,pos",
@@ -141,7 +142,7 @@ class TestRestRequestParser(object):
             ["/roads/webmercator/09/201/123/10/30.json", None, None],
         ],
     )
-    def test_featureinfo(self, parser, url, tile, pos):
+    def test_featureinfo(self, url, tile, pos):
         if tile is None:
             with pytest.raises(RequestError):
                 parser(dummy_rest_req(url))
@@ -165,7 +166,7 @@ class TestRestRequestParser(object):
             ["/wmts/roads-webmercator/10/201/123.png", None],
         ],
     )
-    def test_tile(self, parser, url, tile):
+    def test_tile(self, url, tile):
         if tile is None:
             with pytest.raises(RequestError):
                 parser(dummy_rest_req(url))
