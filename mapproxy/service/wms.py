@@ -16,7 +16,6 @@
 """
 WMS service handler
 """
-from functools import partial
 from html import escape
 from itertools import chain
 from math import sqrt
