@@ -6,8 +6,6 @@ on:
     branches:
       - master
   pull_request:
-    branches:
-      - master
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -101,5 +99,30 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: flake8 Lint
-        uses: py-actions/flake8@v2
+      - name: Install requirements
+        run: |
+          pip install -r requirements-tests.txt
+
+      - name: mypy Static Typechecking
+        run: |
+          flake8
+
+  typechecking:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v5
+
+      - name: Use python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install requirements
+        run: |
+          pip install -r requirements-tests.txt
+
+      - name: mypy Static Typechecking
+        run: |
+          mypy mapproxy
