@@ -20,6 +20,7 @@ import tempfile
 
 from io import BytesIO
 from contextlib import contextmanager
+from typing import Any, Generator
 
 from PIL import Image, ImageDraw, ImageColor
 
@@ -169,7 +170,7 @@ def draw_pattern(draw, size):
 
 
 @contextmanager
-def tmp_image(size, format='png', color=None, mode='RGB'):
+def tmp_image(size, format='png', color=None, mode='RGB') -> Generator[BytesIO, Any, None]:
     if color is not None:
         img = Image.new(mode, size, color=color)
     else:

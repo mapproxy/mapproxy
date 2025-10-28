@@ -20,6 +20,7 @@ import os
 import shutil
 import struct
 from io import BytesIO
+from typing import Optional
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
@@ -32,7 +33,7 @@ log = logging.getLogger(__name__)
 
 class CompactCacheBase(TileCacheBase):
     supports_timestamp = False
-    bundle_class = None
+    bundle_class: Optional[type] = None
 
     def __init__(self, cache_dir, coverage=None,
                  directory_permissions=None, file_permissions=None):

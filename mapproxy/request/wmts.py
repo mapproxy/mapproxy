@@ -109,11 +109,11 @@ class WMTSTileRequestParams(RequestParams):
 
 class WMTSRequest(BaseRequest):
     request_params = WMTSTileRequestParams
-    request_handler_name = None
-    fixed_params = {}
-    expected_param = []
-    non_strict_params = set()
-    xml_exception_handler = None
+    request_handler_name: str
+    fixed_params: dict[str, str] = {}
+    expected_param: list[str] = []
+    non_strict_params: set[str] = set()
+    xml_exception_handler: XMLExceptionHandler
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict

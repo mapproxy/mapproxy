@@ -22,6 +22,8 @@ import time
 import hashlib
 import base64
 from io import BytesIO
+from threading import Lock
+import requests
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -29,14 +31,6 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-
-from threading import Lock
-
-try:
-    import requests
-except ImportError:
-    requests = None
-
 
 import logging
 log = logging.getLogger(__name__)

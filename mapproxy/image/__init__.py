@@ -438,9 +438,9 @@ def filter_format(format):
 
 
 image_filter = {
-    'nearest': Image.NEAREST,
-    'bilinear': Image.BILINEAR,
-    'bicubic': Image.BICUBIC
+    'nearest': Image.NEAREST,  # type: ignore[attr-defined]
+    'bilinear': Image.BILINEAR,  # type: ignore[attr-defined]
+    'bicubic': Image.BICUBIC  # type: ignore[attr-defined]
 }
 
 

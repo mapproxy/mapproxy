@@ -20,10 +20,7 @@ from collections import deque
 from contextlib import contextmanager
 from itertools import zip_longest
 
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
+import queue
 
 from mapproxy.config import base_config
 from mapproxy.grid.meta_grid import MetaGrid
@@ -52,7 +49,7 @@ INTERSECTS = 1
 if sys.platform == 'win32' or sys.platform == 'darwin':
     import threading
     proc_class = threading.Thread
-    queue_class = Queue.Queue
+    queue_class = queue.Queue
 else:
     import multiprocessing
     proc_class = multiprocessing.Process
@@ -81,7 +78,7 @@ class TileWorkerPool(object):
             while True:
                 try:
                     self.tiles_queue.put(tiles, timeout=5)
-                except Queue.Full:
+                except queue.Full:
                     alive = False
                     for proc in self.procs:
                         if proc.is_alive():
@@ -115,7 +112,7 @@ class TileWorkerPool(object):
                 try:
                     self.tiles_queue.put(None, timeout=1)
                     alives -= 1
-                except Queue.Full:
+                except queue.Full:
                     alives = 0
                     for proc in self.procs:
                         if proc.is_alive():
