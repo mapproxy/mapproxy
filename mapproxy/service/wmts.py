@@ -22,6 +22,7 @@ import re
 from functools import partial
 import logging
 from collections import OrderedDict
+from typing import Optional
 
 from mapproxy.request.wmts import (
     wmts_request, wmts_rest_request_parser,
@@ -43,7 +44,7 @@ log = logging.getLogger(__name__)
 
 
 class WMTSServer(Server):
-    service = 'wmts'
+    service: Optional[str] = 'wmts'
 
     def __init__(self, layers, md, max_tile_age=None, info_formats=None):
         Server.__init__(self)
@@ -233,7 +234,7 @@ class WMTSRestServer(WMTSServer):
     """
     OGC WMTS 1.0.0 RESTful Server
     """
-    service = None
+    service: Optional[str] = None
     names = ('wmts',)
     request_methods = ('tile', 'capabilities')
     default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'

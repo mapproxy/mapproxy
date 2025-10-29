@@ -42,10 +42,10 @@ default_locations = dict(
 
 additional_lib_path = os.environ.get('MAPPROXY_LIB_PATH')
 if additional_lib_path:
-    additional_lib_path = additional_lib_path.split(os.pathsep)
-    additional_lib_path.reverse()
+    path_parts = additional_lib_path.split(os.pathsep)
+    path_parts.reverse()
     for locs in default_locations.values():
-        for path in additional_lib_path:
+        for path in path_parts:
             locs['paths'].insert(0, path)
 
 

@@ -176,7 +176,7 @@ def create_command(args):
 
 
 class CreateCommand(object):
-    templates = {
+    templates: dict[str, dict[str, dict]] = {
         'base-config': {},
         'wsgi-app': {},
         'log-ini': {},

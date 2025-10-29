@@ -494,7 +494,7 @@ def test_reraise_exception():
         try:
             valueerror_raiser()
         except ValueError:
-            reraise_exception(TypeError(), sys.exc_info())
+            raise reraise_exception(TypeError(), sys.exc_info())
 
     try:
         reraiser()
