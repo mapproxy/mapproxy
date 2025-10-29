@@ -42,7 +42,8 @@ from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
-from mapproxy.layer import MapQuery, BlankImage
+from mapproxy.layer import BlankImage
+from mapproxy.query import MapQuery
 from mapproxy.source import SourceError, DummySource
 from mapproxy.util import async_
 from mapproxy.util.py import reraise, reraise_exception

@@ -19,7 +19,7 @@ from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.source.tile import TiledSource
 from mapproxy.source.error import HTTPSourceErrorHandler
-from mapproxy.layer import MapQuery
+from mapproxy.query import MapQuery
 from mapproxy.test.http import mock_httpd
 
 

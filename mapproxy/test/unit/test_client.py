@@ -23,7 +23,7 @@ from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid.tile_grid import tile_grid
-from mapproxy.layer import MapQuery, InfoQuery
+from mapproxy.query import MapQuery, InfoQuery
 from mapproxy.request.wms import (
     WMS111MapRequest,
     WMS100MapRequest,

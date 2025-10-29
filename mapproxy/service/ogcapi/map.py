@@ -29,7 +29,8 @@ from mapproxy.image import (
 from mapproxy.image.merge import LayerMerger
 from mapproxy.image.message import attribution_image
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapQuery, MapExtent
+from mapproxy.extent import MapExtent
+from mapproxy.query import MapQuery
 from mapproxy.response import Response
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_PNG, F_JPEG

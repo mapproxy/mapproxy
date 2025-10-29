@@ -36,15 +36,15 @@ from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSou
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
-from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
+from mapproxy.layer import BlankImage, MapError, LimitedLayer, MapBBOXError, merge_layer_res_ranges
+from mapproxy.query import MapQuery, InfoQuery, LegendQuery
 from mapproxy.util import async_
 from mapproxy.util.bbox import TransformationError
 from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.template import template_loader, bunch, recursive_bunch
 from mapproxy.service import template_helper
-from mapproxy.layer import DefaultMapExtent, MapExtent
+from mapproxy.extent import MapExtent, DefaultMapExtent, merge_layer_extents
 
 get_template = template_loader(__package__, 'templates', namespace=template_helper.__dict__)
 

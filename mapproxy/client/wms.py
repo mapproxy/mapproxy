@@ -19,7 +19,7 @@ WMS clients for maps and information.
 from codecs import decode
 
 from mapproxy.request.base import split_mime_type
-from mapproxy.layer import InfoQuery
+from mapproxy.query import InfoQuery
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf, SRS, SupportedSRS
