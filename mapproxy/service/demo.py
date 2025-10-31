@@ -95,7 +95,7 @@ def static_filename(name):
 class DemoServer(Server):
     names = ('demo',)
 
-    def __init__(self, layers, md, request_parser=None, tile_layers=None,
+    def __init__(self, layers, md, tile_layers=None,
                  srs=None, image_formats=None, services=None, restful_template=None, background=None):
         Server.__init__(self)
         self.layers = layers

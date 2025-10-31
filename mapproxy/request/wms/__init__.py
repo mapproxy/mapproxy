@@ -263,13 +263,13 @@ class WMSMapRequest(WMSRequest):
     @property
     def exception_handler(self):
         if self.prevent_image_exception:
-            return self.xml_exception_handler()
+            return self.xml_exception_handler
         if 'exceptions' in self.params:
             if 'image' in self.params['exceptions'].lower():
                 return exception.WMSImageExceptionHandler()
             elif 'blank' in self.params['exceptions'].lower():
                 return exception.WMSBlankExceptionHandler()
-        return self.xml_exception_handler()
+        return self.xml_exception_handler
 
     def copy(self):
         return self.__class__(param=self.params.copy(), url=self.url)
@@ -305,7 +305,7 @@ class Version(object):
 
 class WMS100MapRequest(WMSMapRequest):
     version = Version('1.0.0')
-    xml_exception_handler = exception.WMS100ExceptionHandler
+    xml_exception_handler = exception.WMS100ExceptionHandler()
     fixed_params = {'request': 'map', 'wmtver': '1.0.0'}
     expected_param = ['wmtver', 'request', 'layers', 'styles', 'srs', 'bbox',
                       'width', 'height', 'format']
@@ -345,7 +345,7 @@ class WMS100MapRequest(WMSMapRequest):
 class WMS110MapRequest(WMSMapRequest):
     version = Version('1.1.0')
     fixed_params = {'request': 'GetMap', 'version': '1.1.0', 'service': 'WMS'}
-    xml_exception_handler = exception.WMS110ExceptionHandler
+    xml_exception_handler = exception.WMS110ExceptionHandler()
 
     def adapt_to_111(self):
         del self.params['wmtver']
@@ -354,7 +354,7 @@ class WMS110MapRequest(WMSMapRequest):
 class WMS111MapRequest(WMSMapRequest):
     version = Version('1.1.1')
     fixed_params = {'request': 'GetMap', 'version': '1.1.1', 'service': 'WMS'}
-    xml_exception_handler = exception.WMS111ExceptionHandler
+    xml_exception_handler = exception.WMS111ExceptionHandler()
 
     def adapt_to_111(self):
         del self.params['wmtver']
@@ -384,7 +384,7 @@ class WMS130MapRequestParams(WMSMapRequestParams):
 class WMS130MapRequest(WMSMapRequest):
     version = Version('1.3.0')
     request_params = WMS130MapRequestParams
-    xml_exception_handler = exception.WMS130ExceptionHandler
+    xml_exception_handler = exception.WMS130ExceptionHandler()
     fixed_params = {'request': 'GetMap', 'version': '1.3.0', 'service': 'WMS'}
     expected_param = ['version', 'request', 'layers', 'styles', 'crs', 'bbox',
                       'width', 'height', 'format']
@@ -510,14 +510,14 @@ class WMS111LegendGraphicRequest(WMSLegendGraphicRequest):
     version = Version('1.1.1')
     fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
     fixed_params['version'] = '1.1.1'
-    xml_exception_handler = exception.WMS111ExceptionHandler
+    xml_exception_handler = exception.WMS111ExceptionHandler()
 
 
 class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
     version = Version('1.3.0')
     fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
     fixed_params['version'] = '1.3.0'
-    xml_exception_handler = exception.WMS130ExceptionHandler
+    xml_exception_handler = exception.WMS130ExceptionHandler()
 
 
 class WMSFeatureInfoRequest(WMSMapRequest):
@@ -532,7 +532,7 @@ class WMSFeatureInfoRequest(WMSMapRequest):
 class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     version = Version('1.1.1')
     request_params = WMSFeatureInfoRequestParams
-    xml_exception_handler = exception.WMS111ExceptionHandler
+    xml_exception_handler = exception.WMS111ExceptionHandler()
     request_handler_name = 'featureinfo'
     fixed_params = WMS111MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
@@ -542,7 +542,7 @@ class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
 class WMS110FeatureInfoRequest(WMSFeatureInfoRequest):
     version = Version('1.1.0')
     request_params = WMSFeatureInfoRequestParams
-    xml_exception_handler = exception.WMS110ExceptionHandler
+    xml_exception_handler = exception.WMS110ExceptionHandler()
     request_handler_name = 'featureinfo'
     fixed_params = WMS110MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
@@ -552,7 +552,7 @@ class WMS110FeatureInfoRequest(WMSFeatureInfoRequest):
 class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
     version = Version('1.0.0')
     request_params = WMSFeatureInfoRequestParams
-    xml_exception_handler = exception.WMS100ExceptionHandler
+    xml_exception_handler = exception.WMS100ExceptionHandler()
     request_handler_name = 'featureinfo'
     fixed_params = WMS100MapRequest.fixed_params.copy()
     fixed_params['request'] = 'feature_info'
@@ -571,8 +571,8 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     # XXX: this class inherits from WMS130MapRequest to reuse
     # the axis order stuff
     version = Version('1.3.0')
-    request_params = WMS130FeatureInfoRequestParams
-    xml_exception_handler = exception.WMS130ExceptionHandler
+    request_params = WMS130FeatureInfoRequestParams  # type: ignore[assignment]
+    xml_exception_handler = exception.WMS130ExceptionHandler()
     request_handler_name = 'featureinfo'
     fixed_params = WMS130MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
@@ -624,10 +624,7 @@ class WMS100CapabilitiesRequest(WMSCapabilitiesRequest):
     version = Version('1.0.0')
     capabilities_template = 'wms100capabilities.xml'
     fixed_params = {'request': 'capabilities', 'wmtver': '1.0.0'}
-
-    @property
-    def exception_handler(self):
-        return exception.WMS100ExceptionHandler()
+    exception_handler = exception.WMS100ExceptionHandler()
 
 
 class WMS110CapabilitiesRequest(WMSCapabilitiesRequest):
@@ -635,10 +632,7 @@ class WMS110CapabilitiesRequest(WMSCapabilitiesRequest):
     capabilities_template = 'wms110capabilities.xml'
     mime_type = 'application/vnd.ogc.wms_xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.1.0', 'service': 'WMS'}
-
-    @property
-    def exception_handler(self):
-        return exception.WMS110ExceptionHandler()
+    exception_handler = exception.WMS110ExceptionHandler()
 
 
 class WMS111CapabilitiesRequest(WMSCapabilitiesRequest):
@@ -646,20 +640,14 @@ class WMS111CapabilitiesRequest(WMSCapabilitiesRequest):
     capabilities_template = 'wms111capabilities.xml'
     mime_type = 'application/vnd.ogc.wms_xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.1.1', 'service': 'WMS'}
-
-    @property
-    def exception_handler(self):
-        return exception.WMS111ExceptionHandler()
+    exception_handler = exception.WMS111ExceptionHandler()
 
 
 class WMS130CapabilitiesRequest(WMSCapabilitiesRequest):
     version = Version('1.3.0')
     capabilities_template = 'wms130capabilities.xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.3.0', 'service': 'WMS'}
-
-    @property
-    def exception_handler(self):
-        return exception.WMS130ExceptionHandler()
+    exception_handler = exception.WMS130ExceptionHandler()
 
 
 request_mapping = {Version('1.0.0'): {'featureinfo': WMS100FeatureInfoRequest,
