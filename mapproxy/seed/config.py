@@ -24,7 +24,7 @@ from functools import reduce
 from mapproxy.cache.dummy import DummyCache
 from mapproxy.config import abspath
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import ConfigurationError
+from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 from mapproxy.seed.spec import validate_seed_conf

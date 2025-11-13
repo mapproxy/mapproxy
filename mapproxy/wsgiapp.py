@@ -28,7 +28,8 @@ from mapproxy.service.base import Server
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import local_base_config
-from mapproxy.config.loader import load_configuration, ConfigurationError
+from mapproxy.config.loader import load_configuration
+from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.util.escape import escape_html
 
 log = logging.getLogger('mapproxy.config')
