@@ -288,6 +288,81 @@
         },
         "demo": {
           "type": "null"
+        },
+        "ogcapi": {
+          "description": "OGCAPI service configuration",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enable_tiles": {
+              "title": "enable_tiles",
+              "description": "Whether to enable the OGC API Tiles service",
+              "type": "boolean",
+              "default": true
+            },
+            "enable_maps": {
+              "title": "enable_tiles",
+              "description": "Whether to enable the OGC API Maps service",
+              "type": "boolean",
+              "default": true
+            },
+            "map_srs": {
+              "tile": "map_srs",
+              "description": "Defines which SRS the OGC API Maps service supports.",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              },
+              "default": ["EPSG:4326", "EPSG:3857"]
+            },
+            "attribution": {
+              "title": "attribution",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                 "text": {
+                    "title": "text",
+                    "description": "Attribution text",
+                    "type": "string"
+                 }
+              }
+            },
+            "md": {
+              "title": "md",
+              "description": "The metadata config for the OGCAPI service",
+              "$ref": "#/$defs/ogcapi_metadata"
+            },
+            "default_dataset_layers": {
+              "title": "default_dataset_layers",
+              "description": "List of layer(s) that are used by default for dataset-wide /map and /map/tiles requests. If that option is not set, those endpoints are not available.",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "on_source_errors": {
+              "description": "What to do when one or more sources return errors or no response at all",
+              "oneOf": [
+                {
+                  "const": "notify"
+                },
+                {
+                  "const": "raise"
+                }
+              ]
+            },
+            "max_output_pixels": {
+              "description": "Maximum output size for a OGCAPI requests in pixel",
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
         }
       }
     },
@@ -386,6 +461,10 @@
         },
         "max_scale": {
           "description": "Maximum scale",
+          "type": "number"
+        },
+        "nominal_scale": {
+          "description": "Nominal scale",
           "type": "number"
         },
         "legendurl": {
@@ -848,6 +927,110 @@
         },
         "required": ["source", "band"]
       }
+    },
+
+    "ogcapi_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identification": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "title": {
+                  "type": "string"
+              },
+              "description": {
+                  "type": "string"
+              },
+              "url": {
+                  "type": "string"
+              },
+              "terms_of_service": {
+                  "type": "string"
+              },
+              "keywords": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+              }
+           }
+        },
+        "provider": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "name": {
+                  "type": "string"
+              },
+              "url": {
+                  "type": "string"
+              }
+          }
+        },
+        "contact": {
+          "title": "contact",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "stateorprovince": {
+              "type": "string"
+            },
+            "postalcode": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "country": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "fax": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "instructions": {
+              "type": "string"
+            }
+          }
+        },
+        "license": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "name": {
+                  "type": "string"
+              },
+              "url": {
+                  "type": "string"
+              }
+          }
+        }
+      }
     }
+
   }
 }

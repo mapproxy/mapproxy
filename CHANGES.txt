@@ -1,3 +1,16 @@
+6.0.1 2025-10-29
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Removed code to be able to start up MapProxy without PIL.
+
+Fixes:
+
+  - Add python-dateutil dependency to avoid errors on startup.
+  - Add ogcapi to config-schema.json to avoid warnings on startup.
+
+
 6.0.0 2025-10-22
 ~~~~~~~~~~~~~~~~
 
