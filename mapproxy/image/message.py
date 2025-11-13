@@ -21,7 +21,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 try:
     import importlib_resources
 except ImportError:
-    from importlib import resources as importlib_resources
+    from importlib import resources as importlib_resources  # type: ignore[no-redef]
 
 from mapproxy.config import base_config, abspath
 from mapproxy.image import ImageSource

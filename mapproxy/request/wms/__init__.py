@@ -18,8 +18,10 @@ Service requests (parsing, handling, etc).
 """
 import codecs
 import re
+from typing import Optional
+
 from mapproxy.request.wms import exception
-from mapproxy.exception import RequestError
+from mapproxy.exception import RequestError, XMLExceptionHandler
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 
@@ -148,11 +150,11 @@ class WMSMapRequestParams(RequestParams):
 
 class WMSRequest(BaseRequest):
     request_params = RequestParams
-    request_handler_name = None
-    fixed_params = {}
-    expected_param = []
-    non_strict_params = set()
-    xml_exception_handler = None
+    request_handler_name: Optional[str] = None
+    fixed_params: dict[str, str] = {}
+    expected_param: list[str] = []
+    non_strict_params: set[str] = set()
+    xml_exception_handler: XMLExceptionHandler
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict
@@ -189,7 +191,7 @@ class WMSMapRequest(WMSRequest):
     fixed_params = {'request': 'GetMap', 'service': 'WMS'}
     expected_param = ['version', 'request', 'layers', 'styles', 'srs', 'bbox',
                       'width', 'height', 'format']
-    xml_exception_handler = None
+    xml_exception_handler: XMLExceptionHandler
     prevent_image_exception = False
     dimension_params = ['time', 'elevation']
     dimension_prefix = 'dim_'
@@ -276,7 +278,7 @@ class WMSMapRequest(WMSRequest):
 
 
 class Version(object):
-    _versions = {}
+    _versions: dict = {}
 
     def __new__(cls, version):
         if version in cls._versions:
@@ -606,7 +608,7 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
-    exception_handler = None
+    xml_exception_handler: XMLExceptionHandler
     mime_type = 'text/xml'
     fixed_params = {}
 

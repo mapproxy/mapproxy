@@ -19,7 +19,7 @@ Loading of template files (e.g. capability documents)
 try:
     import importlib_resources
 except ImportError:
-    from importlib import resources as importlib_resources
+    from importlib import resources as importlib_resources  # type: ignore
 import os
 from mapproxy.util.ext.tempita import Template, bunch
 from mapproxy.config.config import base_config

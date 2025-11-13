@@ -294,16 +294,3 @@ for try_import in proj_imports:
             break
 else:
     raise ImportError('could not find pyproj (Python library) or libproj (C library, deprecated)')
-
-if __name__ == '__main__':
-
-    prj1 = Proj(init='epsg:4326')
-    prj2 = Proj(init='epsg:31467')
-
-    coords = [(8.2, 8.22, 8.3), (53.1, 53.15, 53.2)]
-    # coords = [(8, 9, 10), (50, 50, 50)]
-    print(coords)
-    coords = transform(prj1, prj2, *coords)
-    print(coords)
-    coords = transform(prj2, prj1, *coords)
-    print(coords)

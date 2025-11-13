@@ -139,7 +139,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
             if exc_info:
                 try:
                     if headers_sent:
-                        reraise(*exc_info)
+                        raise reraise(*exc_info)
                 finally:
                     exc_info = None
             elif headers_set:

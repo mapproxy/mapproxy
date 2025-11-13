@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
 from mapproxy.request.base import Request
 from mapproxy.service.ogcapi.server import OGCAPIServer
@@ -38,7 +39,7 @@ def landing_page(server: OGCAPIServer, req: Request):
         raise OGCAPIServer.invalid_parameter("Invalid value for f query parameter")
 
     is_html = server.is_html_req(req)
-    json_resp = {
+    json_resp: dict[str, Any] = {
         "links": [
             {
                 "rel": ("self" if not is_html else "alternate"),

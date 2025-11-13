@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+from typing import Literal, Optional
 
 from mapproxy.exception import (
     RequestError,
@@ -39,8 +40,8 @@ class TileRequest(object):
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
     use_profiles = False
     req_prefix = '/tiles'
-    origin = None
-    dimensions = {}
+    origin: Optional[Literal['nw', 'sw']] = None
+    dimensions: dict = {}
 
     def __init__(self, request):
         self.tile = None

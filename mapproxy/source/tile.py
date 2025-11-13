@@ -80,7 +80,7 @@ class TiledSource(MapLayer):
                 if resp:
                     return resp
             log.warning('could not retrieve tile (client: %s): %s', self.client, e, exc_info=True)
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
 
 class CacheSource(CacheMapLayer):

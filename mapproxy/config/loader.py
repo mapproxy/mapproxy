@@ -259,7 +259,7 @@ class ConfigurationBase(object):
     """
     Base class for all configurations.
     """
-    defaults = {}
+    defaults: dict = {}
 
     def __init__(self, conf, context):
         """
@@ -387,7 +387,7 @@ class GlobalConfiguration(ConfigurationBase):
         return os.path.join(self.base_config.conf_base_dir, path)
 
 
-default_image_options = {
+default_image_options: dict = {
 }
 
 
