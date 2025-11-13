@@ -5,6 +5,7 @@ from collections import OrderedDict
 from mapproxy.config.configuration.base import ConfigurationBase
 from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.config.spec import add_service_to_mapproxy_yaml_spec
+from mapproxy.config.validator import add_service_to_config_schema
 from mapproxy.service.ows import OWSServer
 
 import logging
@@ -16,7 +17,9 @@ plugin_services = {}
 
 
 def register_service_configuration(service_name, service_creator,
-                                   yaml_spec_service_name=None, yaml_spec_service_def=None):
+                                   yaml_spec_service_name=None,
+                                   yaml_spec_service_def=None,
+                                   schema_service=None):
     """ Method used by plugins to register a new service.
 
         :param service_name: Name of the service
@@ -27,12 +30,19 @@ def register_service_configuration(service_name, service_creator,
         :type yaml_spec_service_name: str
         :param yaml_spec_service_def: Definition of the service in the YAML configuration file
         :type yaml_spec_service_def: dict
+        :param schema_service: JSON schema extract to insert under
+        /properties/services/properties/{yaml_spec_service_name} of config-schema.json
+        :type schema_service: dict
     """
 
     log.info('Registering configuration for plugin service %s' % service_name)
     plugin_services[service_name] = service_creator
     if yaml_spec_service_name is not None and yaml_spec_service_def is not None:
         add_service_to_mapproxy_yaml_spec(yaml_spec_service_name, yaml_spec_service_def)
+    if yaml_spec_service_name is not None and schema_service is not None:
+        add_service_to_config_schema(yaml_spec_service_name, schema_service)
+    if yaml_spec_service_name is not None and schema_service is not None:
+        add_service_to_config_schema(yaml_spec_service_name, schema_service)
 
 
 class ServiceConfiguration(ConfigurationBase):
