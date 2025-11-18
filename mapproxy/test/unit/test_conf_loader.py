@@ -599,7 +599,8 @@ sources:
             else:
                 assert False, 'expected configuration error'
 
-    def test_loading_extra_service(self):
+    @pytest.mark.parametrize("match_schema", [True, False])
+    def test_loading_extra_service(self, caplog, match_schema):
         """ Test registration of extra service """
 
         my_yaml_string = b"""
@@ -638,9 +639,24 @@ sources:
                 with open(tf, 'wb') as f:
                     f.write(my_yaml_string)
 
+                property_name = 'foo' if match_schema else 'invalid'
+                json_schema_extension = {
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'properties': {
+                        property_name: {
+                            'type': 'string'
+                        }
+                    }
+                }
                 register_service_configuration('my_extra_service', my_extra_service_method,
-                                               'my_extra_service', {'foo': str()})
+                                               'my_extra_service', {'foo': str()},
+                                               json_schema_extension)
                 conf = load_configuration(tf, ignore_warnings=False)
+                if match_schema:
+                    assert caplog.text == ""
+                else:
+                    assert "Additional properties are not allowed ('foo' was unexpected)" in caplog.text
                 services = conf.configured_services()
             assert 'my_extra_service' in services[0].names
 

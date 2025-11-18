@@ -48,6 +48,14 @@ def get_error_messages(errors: Iterable[ValidationError]) -> list[str]:
     return msgs
 
 
+def add_service_to_config_schema(service_name, service_spec):
+    """ Add a new service type to the schema.
+        Used by plugins.
+    """
+
+    schema['properties']['services']['properties'][service_name] = service_spec
+
+
 def validate(conf_dict: dict) -> list[str]:
     validator = Draft202012Validator(schema=schema)
     errors_iter = validator.iter_errors(conf_dict)
