@@ -22,3 +22,11 @@ markers = [
 exclude = [".git", ".idea", "build", "dist", "MapProxy.egg-info"]
 max-line-length = 120
 extend-ignore = ["E128"]
+
+[tool.coverage.run]
+source = [
+    "mapproxy"
+]
+omit = [
+    "mapproxy/test/*"
+]
