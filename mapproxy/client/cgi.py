@@ -133,7 +133,7 @@ class CGIClient(object):
                     status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
 
-    def open_image(self, url, data=None):
+    def open_image(self, url: str, data=None) -> ImageSource:
         resp = self.open(url, data=data)
         if 'Content-type' in resp.headers:
             if not resp.headers['Content-type'].lower().startswith('image'):

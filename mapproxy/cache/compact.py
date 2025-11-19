@@ -22,6 +22,7 @@ import struct
 from io import BytesIO
 from typing import Optional
 
+from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory, write_atomic
@@ -205,12 +206,12 @@ class BundleV1(object):
 
         return True
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         if tile.source or tile.coord is None:
             return True
         return self.load_tiles([tile], with_metadata, dimensions=dimensions)
 
-    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
+    def load_tiles(self, tiles: list[Tile], with_metadata: bool = False, dimensions=None) -> bool:
         missing = False
 
         with self.index().readonly() as idx:
@@ -537,7 +538,7 @@ class BundleV2(object):
         offset = val - (size << 40)
         return offset, size
 
-    def _load_tile(self, fh, tile, dimensions=None):
+    def _load_tile(self, fh, tile: Tile, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 

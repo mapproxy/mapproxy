@@ -22,7 +22,7 @@ from typing import Optional
 
 from mapproxy.image import (
     bbox_position_in_image,
-    SubImageSource,
+    sub_image_source,
     BlankImageSource,
     GeoReference,
 )
@@ -510,7 +510,7 @@ def render_map(
         )
 
     if query != orig_query:
-        result = SubImageSource(
+        result = sub_image_source(
             result, size=orig_query.size, offset=offset, image_opts=image_opts
         )
 

@@ -32,7 +32,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource, GeoReference
+from mapproxy.image import bbox_position_in_image, sub_image_source, BlankImageSource, GeoReference
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
@@ -151,7 +151,7 @@ class WMSServer(Server):
                               bbox=query.bbox, bbox_srs=params.srs, coverage=coverage)
 
         if query != orig_query:
-            result = SubImageSource(result, size=orig_query.size, offset=offset, image_opts=img_opts)
+            result = sub_image_source(result, size=orig_query.size, offset=offset, image_opts=img_opts)
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
@@ -685,7 +685,7 @@ class WMSLayerBase(ABC):
     is_active = True
 
     "list of sublayers"
-    layers: list[str] = []
+    layers: list['WMSLayerBase'] = []
 
     "metadata dictionary with tile, name, etc."
     md: dict[str, Any] = {}
@@ -807,7 +807,7 @@ class WMSGroupLayer(WMSLayerBase):
     that represents this layer.
     """
 
-    def __init__(self, name, title, this, layers, md=None):
+    def __init__(self, name, title, this, layers: list[WMSLayerBase], md=None):
         self.name = name
         self.title = title
         self.this = this

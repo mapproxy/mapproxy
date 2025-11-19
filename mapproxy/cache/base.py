@@ -16,9 +16,11 @@
 import os
 import sys
 import time
+from abc import ABC, abstractmethod
 
 from contextlib import contextmanager
 
+from mapproxy.cache.tile import Tile
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
 
 
@@ -38,7 +40,7 @@ def tile_buffer(tile):
     tile.stored = True
 
 
-class TileCacheBase(object):
+class TileCacheBase(ABC):
     """
     Base implementation of a tile cache.
     """
@@ -49,18 +51,20 @@ class TileCacheBase(object):
     def __init__(self, coverage=None) -> None:
         self.coverage = coverage
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
-        raise NotImplementedError()
+    @abstractmethod
+    def load_tile(self, tile: Tile, with_metadata: bool = False, dimensions=None):
+        pass
 
-    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
+    def load_tiles(self, tiles: list[Tile], with_metadata: bool = False, dimensions=None):
         all_succeed = True
         for tile in tiles:
             if not self.load_tile(tile, with_metadata=with_metadata, dimensions=dimensions):
                 all_succeed = False
         return all_succeed
 
-    def store_tile(self, tile, dimensions=None):
-        raise NotImplementedError()
+    @abstractmethod
+    def store_tile(self, tile: Tile, dimensions=None):
+        pass
 
     def store_tiles(self, tiles, dimensions=None):
         all_succeed = True
@@ -69,25 +73,28 @@ class TileCacheBase(object):
                 all_succeed = False
         return all_succeed
 
+    @abstractmethod
     def remove_tile(self, tile, dimensions=None):
-        raise NotImplementedError()
+        pass
 
     def remove_tiles(self, tiles, dimensions=None):
         for tile in tiles:
             self.remove_tile(tile, dimensions=dimensions)
 
+    @abstractmethod
     def is_cached(self, tile, dimensions=None):
         """
         Return ``True`` if the tile is cached.
         """
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def load_tile_metadata(self, tile, dimensions=None):
         """
         Fill the metadata attributes of `tile`.
         Sets ``.timestamp`` and ``.size``.
         """
-        raise NotImplementedError()
+        pass
 
 
 # whether we immediately remove lock files or not

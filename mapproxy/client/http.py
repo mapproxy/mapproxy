@@ -232,7 +232,7 @@ class HTTPClient(object):
         finally:
             log_request(url, code, result, duration=time.time()-start_time, method=req.get_method())
 
-    def open_image(self, url, data=None):
+    def open_image(self, url: str, data=None) -> ImageSource:
         resp = self.open(url, data=data)
         if 'content-type' in resp.headers:
             if not resp.headers['content-type'].lower().startswith('image'):
@@ -302,13 +302,13 @@ def auth_data_from_url(url):
     return url, (username, password)
 
 
-def open_url(url):
+def open_url(url: str):
     url, (username, password) = auth_data_from_url(url)
     http_client = HTTPClient(url, username, password)
     return http_client.open(url)
 
 
-def retrieve_image(url, client=None):
+def retrieve_image(url: str) -> ImageSource:
     """
     Retrive an image from `url`.
 

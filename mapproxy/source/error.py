@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image import BlankImageSource
@@ -24,8 +25,7 @@ class HTTPSourceErrorHandler(object):
     def add_handler(self, http_code, color, cacheable=False, authorize_stale=False):
         self.response_error_codes[http_code] = (color, cacheable, authorize_stale)
 
-    def handle(self, status_code, query):
-        color = cacheable = None
+    def handle(self, status_code, query) -> Optional[BlankImageSource]:
         if status_code in self.response_error_codes:
             color, cacheable, authorize_stale = self.response_error_codes[status_code]
         elif 'other' in self.response_error_codes:

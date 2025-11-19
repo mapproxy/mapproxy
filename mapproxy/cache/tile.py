@@ -36,8 +36,10 @@ Tile caching (creation, caching and retrieval of tiles).
 """
 from functools import partial
 from contextlib import contextmanager
+from typing import Optional, cast
+
 from mapproxy.grid.meta_grid import MetaGrid
-from mapproxy.image import BlankImageSource
+from mapproxy.image import BlankImageSource, BaseImageSource
 from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
@@ -226,12 +228,12 @@ class TileManager(object):
             tile = Tile(self.meta_grid.main_tile(tile.coord))
         return self.locker.lock(tile)
 
-    def is_cached(self, tile, dimensions=None):
+    def is_cached(self, tile: 'Tile', dimensions=None) -> bool:
         """
         Return True if the tile is cached.
         """
         if isinstance(tile, tuple):
-            tile = Tile(tile)
+            tile = Tile(cast(tuple[int, int, int], tile))
         if tile.coord is None:
             return True
         cached = self.cache.is_cached(tile, dimensions=dimensions)
@@ -240,6 +242,7 @@ class TileManager(object):
             self.cache.load_tile_metadata(tile, dimensions=self.dimensions)
             # file time stamp must be rounded to integer since time conversion functions
             # mktime and timetuple strip decimals from seconds
+            assert tile.timestamp is not None
             stale = int(tile.timestamp) <= max_mtime
             if stale:
                 cached = False
@@ -250,7 +253,7 @@ class TileManager(object):
         Return True if tile exists _and_ is expired.
         """
         if isinstance(tile, tuple):
-            tile = Tile(tile)
+            tile = Tile(cast(tuple[int, int, int], tile))
         if self.cache.is_cached(tile, dimensions=dimensions):
             # tile exists
             if not self.is_cached(tile, dimensions=dimensions):
@@ -405,7 +408,7 @@ class TileCreator(object):
             result.extend(new_tiles)
         return result
 
-    def _create_single_tile(self, tile, dimensions=None):
+    def _create_single_tile(self, tile: 'Tile', dimensions=None):
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
                          self.tile_mgr.request_format, dimensions=self.dimensions)
@@ -440,7 +443,7 @@ class TileCreator(object):
                 self.cache.load_tile(tile)
         return [tile]
 
-    def _query_sources(self, query):
+    def _query_sources(self, query) -> Optional[BaseImageSource]:
         """
         Query all sources and return the results as a single ImageSource.
         Multiple sources will be merged into a single image.
@@ -568,22 +571,19 @@ class TileCreator(object):
         return tiles
 
 
-class Tile(object):
+class Tile:
     """
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
-
-    :ivar source: the data of this tile
-    :type source: ImageSource
     """
 
-    def __init__(self, coord, source=None, cacheable=True):
+    def __init__(self, coord: tuple[int, int, int], source: Optional[BaseImageSource] = None, cacheable: bool = True):
         self.coord = coord
         self.source = source
         self.location = None
         self.stored = False
         self._cacheable = cacheable
-        self.size = None
-        self.timestamp = None
+        self.size: Optional[int] = None
+        self.timestamp: Optional[float] = None
 
     def _cacheable_get(self):
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
@@ -611,7 +611,7 @@ class Tile(object):
         else:
             return None
 
-    def is_missing(self):
+    def is_missing(self) -> bool:
         """
         Returns ``True`` when the tile has no ``data``, except when the ``coord``
         is ``None``. It doesn't check if the tile exists.

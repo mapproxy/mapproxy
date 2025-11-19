@@ -28,7 +28,7 @@ from mapproxy.image import (
     GeoReference,
     ImageSource,
     ReadBufWrapper,
-    SubImageSource,
+    sub_image_source,
     TIFF_GEOKEYDIRECTORYTAG,
     TIFF_MODELPIXELSCALETAG,
     TIFF_MODELTIEPOINTTAG,
@@ -196,28 +196,28 @@ class TestSubImageSource(object):
 
     def test_full(self):
         sub_img = create_image((100, 100), color=[100, 120, 130, 140])
-        img = SubImageSource(
+        img = sub_image_source(
             sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_larger(self):
         sub_img = create_image((150, 150), color=[100, 120, 130, 140])
-        img = SubImageSource(
+        img = sub_image_source(
             sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_negative_offset(self):
         sub_img = create_image((150, 150), color=[100, 120, 130, 140])
-        img = SubImageSource(
+        img = sub_image_source(
             sub_img, size=(100, 100), offset=(-50, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_overlap_right(self):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
-        img = SubImageSource(
+        img = sub_image_source(
             sub_img,
             size=(100, 100),
             offset=(75, 25),
@@ -230,7 +230,7 @@ class TestSubImageSource(object):
 
     def test_outside(self):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
-        img = SubImageSource(
+        img = sub_image_source(
             sub_img,
             size=(100, 100),
             offset=(200, 0),

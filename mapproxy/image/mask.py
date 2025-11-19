@@ -21,7 +21,7 @@ from mapproxy.util.geom import flatten_to_polygons
 
 
 def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
-                                    image_opts=None):
+                                    image_opts=None) -> ImageSource:
     if image_opts is None:
         image_opts = img_source.image_opts
     img = img_source.as_image()
@@ -31,7 +31,7 @@ def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
     return ImageSource(result, image_opts=image_opts)
 
 
-def mask_image(img, bbox, bbox_srs, coverage):
+def mask_image(img: Image.Image, bbox, bbox_srs, coverage) -> Image.Image:
     geom = mask_polygons(bbox, SRS(bbox_srs), coverage)
     mask = image_mask_from_geom(img.size, bbox, geom)
     img = img.convert('RGBA')
@@ -45,7 +45,7 @@ def mask_polygons(bbox, bbox_srs, coverage):
     return flatten_to_polygons(coverage.geom)
 
 
-def image_mask_from_geom(size, bbox, polygons):
+def image_mask_from_geom(size, bbox, polygons) -> Image.Image:
     mask = Image.new('L', size, 255)
     if len(polygons) == 0:
         return mask

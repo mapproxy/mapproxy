@@ -17,6 +17,7 @@ import os
 import errno
 import hashlib
 
+from mapproxy.cache.tile import Tile
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.cache import path
@@ -114,7 +115,7 @@ class FileCache(TileCacheBase):
         else:
             return True
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         """
         Fills the `Tile.source` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
@@ -131,7 +132,7 @@ class FileCache(TileCacheBase):
             return True
         return False
 
-    def remove_tile(self, tile, dimensions=None):
+    def remove_tile(self, tile: Tile, dimensions=None):
         location = self.tile_location(tile, dimensions=dimensions)
         try:
             os.remove(location)
@@ -139,7 +140,7 @@ class FileCache(TileCacheBase):
             if ex.errno != errno.ENOENT:
                 raise
 
-    def store_tile(self, tile, dimensions=None):
+    def store_tile(self, tile: Tile, dimensions=None):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to
         `FileCache.tile_location`.
@@ -150,6 +151,7 @@ class FileCache(TileCacheBase):
         tile_loc = self.tile_location(tile, create_dir=True, dimensions=dimensions)
 
         if self.link_single_color_images:
+            assert tile.source is not None
             color = is_single_color_image(tile.source.as_image())
             if color:
                 self._store_single_color_tile(tile, tile_loc, color)
@@ -158,7 +160,7 @@ class FileCache(TileCacheBase):
         else:
             self._store(tile, tile_loc)
 
-    def _store(self, tile, location):
+    def _store(self, tile: Tile, location):
         if os.path.islink(location):
             os.unlink(location)
 
@@ -169,7 +171,7 @@ class FileCache(TileCacheBase):
                 permission = int(self.file_permissions, base=8)
                 os.chmod(location, permission)
 
-    def _store_single_color_tile(self, tile, tile_loc, color):
+    def _store_single_color_tile(self, tile: Tile, tile_loc, color):
         real_tile_loc = self._single_color_tile_location(color, create_dir=True)
         if not os.path.exists(real_tile_loc):
             self._store(tile, real_tile_loc)

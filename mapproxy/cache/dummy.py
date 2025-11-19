@@ -18,6 +18,12 @@ from mapproxy.util.lock import DummyLock
 
 
 class DummyCache(TileCacheBase):
+    def remove_tile(self, tile, dimensions=None):
+        pass
+
+    def load_tile_metadata(self, tile, dimensions=None):
+        pass
+
     def is_cached(self, tile, dimensions=None):
         return False
 

@@ -17,8 +17,9 @@
 Image and tile manipulation (transforming, merging, etc).
 """
 import io
+from abc import ABC, abstractmethod
 from io import BytesIO
-
+from typing import Optional, Union, IO, cast, Any
 
 from PIL import Image, ImageChops
 from PIL.TiffImagePlugin import ImageFileDirectory_v2, TiffTags
@@ -90,19 +91,24 @@ class GeoReference(object):
         return tags
 
 
-class BaseImageSource(object):
+class BaseImageSource(ABC):
     """
     Virtual parent class for ImageSource and BlankImageSource
     """
 
-    def __init__(self):
-        raise Exception("Virtual class BaseImageSource, cannot be instanciated.")
+    size: tuple[int, int]
+    image_opts: Any
+    cacheable: bool
+    authorize_stale: bool
 
-    def as_image(self):
-        raise Exception("Virtual class BaseImageSource, method as_image cannot be called.")
+    @abstractmethod
+    def as_image(self) -> Image.Image:
+        pass
 
-    def as_buffer(self, image_opts=None, format=None, seekable=False):
-        raise Exception("Virtual class BaseImageSource, method as_buffer cannot be called.")
+    @abstractmethod
+    def as_buffer(self, image_opts=None, format: Optional[str] = None, seekable: bool = False) -> \
+            Union[IO[bytes], 'ReadBufWrapper']:
+        pass
 
     def close_buffers(self):
         pass
@@ -115,16 +121,17 @@ class ImageSource(BaseImageSource):
     object (`as_buffer`).
     """
 
-    def __init__(self, source, size=None, image_opts=None, cacheable=True, georef=None):
+    def __init__(self, source: Union[Image.Image, IO[bytes], str], size: Optional[tuple[int, int]] = None,
+                 image_opts=None, cacheable: bool = True, georef=None):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
         :param format: the format of the ``source``
         :param size: the size of the ``source`` in pixel
         """
-        self._img = None
-        self._buf = None
-        self._fname = None
+        self._img: Optional[Image.Image] = None
+        self._buf: Union[IO[bytes], ReadBufWrapper, None] = None
+        self._fname: Optional[str] = None
         self.source = source
         self.image_opts = image_opts
         self._size = size
@@ -158,18 +165,18 @@ class ImageSource(BaseImageSource):
     def filename(self):
         return self._fname
 
-    def as_image(self):
+    def as_image(self) -> Image.Image:
         """
         Returns the image or the loaded image.
 
         :rtype: PIL `Image`
         """
         if not self._img:
-            self._make_seekable_buf()
-            log.debug('file(%s) -> image', self._fname or self._buf)
+            buf = self._seekable_buf
+            log.debug('file(%s) -> image', self._fname or buf)
 
             try:
-                img = Image.open(self._buf)
+                img = Image.open(buf)
             except Exception:
                 self.close_buffers()
                 raise
@@ -178,19 +185,28 @@ class ImageSource(BaseImageSource):
             self._img = self._img.convert('RGBA')
         return self._img
 
-    def _make_seekable_buf(self):
-        if not self._buf and self._fname:
-            self._buf = open(self._fname, 'rb')
+    @property
+    def _seekable_buf(self) -> BytesIO:  # is this the correct type?
+        if self._buf is None:
+            if self._fname:
+                self._buf = open(self._fname, 'rb')
+            else:
+                raise
         else:
             try:
                 self._buf.seek(0)
             except (io.UnsupportedOperation, AttributeError):
                 # PIL needs file objects with seek
                 self._buf = BytesIO(self._buf.read())
+        return cast(BytesIO, self._buf)
 
-    def _make_readable_buf(self):
-        if not self._buf and self._fname:
-            self._buf = open(self._fname, 'rb')
+    @property
+    def _readable_buf(self) -> Union[BytesIO, 'ReadBufWrapper']:  # is this the correct type?
+        if self._buf is None:
+            if self._fname:
+                self._buf = open(self._fname, 'rb')
+            else:
+                raise
         elif not hasattr(self._buf, 'seek'):
             if not isinstance(self._buf, ReadBufWrapper):
                 self._buf = ReadBufWrapper(self._buf)
@@ -200,8 +216,10 @@ class ImageSource(BaseImageSource):
             except (io.UnsupportedOperation, AttributeError):
                 # PIL needs file objects with seek
                 self._buf = BytesIO(self._buf.read())
+        return cast(Union[BytesIO, 'ReadBufWrapper'], self._buf)
 
-    def as_buffer(self, image_opts=None, format=None, seekable=False):
+    def as_buffer(self, image_opts=None, format: Optional[str] = None, seekable: bool = False) ->\
+            Union[IO[bytes], 'ReadBufWrapper']:
         """
         Returns the image as a file object.
 
@@ -218,11 +236,11 @@ class ImageSource(BaseImageSource):
             log.debug('image -> buf(%s)' % (image_opts.format,))
             self._buf = img_to_buf(self._img, image_opts=image_opts, georef=self.georef)
         else:
-            self._make_seekable_buf() if seekable else self._make_readable_buf()
+            buf = self._seekable_buf if seekable else self._readable_buf
             if self.image_opts and image_opts and not self.image_opts.format and image_opts.format:
                 # need actual image_opts.format for next check
                 self.image_opts = self.image_opts.copy()
-                self.image_opts.format = peek_image_format(self._buf)
+                self.image_opts.format = peek_image_format(buf)
             if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.source = self.as_image()
@@ -233,6 +251,7 @@ class ImageSource(BaseImageSource):
                 self._fname = None
                 self.as_buffer(image_opts)
                 self._fname = fname
+        assert self._buf is not None
         return self._buf
 
     @property
@@ -242,7 +261,7 @@ class ImageSource(BaseImageSource):
         return self._size
 
 
-def SubImageSource(source, size, offset, image_opts, cacheable=True):
+def sub_image_source(source, size, offset, image_opts, cacheable=True):
     """
     Create a new ImageSource with `size` and `image_opts` and
     place `source` image at `offset`.
@@ -273,12 +292,13 @@ class BlankImageSource(BaseImageSource):
         self.cacheable = cacheable
         self.authorize_stale = False
 
-    def as_image(self):
+    def as_image(self) -> Image.Image:
         if not self._img:
             self._img = create_image(self.size, self.image_opts)
         return self._img
 
-    def as_buffer(self, image_opts=None, format=None, seekable=False):
+    def as_buffer(self, image_opts=None, format: Optional[str] = None, seekable: bool = False) -> \
+            Union[IO[bytes], 'ReadBufWrapper']:
         if not self._buf:
             image_opts = (image_opts or self.image_opts).copy()
             if format:
@@ -437,6 +457,7 @@ def filter_format(format):
     return format
 
 
+# Pillow==8
 image_filter = {
     'nearest': Image.NEAREST,  # type: ignore[attr-defined]
     'bilinear': Image.BILINEAR,  # type: ignore[attr-defined]

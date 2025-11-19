@@ -21,6 +21,7 @@ import time
 from io import BytesIO
 from itertools import groupby
 
+from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
@@ -194,7 +195,7 @@ class MBTilesCache(TileCacheBase):
             return False
         return True
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         if tile.source or tile.coord is None:
             return True
 
@@ -225,7 +226,7 @@ class MBTilesCache(TileCacheBase):
         else:
             return False
 
-    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
+    def load_tiles(self, tiles: list[Tile], with_metadata=False, dimensions=None) -> bool:
         # associate the right tiles with the cursor
         tile_dict = {}
         coords = []
