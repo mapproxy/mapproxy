@@ -24,6 +24,7 @@ import base64
 from io import BytesIO
 from threading import Lock
 import requests
+from mapproxy.cache.tile import Tile
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -204,7 +205,7 @@ class CouchDBCache(TileCacheBase):
         # is_cached loads metadata
         self.is_cached(tile, dimensions=None)
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         # bulk loading with load_tiles is not implemented, because
         # CouchDB's /all_docs? does not include attachments
 

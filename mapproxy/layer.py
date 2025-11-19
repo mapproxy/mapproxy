@@ -23,7 +23,7 @@ from __future__ import division
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.grid.resolutions import merge_resolution_range
-from mapproxy.image import SubImageSource, bbox_position_in_image
+from mapproxy.image import sub_image_source, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.proj import ProjError
@@ -243,8 +243,8 @@ class CacheMapLayer(MapLayer):
                 raise BlankImage()
             src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
-            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
-                                    cacheable=resp.cacheable)
+            result = sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts,
+                                      cacheable=resp.cacheable)
         else:
             result = self._image(query)
         return result

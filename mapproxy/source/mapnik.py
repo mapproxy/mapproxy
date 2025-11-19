@@ -221,7 +221,7 @@ class MapnikSource(MapLayer):
     def render_mapfile(self, mapfile, query):
         return run_non_blocking(self._render_mapfile, (mapfile, query))
 
-    def _render_mapfile(self, mapfile, query):
+    def _render_mapfile(self, mapfile, query) -> ImageSource:
         start_time = time.time()
 
         m = self.map_obj(mapfile)

@@ -20,6 +20,7 @@ import datetime
 import time
 from io import BytesIO
 
+from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
     TileCacheBase,
@@ -76,7 +77,7 @@ class RedisCache(TileCacheBase):
         x, y, z = tile.coord
         return self.prefix + '-%d-%d-%d' % (z, x, y)
 
-    def is_cached(self, tile, dimensions=None):
+    def is_cached(self, tile: Tile, dimensions=None) -> bool:
         if tile.coord is None or tile.source:
             return True
         key = self._key(tile)
@@ -91,7 +92,7 @@ class RedisCache(TileCacheBase):
             log.error('REDIS:exists_key error  %s' % e)
             return False
 
-    def store_tile(self, tile, dimensions=None):
+    def store_tile(self, tile: Tile, dimensions=None) -> bool:
         if tile.stored:
             return True
         key = self._key(tile)
@@ -114,7 +115,7 @@ class RedisCache(TileCacheBase):
             self.r.pexpire(key, int(self.ttl * 1000))
         return r
 
-    def load_tile_metadata(self, tile, dimensions=None):
+    def load_tile_metadata(self, tile: Tile, dimensions=None):
         if tile.timestamp:
             return
         pipe = self.r.pipeline()
@@ -124,7 +125,7 @@ class RedisCache(TileCacheBase):
         tile.timestamp = time.mktime(datetime.datetime.now().timetuple()) - self.ttl - int(pipe_res[0])
         tile.size = pipe_res[1]
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         if tile.source or tile.coord is None:
             return True
         key = self._key(tile)
@@ -143,7 +144,7 @@ class RedisCache(TileCacheBase):
             log.error('REDIS:get_key error  %s' % e)
             return False
 
-    def remove_tile(self, tile, dimensions=None):
+    def remove_tile(self, tile: Tile, dimensions=None):
         if tile.coord is None:
             return True
 

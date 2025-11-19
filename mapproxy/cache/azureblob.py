@@ -19,6 +19,7 @@ import hashlib
 import threading
 from io import BytesIO
 
+from mapproxy.cache.tile import Tile
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.image import ImageSource
@@ -97,7 +98,7 @@ class AzureBlobCache(TileCacheBase):
         p = async_.Pool(min(self._concurrent_reader, len(tiles)))
         return all(p.map(self.load_tile, tiles))
 
-    def load_tile(self, tile, with_metadata=True, dimensions=None):
+    def load_tile(self, tile: Tile, with_metadata: bool = True, dimensions=None):
         if not tile.cacheable:
             return False
 

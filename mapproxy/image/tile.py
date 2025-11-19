@@ -36,7 +36,7 @@ class TileMerger(object):
         self.tile_grid = tile_grid
         self.tile_size = tile_size
 
-    def merge(self, ordered_tiles, image_opts):
+    def merge(self, ordered_tiles, image_opts) -> ImageSource:
         """
         Merge all tiles into one image.
 
@@ -99,7 +99,7 @@ class TileSplitter(object):
         self.meta_img = meta_tile.as_image()
         self.image_opts = image_opts
 
-    def get_tile(self, crop_coord, tile_size):
+    def get_tile(self, crop_coord, tile_size) -> ImageSource:
         """
         Return the cropped tile.
         :param crop_coord: the upper left pixel coord to start
@@ -139,7 +139,6 @@ class TiledImage(object):
         :param tile_size: the size of each tile
         :param src_bbox: the bbox of all tiles
         :param src_srs: the srs of the bbox
-        :param transparent: if the sources are transparent
         """
         self.tiles = tiles
         self.tile_grid = tile_grid

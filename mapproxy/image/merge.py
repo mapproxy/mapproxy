@@ -18,8 +18,10 @@ Image and tile manipulation (transforming, merging, etc).
 """
 import json
 from collections import namedtuple
+from typing import Optional, cast, Union, Any
+
 from PIL import Image, ImageColor, ImageChops, ImageMath
-from mapproxy.image import BlankImageSource, ImageSource
+from mapproxy.image import BlankImageSource, ImageSource, BaseImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
 
@@ -36,18 +38,17 @@ class LayerMerger(object):
         self.layers = []
         self.cacheable = True
 
-    def add(self, img, coverage=None):
+    def add(self, img: ImageSource, coverage=None):
         """
         Add one layer image to merge. Bottom-layers first.
         """
         if img is not None:
             self.layers.append((img, coverage))
 
-    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
+    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None) -> BaseImageSource:
         """
         Merge the layers. If the format is not 'png' just return the last image.
 
-        :param format: The image format for the result.
         :param size: The size for the merged output.
         :rtype: `ImageSource`
         """
@@ -166,7 +167,7 @@ class BandMerger(object):
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
         self.max_src_images = max(src_img+1, self.max_src_images)
 
-    def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
+    def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None) -> BaseImageSource:
         if len(sources) < self.max_src_images:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
 
@@ -174,7 +175,7 @@ class BandMerger(object):
             size = sources[0].size
 
         # load src bands
-        src_img_bands = []
+        src_img_bands: list[Optional[Image.Image]] = []
         for i, layer_img in enumerate(sources):
             img = layer_img.as_image()
 
@@ -192,6 +193,7 @@ class BandMerger(object):
 
         tmp_mode = self.mode
 
+        result_bands: list[Optional[Image.Image]]
         if tmp_mode == 'RGBA':
             result_bands = [None, None, None, None]
         elif tmp_mode == 'RGB':
@@ -228,16 +230,19 @@ class BandMerger(object):
                 b = Image.new("L", size, 255 if i == 3 else 0)
                 result_bands[i] = b
 
-        result = Image.merge(tmp_mode, result_bands)
+        for r in result_bands:
+            assert r is not None
+
+        result = Image.merge(tmp_mode, cast(list[Image.Image], result_bands))
         return ImageSource(result, size=size, image_opts=image_opts)
 
 
-def merge_images(layers, image_opts, size=None, bbox=None, bbox_srs=None, merger=None):
+def merge_images(layers: list[Union[ImageSource, tuple[ImageSource, Any]]], image_opts, size=None, bbox=None,
+                 bbox_srs=None, merger=None) -> BaseImageSource:
     """
     Merge multiple images into one.
 
-    :param images: list of `ImageSource`, bottom image first
-    :param format: the format of the output `ImageSource`
+    :param layers: list of `ImageSource`, bottom image first
     :param size: size of the merged image, if ``None`` the size
                  of the first image is used
     :param bbox: Bounding box
@@ -262,10 +267,11 @@ def merge_images(layers, image_opts, size=None, bbox=None, bbox_srs=None, merger
     return merger.merge(image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
 
 
-def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
+def concat_legends(legends: list[ImageSource], format='png', size=None, bgcolor='#ffffff', transparent=True) ->\
+        BaseImageSource:
     """
     Merge multiple legends into one
-    :param images: list of `ImageSource`, bottom image first
+    :param legends: list of `ImageSource`, bottom image first
     :param format: the format of the output `ImageSource`
     :param size: size of the merged image, if ``None`` the size
                  will be calculated

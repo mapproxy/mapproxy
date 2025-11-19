@@ -18,9 +18,8 @@ Retrieve maps/information from WMS servers.
 import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
-from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
+from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image
 from mapproxy.image.merge import concat_legends, concat_json_legends
-from mapproxy.image.opts import ImageOptions
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import BlankImage, MapLayer
 from mapproxy.extent import MapExtent, DefaultMapExtent
@@ -35,11 +34,9 @@ log = logging.getLogger('mapproxy.source.wms')
 
 class WMSLikeSource(MapLayer):
 
-    def __init__(self, image_opts=None, coverage=None, res_range=None,
-                 transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None,
-                 error_handler=None):
-        self.image_opts = image_opts or ImageOptions()
+    def __init__(self, image_opts=None, coverage=None, res_range=None, transparent_color=None,
+                 transparent_color_tolerance=None, supported_srs=None, supported_formats=None, error_handler=None):
+        super().__init__(image_opts)
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
         self.transparent_color = transparent_color
@@ -79,7 +76,7 @@ class WMSLikeSource(MapLayer):
             log.warning('could not retrieve WMS map: %s', e.full_msg or e)
             raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
-    def _get_map(self, query):
+    def _get_map(self, query) -> ImageSource:
         format = self.image_opts.format
         if not format:
             format = query.format
@@ -108,9 +105,9 @@ class WMSLikeSource(MapLayer):
             raise BlankImage()
         src_query = MapQuery(bbox, size, query.srs, format, dimensions=query.dimensions)
         resp = self._retrieve(src_query, format)
-        return SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+        return sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts)
 
-    def _get_transformed(self, query, format):
+    def _get_transformed(self, query, format) -> ImageSource:
         dst_srs = query.srs
         src_srs = self.supported_srs.best_srs(dst_srs)
         dst_bbox = query.bbox

@@ -1,7 +1,6 @@
 from __future__ import print_function
 import struct
 from mapproxy.cache.base import tile_buffer
-from mapproxy.image import ImageSource
 
 
 class MetaTileFile(object):
@@ -54,27 +53,3 @@ class MetaTileFile(object):
                 f.seek(offset, 0)
                 # img = ImageSource(BytesIO(f.read(size)))
                 open('/tmp/img-%02d.png' % i, 'wb').write(f.read(size))
-
-
-if __name__ == '__main__':
-    from io import BytesIO
-    from mapproxy.cache.tile import Tile
-    from mapproxy.test.image import create_tmp_image
-
-    tiles = []
-    img = create_tmp_image((256, 256))
-    for x in range(8):
-        for y in range(8):
-            tiles.append(Tile((x, y, 4), ImageSource(BytesIO(img))))
-
-    m = MetaTileFile(None)
-    print('!')
-    m.write_tiles(tiles)
-    print('!')
-    m.read_tiles()
-    print('!')
-
-    x = y = 0
-    METATILE = 8
-    for meta in range(METATILE ** 2):
-        print(x + (meta / METATILE), y + (meta % METATILE))
