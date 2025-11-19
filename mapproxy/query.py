@@ -1,14 +1,15 @@
 from __future__ import division
 
-from mapproxy.srs import make_lin_transf
+from mapproxy.util.bbox import BBOX
+from mapproxy.srs import make_lin_transf, _SRS
 
 
-class MapQuery(object):
+class MapQuery:
     """
     Internal query for a map with a specific extent, size, srs, etc.
     """
 
-    def __init__(self, bbox, size, srs, format='image/png', transparent=False,
+    def __init__(self, bbox: BBOX, size: tuple[int, int], srs: _SRS, format='image/png', transparent=False,
                  tiled_only=False, dimensions=None):
         self.bbox = bbox
         self.size = size

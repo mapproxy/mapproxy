@@ -18,6 +18,7 @@ import calendar
 import hashlib
 import sys
 import threading
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
@@ -26,6 +27,8 @@ from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async_
 from mapproxy.util.py import reraise_exception
 from urllib import request as urllib2
+
+from mapproxy.util.coverage import Coverage
 
 try:
     import boto3
@@ -57,8 +60,9 @@ class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
                  bucket_name='mapproxy', profile_name=None, region_name=None, endpoint_url=None,
-                 _concurrent_writer=4, access_control_list=None, coverage=None, use_http_get=False):
-        super(S3Cache, self).__init__(coverage)
+                 _concurrent_writer=4, access_control_list=None, coverage: Optional[Coverage] = None,
+                 use_http_get=False):
+        super().__init__(coverage)
         md5 = hashlib.new('md5', base_path.encode('utf-8') + bucket_name.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = md5.hexdigest()
         self.bucket_name = bucket_name

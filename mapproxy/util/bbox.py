@@ -1,8 +1,13 @@
+from typing import Union, cast, Optional
+
+BBOX = tuple[float, float, float, float]
+
+
 class TransformationError(Exception):
     pass
 
 
-def calculate_bbox(points):
+def calculate_bbox(points: list[tuple[float, float]]) -> BBOX:
     """
     Calculates the bbox of a list of points.
 
@@ -19,12 +24,12 @@ def calculate_bbox(points):
         miny = min(p[1] for p in points if p[1] != float('inf'))
         maxx = max(p[0] for p in points if p[0] != float('inf'))
         maxy = max(p[1] for p in points if p[1] != float('inf'))
-        return (minx, miny, maxx, maxy)
+        return minx, miny, maxx, maxy
     except ValueError:  # min/max are called with empty list when everything is inf
         raise TransformationError()
 
 
-def merge_bbox(bbox1, bbox2):
+def merge_bbox(bbox1: BBOX, bbox2: BBOX) -> BBOX:
     """
     Merge two bboxes.
 
@@ -36,10 +41,11 @@ def merge_bbox(bbox1, bbox2):
     miny = min(bbox1[1], bbox2[1])
     maxx = max(bbox1[2], bbox2[2])
     maxy = max(bbox1[3], bbox2[3])
-    return (minx, miny, maxx, maxy)
+    return minx, miny, maxx, maxy
 
 
-def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
+def bbox_equals(src_bbox: BBOX, dst_bbox: BBOX, x_delta: Optional[float] = None, y_delta: Optional[float] = None) ->\
+        bool:
     """
     Compares two bbox and checks if they are equal, or nearly equal.
 
@@ -67,7 +73,7 @@ def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
             abs(src_bbox[3] - dst_bbox[3]) < y_delta)
 
 
-def bbox_tuple(bbox):
+def bbox_tuple(bbox: Union[str, list[float], list[str]]) -> BBOX:
     """
     >>> bbox_tuple('20,-30,40,-10')
     (20.0, -30.0, 40.0, -10.0)
@@ -77,23 +83,22 @@ def bbox_tuple(bbox):
     """
     if isinstance(bbox, str):
         bbox = bbox.split(',')
-    bbox = tuple(map(float, bbox))
-    return bbox
+    return cast(BBOX, tuple(map(float, bbox)))
 
 
-def bbox_width(bbox):
+def bbox_width(bbox: BBOX) -> float:
     return bbox[2] - bbox[0]
 
 
-def bbox_height(bbox):
+def bbox_height(bbox: BBOX) -> float:
     return bbox[3] - bbox[1]
 
 
-def bbox_size(bbox):
+def bbox_size(bbox: BBOX) -> tuple[float, float]:
     return bbox_width(bbox), bbox_height(bbox)
 
 
-def bbox_intersects(one, two):
+def bbox_intersects(one: BBOX, two: BBOX) -> bool:
     a_x0, a_y0, a_x1, a_y1 = one
     b_x0, b_y0, b_x1, b_y1 = two
 
@@ -108,7 +113,7 @@ def bbox_intersects(one, two):
     return False
 
 
-def bbox_contains(one, two):
+def bbox_contains(one: BBOX, two: BBOX) -> bool:
     """
     Returns ``True`` if `one` contains `two`.
 
@@ -141,7 +146,7 @@ def bbox_contains(one, two):
     return False
 
 
-def bbox_from_center(center_x, center_y, width, height):
+def bbox_from_center(center_x: float, center_y: float, width: float, height: float) -> BBOX:
     """Compute a bounding box from its center, and its width and height
     """
     return (

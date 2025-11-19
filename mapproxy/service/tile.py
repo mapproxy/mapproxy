@@ -15,6 +15,9 @@
 # limitations under the License.
 
 from __future__ import division
+
+from typing import Optional, cast
+
 from mapproxy.template import template_loader, bunch
 
 import math
@@ -32,7 +35,7 @@ from mapproxy.grid import default_bboxs
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
-from mapproxy.util.coverage import load_limited_to
+from mapproxy.util.coverage import load_limited_to, Coverage
 
 import logging
 log = logging.getLogger(__name__)
@@ -291,7 +294,7 @@ class TileLayer(object):
                                    code='InvalidParameterValue')
         return dimensions
 
-    def render(self, tile_request, use_profiles=False, coverage=None, decorate_img=None):
+    def render(self, tile_request, use_profiles=False, coverage: Optional[Coverage] = None, decorate_img=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
@@ -323,6 +326,7 @@ class TileLayer(object):
             if decorate_img:
                 tile.source = decorate_img(tile.source)
 
+            format: Optional[str]
             if coverage_intersects:
                 if self.empty_response_as_png:
                     format = 'png'
@@ -336,12 +340,12 @@ class TileLayer(object):
 
                 return TileResponse(tile, format=format, image_opts=image_opts)
 
-            format = None if self._mixed_format else tile_request.format
+            format = None if self._mixed_format else cast(str, tile_request.format)
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
         except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
-    def get_info(self, info_request, coverage=None, decorate_img=None):
+    def get_info(self, info_request, coverage: Optional[Coverage] = None, decorate_img=None):
         if info_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (info_request.format, self.format), request=info_request,
@@ -373,6 +377,8 @@ class TileLayer(object):
             if decorate_img:
                 tile.source = decorate_img(tile.source)
 
+            format: Optional[str]
+
             if coverage_intersects:
                 if self.empty_response_as_png:
                     format = 'png'
@@ -386,7 +392,7 @@ class TileLayer(object):
 
                 return TileResponse(tile, format=format, image_opts=image_opts)
 
-            format = None if self._mixed_format else info_request.format
+            format = None if self._mixed_format else cast(str, info_request.format)
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
         except SourceError as e:
             raise RequestError(e.args[0], request=info_request, internal=True)
