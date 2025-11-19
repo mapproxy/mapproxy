@@ -22,7 +22,7 @@ class NamedGridList(ImmutableDictList):
             else:
                 name = str('%02d' % i)
             tmp.append((name, value))
-        ImmutableDictList.__init__(self, tmp)
+        super().__init__(tmp)
 
 
 def tile_grid_for_epsg(epsg, bbox=None, tile_size=(256, 256), res=None):
@@ -89,7 +89,7 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
 
 class UnsupportedException(Exception):
     def __init__(self, arg):
-        Exception.__init__(self, arg)
+        super().__init__(arg)
 
 
 def tile_grid_from_ogc_tile_matrix_set(ogc_tile_matrix_set):

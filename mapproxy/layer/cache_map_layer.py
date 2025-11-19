@@ -2,9 +2,9 @@ from __future__ import division
 
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
-from mapproxy.image import bbox_position_in_image, sub_image_source
+from mapproxy.image import bbox_position_in_image, sub_image_source, BaseImageSource
 from mapproxy.image.tile import TiledImage
-from mapproxy.layer import merge_layer_res_ranges, BlankImage, MapError, MapBBOXError
+from mapproxy.layer import merge_layer_res_ranges, BlankImageError, MapError, MapBBOXError
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.proj import ProjError
 from mapproxy.query import MapQuery
@@ -16,7 +16,7 @@ class CacheMapLayer(MapLayer):
 
     def __init__(self, tile_manager, extent=None, image_opts=None,
                  max_tile_limit=None):
-        MapLayer.__init__(self, image_opts=image_opts)
+        super().__init__(image_opts=image_opts)
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.extent = extent or map_extent_from_grid(self.grid)
@@ -25,7 +25,7 @@ class CacheMapLayer(MapLayer):
             self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.max_tile_limit = max_tile_limit
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         self.check_res_range(query)
 
         if query.tiled_only:
@@ -34,10 +34,10 @@ class CacheMapLayer(MapLayer):
         query_extent = MapExtent(query.bbox, query.srs)
         if not query.tiled_only and self.extent and not self.extent.contains(query_extent):
             if not self.extent.intersects(query_extent):
-                raise BlankImage()
+                raise BlankImageError()
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             if size[0] == 0 or size[1] == 0:
-                raise BlankImage()
+                raise BlankImageError()
             src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
             result = sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts,
@@ -52,13 +52,13 @@ class CacheMapLayer(MapLayer):
         if query.size != self.grid.tile_size:
             raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
 
-    def _image(self, query):
+    def _image(self, query: MapQuery) -> BaseImageSource:
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
                                              req_srs=query.srs)
         except NoTiles:
-            raise BlankImage()
+            raise BlankImageError()
         except GridError as ex:
             raise MapBBOXError(ex.args[0])
 
@@ -80,7 +80,7 @@ class CacheMapLayer(MapLayer):
                 affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
 
         if tile_collection.empty:
-            raise BlankImage()
+            raise BlankImageError()
 
         if query.tiled_only:
             tile = tile_collection[0].source

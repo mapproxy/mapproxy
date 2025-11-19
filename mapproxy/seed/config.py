@@ -206,7 +206,7 @@ class ConfigurationBase(object):
 
 class SeedConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
-        ConfigurationBase.__init__(self, name, conf, seeding_conf)
+        super().__init__(name, conf, seeding_conf)
 
         self.refresh_all = False
         self.refresh_timestamp = None
@@ -254,7 +254,7 @@ class SeedConfiguration(ConfigurationBase):
 
 class CleanupConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
-        ConfigurationBase.__init__(self, name, conf, seeding_conf)
+        super().__init__(name, conf, seeding_conf)
         self.init_time = time.time()
 
         self.remove_all = False

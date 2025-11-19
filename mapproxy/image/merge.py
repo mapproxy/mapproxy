@@ -18,7 +18,7 @@ Image and tile manipulation (transforming, merging, etc).
 """
 import json
 from collections import namedtuple
-from typing import Optional, cast, Union, Any
+from typing import Optional, cast, Sequence
 
 from PIL import Image, ImageColor, ImageChops, ImageMath
 from mapproxy.image import BlankImageSource, ImageSource, BaseImageSource
@@ -37,14 +37,14 @@ class LayerMerger:
     Merge multiple layers into one image.
     """
 
-    layers: list[tuple[ImageSource, Optional[Coverage]]]
+    layers: list[tuple[BaseImageSource, Optional[Coverage]]]
     cacheable: bool
 
     def __init__(self):
         self.layers = []
         self.cacheable = True
 
-    def add(self, img: ImageSource, coverage: Optional[Coverage] = None):
+    def add(self, img: BaseImageSource, coverage: Optional[Coverage] = None):
         """
         Add one layer image to merge. Bottom-layers first.
         """
@@ -244,7 +244,7 @@ class BandMerger(object):
         return ImageSource(result, size=size, image_opts=image_opts)
 
 
-def merge_images(layers: list[Union[ImageSource, tuple[ImageSource, Any]]], image_opts, size=None, bbox=None,
+def merge_images(layers: Sequence[tuple[BaseImageSource, Optional[Coverage]]], image_opts, size=None, bbox=None,
                  bbox_srs=None, merger=None) -> BaseImageSource:
     """
     Merge multiple images into one.
@@ -262,14 +262,11 @@ def merge_images(layers: list[Union[ImageSource, tuple[ImageSource, Any]]], imag
 
     # BandMerger does not have coverage support, passing only images
     if isinstance(merger, BandMerger):
-        sources = [x[0] if isinstance(x, tuple) else x for x in layers]
+        sources = [x[0] for x in layers]
         return merger.merge(sources, image_opts=image_opts, size=size)
 
     for layer in layers:
-        if isinstance(layer, tuple):
-            merger.add(layer[0], layer[1])
-        else:
-            merger.add(layer)
+        merger.add(layer[0], layer[1])
 
     return merger.merge(image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
 

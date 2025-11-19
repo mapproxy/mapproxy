@@ -58,7 +58,7 @@ class TestFileLock(Mocker):
         class Lock(threading.Thread):
 
             def __init__(self, lock_file):
-                threading.Thread.__init__(self)
+                super().__init__()
                 self.lock_file = lock_file
                 self.lock = FileLock(self.lock_file)
 
@@ -162,7 +162,7 @@ class TestFileLock(Mocker):
         class Lock(threading.Thread):
 
             def __init__(self, lock_file):
-                threading.Thread.__init__(self)
+                super().__init__()
                 self.lock_file = lock_file
                 self.lock = FileLock(self.lock_file, file_permissions=file_permissions)
 

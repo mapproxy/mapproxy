@@ -53,7 +53,7 @@ def static_filename(name):
 
 class OGCAPIException(Exception):
     def __init__(self, type, detail, status):
-        Exception.__init__(self)
+        super().__init__()
         self.type = type
         self.detail = detail
         self.status = status
@@ -78,7 +78,7 @@ class OGCAPIServer(Server):
         map_srs=None,
         default_dataset_layers=None,
     ):
-        Server.__init__(self)
+        super().__init__()
         self.enable_tiles = enable_tiles
         self.enable_maps = enable_maps
         self.image_formats = image_formats

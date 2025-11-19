@@ -26,7 +26,7 @@ def preferred_srs(conf):
 
 class GlobalConfiguration(ConfigurationBase):
     def __init__(self, conf_base_dir, conf, context):
-        ConfigurationBase.__init__(self, conf, context)
+        super().__init__(conf, context)
         self.base_config = load_default_config()
         self._copy_conf_values(self.conf, self.base_config)
         self.base_config.conf_base_dir = conf_base_dir

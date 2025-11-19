@@ -18,12 +18,14 @@ Map/information sources for layers or tile cache.
 """
 from typing import Optional
 
+from mapproxy.image import BaseImageSource
 from mapproxy.layer.map_layer import MapLayer
-from mapproxy.layer import MapError, MapBBOXError, BlankImage, InfoLayer
+from mapproxy.layer import MapError, MapBBOXError, BlankImageError, InfoLayer
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
+from mapproxy.query import MapQuery
 from mapproxy.util.coverage import Coverage
 
 
@@ -51,11 +53,11 @@ class LegendSource(object):
 
 class DebugSource(MapLayer):
     def __init__(self):
-        MapLayer.__init__(self)
+        super().__init__()
         self.extent = DefaultMapExtent()
         self.res_range = None
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         bbox = query.bbox
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
@@ -76,10 +78,10 @@ class DummySource(MapLayer):
     """
 
     def __init__(self, coverage: Optional[Coverage] = None):
-        MapLayer.__init__(self)
+        super().__init__()
         self.image_opts.transparent = True
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
         self.extent = MapExtent(coverage.bbox, coverage.srs) if coverage else DefaultMapExtent()
 
-    def get_map(self, query):
-        raise BlankImage()
+    def get_map(self, query: MapQuery) -> BaseImageSource:
+        raise BlankImageError()

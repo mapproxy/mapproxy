@@ -55,7 +55,7 @@ class NoCaseMultiDict(dict):
         """A `NoCaseMultiDict` can be constructed from an iterable of
         ``(key, value)`` tuples or a dict.
         """
-        dict.__init__(self, self._gen_dict(mapping))
+        super().__init__(self._gen_dict(mapping))
 
     def update(self, mapping=(), append=False):
         """A `NoCaseMultiDict` can be updated from an iterable of

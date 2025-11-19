@@ -187,7 +187,7 @@ class MockerTestCase(unittest.TestCase):
         self.__cleanup_funcs = []
         self.__cleanup_paths = []
 
-        super(MockerTestCase, self).__init__(methodName)
+        super().__init__(methodName)
 
     def __cleanup(self):
         for path in self.__cleanup_paths:
@@ -1189,7 +1189,7 @@ class Mock(object):
 
     def __getattribute__(self, name):
         if name.startswith("__mocker_"):
-            return super(Mock, self).__getattribute__(name)
+            return super().__getattribute__(name)
         if name == "__class__":
             if self.__mocker__.is_recording() or self.__mocker_type__ is None:
                 return type(self)
@@ -1202,7 +1202,7 @@ class Mock(object):
 
     def __setattr__(self, name, value):
         if name.startswith("__mocker_"):
-            return super(Mock, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
         return self.__mocker_act__("setattr", (name, value))
 
     def __delattr__(self, name):
@@ -2134,7 +2134,7 @@ Undefined = Undefined()
 class Patcher(Task):
 
     def __init__(self):
-        super(Patcher, self).__init__()
+        super().__init__()
         self._monitored = {}  # {kind: {id(object): object}}
         self._patched = {}
 

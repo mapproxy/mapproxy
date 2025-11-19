@@ -55,7 +55,7 @@ class TemplateError(Exception):
     """
 
     def __init__(self, message, position, name=None):
-        Exception.__init__(self, message)
+        super().__init__(message)
         self.position = position
         self.name = name
 

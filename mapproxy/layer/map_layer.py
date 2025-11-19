@@ -1,16 +1,20 @@
 from __future__ import division
 
+from abc import ABC, abstractmethod
 from typing import Optional
 
-from mapproxy.layer import BlankImage
+from mapproxy.image import BaseImageSource
+from mapproxy.grid.resolutions import ResolutionRange
+from mapproxy.layer import BlankImageError
 from mapproxy.image.opts import ImageOptions
 from mapproxy.util.coverage import Coverage
+from mapproxy.query import MapQuery
 
 
-class MapLayer:
+class MapLayer(ABC):
     supports_meta_tiles = False
 
-    res_range = None
+    res_range: Optional[ResolutionRange] = None
 
     coverage: Optional[Coverage] = None
 
@@ -40,10 +44,11 @@ class MapLayer:
     def check_res_range(self, query):
         if (self.res_range and
                 not self.res_range.contains(query.bbox, query.size, query.srs)):
-            raise BlankImage()
+            raise BlankImageError()
 
-    def get_map(self, query):
-        raise NotImplementedError
+    @abstractmethod
+    def get_map(self, query: MapQuery) -> BaseImageSource:
+        pass
 
     def combined_layer(self, other, query):
         return None

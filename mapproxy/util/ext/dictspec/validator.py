@@ -56,7 +56,7 @@ def validate(spec, data):
 
 class ValidationError(TypeError):
     def __init__(self, msg, errors=None, informal_only=False):
-        TypeError.__init__(self, msg)
+        super().__init__(msg)
         self.informal_only = informal_only
         self.errors = errors or []
 
