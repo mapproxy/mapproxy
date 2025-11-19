@@ -151,6 +151,7 @@ class FileCache(TileCacheBase):
         tile_loc = self.tile_location(tile, create_dir=True, dimensions=dimensions)
 
         if self.link_single_color_images:
+            assert tile.source is not None
             color = is_single_color_image(tile.source.as_image())
             if color:
                 self._store_single_color_tile(tile, tile_loc, color)

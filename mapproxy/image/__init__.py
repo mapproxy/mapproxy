@@ -19,7 +19,7 @@ Image and tile manipulation (transforming, merging, etc).
 import io
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import Optional, Union, IO, cast
+from typing import Optional, Union, IO, cast, Any
 
 from PIL import Image, ImageChops
 from PIL.TiffImagePlugin import ImageFileDirectory_v2, TiffTags
@@ -95,6 +95,11 @@ class BaseImageSource(ABC):
     """
     Virtual parent class for ImageSource and BlankImageSource
     """
+
+    size: tuple[int, int]
+    image_opts: Any
+    cacheable: bool
+    authorize_stale: bool
 
     @abstractmethod
     def as_image(self) -> Image.Image:
