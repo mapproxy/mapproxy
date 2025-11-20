@@ -34,10 +34,11 @@ Tile caching (creation, caching and retrieval of tiles).
 
 
 """
-from typing import Optional
+from typing import Optional, Union, Sequence
 
+from mapproxy.grid import TileCoord
 from mapproxy.image import BlankImageSource, BaseImageSource
-from mapproxy.image.tile import TileSplitter
+
 import logging
 
 log = logging.getLogger('mapproxy.cache.tile')
@@ -48,7 +49,7 @@ class Tile:
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
     """
 
-    def __init__(self, coord: tuple[int, int, int], source: Optional[BaseImageSource] = None, cacheable: bool = True):
+    def __init__(self, coord: Optional[TileCoord], source: Optional[BaseImageSource] = None, cacheable: bool = True):
         self.coord = coord
         self.source = source
         self.location = None
@@ -57,11 +58,13 @@ class Tile:
         self.size: Optional[int] = None
         self.timestamp: Optional[float] = None
 
-    def _cacheable_get(self):
+    @property
+    def cacheable(self) -> 'CacheInfo':
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
                          size=self.size)
 
-    def _cacheable_set(self, cacheable):
+    @cacheable.setter
+    def cacheable(self, cacheable: Union['CacheInfo', bool]):
         if isinstance(cacheable, bool):
             self._cacheable = cacheable
         else:  # assume cacheable is CacheInfo
@@ -69,17 +72,15 @@ class Tile:
             self.timestamp = cacheable.timestamp
             self.size = cacheable.size
 
-    cacheable = property(_cacheable_get, _cacheable_set)
-
     def source_buffer(self, *args, **kw):
         if self.source is not None:
             return self.source.as_buffer(*args, **kw)
         else:
             return None
 
-    def source_image(self, *args, **kw):
+    def source_image(self):
         if self.source is not None:
-            return self.source.as_image(*args, **kw)
+            return self.source.as_image()
         else:
             return None
 
@@ -144,7 +145,7 @@ class CacheInfo(object):
 
 
 class TileCollection(object):
-    def __init__(self, tile_coords):
+    def __init__(self, tile_coords: Sequence[Optional[TileCoord]]):
         self.tiles = [Tile(coord) for coord in tile_coords]
         self.tiles_dict = {}
         for tile in self.tiles:
@@ -186,24 +187,3 @@ class TileCollection(object):
 
     def __repr__(self):
         return 'TileCollection(%r)' % self.tiles
-
-
-def split_meta_tiles(meta_tile, tiles, tile_size, image_opts):
-    try:
-        # TODO png8
-        # if not self.transparent and format == 'png':
-        #     format = 'png8'
-        splitter = TileSplitter(meta_tile, image_opts)
-    except IOError:
-        # TODO
-        raise
-    split_tiles = []
-    for tile in tiles:
-        tile_coord, crop_coord = tile
-        if tile_coord is None:
-            continue
-        data = splitter.get_tile(crop_coord, tile_size)
-        new_tile = Tile(tile_coord, cacheable=meta_tile.cacheable)
-        new_tile.source = data
-        split_tiles.append(new_tile)
-    return split_tiles

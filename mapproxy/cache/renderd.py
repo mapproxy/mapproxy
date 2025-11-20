@@ -18,6 +18,7 @@ import hashlib
 
 import json
 import requests
+from mapproxy.grid import TileCoord
 
 from mapproxy.client.log import log_request
 from mapproxy.cache.tile import Tile
@@ -56,7 +57,7 @@ class RenderdTileCreator(TileCreator):
         self.cache.load_tiles(tiles)
         return tiles
 
-    def _create_renderd_tile(self, tile_coord):
+    def _create_renderd_tile(self, tile_coord: TileCoord):
         start_time = time.time()
         result = self._send_tile_request(self.tile_mgr.identifier, [tile_coord])
         duration = time.time()-start_time
@@ -74,7 +75,7 @@ class RenderdTileCreator(TileCreator):
 
         log_request(address, 200, None, duration=duration, method='RENDERD')
 
-    def _send_tile_request(self, cache_identifier, tile_coords):
+    def _send_tile_request(self, cache_identifier, tile_coords: list[TileCoord]):
         identifier = hashlib.sha1(str((cache_identifier, tile_coords)).encode('ascii')).hexdigest()
         message = {
             'command': 'tile',

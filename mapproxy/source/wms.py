@@ -21,7 +21,7 @@ from typing import Optional
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
-from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image
+from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image, BaseImageSource
 from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import BlankImageError
@@ -63,7 +63,7 @@ class WMSLikeSource(MapLayer):
     def _retrieve(self, query, format):
         raise NotImplementedError
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
             raise BlankImageError()
@@ -74,7 +74,6 @@ class WMSLikeSource(MapLayer):
             if self.transparent_color:
                 resp = make_transparent(resp, self.transparent_color,
                                         self.transparent_color_tolerance)
-            resp.opacity = self.opacity
             return resp
 
         except HTTPClientError as e:
@@ -144,7 +143,6 @@ class WMSLikeSource(MapLayer):
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox,
                                                            query.size, dst_bbox, self.image_opts)
 
-        img.format = format
         return img
 
 

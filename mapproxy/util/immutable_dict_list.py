@@ -60,3 +60,7 @@ class ImmutableDictList(Mapping[Hashable, V], Generic[V]):
             f"{name!r}: {self._values[name]!r}" for name in self._names
         )
         return f"{self.__class__.__name__}([{contents}])"
+
+    def items_int(self) -> Iterator[tuple[int, V]]:
+        for idx, values in enumerate(self.values()):
+            yield idx, values

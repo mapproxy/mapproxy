@@ -14,11 +14,18 @@
 # limitations under the License.
 
 import os
+from typing import Optional
+
+from mapproxy.image import BaseImageSource
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.image.opts import create_image
 
 import logging
+
+from mapproxy.srs import _SRS
+from mapproxy.util.bbox import BBOX
+
 log = logging.getLogger(__name__)
 
 
@@ -36,7 +43,7 @@ class TileMerger(object):
         self.tile_grid = tile_grid
         self.tile_size = tile_size
 
-    def merge(self, ordered_tiles, image_opts) -> ImageSource:
+    def merge(self, ordered_tiles: list[BaseImageSource], image_opts) -> BaseImageSource:
         """
         Merge all tiles into one image.
 
@@ -46,32 +53,32 @@ class TileMerger(object):
         if self.tile_grid == (1, 1):
             assert len(ordered_tiles) == 1
             if ordered_tiles[0] is not None:
-                tile = ordered_tiles.pop()
-                return tile
+                return ordered_tiles.pop()
         src_size = self._src_size()
 
         result = create_image(src_size, image_opts)
 
         cacheable = True
 
-        for i, source in enumerate(ordered_tiles):
-            if source is None:
+        for i, tile in enumerate(ordered_tiles):
+            if tile is None:
                 continue
             try:
-                if not source.cacheable:
+                if not tile.cacheable:
                     cacheable = False
-                tile = source.as_image()
+                image = tile.as_image()
                 pos = self._tile_offset(i)
-                tile.draft(image_opts.mode, self.tile_size)
-                result.paste(tile, pos)
-                source.close_buffers()
+                image.draft(image_opts.mode, self.tile_size)
+                result.paste(image, pos)
+                tile.close_buffers()
             except IOError as e:
                 if e.errno is None:  # PIL error
                     log.warning('unable to load tile %s, removing it (reason was: %s)'
-                                % (source, str(e)))
-                    if getattr(source, 'filename'):
-                        if os.path.exists(source.filename):
-                            os.remove(source.filename)
+                                % (tile, str(e)))
+                    filename = getattr(tile, 'filename')
+                    if filename:
+                        if os.path.exists(filename):
+                            os.remove(filename)
                 else:
                     raise
         return ImageSource(result, size=src_size, image_opts=image_opts, cacheable=cacheable)
@@ -90,7 +97,7 @@ class TileMerger(object):
                 i//self.tile_grid[0]*self.tile_size[1])
 
 
-class TileSplitter(object):
+class TileSplitter:
     """
     Splits a large image into multiple tiles.
     """
@@ -99,7 +106,7 @@ class TileSplitter(object):
         self.meta_img = meta_tile.as_image()
         self.image_opts = image_opts
 
-    def get_tile(self, crop_coord, tile_size) -> ImageSource:
+    def get_tile(self, crop_coord: tuple[int, int], tile_size: tuple[int, int]) -> ImageSource:
         """
         Return the cropped tile.
         :param crop_coord: the upper left pixel coord to start
@@ -126,22 +133,23 @@ class TileSplitter(object):
         return ImageSource(crop, size=tile_size, image_opts=self.image_opts)
 
 
-class TiledImage(object):
+class TiledImage:
     """
     An image built-up from multiple tiles.
     """
 
-    def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs):
+    def __init__(self, tiles: list[Optional[BaseImageSource]], tile_grid_size: tuple[int, int],
+                 tile_size: tuple[int, int], src_bbox: BBOX, src_srs: _SRS):
         """
         :param tiles: all tiles (sorted row-wise, top to bottom)
-        :param tile_grid: the tile grid size
-        :type tile_grid: ``(int(x_tiles), int(y_tiles))``
+        :param tile_grid_size: the tile grid size
+        :type tile_grid_size: ``(int(x_tiles), int(y_tiles))``
         :param tile_size: the size of each tile
         :param src_bbox: the bbox of all tiles
         :param src_srs: the srs of the bbox
         """
         self.tiles = tiles
-        self.tile_grid = tile_grid
+        self.tile_grid = tile_grid_size
         self.tile_size = tile_size
         self.src_bbox = src_bbox
         self.src_srs = src_srs

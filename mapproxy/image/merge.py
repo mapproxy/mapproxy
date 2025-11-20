@@ -27,7 +27,9 @@ from mapproxy.image.mask import mask_image
 
 import logging
 
+from mapproxy.srs import _SRS
 from mapproxy.util.coverage import Coverage
+from mapproxy.util.bbox import BBOX
 
 log = logging.getLogger('mapproxy.image')
 
@@ -51,13 +53,10 @@ class LayerMerger:
         if img is not None:
             self.layers.append((img, coverage))
 
-    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage: Optional[Coverage] = None) ->\
-            BaseImageSource:
+    def merge(self, image_opts, size: Optional[tuple[int, int]] = None, bbox: Optional[BBOX] = None,
+              bbox_srs: Optional[_SRS] = None, coverage: Optional[Coverage] = None) -> BaseImageSource:
         """
         Merge the layers. If the format is not 'png' just return the last image.
-
-        :param size: The size for the merged output.
-        :rtype: `ImageSource`
         """
         if not self.layers:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
@@ -139,7 +138,7 @@ class LayerMerger:
 band_ops = namedtuple("band_ops", ["dst_band", "src_img", "src_band", "factor"])
 
 
-class BandMerger(object):
+class BandMerger:
     """
     Merge bands from multiple sources into one image.
 
@@ -174,7 +173,8 @@ class BandMerger(object):
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
         self.max_src_images = max(src_img+1, self.max_src_images)
 
-    def merge(self, sources, image_opts, size=None) -> BaseImageSource:
+    def merge(self, sources: list[BaseImageSource], image_opts, size: Optional[tuple[int, int]] = None) ->\
+            BaseImageSource:
         if len(sources) < self.max_src_images:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
 
@@ -182,7 +182,7 @@ class BandMerger(object):
             size = sources[0].size
 
         # load src bands
-        src_img_bands: list[Optional[Image.Image]] = []
+        src_img_bands: list[Optional[tuple[Image.Image, ...]]] = []
         for i, layer_img in enumerate(sources):
             img = layer_img.as_image()
 
