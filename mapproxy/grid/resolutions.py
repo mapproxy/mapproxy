@@ -145,7 +145,7 @@ def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None)
     raise ValueError("requires either min_res/max_res or max_scale/min_scale")
 
 
-class ResolutionRange(object):
+class ResolutionRange:
     def __init__(self, min_res, max_res):
         self.min_res = min_res
         self.max_res = max_res

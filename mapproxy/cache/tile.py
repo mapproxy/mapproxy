@@ -38,6 +38,9 @@ from functools import partial
 from contextlib import contextmanager
 from typing import Optional, cast, Any
 
+from cache.base import TileCacheBase
+from grid.meta_grid import MetaTile
+from grid.tile_grid import TileGrid
 from mapproxy.grid.meta_grid import MetaGrid
 from mapproxy.image import BlankImageSource, BaseImageSource
 from mapproxy.image.mask import mask_image_source_from_coverage
@@ -69,7 +72,7 @@ class TileManager:
         return this or a new tile object.
     """
 
-    def __init__(self, grid, cache, sources: list[MapLayer], format, locker, image_opts=None, request_format=None,
+    def __init__(self, grid: TileGrid, cache: TileCacheBase, sources: list[MapLayer], format, locker, image_opts=None, request_format=None,
                  meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
                  pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
                  bulk_meta_tiles=False,
@@ -125,12 +128,12 @@ class TileManager:
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
 
-    def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
+    def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False) -> 'Tile':
         return self.load_tile_coords(
             [tile_coord], dimensions=dimensions, with_metadata=with_metadata,
         )[0]
 
-    def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
+    def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False) -> 'TileCollection':
         tiles = TileCollection(tile_coords)
         rescale_till_zoom = 0
         if self.rescale_tiles:
@@ -185,9 +188,9 @@ class TileManager:
             # missing or staled
             return not self.is_cached(tile, dimensions=dimensions)
 
-    def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,
+    def _load_tile_coords(self, tiles: 'TileCollection', dimensions=None, with_metadata=False,
                           rescale_till_zoom=None, rescaled_tiles=None
-                          ):
+                          ) -> 'TileCollection':
         uncached_tiles = []
 
         if rescaled_tiles:
@@ -201,7 +204,7 @@ class TileManager:
         # if no real source, we are running in cache_only mode
         cache_only = self.sources == [] or (len(self.sources) == 1 and isinstance(self.sources[0], DummySource))
         # if no rescale_tiles and cache_only, we dont have any additional processing to do
-        if (self.rescale_tiles == 0 and cache_only):
+        if self.rescale_tiles == 0 and cache_only:
             return tiles
 
         for tile in tiles:
@@ -241,7 +244,7 @@ class TileManager:
         if tile.coord is None:
             return True
         cached = self.cache.is_cached(tile, dimensions=dimensions)
-        max_mtime = self.expire_timestamp(tile)
+        max_mtime = self.expire_timestamp()
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile, dimensions=self.dimensions)
             # file time stamp must be rounded to integer since time conversion functions
@@ -252,7 +255,7 @@ class TileManager:
                 cached = False
         return cached
 
-    def is_stale(self, tile, dimensions=None):
+    def is_stale(self, tile: 'Tile', dimensions=None) -> bool:
         """
         Return True if tile exists _and_ is expired.
         """
@@ -266,7 +269,7 @@ class TileManager:
             return False
         return False
 
-    def expire_timestamp(self, tile=None):
+    def expire_timestamp(self):
         """
         Return the timestamp until which a tile should be accepted as up-to-date,
         or ``None`` if the tiles should not expire.
@@ -290,7 +293,7 @@ class TileManager:
             tile = img_filter(tile)
         return tile
 
-    def _scaled_tile(self, tile, stop_zoom, rescaled_tiles):
+    def _scaled_tile(self, tile: 'Tile', stop_zoom, rescaled_tiles) -> 'Tile':
         """
         Try to load tile by loading, scaling and clipping tiles from zoom levels above or
         below. stop_zoom determines if tiles from above should be scaled up, or if tiles
@@ -351,7 +354,7 @@ class TileManager:
 RESCALE_TILE_MISSING = BlankImageSource((256, 256), ImageOptions())
 
 
-class TileCreator(object):
+class TileCreator:
     def __init__(self, tile_mgr: TileManager, dimensions=None, image_merger=None, bulk_meta_tiles=False):
         self.cache = tile_mgr.cache
         self.sources = tile_mgr.sources
@@ -362,19 +365,19 @@ class TileCreator(object):
         self.dimensions = dimensions
         self.image_merger = image_merger
 
-    def is_cached(self, tile, dimensions=None):
+    def is_cached(self, tile: 'Tile', dimensions=None) -> bool:
         """
         Return True if the tile is cached.
         """
         return self.tile_mgr.is_cached(tile, dimensions=dimensions)
 
-    def is_stale(self, tile):
+    def is_stale(self, tile: 'Tile') -> bool:
         """
         Return True if the tile exists in cache and is expired.
         """
         return self.tile_mgr.is_stale(tile)
 
-    def create_tiles(self, tiles):
+    def create_tiles(self, tiles: list['Tile']) -> list['Tile']:
         if not self.sources:
             return []
         if not self.meta_grid:
@@ -396,7 +399,7 @@ class TileCreator(object):
 
         return created_tiles
 
-    def _create_single_tiles(self, tiles):
+    def _create_single_tiles(self, tiles: list['Tile']) -> list['Tile']:
         if self.tile_mgr.concurrent_tile_creators > 1 and len(tiles) > 1:
             return self._create_threaded(self._create_single_tile, tiles)
 
@@ -405,14 +408,14 @@ class TileCreator(object):
             created_tiles.extend(self._create_single_tile(tile))
         return created_tiles
 
-    def _create_threaded(self, create_func, tiles):
+    def _create_threaded(self, create_func, tiles: list['Tile']) -> list['Tile']:
         result = []
         async_pool = async_.Pool(self.tile_mgr.concurrent_tile_creators)
         for new_tiles in async_pool.imap(create_func, tiles):
             result.extend(new_tiles)
         return result
 
-    def _create_single_tile(self, tile: 'Tile', dimensions=None):
+    def _create_single_tile(self, tile: 'Tile', dimensions=None) -> 'Tile':
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
                          self.tile_mgr.request_format, dimensions=self.dimensions)
@@ -447,7 +450,7 @@ class TileCreator(object):
                 self.cache.load_tile(tile)
         return [tile]
 
-    def _query_sources(self, query) -> Optional[BaseImageSource]:
+    def _query_sources(self, query: MapQuery) -> Optional[BaseImageSource]:
         """
         Query all sources and return the results as a single ImageSource.
         Multiple sources will be merged into a single image.
@@ -480,7 +483,7 @@ class TileCreator(object):
         return merge_images(layers, size=query.size, bbox=query.bbox, bbox_srs=query.srs,
                             image_opts=self.tile_mgr.image_opts, merger=self.image_merger)
 
-    def _create_meta_tiles(self, meta_tiles):
+    def _create_meta_tiles(self, meta_tiles: list[MetaTile]) -> list['Tile']:
         if self.bulk_meta_tiles:
             created_tiles = []
             for meta_tile in meta_tiles:
@@ -495,7 +498,7 @@ class TileCreator(object):
             created_tiles.extend(self._create_meta_tile(meta_tile))
         return created_tiles
 
-    def _create_meta_tile(self, meta_tile):
+    def _create_meta_tile(self, meta_tile) -> 'Tile':
         """
         _create_meta_tile queries a single meta tile and splits it into
         tiles.

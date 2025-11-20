@@ -1,5 +1,8 @@
 from __future__ import division
 
+from typing import Optional
+
+from mapproxy.cache.tile import TileManager
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.image import bbox_position_in_image, sub_image_source, BaseImageSource
@@ -14,7 +17,7 @@ from mapproxy.util.bbox import bbox_equals
 class CacheMapLayer(MapLayer):
     supports_meta_tiles = True
 
-    def __init__(self, tile_manager, extent=None, image_opts=None,
+    def __init__(self, tile_manager: TileManager, extent: Optional[MapExtent] = None, image_opts=None,
                  max_tile_limit=None):
         super().__init__(image_opts=image_opts)
         self.tile_manager = tile_manager
