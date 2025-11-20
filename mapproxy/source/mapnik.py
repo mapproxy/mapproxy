@@ -21,6 +21,7 @@ import time
 import threading
 import multiprocessing
 from io import BytesIO
+from typing import Optional
 
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import ImageSource
@@ -31,6 +32,7 @@ from mapproxy.source import SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.async_ import run_non_blocking
+from mapproxy.util.coverage import Coverage
 
 try:
     import mapnik
@@ -57,10 +59,10 @@ log = logging.getLogger(__package__)
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
 
-    def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
+    def __init__(self, mapfile, layers=None, image_opts=None, coverage: Optional[Coverage] = None,
                  res_range=None, lock=None, reuse_map_objects=False,
                  scale_factor=None, multithreaded=False):
-        MapLayer.__init__(self, image_opts=image_opts)
+        super().__init__(image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
         self.res_range = res_range
@@ -75,15 +77,17 @@ class MapnikSource(MapLayer):
             self.extent = DefaultMapExtent()
         if multithreaded:
             # global objects allow caching over multiple instances within the same worker process
-            global _map_objs  # mapnik map objects by cachekey
-            _map_objs = {}
-            global _map_objs_lock
-            _map_objs_lock = threading.Lock()
-            global _map_objs_queues  # queues of unused mapnik map objects by PID and mapfile
-            _map_objs_queues = {}
+            # mapnik map objects by cachekey:
+            global _map_objs  # type: ignore
+            _map_objs = {}  # type: ignore
+            global _map_objs_lock  # type: ignore
+            _map_objs_lock = threading.Lock()  # type: ignore
+            # queues of unused mapnik map objects by PID and mapfile:
+            global _map_objs_queues  # type: ignore
+            _map_objs_queues = {}  # type: ignore
         else:
             # instance variables guarantee separation of caches
-            self._map_objs = {}
+            self._map_objs: dict = {}
             self._map_objs_lock = threading.Lock()
 
     def _map_cache(self):

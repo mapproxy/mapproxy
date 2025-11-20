@@ -19,6 +19,7 @@ import hashlib
 import datetime
 import time
 from io import BytesIO
+from typing import Optional, cast
 
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
@@ -26,6 +27,7 @@ from mapproxy.cache.base import (
     TileCacheBase,
     tile_buffer,
 )
+from mapproxy.util.coverage import Coverage
 
 try:
     import redis  # type: ignore
@@ -39,9 +41,9 @@ log = logging.getLogger(__name__)
 
 class RedisCache(TileCacheBase):
     def __init__(
-            self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage=None, ssl_certfile=None,
-            ssl_keyfile=None, ssl_ca_certs=None):
-        super(RedisCache, self).__init__(coverage)
+            self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage: Optional[Coverage] = None,
+            ssl_certfile=None, ssl_keyfile=None, ssl_ca_certs=None):
+        super().__init__(coverage)
 
         if redis is None:
             raise ImportError("Redis backend requires 'redis' package.")
@@ -84,7 +86,8 @@ class RedisCache(TileCacheBase):
 
         try:
             log.debug('exists_key, key: %s' % key)
-            return self.r.exists(key)
+            # TODO: according to documentation exists returns an Awaitable
+            return cast(bool, self.r.exists(key))
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
             return False
@@ -102,7 +105,8 @@ class RedisCache(TileCacheBase):
 
         try:
             log.debug('store_key, key: %s' % key)
-            r = self.r.set(key, data)
+            # TODO: according to documentation set returns an Awaitable
+            r = cast(bool, self.r.set(key, data))
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
             return False
@@ -134,7 +138,8 @@ class RedisCache(TileCacheBase):
             log.debug('get_key, key: %s' % key)
             tile_data = self.r.get(key)
             if tile_data:
-                tile.source = ImageSource(BytesIO(tile_data))
+                # TODO: according to documentation get returns an Awaitable
+                tile.source = ImageSource(BytesIO(cast(bytes, tile_data)))
                 return True
             return False
         except redis.exceptions.ConnectionError as e:

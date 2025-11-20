@@ -1,10 +1,13 @@
 from __future__ import division
 
-from mapproxy.srs import SRS
-from mapproxy.util.bbox import merge_bbox, bbox_contains, bbox_intersects
+from typing import Optional
+
+from mapproxy.grid.tile_grid import TileGrid
+from mapproxy.srs import SRS, _SRS
+from mapproxy.util.bbox import merge_bbox, bbox_contains, bbox_intersects, BBOX
 
 
-def map_extent_from_grid(grid):
+def map_extent_from_grid(grid: TileGrid) -> 'MapExtent':
     """
     >>> from mapproxy.grid.tile_grid import tile_grid_for_epsg
     >>> map_extent_from_grid(tile_grid_for_epsg('EPSG:900913'))
@@ -15,7 +18,7 @@ def map_extent_from_grid(grid):
     return MapExtent(grid.bbox, grid.srs)
 
 
-class MapExtent(object):
+class MapExtent:
     """
     >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
     >>> me.llbbox
@@ -27,18 +30,18 @@ class MapExtent(object):
     """
     is_default = False
 
-    def __init__(self, bbox, srs):
-        self._llbbox = None
+    def __init__(self, bbox: BBOX, srs: _SRS):
+        self._llbbox: Optional[BBOX] = None
         self.bbox = bbox
         self.srs = srs
 
     @property
-    def llbbox(self):
+    def llbbox(self) -> BBOX:
         if not self._llbbox:
             self._llbbox = self.srs.transform_bbox_to(self.srs.get_geographic_srs(), self.bbox)
         return self._llbbox
 
-    def bbox_for(self, srs):
+    def bbox_for(self, srs: _SRS) -> BBOX:
         if srs == self.srs:
             return self.bbox
 
@@ -47,7 +50,7 @@ class MapExtent(object):
     def __repr__(self):
         return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object):
         if not isinstance(other, MapExtent):
             return NotImplemented
 
@@ -59,12 +62,12 @@ class MapExtent(object):
 
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object):
         if not isinstance(other, MapExtent):
             raise NotImplementedError
         return not self.__eq__(other)
 
-    def __add__(self, other):
+    def __add__(self, other: object):
         if not isinstance(other, MapExtent):
             raise NotImplementedError
         if other.is_default:
@@ -73,7 +76,7 @@ class MapExtent(object):
             return other
         return MapExtent(merge_bbox(self.llbbox, other.llbbox), self.srs.get_geographic_srs())
 
-    def contains(self, other):
+    def contains(self, other: object):
         if not isinstance(other, MapExtent):
             raise NotImplementedError
         if self.is_default:
@@ -81,12 +84,12 @@ class MapExtent(object):
             return True
         return bbox_contains(self.bbox, other.bbox_for(self.srs))
 
-    def intersects(self, other):
+    def intersects(self, other: object):
         if not isinstance(other, MapExtent):
             raise NotImplementedError
         return bbox_intersects(self.bbox, other.bbox_for(self.srs))
 
-    def intersection(self, other):
+    def intersection(self, other: 'MapExtent'):
         """
         Returns the intersection of `self` and `other`.
 
@@ -130,7 +133,7 @@ class DefaultMapExtent(MapExtent):
         MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
 
 
-def merge_layer_extents(layers):
+def merge_layer_extents(layers) -> MapExtent:
     if not layers:
         return DefaultMapExtent()
     layers = layers[:]

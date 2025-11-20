@@ -18,6 +18,7 @@
 import json
 import sys
 from threading import Lock
+from typing import Optional
 
 from mapproxy.client.http import HTTPClientError
 from mapproxy.grid.tile_grid import tile_grid_from_ogc_tile_matrix_set
@@ -35,6 +36,8 @@ from mapproxy.util.ogcapi import (
 
 import logging
 
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger("mapproxy.source.ogcapitiles")
 log_config = logging.getLogger("mapproxy.config")
 
@@ -49,7 +52,7 @@ class OGCAPITilesSource(MapLayer):
         collection,
         http_client,
         tile_matrix_set_id=None,
-        coverage=None,
+        coverage: Optional[Coverage] = None,
         image_opts=None,
         error_handler=None,
         res_range=None,

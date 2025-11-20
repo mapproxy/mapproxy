@@ -21,6 +21,7 @@ from mapproxy.service.wms import combined_layers
 from mapproxy.source.wms import WMSSource
 from mapproxy.client.wms import WMSClient
 from mapproxy.request.wms import create_request
+from mapproxy.srs import SupportedSRS
 
 
 class TestCombinedLayers(object):
@@ -91,8 +92,8 @@ class TestCombinedLayers(object):
             ),
         ]
 
-        layers[0].supported_srs = ["EPSG:4326"]
-        layers[1].supported_srs = ["EPSG:4326"]
+        layers[0].supported_srs = SupportedSRS([SRS("EPSG:4326")])
+        layers[1].supported_srs = SupportedSRS([SRS("EPSG:4326")])
 
         layers[2].supported_formats = ["image/png"]
         layers[3].supported_formats = ["image/png"]

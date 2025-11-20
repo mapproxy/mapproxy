@@ -18,6 +18,7 @@
 import json
 import sys
 from threading import Lock
+from typing import Optional
 
 from mapproxy.client.http import HTTPClientError
 from mapproxy.request.base import BaseRequest
@@ -33,6 +34,8 @@ from mapproxy.util.py import reraise_exception
 
 import logging
 
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger("mapproxy.source.ogcapimaps")
 
 # For testing
@@ -45,11 +48,11 @@ class OGCAPIMapsSource(WMSLikeSource):
         landingpage_url,
         collection,
         http_client,
-        coverage=None,
+        coverage: Optional[Coverage] = None,
         image_opts=None,
         error_handler=None,
         res_range=None,
-        supported_srs=None,
+        supported_srs: Optional[SupportedSRS] = None,
         transparent=None,
         transparent_color=None,
         transparent_color_tolerance=None,

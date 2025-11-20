@@ -16,12 +16,14 @@
 """
 Map/information sources for layers or tile cache.
 """
+from typing import Optional
 
 from mapproxy.layer import MapLayer, MapError, MapBBOXError, BlankImage, InfoLayer
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
+from mapproxy.util.coverage import Coverage
 
 
 class SourceError(MapError):
@@ -72,7 +74,7 @@ class DummySource(MapLayer):
     Used internally for 'offline' sources (e.g. seed_only).
     """
 
-    def __init__(self, coverage=None):
+    def __init__(self, coverage: Optional[Coverage] = None):
         MapLayer.__init__(self)
         self.image_opts.transparent = True
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))

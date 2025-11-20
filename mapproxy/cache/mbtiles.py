@@ -20,6 +20,7 @@ import threading
 import time
 from io import BytesIO
 from itertools import groupby
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
@@ -29,6 +30,9 @@ from mapproxy.util.lock import FileLock
 from mapproxy.util.sqlite3 import sqlite3
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger(__name__)
 
 if not hasattr(glob, 'escape'):
@@ -50,9 +54,9 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0, coverage=None,
-                 directory_permissions=None, file_permissions=None):
-        super(MBTilesCache, self).__init__(coverage)
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0,
+                 coverage: Optional[Coverage] = None, directory_permissions=None, file_permissions=None):
+        super().__init__(coverage)
         md5 = hashlib.new('md5', mbtile_file.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'mbtiles-' + md5.hexdigest()
         self.mbtile_file = mbtile_file
@@ -320,15 +324,15 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage=None,
+    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage: Optional[Coverage] = None,
                  directory_permissions=None, file_permissions=None):
-        super(MBTilesLevelCache, self).__init__(coverage)
+        super().__init__(coverage)
         md5 = hashlib.new('md5', mbtiles_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'sqlite-' + md5.hexdigest()
         self.cache_dir = mbtiles_dir
         self.directory_permissions = directory_permissions
         self.file_permissions = file_permissions
-        self._mbtiles = {}
+        self._mbtiles: dict[int, MBTilesCache] = {}
         self.timeout = timeout
         self.wal = wal
         self.ttl = ttl

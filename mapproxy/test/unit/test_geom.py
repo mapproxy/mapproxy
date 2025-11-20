@@ -260,7 +260,7 @@ class TestBBOXCoverage(object):
         assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
 
     def test_geom(self):
-        assert self.coverage.geom is None
+        assert self.coverage.geom == bbox_polygon([-10, 10, 80, 80])
 
     def test_contains(self):
         assert self.coverage.contains((15, 15, 20, 20), SRS(4326))

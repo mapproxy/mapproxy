@@ -18,6 +18,8 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 """
 
 import sys
+from typing import Optional
+
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
@@ -27,12 +29,15 @@ from mapproxy.extent import map_extent_from_grid
 from mapproxy.util.py import reraise_exception
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
 
 
 class TiledSource(MapLayer):
-    def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None,
+    def __init__(self, grid, client, coverage: Optional[Coverage] = None, image_opts=None, error_handler=None,
                  res_range=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.grid = grid
