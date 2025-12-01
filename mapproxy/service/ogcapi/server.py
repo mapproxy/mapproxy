@@ -282,7 +282,7 @@ class OGCAPIServer(Server):
             )
 
     def create_href(self, req: Request, resource):
-        return req.script_url + resource
+        return escape_html(req.script_url) + resource
 
     def is_html_req(self, req):
         return (req.args.get("f", None) == F_HTML) or (
