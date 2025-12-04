@@ -35,6 +35,8 @@ from mapproxy.service.ogcapi.constants import (
 )
 from mapproxy.util.jinja2_templates import render_j2_template
 
+from mapproxy.util.escape import escape_html
+
 import logging
 
 log = logging.getLogger(__name__)
