@@ -144,12 +144,13 @@ def merge_layers(conf, base):
     for base_layer in base:
         found = False
         for conf_layer in conf:
-            if conf_layer['name'] in remaining_conf and base_layer['name'] == conf_layer['name']:
-                new_layer = merge_dict(conf_layer, base_layer)
-                out.append(new_layer)
-                remaining_conf.remove(conf_layer['name'])
-                found = True
-                break
+            if 'name' in conf_layer and 'name' in base_layer:
+                if conf_layer['name'] in remaining_conf and base_layer['name'] == conf_layer['name']:
+                    new_layer = merge_dict(conf_layer, base_layer)
+                    out.append(new_layer)
+                    remaining_conf.remove(conf_layer['name'])
+                    found = True
+                    break
 
         if not found:
             out.append(base_layer)
