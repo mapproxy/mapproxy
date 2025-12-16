@@ -35,6 +35,8 @@ from mapproxy.service.ogcapi.constants import (
 )
 from mapproxy.util.jinja2_templates import render_j2_template
 
+from mapproxy.util.escape import escape_html
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -282,7 +284,7 @@ class OGCAPIServer(Server):
             )
 
     def create_href(self, req: Request, resource):
-        return req.host_url[:-1] + resource
+        return escape_html(req.script_url) + resource
 
     def is_html_req(self, req):
         return (req.args.get("f", None) == F_HTML) or (
