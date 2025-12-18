@@ -36,7 +36,9 @@ class TestCacheLock(object):
             assert True
 
     def test_locked_by_process_no_block(self, lock_file):
-        proc_is_locked = multiprocessing.Event()
+        ctx = multiprocessing.get_context('fork')
+
+        proc_is_locked = ctx.Event()
 
         def lock():
             locker = CacheLocker(lock_file)
@@ -44,7 +46,7 @@ class TestCacheLock(object):
                 proc_is_locked.set()
                 time.sleep(10)
 
-        p = multiprocessing.Process(target=lock)
+        p = ctx.Process(target=lock)
         p.start()
         # wait for process to start
         proc_is_locked.wait()
@@ -66,7 +68,9 @@ class TestCacheLock(object):
             p.join()
 
     def test_locked_by_process_waiting(self, lock_file):
-        proc_is_locked = multiprocessing.Event()
+        ctx = multiprocessing.get_context('fork')
+
+        proc_is_locked = ctx.Event()
 
         def lock():
             locker = CacheLocker(lock_file)
@@ -74,7 +78,7 @@ class TestCacheLock(object):
                 proc_is_locked.set()
                 time.sleep(.1)
 
-        p = multiprocessing.Process(target=lock)
+        p = ctx.Process(target=lock)
         start_time = time.time()
         p.start()
         # wait for process to start
