@@ -469,9 +469,20 @@ class TileCreator(object):
                 return (img, source.coverage)
 
         layers = []
+        all_transparent = True
         for layer in async_.imap(get_map_from_source, self.sources):
             if layer[0] is not None:
                 layers.append(layer)
+                try:
+                    if not layer[0].image_opts.transparent:
+                        all_transparent = False
+                        break
+                except AttributeError:
+                    all_transparent = False
+                    break
+
+        if all_transparent:
+            self.tile_mgr.image_opts.transparent = True
 
         return merge_images(layers, size=query.size, bbox=query.bbox, bbox_srs=query.srs,
                             image_opts=self.tile_mgr.image_opts, merger=self.image_merger)

@@ -84,6 +84,32 @@ class TestMaskImage(object):
             [(7500, (255, 255, 255, 0)), (2500, (100, 0, 200, 255))],
         )
 
+    def test_mask_partial_image_alpha(self):
+        # render 10 white vertical stripes with increasing opacity on alpha channel
+        img_stripes = Image.new("RGBA", (100, 100))
+        rect = ImageDraw.Draw(img_stripes)
+        ref_colors = [(5000, (255, 255, 255, 0))]
+        for i in range(10):
+            # starting at 30, step size 25
+            fill_color = (255, 255, 255, i * 25 + 30)
+            ref_colors.append((500, fill_color))
+            rect.rectangle([(i * 10, 0), ((i + 1) * 10, 100)], fill = fill_color, outline = None)
+    
+        img = ImageSource(
+            img_stripes,
+            image_opts=ImageOptions(bgcolor=None, transparent=True)
+        )
+    
+        # apply mask to the image: keep upper half, drop lower half
+        result = mask_image_source_from_coverage(
+            img, [0, 0, 10, 10], SRS(4326), coverage([0, 5, 30, 30])
+        )
+    
+        assert_img_colors_eq(
+            result.as_image().getcolors(),
+            ref_colors
+        )
+
     def test_wkt_mask_partial_image_transparent(self):
         img = ImageSource(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
