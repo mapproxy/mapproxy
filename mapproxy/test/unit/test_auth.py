@@ -19,7 +19,7 @@ from mapproxy.exception import RequestError
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapLayer
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.extent import DefaultMapExtent
 from mapproxy.request.base import Request
 from mapproxy.request.tile import tile_request

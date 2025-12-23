@@ -18,7 +18,8 @@ Map/information sources for layers or tile cache.
 """
 from typing import Optional
 
-from mapproxy.layer import MapLayer, MapError, MapBBOXError, BlankImage, InfoLayer
+from mapproxy.layer.map_layer import MapLayer
+from mapproxy.layer import MapError, MapBBOXError, BlankImage, InfoLayer
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions

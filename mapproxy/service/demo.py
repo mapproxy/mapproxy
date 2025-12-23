@@ -27,13 +27,15 @@ from collections import defaultdict, OrderedDict
 
 from urllib import request as urllib2
 
+from mapproxy.layer.cache_map_layer import CacheMapLayer
+from mapproxy.layer.resolution_conditional import ResolutionConditional
+from mapproxy.layer.srs_conditional import SRSConditional
 from mapproxy.config.config import base_config
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.request.base import Request
 from mapproxy.response import Response
 from mapproxy.srs import SRS, get_epsg_num
-from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
 from mapproxy.source.wms import WMSSource
 from mapproxy.util.escape import escape_html
 from mapproxy.template import template_loader, bunch
