@@ -98,7 +98,7 @@ def tilematrixset(server: OGCAPIServer, req: Request, id: str):
         id,
         title=id,
         uri=uri,
-        wellKnownScaleSet=wellKnownScaleSet,
+        well_known_scale_set=wellKnownScaleSet,
     )
 
     return server.create_json_or_html_response(

@@ -21,13 +21,13 @@ class MapLayer(ABC):
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()
 
-    def _get_opacity(self):
+    @property
+    def opacity(self) -> Optional[float]:
         return self.image_opts.opacity
 
-    def _set_opacity(self, value):
+    @opacity.setter
+    def opacity(self, value: Optional[float]):
         self.image_opts.opacity = value
-
-    opacity = property(_get_opacity, _set_opacity)
 
     def is_opaque(self, query):
         """

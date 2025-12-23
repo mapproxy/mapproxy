@@ -21,7 +21,6 @@ from collections import namedtuple
 from typing import Optional, cast, Sequence
 
 from PIL import Image, ImageColor, ImageChops, ImageMath
-from extent import BBOX
 from mapproxy.image import BlankImageSource, ImageSource, BaseImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
@@ -30,6 +29,7 @@ import logging
 
 from mapproxy.srs import _SRS
 from mapproxy.util.coverage import Coverage
+from mapproxy.util.bbox import BBOX
 
 log = logging.getLogger('mapproxy.image')
 

@@ -1,7 +1,7 @@
 from __future__ import division
 
 
-class ConfigurationBase(object):
+class ConfigurationBase:
     """
     Base class for all configurations.
     """
