@@ -22,17 +22,18 @@ from typing import Optional
 
 from mapproxy.layer.cache_map_layer import CacheMapLayer
 from mapproxy.layer.map_layer import MapLayer
+from mapproxy.image import BaseImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImageError
 from mapproxy.extent import map_extent_from_grid
 from mapproxy.util.py import reraise_exception
+from mapproxy.query import MapQuery
+from mapproxy.util.coverage import Coverage
 
 import logging
-
-from mapproxy.util.coverage import Coverage
 
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
@@ -41,7 +42,7 @@ log_config = logging.getLogger('mapproxy.config')
 class TiledSource(MapLayer):
     def __init__(self, grid, client, coverage: Optional[Coverage] = None, image_opts=None, error_handler=None,
                  res_range=None):
-        MapLayer.__init__(self, image_opts=image_opts)
+        super().__init__(image_opts=image_opts)
         self.grid = grid
         self.client = client
         self.image_opts = image_opts or ImageOptions()
@@ -50,7 +51,7 @@ class TiledSource(MapLayer):
         self.res_range = res_range
         self.error_handler = error_handler
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         if self.grid.tile_size != query.size:
             ex = InvalidSourceQuery(
                 'tile size of cache and tile source do not match: %s != %s'
@@ -69,9 +70,9 @@ class TiledSource(MapLayer):
 
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
-            raise BlankImage()
+            raise BlankImageError()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-            raise BlankImage()
+            raise BlankImageError()
 
         _bbox, grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
 
@@ -94,12 +95,11 @@ class TiledSource(MapLayer):
 class CacheSource(CacheMapLayer):
     def __init__(self, tile_manager, extent=None, image_opts=None,
                  max_tile_limit=None, tiled_only=False):
-        CacheMapLayer.__init__(self, tile_manager, extent=extent, image_opts=image_opts,
-                               max_tile_limit=max_tile_limit)
+        super().__init__(tile_manager, extent=extent, image_opts=image_opts, max_tile_limit=max_tile_limit)
         self.supports_meta_tiles = not tiled_only
         self.tiled_only = tiled_only
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         if self.tiled_only:
             query.tiled_only = True
-        return CacheMapLayer.get_map(self, query)
+        return super().get_map(query)

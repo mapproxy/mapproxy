@@ -37,7 +37,7 @@ import ssl
 
 class HTTPClientError(Exception):
     def __init__(self, arg, response_code=None, full_msg=None):
-        Exception.__init__(self, arg)
+        super().__init__(arg)
         self.response_code = response_code
         self.full_msg = full_msg
 
@@ -57,7 +57,7 @@ def build_https_handler(ssl_ca_certs, insecure):
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     def __init__(self, *args, **kw):
         self._ca_certs = kw.pop('ca_certs', None)
-        httplib.HTTPSConnection.__init__(self, *args, **kw)
+        super().__init__(*args, **kw)
 
     def connect(self):
         # overrides the version in httplib so that we do
@@ -99,7 +99,7 @@ def verified_https_connection_with_ca_certs(ca_certs):
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
     def __init__(self, connection_class=VerifiedHTTPSConnection):
         self.specialized_conn_class = connection_class
-        urllib2.HTTPSHandler.__init__(self)
+        super().__init__()
 
     def https_open(self, req):
         return self.do_open(self.specialized_conn_class, req)

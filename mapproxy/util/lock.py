@@ -138,8 +138,8 @@ class SemLock(FileLock):
     """
 
     def __init__(self, lock_file, n, timeout=60.0, step=0.01, directory_permissions=None, file_permissions=None):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step, directory_permissions=directory_permissions,
-                          file_permissions=file_permissions)
+        super().__init__(lock_file, timeout=timeout, step=step, directory_permissions=directory_permissions,
+                         file_permissions=file_permissions)
         self.n = n
 
     def _try_lock(self):

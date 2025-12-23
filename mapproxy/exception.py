@@ -34,7 +34,7 @@ class RequestError(Exception):
     """
 
     def __init__(self, message, code=None, request=None, internal=False, status=None, locator=None):
-        Exception.__init__(self, message)
+        super().__init__(message)
         self.msg = message
         self.code = code
         self.request = request

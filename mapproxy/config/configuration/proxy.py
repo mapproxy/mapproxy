@@ -15,6 +15,8 @@ from mapproxy.config.configuration.grid import GridConfiguration
 
 
 class ProxyConfiguration(object):
+    wms_root_layer: WMSLayerConfiguration
+
     def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
         self.configuration = conf
         self.seed = seed

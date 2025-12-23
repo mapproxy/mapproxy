@@ -38,7 +38,7 @@ class KMLRequest(TileRequest):
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
 
     def __init__(self, request):
-        TileRequest.__init__(self, request)
+        super().__init__(request)
         if self.format == 'kml':
             self.request_handler_name = 'kml'
 
@@ -86,7 +86,7 @@ class KMLServer(Server):
     request_methods = ('map', 'kml')
 
     def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False):
-        Server.__init__(self)
+        super().__init__()
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age

@@ -1,5 +1,8 @@
 from __future__ import division
 
+from mapproxy.util.coverage import Coverage
+from mapproxy.layer.map_layer import MapLayer
+
 
 class LimitedLayer:
     """
@@ -7,7 +10,7 @@ class LimitedLayer:
     attributes for geographical limits.
     """
 
-    def __init__(self, layer, coverage):
+    def __init__(self, layer: MapLayer, coverage: Coverage):
         self._layer = layer
         self.coverage = coverage
 

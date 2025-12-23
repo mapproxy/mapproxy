@@ -272,7 +272,7 @@ def select_ip_version(host, port):
     return socket.AF_INET
 
 
-class BaseWSGIServer(HTTPServer, object):
+class BaseWSGIServer(HTTPServer):
     """Simple single-threaded, single-process WSGI server."""
     multithread = False
     multiprocess = False
@@ -283,7 +283,7 @@ class BaseWSGIServer(HTTPServer, object):
         if handler is None:
             handler = WSGIRequestHandler
         self.address_family = select_ip_version(host, port)
-        HTTPServer.__init__(self, (host, int(port)), handler)
+        super().__init__((host, int(port)), handler)
         self.app = app
         self.passthrough_errors = passthrough_errors
         self.shutdown_signal = False

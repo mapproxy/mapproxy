@@ -158,7 +158,7 @@ class WMSRequest(BaseRequest):
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict
-        BaseRequest.__init__(self, param=param, url=url, validate=validate, **kw)
+        super().__init__(param=param, url=url, validate=validate, **kw)
         self.adapt_to_111()
 
     def adapt_to_111(self):
@@ -198,8 +198,7 @@ class WMSMapRequest(WMSRequest):
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.dimensions = self._get_dimensions(param)
-        WMSRequest.__init__(self, param=param, url=url, validate=validate,
-                            non_strict=non_strict, **kw)
+        super().__init__(param=param, url=url, validate=validate, non_strict=non_strict, **kw)
 
     def _get_dimensions(self, param):
         if param:
@@ -613,7 +612,7 @@ class WMSCapabilitiesRequest(WMSRequest):
     fixed_params = {}
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
-        WMSRequest.__init__(self, param=param, url=url, validate=validate, **kw)
+        super().__init__(param=param, url=url, validate=validate, **kw)
 
     def adapt_to_111(self):
         pass

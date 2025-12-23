@@ -11,7 +11,7 @@ default_image_options: dict = {
 
 class ImageOptionsConfiguration(ConfigurationBase):
     def __init__(self, conf, context):
-        ConfigurationBase.__init__(self, conf, context)
+        super().__init__(conf, context)
         self._init_formats()
 
     def _init_formats(self):

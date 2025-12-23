@@ -39,7 +39,7 @@ from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.grid.resolutions import resolution_range
 from mapproxy.image import ImageSource, BlankImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage, MapBBOXError
+from mapproxy.layer import BlankImageError, MapBBOXError
 from mapproxy.layer.cache_map_layer import CacheMapLayer
 from mapproxy.layer.direct_map_layer import DirectMapLayer
 from mapproxy.layer.map_layer import MapLayer
@@ -121,7 +121,7 @@ class TestTiledSourceGlobalGeodetic(object):
 
 class RecordFileCache(FileCache):
     def __init__(self, *args, **kw):
-        super(RecordFileCache, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.stored_tiles = set()
         self.loaded_tiles = counting_set([])
         self.is_cached_call_count = 0
@@ -270,7 +270,7 @@ class TestTileManagerDifferentSourceGrid(object):
 
 class MockSource(MapLayer):
     def __init__(self, *args):
-        MapLayer.__init__(self, *args)
+        super().__init__(*args)
         self.requested = []
 
     def _image(self, size):
@@ -536,7 +536,7 @@ class TestTileManagerMultipleSources(object):
 
 class SolidColorMockSource(MockSource):
     def __init__(self, color='#ff0000'):
-        MockSource.__init__(self)
+        super().__init__()
         self.color = color
 
     def _image(self, size):
@@ -666,7 +666,7 @@ class TestTileManagerBulkMetaTilesConcurrent(TestTileManagerBulkMetaTiles):
 
 class ErrorSource(MapLayer):
     def __init__(self, *args):
-        MapLayer.__init__(self, *args)
+        super().__init__(*args)
         self.requested = []
 
     def get_map(self, query):
@@ -732,7 +732,7 @@ class TestCacheMapLayer(object):
                                locker=tile_locker)
         layer = CacheMapLayer(tile_mgr, image_opts=default_image_opts)
 
-        with pytest.raises(BlankImage):
+        with pytest.raises(BlankImageError):
             result = layer.get_map(MapQuery(
                 (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
                 SRS(900913), 'png'))
@@ -763,7 +763,7 @@ class TestCacheMapLayerWithExtent(object):
         return layer
 
     def test_get_outside_extent(self, layer):
-        with pytest.raises(BlankImage):
+        with pytest.raises(BlankImageError):
             layer.get_map(MapQuery((-180, -90, 0, 0), (300, 150), SRS(4326), 'png'))
 
     def test_get_map_small(self, layer, mock_file_cache, mock_wms_client):

@@ -167,7 +167,7 @@ class ArcGISSourceConfiguration(SourceConfiguration):
     source_type = ('arcgis',)
 
     def __init__(self, conf, context):
-        SourceConfiguration.__init__(self, conf, context)
+        super().__init__(conf, context)
 
     def source(self, params=None):
         from mapproxy.client.arcgis import ArcGISClient
@@ -451,7 +451,7 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
     source_type = ('mapserver',)
 
     def __init__(self, conf, context):
-        WMSSourceConfiguration.__init__(self, conf, context)
+        super().__init__(conf, context)
         self.script = self.context.globals.get_path('mapserver.binary',
                                                     self.conf)
         if not self.script:

@@ -20,11 +20,12 @@ import sys
 from threading import Lock
 from typing import Optional
 
+from mapproxy.image import BaseImageSource
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.client.http import HTTPClientError
 from mapproxy.grid.tile_grid import tile_grid_from_ogc_tile_matrix_set
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImageError
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError, InvalidSourceQuery
 from mapproxy.srs import ogc_crs_url_to_auth_code
@@ -34,10 +35,11 @@ from mapproxy.util.ogcapi import (
     normalize_srs_code,
     build_absolute_url,
 )
+from mapproxy.query import MapQuery
+from mapproxy.util.coverage import Coverage
 
 import logging
 
-from mapproxy.util.coverage import Coverage
 
 log = logging.getLogger("mapproxy.source.ogcapitiles")
 log_config = logging.getLogger("mapproxy.config")
@@ -58,7 +60,7 @@ class OGCAPITilesSource(MapLayer):
         error_handler=None,
         res_range=None,
     ):
-        MapLayer.__init__(self, image_opts=image_opts)
+        super().__init__(image_opts=image_opts)
         self.landingpage_url = landingpage_url.rstrip("/")
         self.collection = collection
         self.http_client = http_client
@@ -264,7 +266,7 @@ class OGCAPITilesSource(MapLayer):
             self.map_srs_to_grid_and_template_url[key] = grid_and_template_url
             return grid_and_template_url
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         self._get_tileset_list()
         image_mime_type = "image/" + query.format
         grid, template_url = self._get_grid_and_template_url_from_srs(
@@ -290,9 +292,9 @@ class OGCAPITilesSource(MapLayer):
         if self.res_range and not self.res_range.contains(
             query.bbox, query.size, query.srs
         ):
-            raise BlankImage()
+            raise BlankImageError()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-            raise BlankImage()
+            raise BlankImageError()
 
         _bbox, grid, tiles = grid.get_affected_tiles(query.bbox, query.size)
 

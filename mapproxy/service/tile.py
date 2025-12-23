@@ -59,7 +59,7 @@ class TileServer(Server):
     root_resource_template_file = 'tms_root_resource.xml'
 
     def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False, origin=None):
-        Server.__init__(self)
+        super().__init__()
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age

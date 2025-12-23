@@ -104,7 +104,7 @@ class TempFiles(object):
 
 class TempFile(TempFiles):
     def __init__(self, suffix='', no_create=False):
-        TempFiles.__init__(self, suffix=suffix, no_create=no_create)
+        super().__init__(suffix=suffix, no_create=no_create)
 
     def __enter__(self):
         return TempFiles.__enter__(self)[0]

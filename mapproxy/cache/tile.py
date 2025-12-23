@@ -36,7 +36,7 @@ Tile caching (creation, caching and retrieval of tiles).
 """
 from functools import partial
 from contextlib import contextmanager
-from typing import Optional, cast
+from typing import Optional, cast, Any
 
 from mapproxy.grid.meta_grid import MetaGrid
 from mapproxy.image import BlankImageSource, BaseImageSource
@@ -44,17 +44,21 @@ from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImageError
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.query import MapQuery
 from mapproxy.source import SourceError, DummySource
 from mapproxy.util import async_
 from mapproxy.util.py import reraise, reraise_exception
 import sys
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger('mapproxy.cache.tile')
 
 
-class TileManager(object):
+class TileManager:
     """
     Manages tiles for a single grid.
     Loads tiles from the cache, creates new tiles from sources and stores them
@@ -65,7 +69,7 @@ class TileManager(object):
         return this or a new tile object.
     """
 
-    def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
+    def __init__(self, grid, cache, sources: list[MapLayer], format, locker, image_opts=None, request_format=None,
                  meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
                  pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
                  bulk_meta_tiles=False,
@@ -84,7 +88,7 @@ class TileManager(object):
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
-        self._refresh_before = {}
+        self._refresh_before: dict[str, Any] = {}
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
@@ -348,7 +352,7 @@ RESCALE_TILE_MISSING = BlankImageSource((256, 256), ImageOptions())
 
 
 class TileCreator(object):
-    def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):
+    def __init__(self, tile_mgr: TileManager, dimensions=None, image_merger=None, bulk_meta_tiles=False):
         self.cache = tile_mgr.cache
         self.sources = tile_mgr.sources
         self.grid = tile_mgr.grid
@@ -457,18 +461,18 @@ class TileCreator(object):
                      self.sources[0].coverage.intersects(query.bbox, query.srs))):
             try:
                 return self.sources[0].get_map(query)
-            except BlankImage:
+            except BlankImageError:
                 return None
 
-        def get_map_from_source(source):
+        def get_map_from_source(source: MapLayer) -> tuple[Optional[BaseImageSource], Optional[Coverage]]:
             try:
                 img = source.get_map(query)
-            except BlankImage:
+            except BlankImageError:
                 return None, None
             else:
-                return (img, source.coverage)
+                return img, source.coverage
 
-        layers = []
+        layers: list[tuple[BaseImageSource, Coverage]] = []
         for layer in async_.imap(get_map_from_source, self.sources):
             if layer[0] is not None:
                 layers.append(layer)
@@ -543,7 +547,7 @@ class TileCreator(object):
                         tile = Tile(coord, cacheable=tile_image.cacheable)
                         tile.source = tile_image
                         tile = self.tile_mgr.apply_tile_filter(tile)
-                    except BlankImage:
+                    except BlankImageError:
                         return None
                     else:
                         return tile

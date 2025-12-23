@@ -43,7 +43,7 @@ class ServiceConfiguration(ConfigurationBase):
             if 'md' not in conf['wms']:
                 conf['wms']['md'] = {'title': 'MapProxy WMS'}
 
-        ConfigurationBase.__init__(self, conf, context)
+        super().__init__(conf, context)
 
     def services(self):
         services = []

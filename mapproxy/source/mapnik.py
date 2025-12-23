@@ -25,14 +25,15 @@ from typing import Optional
 
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.grid.tile_grid import tile_grid
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageSource, BaseImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImageError
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.async_ import run_non_blocking
+from mapproxy.query import MapQuery
 from mapproxy.util.coverage import Coverage
 
 try:
@@ -111,12 +112,12 @@ class MapnikSource(MapLayer):
             return _map_objs_lock
         return self._map_objs_lock
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
-            raise BlankImage()
+            raise BlankImageError()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-            raise BlankImage()
+            raise BlankImageError()
 
         try:
             resp = self.render(query)

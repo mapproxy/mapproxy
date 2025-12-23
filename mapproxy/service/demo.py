@@ -100,7 +100,7 @@ class DemoServer(Server):
 
     def __init__(self, layers, md, tile_layers=None,
                  srs=None, image_formats=None, services=None, restful_template=None, background=None):
-        Server.__init__(self)
+        super().__init__()
         self.layers = layers
         self.tile_layers = tile_layers or {}
         self.md = md

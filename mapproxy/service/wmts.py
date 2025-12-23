@@ -47,7 +47,7 @@ class WMTSServer(Server):
     service: Optional[str] = 'wmts'
 
     def __init__(self, layers, md, max_tile_age=None, info_formats=None):
-        Server.__init__(self)
+        super().__init__()
         self.md = md
         self.max_tile_age = max_tile_age
         self.layers, self.matrix_sets = self._matrix_sets(layers)
@@ -241,7 +241,7 @@ class WMTSRestServer(WMTSServer):
     default_info_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
 
     def __init__(self, layers, md, max_tile_age=None, template=None, fi_template=None, info_formats=None):
-        WMTSServer.__init__(self, layers, md)
+        super().__init__(layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
         self.fi_template = fi_template or self.default_info_template
@@ -310,7 +310,7 @@ class Capabilities(object):
 
 class RestfulCapabilities(Capabilities):
     def __init__(self, server_md, layers, matrix_sets, url_converter, fi_url_converter, info_formats=None):
-        Capabilities.__init__(self, server_md, layers, matrix_sets, info_formats=info_formats)
+        super().__init__(server_md, layers, matrix_sets, info_formats=info_formats)
         self.url_converter = url_converter
         self.fi_url_converter = fi_url_converter
 

@@ -130,7 +130,7 @@ class DefaultMapExtent(MapExtent):
     is_default = True
 
     def __init__(self):
-        MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
+        super().__init__((-180, -90, 180, 90), SRS(4326))
 
 
 def merge_layer_extents(layers) -> MapExtent:

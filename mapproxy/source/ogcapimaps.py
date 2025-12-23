@@ -20,6 +20,7 @@ import sys
 from threading import Lock
 from typing import Optional
 
+from mapproxy.image import BaseImageSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.request.base import BaseRequest
 from mapproxy.source import SourceError
@@ -31,10 +32,11 @@ from mapproxy.util.ogcapi import (
     build_absolute_url,
 )
 from mapproxy.util.py import reraise_exception
+from mapproxy.query import MapQuery
+from mapproxy.util.coverage import Coverage
 
 import logging
 
-from mapproxy.util.coverage import Coverage
 
 log = logging.getLogger("mapproxy.source.ogcapimaps")
 
@@ -167,9 +169,9 @@ class OGCAPIMapsSource(WMSLikeSource):
             else:
                 self.supported_srs = SupportedSRS([SRS(crs) for crs in supported_srs])
 
-    def get_map(self, query):
+    def get_map(self, query: MapQuery) -> BaseImageSource:
         self._get_maps_list()
-        return WMSLikeSource.get_map(self, query)
+        return super().get_map(query)
 
     def _retrieve(self, query, format):
         url = self.map_format_to_href[format]

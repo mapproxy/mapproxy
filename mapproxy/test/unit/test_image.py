@@ -419,7 +419,7 @@ class TestLayerMerge(object):
             image_opts=ImageOptions(opacity=0.5),
         )
 
-        result = merge_images([img1, img2], ImageOptions(transparent=False))
+        result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
         assert img.getpixel((0, 0)) == (127, 127, 255)
 
@@ -430,7 +430,7 @@ class TestLayerMerge(object):
             image_opts=ImageOptions(opacity=0.5),
         )
 
-        result = merge_images([img1, img2], ImageOptions(transparent=True))
+        result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=True))
         img = result.as_image()
         assert_img_colors_eq(img, [(10 * 10, (127, 127, 255, 255))])
 
@@ -439,7 +439,7 @@ class TestLayerMerge(object):
         img2 = ImageSource(Image.new("L", (10, 10), 100))
 
         # img2 overlays img1
-        result = merge_images([img1, img2], ImageOptions(transparent=True))
+        result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=True))
         img = result.as_image()
         assert_img_colors_eq(img, [(10 * 10, (100, 100, 100, 255))])
 
@@ -464,7 +464,7 @@ class TestLayerMerge(object):
 
         # generate base image and merge the others above
         img3 = ImageSource(Image.new("RGBA", (50, 50), (0, 0, 255, 255)))
-        result = merge_images([img3, img1, img2], ImageOptions(transparent=True))
+        result = merge_images([(img3, None), (img1, None), (img2, None)], ImageOptions(transparent=True))
         img = result.as_image()
 
         assert img.mode == "RGBA"
@@ -475,7 +475,7 @@ class TestLayerMerge(object):
         img1 = ImageSource(Image.new("RGB", (10, 10), (255, 0, 255)))
         img2 = ImageSource(Image.new("RGB", (10, 10), (0, 255, 255)))
 
-        result = merge_images([img1, img2], ImageOptions(transparent=False))
+        result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
         assert img.getpixel((0, 0)) == (0, 255, 255)
 
@@ -485,7 +485,7 @@ class TestLayerMerge(object):
         raw.info = {"transparency": (0, 255, 255)}  # make full transparent
         img2 = ImageSource(raw)
 
-        result = merge_images([img1, img2], ImageOptions(transparent=False))
+        result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
         assert img.getpixel((0, 0)) == (255, 0, 255)
 
@@ -509,7 +509,7 @@ class TestLayerCompositeMerge(object):
         draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
         img2 = ImageSource(img2)
 
-        result = merge_images([img2, img1], ImageOptions(transparent=True))
+        result = merge_images([(img2, None), (img1, None)], ImageOptions(transparent=True))
         img = result.as_image()
         assert img.mode == "RGBA"
         assert_img_colors_eq(
@@ -533,7 +533,7 @@ class TestLayerCompositeMerge(object):
         draw.rectangle((10, 10, 89, 89), fill=(0, 255, 255, 255))
         fg = ImageSource(fg, image_opts=ImageOptions(opacity=0.5))
 
-        result = merge_images([bg, fg], ImageOptions(transparent=True))
+        result = merge_images([(bg, None), (fg, None)], ImageOptions(transparent=True))
         img = result.as_image()
         assert img.mode == "RGBA"
         assert_img_colors_eq(

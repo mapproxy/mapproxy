@@ -169,7 +169,7 @@ class ExceptionImage(MessageImage):
     font_size = 9
 
     def __init__(self, message, image_opts):
-        MessageImage.__init__(self, message, image_opts=image_opts.copy())
+        super().__init__(message, image_opts=image_opts.copy())
         if not self.image_opts.bgcolor:
             self.image_opts.bgcolor = '#ffffff'
 
@@ -194,7 +194,7 @@ class WatermarkImage(MessageImage):
     font_color = (128, 128, 128)
 
     def __init__(self, message, image_opts, placement='c', opacity=None, font_color=None, font_size=None):
-        MessageImage.__init__(self, message, image_opts=image_opts)
+        super().__init__(message, image_opts=image_opts)
         if opacity is None:
             opacity = 30
         if font_size:
@@ -226,7 +226,7 @@ class AttributionImage(MessageImage):
     placement = 'lr'
 
     def __init__(self, message, image_opts, inverse=False):
-        MessageImage.__init__(self, message, image_opts=image_opts)
+        super().__init__(message, image_opts=image_opts)
         self.inverse = inverse
 
     @property
