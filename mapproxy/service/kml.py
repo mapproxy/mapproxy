@@ -114,7 +114,7 @@ class KMLServer(Server):
 
     def authorize_tile_layer(self, tile_layer, request):
         if 'mapproxy.authorize' in request.http.environ:
-            if request.tile:
+            if request.tile_coord_for_point:
                 query_extent = (tile_layer.grid.srs.srs_code,
                                 tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
             else:
@@ -171,7 +171,7 @@ class KMLServer(Server):
         layer = self.layer(map_request)
         self.authorize_tile_layer(layer, map_request)
 
-        tile_coord = map_request.tile
+        tile_coord = map_request.tile_coord_for_point
 
         initial_level = False
         if tile_coord[2] == 0:
@@ -198,7 +198,7 @@ class KMLServer(Server):
         """
         Create four `SubTile` for the next level of `tile`.
         """
-        tile = tile_request.tile
+        tile = tile_request.tile_coord_for_point
         bbox = layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles, limit=True)
 
         level = layer.grid.internal_tile_coord((tile[0], tile[1], tile[2]+1), use_profiles=False)[2]

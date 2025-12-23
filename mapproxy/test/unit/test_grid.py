@@ -621,9 +621,9 @@ class TestWGS83TileGridUL(object):
         assert self.grid.tile_bbox((0, 0, 1)) == (-180.0, -90.0, 0.0, 90.0)
 
     def test_tile(self):
-        assert self.grid.tile(-170, -80, 0) == (0, 0, 0)
-        assert self.grid.tile(-170, -80, 1) == (0, 0, 1)
-        assert self.grid.tile(-170, -80, 2) == (0, 1, 2)
+        assert self.grid.tile_coord_for_point(-170, -80, 0) == (0, 0, 0)
+        assert self.grid.tile_coord_for_point(-170, -80, 1) == (0, 0, 1)
+        assert self.grid.tile_coord_for_point(-170, -80, 2) == (0, 1, 2)
 
     def test_grid_size(self):
         assert self.grid.grid_sizes[0] == (1, 1)
@@ -678,7 +678,7 @@ class TestGKTileGrid(TileGridTest):
 
     def test_tile(self):
         x, y = 3450000, 5890000
-        assert [self.grid.tile(x, y, level) for level in range(5)] == [
+        assert [self.grid.tile_coord_for_point(x, y, level) for level in range(5)] == [
             (0, 0, 0),
             (0, 1, 1),
             (0, 3, 2),
@@ -753,14 +753,14 @@ class TestGKTileGridUL(TileGridTest):
 
     def test_tile(self):
         x, y = 3310000, 5990000
-        assert self.grid.tile(x, y, 0) == (0, 0, 0)
-        assert self.grid.tile(x, y, 1) == (0, 0, 1)
-        assert self.grid.tile(x, y, 2) == (0, 0, 2)
+        assert self.grid.tile_coord_for_point(x, y, 0) == (0, 0, 0)
+        assert self.grid.tile_coord_for_point(x, y, 1) == (0, 0, 1)
+        assert self.grid.tile_coord_for_point(x, y, 2) == (0, 0, 2)
 
         x, y = 3890000, 5310000
-        assert self.grid.tile(x, y, 0) == (1, 1, 0)
-        assert self.grid.tile(x, y, 1) == (2, 2, 1)
-        assert self.grid.tile(x, y, 2) == (4, 5, 2)
+        assert self.grid.tile_coord_for_point(x, y, 0) == (1, 1, 0)
+        assert self.grid.tile_coord_for_point(x, y, 1) == (2, 2, 1)
+        assert self.grid.tile_coord_for_point(x, y, 2) == (4, 5, 2)
 
     def test_grids(self):
         assert_grid_size(self.grid, 0, (2, 2))
@@ -1019,11 +1019,11 @@ class TestGeodeticTileGrid(TileGridTest):
         assert grid.grid_sizes[2] == (5, 3)
 
     def test_tile(self):
-        assert self.grid.tile(-180, -90, 0) == (0, 0, 0)
-        assert self.grid.tile(-180, -90, 1) == (0, 0, 1)
-        assert self.grid.tile(-180, -90, 2) == (0, 0, 2)
-        assert self.grid.tile(180 - 0.001, 90 - 0.001, 0) == (0, 0, 0)
-        assert self.grid.tile(10, 50, 1) == (1, 0, 1)
+        assert self.grid.tile_coord_for_point(-180, -90, 0) == (0, 0, 0)
+        assert self.grid.tile_coord_for_point(-180, -90, 1) == (0, 0, 1)
+        assert self.grid.tile_coord_for_point(-180, -90, 2) == (0, 0, 2)
+        assert self.grid.tile_coord_for_point(180 - 0.001, 90 - 0.001, 0) == (0, 0, 0)
+        assert self.grid.tile_coord_for_point(10, 50, 1) == (1, 0, 1)
 
     def test_affected_tiles(self):
         bbox, grid_size, tiles = self.grid.get_affected_tiles(
@@ -1039,7 +1039,7 @@ class TestGeodeticTileGrid(TileGridTest):
 class TestTileGrid(object):
     def test_tile_out_of_grid_bounds(self):
         grid = TileGrid(is_geodetic=True)
-        assert grid.tile(-180.01, 50, 1) == (-1, 0, 1)
+        assert grid.tile_coord_for_point(-180.01, 50, 1) == (-1, 0, 1)
 
     def test_affected_tiles_out_of_grid_bounds(self):
         grid = TileGrid()

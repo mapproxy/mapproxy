@@ -17,7 +17,7 @@ from __future__ import division, print_function
 
 import sys
 import optparse
-from itertools import cycle
+from itertools import cycle, islice
 
 DEFAULT_DPIS = {
     'OGC': 2.54/(0.00028 * 100),
@@ -56,7 +56,7 @@ def repeated_values(values, n):
     current_factor = 1
     step_factor = 10
     result = []
-    for i, value in enumerate(slice(cycle(values), n)):
+    for i, value in enumerate(islice(cycle(values), n)):
         if i != 0 and i % len(values) == 0:
             current_factor *= step_factor
         result.append(value/current_factor)
@@ -111,7 +111,7 @@ def scales_command(args=None):
     if len(values) < options.levels:
         values = fill_values(values, options.levels)
 
-    unit_factor = 1
+    unit_factor: float = 1
     if options.unit == 'd':
         # calculated from well-known scale set GoogleCRS84Quad
         unit_factor = 111319.4907932736

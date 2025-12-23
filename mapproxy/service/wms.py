@@ -25,8 +25,8 @@ from typing import Any, Optional
 
 from mapproxy.grid.resolutions import ResolutionRange
 from mapproxy.image import BaseImageSource
-from mapproxy.layer.map_layer import MapLayer
 from mapproxy.layer.limited_layer import LimitedLayer
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
@@ -788,7 +788,7 @@ class WMSLayer(WMSLayerBase):
         for layer in self.legend_layers:
             width = max(layer.size[0], width)
             height += layer.size[1]
-        return (width, height)
+        return width, height
 
     @property
     def legend_url(self):

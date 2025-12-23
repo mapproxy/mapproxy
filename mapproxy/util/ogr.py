@@ -19,6 +19,7 @@ import os
 import sys
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
+from typing import Optional
 
 from mapproxy.util.lib import load_library
 
@@ -88,6 +89,8 @@ class CtypesOGRShapeReader(object):
         self._ds = None
 
     def open(self):
+        if libgdal is None:
+            raise Exception('libgdal is not initialized')
         if self._ds:
             return
         self._ds = libgdal.OGROpen(self.datasource.encode(sys.getdefaultencoding()), False, None)
@@ -100,6 +103,9 @@ class CtypesOGRShapeReader(object):
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
+        if libgdal is None:
+            raise Exception('libgdal is not initialized')
+
         if not self._ds:
             self.open()
 
@@ -137,6 +143,8 @@ class CtypesOGRShapeReader(object):
             libgdal.OGR_DS_ReleaseResultSet(self._ds, layer)
 
     def close(self):
+        if libgdal is None:
+            raise Exception('libgdal is not initialized')
         if self._ds:
             libgdal.OGR_DS_Destroy(self._ds)
             self._ds = None
@@ -151,6 +159,8 @@ class OSGeoOGRShapeReader(object):
         self._ds = None
 
     def open(self):
+        if ogr is None:
+            raise Exception('ogr is not initialized')
         if self._ds:
             return
         self._ds = ogr.Open(self.datasource, False)
@@ -201,7 +211,7 @@ def try_osgeoogr_import():
     return OSGeoOGRShapeReader
 
 
-libgdal = None
+libgdal: Optional[ctypes.CDLL] = None
 
 
 def try_libogr_import():
