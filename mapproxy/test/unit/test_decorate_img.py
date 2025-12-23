@@ -20,7 +20,7 @@ from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import MapLayer
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.extent import DefaultMapExtent
 from mapproxy.service.base import Server
 from mapproxy.service.tile import TileServer

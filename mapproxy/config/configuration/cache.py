@@ -729,7 +729,9 @@ class CacheConfiguration(ConfigurationBase):
 
     @memoize
     def map_layer(self):
-        from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
+        from mapproxy.layer.cache_map_layer import CacheMapLayer
+        from mapproxy.layer.srs_conditional import SRSConditional
+        from mapproxy.layer.resolution_conditional import ResolutionConditional
 
         image_opts = self.image_opts()
         max_tile_limit = self.context.globals.get_value('max_tile_limit', self.conf,

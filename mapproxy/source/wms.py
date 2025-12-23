@@ -18,12 +18,13 @@ Retrieve maps/information from WMS servers.
 import sys
 from typing import Optional
 
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image
 from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.layer import BlankImage
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.query import MapQuery, LegendQuery
 from mapproxy.source import InfoSource, SourceError, LegendSource

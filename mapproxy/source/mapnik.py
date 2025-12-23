@@ -23,10 +23,11 @@ import multiprocessing
 from io import BytesIO
 from typing import Optional
 
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.grid.tile_grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.layer import BlankImage
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.source import SourceError
 from mapproxy.client.log import log_request

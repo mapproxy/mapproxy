@@ -23,6 +23,7 @@ from math import sqrt
 from collections import OrderedDict
 from typing import Any, Optional
 
+from mapproxy.layer.limited_layer import LimitedLayer
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
@@ -36,7 +37,7 @@ from mapproxy.image import bbox_position_in_image, sub_image_source, BlankImageS
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
-from mapproxy.layer import BlankImage, MapError, LimitedLayer, MapBBOXError, merge_layer_res_ranges
+from mapproxy.layer import BlankImage, MapError, MapBBOXError, merge_layer_res_ranges
 from mapproxy.query import MapQuery, InfoQuery, LegendQuery
 from mapproxy.util import async_
 from mapproxy.util.bbox import TransformationError

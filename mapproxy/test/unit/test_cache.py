@@ -39,15 +39,12 @@ from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.grid.resolutions import resolution_range
 from mapproxy.image import ImageSource, BlankImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import (
-    BlankImage,
-    CacheMapLayer,
-    DirectMapLayer,
-    MapBBOXError,
-    MapLayer,
-    ResolutionConditional,
-    SRSConditional,
-)
+from mapproxy.layer import BlankImage, MapBBOXError
+from mapproxy.layer.cache_map_layer import CacheMapLayer
+from mapproxy.layer.direct_map_layer import DirectMapLayer
+from mapproxy.layer.map_layer import MapLayer
+from mapproxy.layer.resolution_conditional import ResolutionConditional
+from mapproxy.layer.srs_conditional import SRSConditional
 from mapproxy.extent import MapExtent
 from mapproxy.query import MapQuery
 from mapproxy.request.wms import WMS111MapRequest
