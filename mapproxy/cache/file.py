@@ -16,6 +16,7 @@
 import os
 import errno
 import hashlib
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.util.fs import ensure_directory, write_atomic
@@ -24,6 +25,9 @@ from mapproxy.cache import path
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger('mapproxy.cache.file')
 
 
@@ -34,14 +38,14 @@ class FileCache(TileCacheBase):
     supports_dimensions = True
 
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False, coverage=None, image_opts=None,
+                 link_single_color_images=False, coverage: Optional[Coverage] = None, image_opts=None,
                  directory_permissions=None, file_permissions=None):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
         """
-        super(FileCache, self).__init__(coverage)
+        super().__init__(coverage)
         md5 = hashlib.new('md5', cache_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = md5.hexdigest()
         self.cache_dir = cache_dir
@@ -52,7 +56,9 @@ class FileCache(TileCacheBase):
         self.file_permissions = file_permissions
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
         if self._level_location is None:
-            self.level_location = None  # disable level based clean-ups
+            # TODO: Maybe there is a better way than to overwrite the function with None
+            # disable level based clean-ups:
+            self.level_location = None  # type: ignore
 
     def tile_location(self, tile, create_dir=False, dimensions=None):
         if dimensions is not None and len(dimensions) > 0:

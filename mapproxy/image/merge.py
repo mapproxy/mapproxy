@@ -26,26 +26,33 @@ from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger('mapproxy.image')
 
 
-class LayerMerger(object):
+class LayerMerger:
     """
     Merge multiple layers into one image.
     """
+
+    layers: list[tuple[ImageSource, Optional[Coverage]]]
+    cacheable: bool
 
     def __init__(self):
         self.layers = []
         self.cacheable = True
 
-    def add(self, img: ImageSource, coverage=None):
+    def add(self, img: ImageSource, coverage: Optional[Coverage] = None):
         """
         Add one layer image to merge. Bottom-layers first.
         """
         if img is not None:
             self.layers.append((img, coverage))
 
-    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None) -> BaseImageSource:
+    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage: Optional[Coverage] = None) ->\
+            BaseImageSource:
         """
         Merge the layers. If the format is not 'png' just return the last image.
 
@@ -167,7 +174,7 @@ class BandMerger(object):
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
         self.max_src_images = max(src_img+1, self.max_src_images)
 
-    def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None) -> BaseImageSource:
+    def merge(self, sources, image_opts, size=None) -> BaseImageSource:
         if len(sources) < self.max_src_images:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
 
@@ -256,7 +263,7 @@ def merge_images(layers: list[Union[ImageSource, tuple[ImageSource, Any]]], imag
     # BandMerger does not have coverage support, passing only images
     if isinstance(merger, BandMerger):
         sources = [x[0] if isinstance(x, tuple) else x for x in layers]
-        return merger.merge(sources, image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
+        return merger.merge(sources, image_opts=image_opts, size=size)
 
     for layer in layers:
         if isinstance(layer, tuple):

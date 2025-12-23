@@ -16,6 +16,8 @@
 Retrieve maps/information from WMS servers.
 """
 import sys
+from typing import Optional
+
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image
@@ -27,17 +29,23 @@ from mapproxy.query import MapQuery, LegendQuery
 from mapproxy.source import InfoSource, SourceError, LegendSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util.py import reraise_exception
+from mapproxy.srs import SupportedSRS
+from mapproxy.util.coverage import Coverage
 
 import logging
+
 log = logging.getLogger('mapproxy.source.wms')
 
 
 class WMSLikeSource(MapLayer):
 
-    def __init__(self, image_opts=None, coverage=None, res_range=None, transparent_color=None,
-                 transparent_color_tolerance=None, supported_srs=None, supported_formats=None, error_handler=None):
+    supported_srs: Optional[SupportedSRS]
+
+    def __init__(self, image_opts=None, coverage: Optional[Coverage] = None, res_range=None, transparent_color=None,
+                 transparent_color_tolerance=None, supported_srs: Optional[SupportedSRS] = None, supported_formats=None,
+                 error_handler=None):
         super().__init__(image_opts)
-        self.supported_srs = supported_srs or []
+        self.supported_srs = supported_srs
         self.supported_formats = supported_formats or []
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
@@ -108,6 +116,8 @@ class WMSLikeSource(MapLayer):
         return sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts)
 
     def _get_transformed(self, query, format) -> ImageSource:
+        if self.supported_srs is None:
+            raise Exception('No supported SRS for transformation available')
         dst_srs = query.srs
         src_srs = self.supported_srs.best_srs(dst_srs)
         dst_bbox = query.bbox
@@ -140,15 +150,15 @@ class WMSLikeSource(MapLayer):
 class WMSSource(WMSLikeSource):
     supports_meta_tiles = True
 
-    def __init__(self, client, image_opts=None, coverage=None, res_range=None,
+    def __init__(self, client, image_opts=None, coverage: Optional[Coverage] = None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None, fwd_req_params=None,
+                 supported_srs: Optional[SupportedSRS] = None, supported_formats=None, fwd_req_params=None,
                  error_handler=None):
-        WMSLikeSource.__init__(self, image_opts=image_opts, coverage=coverage,
-                               res_range=res_range, transparent_color=transparent_color,
-                               transparent_color_tolerance=transparent_color_tolerance,
-                               supported_srs=supported_srs, supported_formats=supported_formats,
-                               error_handler=error_handler)
+        super().__init__(image_opts=image_opts, coverage=coverage,
+                         res_range=res_range, transparent_color=transparent_color,
+                         transparent_color_tolerance=transparent_color_tolerance,
+                         supported_srs=supported_srs, supported_formats=supported_formats,
+                         error_handler=error_handler)
 
         self.client = client
         self.fwd_req_params = fwd_req_params or set()
@@ -228,7 +238,7 @@ class WMSSource(WMSLikeSource):
 
 
 class WMSInfoSource(InfoSource):
-    def __init__(self, client, fi_transformer=None, coverage=None):
+    def __init__(self, client, fi_transformer=None, coverage: Optional[Coverage] = None):
         self.client = client
         self.fi_transformer = fi_transformer
         self.coverage = coverage

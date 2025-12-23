@@ -20,6 +20,8 @@ Layers that can get maps/infos from different sources/caches.
 
 from __future__ import division
 
+from typing import Optional
+
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.grid.resolutions import merge_resolution_range
@@ -30,10 +32,10 @@ from mapproxy.proj import ProjError
 from mapproxy.srs import SupportedSRS
 from mapproxy.util.bbox import bbox_equals
 from mapproxy.query import MapQuery
+from mapproxy.util.coverage import Coverage
 
 import logging
 from functools import reduce
-
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ class MapLayer(object):
 
     res_range = None
 
-    coverage = None
+    coverage: Optional[Coverage] = None
 
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()

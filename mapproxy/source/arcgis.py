@@ -12,27 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from mapproxy.source.wms import WMSSource, WMSInfoSource
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger('mapproxy.source.arcgis')
 
 
 class ArcGISSource(WMSSource):
-    def __init__(self, client, image_opts=None, coverage=None,
+    def __init__(self, client, image_opts=None, coverage: Optional[Coverage] = None,
                  res_range=None, supported_srs=None, supported_formats=None,
                  error_handler=None):
-        WMSSource.__init__(self, client, image_opts=image_opts,
-                           coverage=coverage, res_range=res_range,
-                           supported_srs=supported_srs,
-                           supported_formats=supported_formats,
-                           error_handler=error_handler)
+        super().__init__(client, image_opts=image_opts,
+                         coverage=coverage, res_range=res_range,
+                         supported_srs=supported_srs,
+                         supported_formats=supported_formats,
+                         error_handler=error_handler)
 
 
 class ArcGISInfoSource(WMSInfoSource):
     def __init__(self, client):
-        self.client = client
+        super().__init__(client)
 
     def get_info(self, query):
         doc = self.client.get_info(query)

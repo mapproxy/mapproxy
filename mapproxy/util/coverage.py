@@ -16,9 +16,13 @@
 
 import operator
 import threading
+from abc import ABC, abstractmethod
+from typing import Optional, Union
 
-import shapely.geometry
-import shapely.prepared
+from shapely.geometry.base import BaseGeometry
+from shapely.geometry import Point, MultiPolygon
+from shapely.prepared import prep
+from shapely.ops import unary_union
 
 from mapproxy.util.bbox import bbox_intersects, bbox_contains
 from mapproxy.util.py import cached_property
@@ -28,56 +32,65 @@ from mapproxy.util.geom import (
     bbox_polygon,
     EmptyGeometryError,
 )
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, _SRS
+from mapproxy.extent import MapExtent
+from mapproxy.util.bbox import BBOX
 
 import logging
 from functools import reduce
 log_config = logging.getLogger('mapproxy.config.coverage')
 
 
-def coverage(geom, srs, clip=False):
-    if isinstance(geom, (list, tuple)):
-        return BBOXCoverage(geom, srs, clip=clip)
-    else:
-        return GeomCoverage(geom, srs, clip=clip)
-
-
-def load_limited_to(limited_to):
-    srs = SRS(limited_to['srs'])
-    geom = limited_to['geometry']
-
-    if not hasattr(geom, 'geom_type'):  # not a Shapely geometry
-        if isinstance(geom, (list, tuple)):
-            geom = bbox_polygon(geom)
-        else:
-            polygons = load_polygon_lines(geom.split('\n'))
-            if len(polygons) == 1:
-                geom = polygons[0]
-            else:
-                geom = shapely.geometry.MultiPolygon(polygons)
-
-    return GeomCoverage(geom, srs, clip=True)
-
-
-class MultiCoverage(object):
+class Coverage(ABC):
+    srs: _SRS
+    bbox: BBOX
     clip = False
+
+    @property
+    @abstractmethod
+    def extent(self) -> MapExtent:
+        pass
+
+    @property
+    @abstractmethod
+    def geom(self):
+        pass
+
+    @abstractmethod
+    def transform_to(self, srs: _SRS) -> 'Coverage':
+        pass
+
+    @abstractmethod
+    def intersects(self, bbox: BBOX, srs: _SRS) -> bool:
+        pass
+
+    @abstractmethod
+    def contains(self, bbox: BBOX, srs: _SRS) -> bool:
+        pass
+
+
+class MultiCoverage(Coverage):
     """Aggregates multiple coverages"""
 
-    def __init__(self, coverages):
+    def __init__(self, coverages: list[Coverage]):
         self.coverages = coverages
         self.bbox = self.extent.bbox
 
     @cached_property
-    def extent(self):
+    def extent(self) -> MapExtent:
         return reduce(operator.add, [c.extent for c in self.coverages])
 
-    def intersects(self, bbox, srs):
+    @property
+    def geom(self):
+        raise NotImplementedError('MultiCoverage does not have a geom')
+
+    def intersects(self, bbox: BBOX, srs: _SRS):
         return any(c.intersects(bbox, srs) for c in self.coverages)
 
-    def contains(self, bbox, srs):
+    def contains(self, bbox: BBOX, srs: _SRS):
         return any(c.contains(bbox, srs) for c in self.coverages)
 
-    def transform_to(self, srs):
+    def transform_to(self, srs: _SRS) -> 'MultiCoverage':
         return MultiCoverage([c.transform_to(srs) for c in self.coverages])
 
     def __eq__(self, other):
@@ -105,20 +118,21 @@ class MultiCoverage(object):
         return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
 
 
-class BBOXCoverage(object):
+class BBOXCoverage(Coverage):
     def __init__(self, bbox, srs, clip=False):
         self.bbox = bbox
         self.srs = srs
-        self.geom = None
         self.clip = clip
 
     @property
-    def extent(self):
-        from mapproxy.extent import MapExtent
-
+    def extent(self) -> MapExtent:
         return MapExtent(self.bbox, self.srs)
 
-    def _bbox_in_coverage_srs(self, bbox, srs):
+    @property
+    def geom(self):
+        return bbox_polygon(self.bbox)
+
+    def _bbox_in_coverage_srs(self, bbox: BBOX, srs: _SRS) -> BBOX:
         if len(bbox) == 2:
             # point to bbox
             bbox = [bbox[0], bbox[1], bbox[0], bbox[1]]
@@ -126,11 +140,11 @@ class BBOXCoverage(object):
             bbox = srs.transform_bbox_to(self.srs, bbox)
         return bbox
 
-    def intersects(self, bbox, srs):
+    def intersects(self, bbox: BBOX, srs: _SRS) -> bool:
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         return bbox_intersects(self.bbox, bbox)
 
-    def intersection(self, bbox, srs):
+    def intersection(self, bbox: BBOX, srs: _SRS) -> Optional['BBOXCoverage']:
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         intersection = (
             max(self.bbox[0], bbox[0]),
@@ -143,11 +157,11 @@ class BBOXCoverage(object):
             return None
         return BBOXCoverage(intersection, self.srs, clip=self.clip)
 
-    def contains(self, bbox, srs):
+    def contains(self, bbox: BBOX, srs: _SRS) -> bool:
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         return bbox_contains(self.bbox, bbox)
 
-    def transform_to(self, srs):
+    def transform_to(self, srs: _SRS) -> 'BBOXCoverage':
         if srs == self.srs:
             return self
 
@@ -175,9 +189,9 @@ class BBOXCoverage(object):
         return '<BBOXCoverage %r/%r>' % (self.extent.llbbox, self.bbox)
 
 
-class GeomCoverage(object):
-    def __init__(self, geom, srs, clip=False):
-        self.geom = geom
+class GeomCoverage(Coverage):
+    def __init__(self, geom: BaseGeometry, srs, clip=False):
+        self._geom = geom
         self.bbox = geom.bounds
         self.srs = srs
         self.clip = clip
@@ -187,51 +201,54 @@ class GeomCoverage(object):
         self._prepared_max = 10000
 
     @property
-    def extent(self):
-        from mapproxy.extent import MapExtent
+    def extent(self) -> MapExtent:
         return MapExtent(self.bbox, self.srs)
+
+    @property
+    def geom(self):
+        return self._geom
 
     @property
     def prepared_geom(self):
         # GEOS internal data structure for prepared geometries grows over time,
         # recreate to limit memory consumption
         if not self._prepared_geom or self._prepared_counter > self._prepared_max:
-            self._prepared_geom = shapely.prepared.prep(self.geom)
+            self._prepared_geom = prep(self.geom)
             self._prepared_counter = 0
         self._prepared_counter += 1
         return self._prepared_geom
 
     def _geom_in_coverage_srs(self, geom, srs):
-        if isinstance(geom, shapely.geometry.base.BaseGeometry):
+        if isinstance(geom, BaseGeometry):
             if srs != self.srs:
                 geom = transform_geometry(srs, self.srs, geom)
         elif len(geom) == 2:
             if srs != self.srs:
                 geom = srs.transform_to(self.srs, geom)
-            geom = shapely.geometry.Point(geom)
+            geom = Point(geom)
         else:
             if srs != self.srs:
                 geom = srs.transform_bbox_to(self.srs, geom)
             geom = bbox_polygon(geom)
         return geom
 
-    def transform_to(self, srs):
+    def transform_to(self, srs: _SRS) -> 'GeomCoverage':
         if srs == self.srs:
             return self
 
         geom = transform_geometry(self.srs, srs, self.geom)
         return GeomCoverage(geom, srs, clip=self.clip)
 
-    def intersects(self, bbox, srs):
+    def intersects(self, bbox: BBOX, srs: _SRS) -> bool:
         bbox = self._geom_in_coverage_srs(bbox, srs)
         with self._prep_lock:
             return self.prepared_geom.intersects(bbox)
 
-    def intersection(self, bbox, srs):
+    def intersection(self, bbox: BBOX, srs: _SRS) -> 'GeomCoverage':
         bbox = self._geom_in_coverage_srs(bbox, srs)
         return GeomCoverage(self.geom.intersection(bbox), self.srs, clip=self.clip)
 
-    def contains(self, bbox, srs):
+    def contains(self, bbox: BBOX, srs: _SRS) -> bool:
         bbox = self._geom_in_coverage_srs(bbox, srs)
         with self._prep_lock:
             return self.prepared_geom.contains(bbox)
@@ -260,7 +277,7 @@ class GeomCoverage(object):
         return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
 
 
-def union_coverage(coverages, clip=None):
+def union_coverage(coverages: list[Coverage], clip=False) -> GeomCoverage:
     """
     Create a coverage that is the union of all `coverages`.
     Resulting coverage is in the SRS of the first coverage.
@@ -269,36 +286,49 @@ def union_coverage(coverages, clip=None):
 
     coverages = [c.transform_to(srs) for c in coverages]
 
-    geoms = []
-    for c in coverages:
-        if isinstance(c, BBOXCoverage):
-            geoms.append(bbox_polygon(c.bbox))
-        else:
-            geoms.append(c.geom)
+    geoms = [c.geom for c in coverages]
 
-    import shapely.ops
-    union = shapely.ops.unary_union(geoms)
+    union = unary_union(geoms)
 
     return GeomCoverage(union, srs=srs, clip=clip)
 
 
-def diff_coverage(coverages, clip=None):
+def coverage(geom: Union[BaseGeometry, list[float], tuple[float]], srs: _SRS, clip=False) -> 'Coverage':
+    if isinstance(geom, (list, tuple)):
+        return BBOXCoverage(bbox=geom, srs=srs, clip=clip)
+    else:
+        return GeomCoverage(geom=geom, srs=srs, clip=clip)
+
+
+def load_limited_to(limited_to) -> 'GeomCoverage':
+    srs = SRS(limited_to['srs'])
+    geom = limited_to['geometry']
+
+    if not hasattr(geom, 'geom_type'):  # not a Shapely geometry
+        if isinstance(geom, (list, tuple)):
+            geom = bbox_polygon(geom)
+        else:
+            polygons = load_polygon_lines(geom.split('\n'))
+            if len(polygons) == 1:
+                geom = polygons[0]
+            else:
+                geom = MultiPolygon(polygons)
+
+    return GeomCoverage(geom, srs, clip=True)
+
+
+def diff_coverage(coverages: list[Coverage], clip=False) -> GeomCoverage:
     """
     Create a coverage by subtracting all `coverages` from the first one.
     Resulting coverage is in the SRS of the first coverage.
     """
     srs = coverages[0].srs
 
-    coverages = [c.transform_to(srs) for c in coverages]
+    transformed_coverages = [c.transform_to(srs) for c in coverages]
 
-    geoms = []
-    for c in coverages:
-        if isinstance(c, BBOXCoverage):
-            geoms.append(bbox_polygon(c.bbox))
-        else:
-            geoms.append(c.geom)
+    geoms = [c.geom for c in transformed_coverages]
 
-    sub = shapely.ops.unary_union(geoms[1:])
+    sub = unary_union(geoms[1:])
     diff = geoms[0].difference(sub)
 
     if diff.is_empty:
@@ -307,21 +337,16 @@ def diff_coverage(coverages, clip=None):
     return GeomCoverage(diff, srs=srs, clip=clip)
 
 
-def intersection_coverage(coverages, clip=None):
+def intersection_coverage(coverages: list[GeomCoverage], clip=False) -> GeomCoverage:
     """
     Create a coverage by creating the intersection of all `coverages`.
     Resulting coverage is in the SRS of the first coverage.
     """
     srs = coverages[0].srs
 
-    coverages = [c.transform_to(srs) for c in coverages]
+    transformed_coverages = [c.transform_to(srs) for c in coverages]
 
-    geoms = []
-    for c in coverages:
-        if isinstance(c, BBOXCoverage):
-            geoms.append(bbox_polygon(c.bbox))
-        else:
-            geoms.append(c.geom)
+    geoms = [c.geom for c in transformed_coverages]
 
     intersection = reduce(lambda a, b: a.intersection(b), geoms)
 

@@ -18,7 +18,7 @@
 from collections import OrderedDict
 import copy
 import re
-from typing import Optional
+from typing import Optional, cast
 
 from mapproxy.image import (
     bbox_position_in_image,
@@ -30,6 +30,7 @@ from mapproxy.image.merge import LayerMerger
 from mapproxy.image.message import attribution_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.extent import MapExtent
+from mapproxy.util.bbox import BBOX
 from mapproxy.query import MapQuery
 from mapproxy.response import Response
 from mapproxy.request.base import Request
@@ -92,8 +93,8 @@ def subset_to_bbox(subset):
     if len(subset) != 2:
         raise OGCAPIServer.invalid_parameter("subset must include 2 axis")
 
-    x_axis_set = set(["lon", "long", "longitude", "x", "e", "easting"])
-    y_axis_set = set(["lat", "latitude", "y", "n", "northing"])
+    x_axis_set = {"lon", "long", "longitude", "x", "e", "easting"}
+    y_axis_set = {"lat", "latitude", "y", "n", "northing"}
     bbox = [None, None, None, None]
     for subset_part in subset:
         subset_part = subset_part.lower()
@@ -297,7 +298,7 @@ def get_map_query(
             bbox = [bbox[1], bbox[0], bbox[3], bbox[2]]
 
         try:
-            bbox = MapExtent(bbox, bbox_crs).transform(crs).bbox
+            bbox = MapExtent(cast(BBOX, bbox), bbox_crs).transform(crs).bbox
         except Exception as e:
             raise OGCAPIServer.invalid_parameter(
                 f"bbox cannot be reprojected from {bbox_crs} to {crs}: {e}"
@@ -550,24 +551,8 @@ def get_map(
     log = server.log
     log.debug(f"Map for {coll_id}")
 
-    allowed_args = set(
-        [
-            "f",
-            "crs",
-            "bbox-crs",
-            "bbox",
-            "center-crs",
-            "center",
-            "subset",
-            "subset-crs",
-            "width",
-            "height",
-            "scale-denominator",
-            "mm-per-pixel",
-            "bgcolor",
-            "transparent",
-        ]
-    )
+    allowed_args = {"f", "crs", "bbox-crs", "bbox", "center-crs", "center", "subset", "subset-crs", "width", "height",
+                    "scale-denominator", "mm-per-pixel", "bgcolor", "transparent"}
     collections = req.args.get("collections", None)
 
     if coll_id is None and (server.default_dataset_layers or collections):

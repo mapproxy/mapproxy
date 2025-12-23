@@ -21,16 +21,17 @@ from __future__ import division
 
 import math
 import threading
+from typing import Optional
+
 from mapproxy.proj import USE_PROJ4_API
 # Old Proj.4 API
 from mapproxy.proj import Proj, transform, set_datapath
 # New Proj API
 from mapproxy.proj import CRS, Transformer
 from mapproxy.config import base_config
+from mapproxy.util.bbox import calculate_bbox, BBOX
 
 import logging
-
-from mapproxy.util.bbox import calculate_bbox
 
 log_system = logging.getLogger('mapproxy.system')
 log_proj = logging.getLogger('mapproxy.proj')
@@ -118,8 +119,7 @@ def SRS(srs_code):
         return srs
 
 
-WEBMERCATOR_EPSG = set(('EPSG:900913', 'EPSG:3857',
-                        'EPSG:102100', 'EPSG:102113'))
+WEBMERCATOR_EPSG = {'EPSG:900913', 'EPSG:3857', 'EPSG:102100', 'EPSG:102113'}
 
 
 class _SRS_Proj4_API(object):
@@ -184,7 +184,7 @@ class _SRS_Proj4_API(object):
         transf_pts = transform(self.proj, other_srs.proj, x, y)
         return zip(transf_pts[0], transf_pts[1])
 
-    def transform_bbox_to(self, other_srs, bbox, with_points=16):
+    def transform_bbox_to(self, other_srs: '_SRS', bbox: BBOX, with_points: int = 16):
         """
 
         :param with_points: the number of points to use for the transformation.
@@ -393,7 +393,7 @@ class _SRS(object):
         transf_pts = transformer.transform(x, y)
         return zip(transf_pts[0], transf_pts[1])
 
-    def transform_bbox_to(self, other_srs, bbox, with_points=16):
+    def transform_bbox_to(self, other_srs: '_SRS', bbox: BBOX, with_points: int = 16) -> BBOX:
         """
 
         :param with_points: the number of points to use for the transformation.
@@ -668,8 +668,8 @@ class PreferredSrcSRS(object):
         return available_src[0]
 
 
-class SupportedSRS(object):
-    def __init__(self, supported_srs, preferred_srs=None):
+class SupportedSRS:
+    def __init__(self, supported_srs: list[_SRS], preferred_srs: Optional[PreferredSrcSRS] = None):
         self.supported_srs = supported_srs
         self.preferred_srs = preferred_srs or PreferredSrcSRS()
 
@@ -683,6 +683,8 @@ class SupportedSRS(object):
         return self.preferred_srs.preferred_src(target, self.supported_srs)
 
     def __eq__(self, other):
+        if other is None:
+            return False
         # .prefered_srs is set global, so we only compare .supported_srs
         return self.supported_srs == other.supported_srs
 

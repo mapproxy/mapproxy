@@ -21,7 +21,7 @@ from html import escape
 from itertools import chain
 from math import sqrt
 from collections import OrderedDict
-from typing import Any
+from typing import Any, Optional
 
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
@@ -41,7 +41,7 @@ from mapproxy.query import MapQuery, InfoQuery, LegendQuery
 from mapproxy.util import async_
 from mapproxy.util.bbox import TransformationError
 from mapproxy.util.py import cached_property, reraise
-from mapproxy.util.coverage import load_limited_to
+from mapproxy.util.coverage import load_limited_to, Coverage
 from mapproxy.template import template_loader, bunch, recursive_bunch
 from mapproxy.service import template_helper
 from mapproxy.extent import MapExtent, DefaultMapExtent, merge_layer_extents
@@ -391,7 +391,7 @@ class WMSServer(Server):
 
 
 class FilteredRootLayer(object):
-    def __init__(self, root_layer, permissions, coverage=None):
+    def __init__(self, root_layer, permissions, coverage: Optional[Coverage] = None):
         self.root_layer = root_layer
         self.permissions = permissions
         self.coverage = coverage

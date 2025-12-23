@@ -23,6 +23,8 @@ import hashlib
 import base64
 from io import BytesIO
 from threading import Lock
+from typing import Optional
+
 import requests
 from mapproxy.cache.tile import Tile
 
@@ -34,6 +36,9 @@ from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger(__name__)
 
 
@@ -44,8 +49,8 @@ class UnexpectedResponse(CacheBackendError):
 class CouchDBCache(TileCacheBase):
     def __init__(self, url, db_name,
                  file_ext, tile_grid, md_template=None,
-                 tile_id_template=None, coverage=None):
-        super(CouchDBCache, self).__init__(coverage)
+                 tile_id_template=None, coverage: Optional[Coverage] = None):
+        super().__init__(coverage)
 
         if requests is None:
             raise ImportError("CouchDB backend requires 'requests' package.")
@@ -57,7 +62,6 @@ class CouchDBCache(TileCacheBase):
         self.md_template = md_template
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         self.req_session = requests.Session()
-        self.req_session.timeout = 5
         self.db_initialised = False
         self.app_init_db_lock = Lock()
         self.tile_id_template = tile_id_template

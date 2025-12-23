@@ -29,6 +29,9 @@ from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
 
 import logging
+
+from mapproxy.util.coverage import Coverage
+
 log = logging.getLogger(__name__)
 
 
@@ -36,9 +39,9 @@ class CompactCacheBase(TileCacheBase):
     supports_timestamp = False
     bundle_class: Optional[type] = None
 
-    def __init__(self, cache_dir, coverage=None,
+    def __init__(self, cache_dir, coverage: Optional[Coverage] = None,
                  directory_permissions=None, file_permissions=None):
-        super(CompactCacheBase, self).__init__(coverage)
+        super().__init__(coverage)
         md5 = hashlib.new('md5', cache_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'compactcache-' + md5.hexdigest()
         self.cache_dir = cache_dir

@@ -12,10 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
 
 from mapproxy.client.http import HTTPClient
 from mapproxy.client.wms import WMSInfoClient
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.featureinfo import create_featureinfo_doc
 
 
@@ -45,15 +46,15 @@ class ArcGISClient(object):
 
 
 class ArcGISInfoClient(WMSInfoClient):
-    def __init__(self, request_template, supported_srs=None, http_client=None,
+    def __init__(self, request_template, supported_srs: Optional[SupportedSRS] = None, http_client=None,
                  return_geometries=False,
                  tolerance=5,
                  ):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         if not supported_srs and self.request_template.params.srs is not None:
-            supported_srs = [SRS(self.request_template.params.srs)]
-        self.supported_srs = supported_srs or []
+            supported_srs = SupportedSRS([SRS(self.request_template.params.srs)])
+        self.supported_srs = supported_srs
         self.return_geometries = return_geometries
         self.tolerance = tolerance
 
