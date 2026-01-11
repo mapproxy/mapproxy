@@ -1,7 +1,7 @@
 Installation on Windows
 =======================
 
-At first you need a working Python installation. You can download Python from: https://www.python.org/download/. MapProxy requires Python 3.9 or higher.
+At first you need a working Python installation. You can download Python from: https://www.python.org/download/. MapProxy requires Python 3.10 or higher.
 
 Virtualenv
 ----------
@@ -82,7 +82,7 @@ Platform dependent packages
 
 ``pip`` downloads all packages from https://pypi.org/, but not all platform combinations might be available as a binary package, especially if you run a 64bit version of Python.
 
-If you run into trouble during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_. This is a reliable site for binary packages for Python. You need to download the right package: The ``cpxx`` code refers to the Python version (e.g. ``cp39`` for Python 3.9); ``win32`` for 32bit Python installations and ``amd64`` for 64bit.
+If you run into trouble during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_. This is a reliable site for binary packages for Python. You need to download the right package: The ``cpxx`` code refers to the Python version (e.g. ``cp310`` for Python 3.10); ``win32`` for 32bit Python installations and ``amd64`` for 64bit.
 
 You can install the ``.whl``, ``.zip`` or ``.exe`` packages with ``pip``::
 

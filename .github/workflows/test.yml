@@ -28,17 +28,17 @@ jobs:
         ports:
           - 5984:5984
       azure-blob:
-        image: mcr.microsoft.com/azure-storage/azurite
+        image: mcr.microsoft.com/azure-storage/azurite:3.35.0
         ports:
           - 10000:10000
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        pillow-version: ["11.3.0"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        pillow-version: ["12.1.0"]
         include:
-          - python-version: "3.9"
-            pillow-version: "8.1.2"
+          - python-version: "3.10"
+            pillow-version: "9.5.0"
 
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'
