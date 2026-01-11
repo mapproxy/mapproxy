@@ -8,7 +8,7 @@ from mapproxy.grid.resolutions import (aligned_resolutions, resolutions,
                                        res_to_ogc_scale)
 from mapproxy.srs import get_epsg_num, SRS, ogc_crs_url_to_auth_code
 from mapproxy.util.bbox import bbox_equals, bbox_intersects, merge_bbox
-from mapproxy.util.collections import ImmutableDictList
+from mapproxy.util.immutable_dict_list import ImmutableDictList
 
 geodetic_epsg_codes = [4326]
 

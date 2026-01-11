@@ -19,7 +19,8 @@ Service requests (parsing, handling, etc).
 import re
 
 from mapproxy.exception import RequestError
-from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
+from mapproxy.request.base import BaseRequest, split_mime_type
+from mapproxy.request.request_params import RequestParams
 from mapproxy.request.tile import TileRequest
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader

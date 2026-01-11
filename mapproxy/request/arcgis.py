@@ -16,7 +16,8 @@
 from functools import partial as fp
 from urllib.parse import urlsplit, urlunsplit
 
-from mapproxy.request.base import RequestParams, BaseRequest
+from mapproxy.request.base import BaseRequest
+from mapproxy.request.request_params import RequestParams
 from mapproxy.srs import make_lin_transf
 
 
