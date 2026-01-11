@@ -19,7 +19,6 @@ from importlib import resources as importlib_resources
 import json
 import jsonschema
 from io import BytesIO
-import sys
 from PIL import Image
 
 import pytest
@@ -96,10 +95,6 @@ class TestOGCAPIMapsService(TestOGCAPIService):
     def _validate_response_against_schema(
         self, json_doc, schema_name=None, response_name=None
     ):
-        if sys.version_info < (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-            return
-
         ogcapi_tiles_schema_path = (
             importlib_resources.files(test_module.__package__)
             .joinpath("schemas")
@@ -659,16 +654,14 @@ class TestOGCAPIMapsService(TestOGCAPIService):
         }
         assert resp.json == expected_json
 
-        if sys.version_info >= (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-            openapi_schema_path = (
-                importlib_resources.files(test_module.__package__)
-                .joinpath("schemas")
-                .joinpath("openapi")
-                .joinpath("openapi-3.0.x.json")
-            )
-            openapi_schema = json.loads(open(openapi_schema_path, "rb").read())
-            jsonschema.validate(resp.json, openapi_schema)
+        openapi_schema_path = (
+            importlib_resources.files(test_module.__package__)
+            .joinpath("schemas")
+            .joinpath("openapi")
+            .joinpath("openapi-3.0.x.json")
+        )
+        openapi_schema = json.loads(open(openapi_schema_path, "rb").read())
+        jsonschema.validate(resp.json, openapi_schema)
 
         resp = app.get("/ogcapi/api", {"f": "html"})
         assert resp.content_type == "text/html"
@@ -780,23 +773,20 @@ class TestOGCAPIMapsService(TestOGCAPIService):
 
         self._test_links(app, resp.json)
 
-        if sys.version_info >= (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-
-            ogcapi_maps_schema_path = (
-                importlib_resources.files(test_module.__package__)
-                .joinpath("schemas")
-                .joinpath("ogcapi")
-                .joinpath("ogcapi-maps-1.bundled.json")
-            )
-            ogcapi_maps_schema = json.loads(open(ogcapi_maps_schema_path, "rb").read())
-            schema = ogcapi_maps_schema["components"]["schemas"]["collections"]
-            schema["components"] = ogcapi_maps_schema["components"]
-            # Cf https://github.com/opengeospatial/ogcapi-maps/issues/140
-            schema["components"]["schemas"]["collectionDesc"]["properties"]["extent"][
-                "$ref"
-            ] = "#/components/schemas/extent"
-            jsonschema.validate(resp.json, schema)
+        ogcapi_maps_schema_path = (
+            importlib_resources.files(test_module.__package__)
+            .joinpath("schemas")
+            .joinpath("ogcapi")
+            .joinpath("ogcapi-maps-1.bundled.json")
+        )
+        ogcapi_maps_schema = json.loads(open(ogcapi_maps_schema_path, "rb").read())
+        schema = ogcapi_maps_schema["components"]["schemas"]["collections"]
+        schema["components"] = ogcapi_maps_schema["components"]
+        # Cf https://github.com/opengeospatial/ogcapi-maps/issues/140
+        schema["components"]["schemas"]["collectionDesc"]["properties"]["extent"][
+            "$ref"
+        ] = "#/components/schemas/extent"
+        jsonschema.validate(resp.json, schema)
 
         resp = app.get("/ogcapi/collections", {"f": "json"})
         assert resp.content_type == "application/json"
@@ -870,23 +860,20 @@ class TestOGCAPIMapsService(TestOGCAPIService):
 
         self._test_links(app, resp.json)
 
-        if sys.version_info >= (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-
-            ogcapi_maps_schema_path = (
-                importlib_resources.files(test_module.__package__)
-                .joinpath("schemas")
-                .joinpath("ogcapi")
-                .joinpath("ogcapi-maps-1.bundled.json")
-            )
-            ogcapi_maps_schema = json.loads(open(ogcapi_maps_schema_path, "rb").read())
-            schema = ogcapi_maps_schema["components"]["schemas"]["collectionDesc"]
-            schema["components"] = ogcapi_maps_schema["components"]
-            # Cf https://github.com/opengeospatial/ogcapi-maps/issues/140
-            schema["components"]["schemas"]["collectionDesc"]["properties"]["extent"][
-                "$ref"
-            ] = "#/components/schemas/extent"
-            jsonschema.validate(resp.json, schema)
+        ogcapi_maps_schema_path = (
+            importlib_resources.files(test_module.__package__)
+            .joinpath("schemas")
+            .joinpath("ogcapi")
+            .joinpath("ogcapi-maps-1.bundled.json")
+        )
+        ogcapi_maps_schema = json.loads(open(ogcapi_maps_schema_path, "rb").read())
+        schema = ogcapi_maps_schema["components"]["schemas"]["collectionDesc"]
+        schema["components"] = ogcapi_maps_schema["components"]
+        # Cf https://github.com/opengeospatial/ogcapi-maps/issues/140
+        schema["components"]["schemas"]["collectionDesc"]["properties"]["extent"][
+            "$ref"
+        ] = "#/components/schemas/extent"
+        jsonschema.validate(resp.json, schema)
 
         resp = app.get("/ogcapi/collections/test", {"f": "json"})
         assert resp.json == expected_json
@@ -1666,10 +1653,6 @@ class TestOGCAPITilesService(TestOGCAPIService):
     def _validate_response_against_schema(
         self, json_doc, schema_name=None, response_name=None
     ):
-        if sys.version_info < (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-            return
-
         ogcapi_tiles_schema_path = (
             importlib_resources.files(test_module.__package__)
             .joinpath("schemas")
@@ -3146,9 +3129,6 @@ class TestOGCAPIMapsAndTilesNonEarthService(TestOGCAPIService):
     def _validate_response_against_schema(
         self, json_doc, schema_name=None, response_name=None
     ):
-        if sys.version_info < (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-            return
         ogcapi_tiles_schema_path = (
             importlib_resources.files(test_module.__package__)
             .joinpath("schemas")
@@ -3229,9 +3209,6 @@ class TestOGCAPIMapsAndTilesNonEarthService(TestOGCAPIService):
 
         self._test_links(app, resp.json)
 
-        if sys.version_info < (3, 10):
-            # jsonschema.validate() hangs for py 3.9
-            return
         ogcapi_maps_schema_path = (
             importlib_resources.files(test_module.__package__)
             .joinpath("schemas")
