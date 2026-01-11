@@ -93,8 +93,10 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
             return etree.parse(BytesIO(self.content.encode('utf-8')))
         elif isinstance(self.content, str):
             return etree.parse(StringIO(self.content))
-        else:
+        elif self.content is not None:
             return etree.parse(BytesIO(self.content))
+        else:
+            raise ValueError('content is None')
 
     @classmethod
     def combine(cls, docs):
@@ -113,10 +115,14 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = "html"
 
     def _parse_content(self):
+        if self.content is None:
+            raise ValueError('content is None')
         root = html.document_fromstring(self.content)
         return root
 
     def _serialize_etree(self):
+        if self._etree is None:
+            raise ValueError('etree is None')
         encoding = self._etree.docinfo.encoding if \
             self._etree.docinfo.encoding else self.defaultEncoding
         return decode(html.tostring(self._etree, encoding=encoding), encoding)
@@ -148,6 +154,8 @@ class JSONFeatureInfoDoc(FeatureInfoDoc):
         self.content = content
 
     def as_string(self):
+        if self.content is None:
+            raise ValueError('content is None')
         return self.content if isinstance(self.content, str) else decode(self.content)
 
     @classmethod
@@ -207,7 +215,7 @@ def featureinfo_type(info_format):
     return "text"
 
 
-class XSLTransformer(object):
+class XSLTransformer:
 
     def __init__(self, xsltscript, info_format=None):
         self.xsltscript = xsltscript

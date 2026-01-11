@@ -30,7 +30,8 @@ import pytest
 
 from mapproxy.cache.base import TileLocker
 from mapproxy.cache.file import FileCache
-from mapproxy.cache.tile import Tile, TileManager
+from mapproxy.cache.tile import Tile
+from mapproxy.cache.tile_manager import TileManager
 from mapproxy.client.http import HTTPClient
 from mapproxy.client.wms import WMSClient
 from PIL import Image

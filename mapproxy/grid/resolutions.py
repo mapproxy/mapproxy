@@ -1,6 +1,7 @@
 import math
+from typing import Optional
 
-from mapproxy.util.bbox import bbox_size
+from mapproxy.util.bbox import bbox_size, BBOX
 
 
 def deg_to_m(deg, semi_major_meters=6378137):
@@ -18,7 +19,7 @@ def res_to_ogc_scale(res, meters_per_pixel=OGC_PIXEL_SIZE):
     return res / meters_per_pixel
 
 
-def get_resolution(bbox, size):
+def get_resolution(bbox: BBOX, size: tuple[int, int]) -> float:
     """
     Calculate the highest resolution needed to draw the bbox
     into an image with given size.
@@ -113,7 +114,7 @@ def resolutions(
     return res
 
 
-def pyramid_res_level(initial_res, factor=2.0, levels=20):
+def pyramid_res_level(initial_res: float, factor: float = 2.0, levels: int = 20) -> list[float]:
     """
     Return resolutions of an image pyramid.
 
@@ -130,7 +131,7 @@ def pyramid_res_level(initial_res, factor=2.0, levels=20):
     return [initial_res / factor**n for n in range(levels)]
 
 
-def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None):
+def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None) -> Optional['ResolutionRange']:
     if min_scale == max_scale == min_res == max_res is None:
         return None
     if min_res or max_res:
@@ -222,10 +223,10 @@ def min_with_none(a, b):
         return min(a, b)
 
 
-def merge_resolution_range(a, b):
-    if a and b:
-        return resolution_range(
-            min_res=max_with_none(a.min_res, b.min_res),
-            max_res=min_with_none(a.max_res, b.max_res),
-        )
-    return None
+def merge_resolution_range(a: Optional[ResolutionRange], b: Optional[ResolutionRange]) -> Optional[ResolutionRange]:
+    if a is None or b is None:
+        return None
+    return resolution_range(
+        min_res=max_with_none(a.min_res, b.min_res),
+        max_res=min_with_none(a.max_res, b.max_res),
+    )

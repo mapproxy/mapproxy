@@ -15,10 +15,11 @@
 # limitations under the License.
 
 import copy
+from typing import Optional
 
 
-class ImageOptions(object):
-    def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
+class ImageOptions:
+    def __init__(self, mode=None, transparent=None, opacity: Optional[float] = None, resampling=None,
                  format=None, bgcolor=None, colors=None, encoding_options=None):
         self.transparent = transparent
         self.opacity = opacity
