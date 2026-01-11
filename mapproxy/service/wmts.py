@@ -123,7 +123,7 @@ class WMTSServer(Server):
         if hasattr(request, 'params'):
             feature_count = request.params.get('feature_count', None)
 
-        bbox = tile_layer.grid.tile_bbox(request.tile)
+        bbox = tile_layer.grid.tile_bbox(request.tile_coord_for_point)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
                           request.infoformat, feature_count=feature_count)
         self.check_request_dimensions(tile_layer, request)

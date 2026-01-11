@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from collections import deque
 from itertools import islice
+from typing import Iterable
 
 
 class LRU(object):
@@ -31,6 +32,8 @@ class LRU(object):
     Get/Set existing: O(1) newest to O(n) for oldest entry
     Contains: O(1)
     """
+
+    last_used: deque
 
     def __init__(self, size=100):
         self.size = size
@@ -88,7 +91,7 @@ class LRU(object):
         return key in self.values
 
 
-class ImmutableDictList(object):
+class ImmutableDictList(Iterable):
     """
     A dictionary where each item can also be accessed by the
     integer index of the initial position.
@@ -99,6 +102,9 @@ class ImmutableDictList(object):
     >>> d[0], d[1]
     (23, 24)
     """
+
+    def __iter__(self):
+        return iter(self._names)
 
     def __init__(self, items):
         self._names = []

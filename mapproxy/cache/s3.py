@@ -20,6 +20,7 @@ import sys
 import threading
 from typing import Optional
 
+from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.cache import path
@@ -141,7 +142,7 @@ class S3Cache(TileCacheBase):
 
         return True
 
-    def load_tiles(self, tiles: list[Tile], with_metadata=True, dimensions=None) -> bool:
+    def load_tiles(self, tiles: TileCollection, with_metadata=True, dimensions=None) -> bool:
         p = async_.Pool(min(4, len(tiles)))
         return all(p.map(self.load_tile, tiles))
 

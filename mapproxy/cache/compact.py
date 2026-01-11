@@ -19,9 +19,11 @@ import hashlib
 import os
 import shutil
 import struct
+from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import Optional
 
+from mapproxy.grid import TileCoord
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
@@ -35,9 +37,13 @@ from mapproxy.util.coverage import Coverage
 log = logging.getLogger(__name__)
 
 
-class CompactCacheBase(TileCacheBase):
+class CompactCacheBase(TileCacheBase, ABC):
     supports_timestamp = False
-    bundle_class: Optional[type] = None
+
+    @property
+    @abstractmethod
+    def bundle_class(self) -> type:
+        pass
 
     def __init__(self, cache_dir, coverage: Optional[Coverage] = None,
                  directory_permissions=None, file_permissions=None):
@@ -48,7 +54,7 @@ class CompactCacheBase(TileCacheBase):
         self.directory_permissions = directory_permissions
         self.file_permissions = file_permissions
 
-    def _get_bundle_fname_and_offset(self, tile_coord):
+    def _get_bundle_fname_and_offset(self, tile_coord: TileCoord):
         x, y, z = tile_coord
 
         level_dir = os.path.join(self.cache_dir, 'L%02d' % z)
@@ -59,7 +65,7 @@ class CompactCacheBase(TileCacheBase):
         basename = 'R%04xC%04x' % (r, c)
         return os.path.join(level_dir, basename), (c, r)
 
-    def _get_bundle(self, tile_coord):
+    def _get_bundle(self, tile_coord: TileCoord):
         bundle_fname, offset = self._get_bundle_fname_and_offset(tile_coord)
         return self.bundle_class(bundle_fname, offset=offset, file_permissions=self.file_permissions,
                                  directory_permissions=self.directory_permissions)
@@ -146,7 +152,7 @@ BUNDLE_EXT = '.bundle'
 BUNDLEX_V1_EXT = '.bundlx'
 
 
-class BundleV1(object):
+class BundleV1:
     def __init__(self, base_filename, offset, file_permissions=None, directory_permissions=None):
         self.base_filename = base_filename
         self.lock_filename = base_filename + '.lck'
@@ -154,7 +160,7 @@ class BundleV1(object):
         self.file_permissions = file_permissions
         self.directory_permissions = directory_permissions
 
-    def _rel_tile_coord(self, tile_coord):
+    def _rel_tile_coord(self, tile_coord: TileCoord):
         return (
             tile_coord[0] % BUNDLEX_V1_GRID_WIDTH,
             tile_coord[1] % BUNDLEX_V1_GRID_HEIGHT,
@@ -282,7 +288,7 @@ BUNDLEX_V1_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x
 INT64LE = struct.Struct('<Q')
 
 
-class BundleIndexV1(object):
+class BundleIndexV1:
     def __init__(self, filename, directory_permissions=None, file_permissions=None):
         self.filename = filename
         self._fh = None
@@ -385,7 +391,7 @@ BUNDLE_V1_HEADER = [
 BUNDLE_V1_HEADER_STRUCT_FORMAT = '<4I3Q5I'
 
 
-class BundleDataV1(object):
+class BundleDataV1:
     def __init__(self, filename, tile_offsets, directory_permissions=None, file_permissions=None):
         self.filename = filename
         self.tile_offsets = tile_offsets
@@ -494,7 +500,7 @@ BUNDLE_V2_HEADER_STRUCT_FORMAT = '<4I3Q6I'
 BUNDLE_V2_HEADER_SIZE = 64
 
 
-class BundleV2(object):
+class BundleV2:
     def __init__(self, base_filename, offset=None, file_permissions=None, directory_permissions=None):
         # offset not used by V2
         self.filename = base_filename + '.bundle'
@@ -524,7 +530,7 @@ class BundleV2(object):
     def _tile_idx_offset(self, x, y):
         return BUNDLE_V2_HEADER_SIZE + (x + BUNDLE_V2_GRID_HEIGHT * y) * 8
 
-    def _rel_tile_coord(self, tile_coord):
+    def _rel_tile_coord(self, tile_coord: TileCoord):
         return (tile_coord[0] % BUNDLE_V2_GRID_WIDTH,
                 tile_coord[1] % BUNDLE_V2_GRID_HEIGHT, )
 
@@ -616,7 +622,7 @@ class BundleV2(object):
         fh.seek(24)
         fh.write(struct.pack("<Q", filesize))
 
-    def _store_tile(self, fh, tile_coord, data, dimensions=None):
+    def _store_tile(self, fh, tile_coord: TileCoord, data, dimensions=None):
         size = len(data)
         x, y = self._rel_tile_coord(tile_coord)
         offset = self._append_tile(fh, data)

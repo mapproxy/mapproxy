@@ -335,7 +335,7 @@ class DummyTileLayer(object):
 
     def tile_bbox(self, request, use_profiles=False):
         # this dummy code does not handle profiles and different tile origins!
-        return self.grid.tile_bbox(request.tile)
+        return self.grid.tile_bbox(request.tile_coord_for_point)
 
     def render(self, tile_request, use_profiles=None, coverage=None, decorate_img=None):
         self.requested = True

@@ -1,7 +1,11 @@
-from mapproxy.grid import _create_tile_list, GridError
+from typing import Optional, cast, Generator
+
+from mapproxy.grid.tile_grid import TileGrid
+from mapproxy.grid import _create_tile_list, GridError, TileCoord
+from mapproxy.util.bbox import BBOX
 
 
-class MetaGrid(object):
+class MetaGrid:
     """
     This class contains methods to calculate bbox, etc. of metatiles.
 
@@ -14,12 +18,13 @@ class MetaGrid(object):
     :type meta_buffer: pixel
     """
 
-    def __init__(self, grid, meta_size, meta_buffer=0):
+    def __init__(self, grid: TileGrid, meta_size: Optional[tuple[int, int]], meta_buffer: int = 0):
         self.grid = grid
-        self.meta_size = meta_size or 0
+        self.meta_size = meta_size
         self.meta_buffer = meta_buffer
 
-    def _meta_bbox(self, tile_coord=None, tiles=None, limit_to_bbox=True):
+    def _meta_bbox(self, tile_coord: Optional[TileCoord] = None, tiles: Optional[list[TileCoord]] = None,
+                   limit_to_bbox=True) -> tuple[BBOX, tuple[int, int, int, int]]:
         """
         Returns the bbox of the metatile that contains `tile_coord`.
 
@@ -38,22 +43,24 @@ class MetaGrid(object):
             level = tiles[0][2]
             bbox = self.grid._tiles_bbox(tiles)
         else:
+            # TODO: introduce different property so tile_coord never has to be None
+            assert tile_coord is not None
             level = tile_coord[2]
             bbox = self.unbuffered_meta_bbox(tile_coord)
         return self._buffered_bbox(bbox, level, limit_to_bbox)
 
-    def unbuffered_meta_bbox(self, tile_coord):
+    def unbuffered_meta_bbox(self, tile_coord: TileCoord) -> BBOX:
         x, y, z = tile_coord
 
         meta_size = self._meta_size(z)
 
-        return self.grid._tiles_bbox([(tile_coord),
+        return self.grid._tiles_bbox([tile_coord,
                                       (x+meta_size[0]-1, y+meta_size[1]-1, z)])
 
-    def _buffered_bbox(self, bbox, level, limit_to_grid_bbox=True):
+    def _buffered_bbox(self, bbox: BBOX, level, limit_to_grid_bbox=True) -> tuple[BBOX, tuple[int, int, int, int]]:
         minx, miny, maxx, maxy = bbox
 
-        buffers = (0, 0, 0, 0)
+        buffers = [0, 0, 0, 0]
         if self.meta_buffer > 0:
             res = self.grid.resolution(level)
             minx -= self.meta_buffer * res
@@ -79,9 +86,9 @@ class MetaGrid(object):
                     delta = maxy - self.grid.bbox[3]
                     buffers[3] = buffers[3] - int(round(delta / res, 5))
                     maxy = self.grid.bbox[3]
-        return (minx, miny, maxx, maxy), tuple(buffers)
+        return (minx, miny, maxx, maxy), cast(tuple[int, int, int, int], tuple(buffers))
 
-    def meta_tile(self, tile_coord):
+    def meta_tile(self, tile_coord: TileCoord) -> 'MetaTile':
         """
         Returns the meta tile for `tile_coord`.
         """
@@ -160,7 +167,7 @@ class MetaGrid(object):
 
         return list(_create_tile_list(xs, ys, z, (maxx+1, maxy+1))), grid_size, bounds
 
-    def main_tile(self, tile_coord):
+    def main_tile(self, tile_coord: TileCoord) -> TileCoord:
         x, y, z = tile_coord
 
         meta_size = self._meta_size(z)
@@ -174,7 +181,7 @@ class MetaGrid(object):
         tile_grid = self._meta_size(main_tile[2])
         return self._meta_tile_list(main_tile, tile_grid)
 
-    def _meta_tile_list(self, main_tile, tile_grid):
+    def _meta_tile_list(self, main_tile: TileCoord, tile_grid_size: tuple[int, int]) -> list[Optional[TileCoord]]:
         """
         >>> from mapproxy.grid.tile_grid import TileGrid
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
@@ -182,8 +189,8 @@ class MetaGrid(object):
         [(0, 1, 3), (1, 1, 3), (0, 0, 3), (1, 0, 3)]
         """
         minx, miny, z = self.main_tile(main_tile)
-        maxx = minx + tile_grid[0] - 1
-        maxy = miny + tile_grid[1] - 1
+        maxx = minx + tile_grid_size[0] - 1
+        maxy = miny + tile_grid_size[1] - 1
         if self.grid.flipped_y_axis:
             ys = range(miny, maxy+1)
         else:
@@ -192,7 +199,9 @@ class MetaGrid(object):
 
         return list(_create_tile_list(xs, ys, z, self.grid.grid_sizes[z]))
 
-    def _tiles_pattern(self, grid_size, buffers, tile=None, tiles=None):
+    def _tiles_pattern(self, grid_size: tuple[int, int], buffers: tuple[int, int, int, int],
+                       tile: Optional[TileCoord] = None, tiles: Optional[list[Optional[TileCoord]]] = None)\
+            -> Generator[tuple[Optional[TileCoord], tuple[int, int]], None, None]:
         """
         Returns the tile pattern for the given list of tiles.
         The result contains for each tile the ``tile_coord`` and the upper-left
@@ -215,6 +224,8 @@ class MetaGrid(object):
         """
         if tile:
             tiles = self._meta_tile_list(tile, grid_size)
+
+        assert tiles is not None
 
         for i in range(grid_size[1]):
             for j in range(grid_size[0]):
@@ -245,8 +256,8 @@ class MetaGrid(object):
 
         # remove 1/10 of a pixel so we don't get a tiles we only touch
         delta = self.grid.resolutions[level] / 10.0
-        x0, y0, _ = self.grid.tile(bbox[0]+delta, bbox[1]+delta, level)
-        x1, y1, _ = self.grid.tile(bbox[2]-delta, bbox[3]-delta, level)
+        x0, y0, _ = self.grid.tile_coord_for_point(bbox[0] + delta, bbox[1] + delta, level)
+        x1, y1, _ = self.grid.tile_coord_for_point(bbox[2] - delta, bbox[3] - delta, level)
 
         meta_size = self._meta_size(level)
 
@@ -279,19 +290,20 @@ class MetaGrid(object):
                 _create_tile_list(xs, ys, level, self.grid.grid_sizes[level]))
 
 
-class MetaTile(object):
-    def __init__(self, bbox, size, tile_patterns, grid_size):
+class MetaTile:
+    def __init__(self, bbox, size, tile_patterns: Generator[tuple[Optional[TileCoord], tuple[int, int]], None, None],
+                 grid_size):
         self.bbox = bbox
         self.size = size
         self.tile_patterns = list(tile_patterns)
         self.grid_size = grid_size
 
     @property
-    def tiles(self):
+    def tiles(self) -> list[Optional[TileCoord]]:
         return [t[0] for t in self.tile_patterns]
 
     @property
-    def main_tile_coord(self):
+    def main_tile_coord(self) -> Optional[TileCoord]:
         """
         Returns the "main" tile of the meta tile. This tile(coord) can be used
         for locking.
@@ -306,6 +318,7 @@ class MetaTile(object):
         for t in self.tiles:
             if t is not None:
                 return t
+        return None
 
     def __repr__(self):
         return "MetaTile(%r, %r, %r, %r)" % (self.bbox, self.size, self.grid_size,

@@ -1,5 +1,8 @@
 from __future__ import division
 
+from typing import Optional
+
+from mapproxy.cache.tile_manager import TileManager
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.image import bbox_position_in_image, sub_image_source, BaseImageSource
@@ -14,13 +17,13 @@ from mapproxy.util.bbox import bbox_equals
 class CacheMapLayer(MapLayer):
     supports_meta_tiles = True
 
-    def __init__(self, tile_manager, extent=None, image_opts=None,
+    def __init__(self, tile_manager: TileManager, extent: Optional[MapExtent] = None, image_opts=None,
                  max_tile_limit=None):
         super().__init__(image_opts=image_opts)
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.extent = extent or map_extent_from_grid(self.grid)
-        self.res_range = []
+        self.res_range = None
         if not self.tile_manager.rescale_tiles:
             self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.max_tile_limit = max_tile_limit
@@ -54,7 +57,7 @@ class CacheMapLayer(MapLayer):
 
     def _image(self, query: MapQuery) -> BaseImageSource:
         try:
-            src_bbox, tile_grid, affected_tile_coords = \
+            src_bbox, tile_grid_size, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
                                              req_srs=query.srs)
         except NoTiles:
@@ -62,7 +65,7 @@ class CacheMapLayer(MapLayer):
         except GridError as ex:
             raise MapBBOXError(ex.args[0])
 
-        num_tiles = tile_grid[0] * tile_grid[1]
+        num_tiles = tile_grid_size[0] * tile_grid_size[1]
 
         if self.max_tile_limit and num_tiles >= self.max_tile_limit:
             raise MapBBOXError("too many tiles, max_tile_limit: %s, num_tiles: %s" % (self.max_tile_limit, num_tiles))
@@ -90,7 +93,7 @@ class CacheMapLayer(MapLayer):
 
         tile_sources = [tile.source for tile in tile_collection]
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                                 tile_grid=tile_grid, tile_size=self.grid.tile_size)
+                                 tile_grid_size=tile_grid_size, tile_size=self.grid.tile_size)
         try:
             return tiled_image.transform(query.bbox, query.srs, query.size,
                                          self.tile_manager.image_opts)

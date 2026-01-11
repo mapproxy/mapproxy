@@ -18,11 +18,11 @@ from __future__ import division
 from PIL import Image
 
 from mapproxy.image import ImageSource, image_filter
-from mapproxy.srs import make_lin_transf
-from mapproxy.util.bbox import bbox_equals
+from mapproxy.srs import make_lin_transf, _SRS
+from mapproxy.util.bbox import bbox_equals, BBOX
 
 
-class ImageTransformer(object):
+class ImageTransformer:
     """
     Transform images between different bbox and spatial reference systems.
 
@@ -51,7 +51,7 @@ class ImageTransformer(object):
             large src image                   large dst image
     """
 
-    def __init__(self, src_srs, dst_srs, max_px_err=1):
+    def __init__(self, src_srs: _SRS, dst_srs: _SRS, max_px_err: int = 1):
         """
         :param src_srs: the srs of the source image
         :param dst_srs: the srs of the target image
@@ -63,7 +63,8 @@ class ImageTransformer(object):
         self.dst_bbox = self.dst_size = None
         self.max_px_err = max_px_err
 
-    def transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
+    def transform(self, src_img: ImageSource, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
+            -> ImageSource:
         """
         Transforms the `src_img` between the source and destination SRS
         of this ``ImageTransformer`` instance.
@@ -92,7 +93,8 @@ class ImageTransformer(object):
         result.cacheable = src_img.cacheable
         return result
 
-    def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox, image_opts) -> ImageSource:
+    def _transform_simple(self, src_img: ImageSource, src_bbox: BBOX,
+                          dst_size: tuple[int, int], dst_bbox: BBOX, image_opts) -> ImageSource:
         """
         Do a simple crop/extent transformation.
         """
@@ -126,7 +128,8 @@ class ImageTransformer(object):
                                    image_filter[image_opts.resampling])
         return ImageSource(result, size=dst_size, image_opts=image_opts)
 
-    def _transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts) -> ImageSource:
+    def _transform(self, src_img: ImageSource, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
+            -> ImageSource:
         """
         Do a 'real' transformation with a transformed mesh (see above).
         """
@@ -157,7 +160,8 @@ class ImageTransformer(object):
 
         return ImageSource(result, size=dst_size, image_opts=image_opts)
 
-    def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
+    def _no_transformation_needed(self, src_size: tuple[int, int], src_bbox: BBOX,
+                                  dst_size: tuple[int, int], dst_bbox: BBOX):
         """
         >>> src_bbox = (-2504688.5428486541, 1252344.271424327,
         ...             -1252344.271424327, 2504688.5428486541)
@@ -176,10 +180,10 @@ class ImageTransformer(object):
 
 
 def transform_meshes(
-    src_size, src_bbox, src_srs,
-    dst_size, dst_bbox, dst_srs,
-    max_px_err=1,
-    use_center_px=False,
+    src_size: tuple[int, int], src_bbox: BBOX, src_srs: _SRS,
+    dst_size: tuple[int, int], dst_bbox: BBOX, dst_srs: _SRS,
+    max_px_err: int = 1,
+    use_center_px: bool = False,
 ):
     """
     transform_meshes creates a list of QUAD transformation parameters for PIL's
@@ -295,7 +299,7 @@ def center_quad_transform(quad, src_quad):
     )
 
 
-def img_for_resampling(img, resampling) -> Image.Image:
+def img_for_resampling(img: Image.Image, resampling) -> Image.Image:
     """
     Convert P images to RGB(A) for non-NEAREST resamplings.
     """

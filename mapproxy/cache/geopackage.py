@@ -25,6 +25,7 @@ from io import BytesIO
 from itertools import groupby
 from typing import Optional
 
+from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.image import ImageSource
@@ -364,7 +365,7 @@ class GeopackageCache(TileCacheBase):
         else:
             return False
 
-    def load_tiles(self, tiles: list[Tile], with_metadata=False, dimensions=None) -> bool:
+    def load_tiles(self, tiles: TileCollection, with_metadata=False, dimensions=None) -> bool:
         # associate the right tiles with the cursor
         tile_dict = {}
         coords = []
@@ -512,7 +513,7 @@ class GeopackageLevelCache(TileCacheBase):
 
         return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
 
-    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
+    def load_tiles(self, tiles: TileCollection, with_metadata=False, dimensions=None) -> bool:
         level = None
         for tile in tiles:
             if tile.source or tile.coord is None:
