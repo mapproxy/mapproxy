@@ -220,7 +220,8 @@ class BandMerger(object):
                         a=chan
                     )
                 else:
-                    chan = ImageMath.eval("convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
+                    chan = ImageMath.eval(  # type: ignore[attr-defined]
+                        "convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
                 if result_bands[op.dst_band] is None:
                     result_bands[op.dst_band] = chan
                 else:

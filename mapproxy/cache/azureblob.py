@@ -68,8 +68,9 @@ class AzureBlobCache(TileCacheBase):
     @property
     def container_client(self):
         if not getattr(self._container_client_cache, 'client', None):
-            container_client = BlobServiceClient.from_connection_string(self.connection_string) \
-                .get_container_client(self.container_name)
+            container_client = (BlobServiceClient
+                                .from_connection_string(self.connection_string)
+                                .get_container_client(self.container_name))
             self._container_client_cache.client = container_client
         return self._container_client_cache.client
 

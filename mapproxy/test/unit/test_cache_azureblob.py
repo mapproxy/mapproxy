@@ -48,7 +48,7 @@ class TestAzureBlobCache(TileCacheTestBase):
             base_path=self.base_path,
             file_ext=self.file_ext,
             container_name=self.container,
-            connection_string=self.connection_string,
+            connection_string=self.connection_string
         )
 
         self.container_client = self.cache.container_client

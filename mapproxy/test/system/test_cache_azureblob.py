@@ -43,7 +43,8 @@ def azure_container_client(connection_string, container_name):
         base_path="",
         file_ext="",
         connection_string=connection_string,
-        container_name=container_name).container_client
+        container_name=container_name
+    ).container_client
 
 
 @pytest.fixture(scope="module")
