@@ -19,9 +19,11 @@ import time
 from abc import ABC, abstractmethod
 
 from contextlib import contextmanager
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
+from mapproxy.util.coverage import Coverage
 
 
 class CacheBackendError(Exception):
@@ -48,7 +50,7 @@ class TileCacheBase(ABC):
     supports_timestamp = True
     supports_dimensions = False
 
-    def __init__(self, coverage=None) -> None:
+    def __init__(self, coverage: Optional[Coverage] = None) -> None:
         self.coverage = coverage
 
     @abstractmethod

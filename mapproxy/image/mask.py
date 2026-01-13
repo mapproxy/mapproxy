@@ -14,10 +14,12 @@
 # limitations under the License.
 
 from PIL import Image, ImageDraw
-from mapproxy.srs import SRS, make_lin_transf
+from mapproxy.srs import SRS, make_lin_transf, _SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image
 from mapproxy.util.geom import flatten_to_polygons
+from mapproxy.util.bbox import BBOX
+from mapproxy.util.coverage import GeomCoverage
 
 
 def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
@@ -39,7 +41,7 @@ def mask_image(img: Image.Image, bbox, bbox_srs, coverage) -> Image.Image:
     return img
 
 
-def mask_polygons(bbox, bbox_srs, coverage):
+def mask_polygons(bbox: BBOX, bbox_srs: _SRS, coverage: GeomCoverage):
     coverage = coverage.transform_to(bbox_srs)
     coverage = coverage.intersection(bbox, bbox_srs)
     return flatten_to_polygons(coverage.geom)

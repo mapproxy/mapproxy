@@ -18,12 +18,14 @@ import calendar
 import hashlib
 import threading
 from io import BytesIO
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.image import ImageSource
 from mapproxy.util import async_
+from mapproxy.util.coverage import Coverage
 
 try:
     from azure.storage.blob import BlobServiceClient, ContentSettings
@@ -44,8 +46,9 @@ class AzureBlobConnectionError(Exception):
 class AzureBlobCache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms', container_name='mapproxy',
-                 _concurrent_writer=4, _concurrent_reader=4, connection_string=None, coverage=None):
-        super(AzureBlobCache, self).__init__(coverage)
+                 _concurrent_writer=4, _concurrent_reader=4, connection_string=None,
+                 coverage: Optional[Coverage] = None):
+        super().__init__(coverage)
         if BlobServiceClient is None:
             raise ImportError("Azure Blob Cache requires 'azure-storage-blob' package")
 

@@ -18,14 +18,17 @@ from __future__ import print_function, division
 import math
 import sys
 import optparse
+from typing import Optional
 
-
+from mapproxy.util.bbox import BBOX
 from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration
 from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.seed.config import (
     load_seed_tasks_conf, SeedConfigurationError, SeedingConfiguration
 )
+from mapproxy.srs import _SRS
+from mapproxy.util.coverage import Coverage, BBOXCoverage
 
 
 def format_conf_value(value):
@@ -41,14 +44,14 @@ def _area_from_bbox(bbox):
     return width * height
 
 
-def grid_coverage_ratio(bbox, srs, coverage):
+def grid_coverage_ratio(bbox: BBOX, srs: _SRS, coverage: Coverage) -> float:
     coverage = coverage.transform_to(srs)
     grid_area = _area_from_bbox(bbox)
 
-    if coverage.geom:
-        coverage_area = coverage.geom.area
-    else:
+    if isinstance(coverage, BBOXCoverage):
         coverage_area = _area_from_bbox(coverage.bbox)
+    else:
+        coverage_area = coverage.geom.area
 
     return coverage_area / grid_area
 
@@ -107,7 +110,7 @@ def display_grids_list(grids):
         print(grid_name)
 
 
-def display_grids(grids, coverage=None):
+def display_grids(grids, coverage: Optional[Coverage] = None):
     for i, grid_name in enumerate(sorted(grids.keys())):
         if i != 0:
             print()

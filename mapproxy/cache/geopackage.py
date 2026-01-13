@@ -23,6 +23,7 @@ import threading
 import time
 from io import BytesIO
 from itertools import groupby
+from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
@@ -31,7 +32,7 @@ from mapproxy.srs import get_epsg_num
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 from mapproxy.util.sqlite3 import sqlite3
-
+from mapproxy.util.coverage import Coverage
 
 log = logging.getLogger(__name__)
 
@@ -40,9 +41,9 @@ class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
     def __init__(
-            self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None,
-            directory_permissions=None, file_permissions=None):
-        super(GeopackageCache, self).__init__(coverage)
+            self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False,
+            coverage: Optional[Coverage] = None, directory_permissions=None, file_permissions=None):
+        super().__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
         md5 = hashlib.new('md5', geopackage_file.encode('utf-8'), usedforsecurity=False)
@@ -438,9 +439,9 @@ class GeopackageCache(TileCacheBase):
 
 class GeopackageLevelCache(TileCacheBase):
 
-    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None,
-                 directory_permissions=None, file_permissions=None):
-        super(GeopackageLevelCache, self).__init__(coverage)
+    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False,
+                 coverage: Optional[Coverage] = None, directory_permissions=None, file_permissions=None):
+        super().__init__(coverage)
         md5 = hashlib.new('md5', geopackage_dir.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'gpkg-' + md5.hexdigest()
         self.cache_dir = geopackage_dir
@@ -448,7 +449,7 @@ class GeopackageLevelCache(TileCacheBase):
         self.table_name = table_name
         self.timeout = timeout
         self.wal = wal
-        self._geopackage = {}
+        self._geopackage: dict[int, GeopackageCache] = {}
         self._geopackage_lock = threading.Lock()
         self.directory_permissions = directory_permissions
         self.file_premissions = file_permissions
