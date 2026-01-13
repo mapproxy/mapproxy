@@ -294,8 +294,8 @@ class GeopackageCache(TileCacheBase):
             db.commit()
 
             tile_size = self.tile_grid.tile_size
-            for grid, resolution, level in zip(self.tile_grid.grid_sizes,
-                                               self.tile_grid.resolutions, range(20)):
+            for grid, resolution, level in zip(self.tile_grid.grid_sizes.values(),
+                                               self.tile_grid.resolutions.values(), range(20)):
                 db.execute("""
                     INSERT OR REPLACE INTO gpkg_tile_matrix (table_name, zoom_level, matrix_width,
                         matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size)

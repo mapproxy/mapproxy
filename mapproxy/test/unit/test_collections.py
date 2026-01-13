@@ -103,12 +103,49 @@ class TestImmutableDictList(object):
         assert res['three'] == 3
         assert len(res) == 3
 
-    def test_named_iteritems(self):
+    def test_values(self):
         res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
-        itr = res.iteritems()
+        itr = iter(res.values())
+        assert next(itr) == 10
+        assert next(itr) == 5
+        assert next(itr) == 3
+        try:
+            next(itr)
+        except StopIteration:
+            pass
+        else:
+            assert False, 'StopIteration expected'
+
+    def test_named_items(self):
+        res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
+        itr = iter(res.items())
         assert next(itr) == ('one', 10)
         assert next(itr) == ('two', 5)
         assert next(itr) == ('three', 3)
+        try:
+            next(itr)
+        except StopIteration:
+            pass
+        else:
+            assert False, 'StopIteration expected'
+
+    def test_enumerate(self):
+        res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
+        itr = enumerate(res)
+        assert next(itr) == (0, 'one')
+        assert next(itr) == (1, 'two')
+        assert next(itr) == (2, 'three')
+        try:
+            next(itr)
+        except StopIteration:
+            pass
+        else:
+            assert False, 'StopIteration expected'
+
+        itr = enumerate(res.values())
+        assert next(itr) == (0, 10)
+        assert next(itr) == (1, 5)
+        assert next(itr) == (2, 3)
         try:
             next(itr)
         except StopIteration:

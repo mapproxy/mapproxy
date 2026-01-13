@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+from typing import TypeVar, Mapping, Hashable, Generic, Iterable, Iterator
+
+V = TypeVar("V")
 
 
-class ImmutableDictList(object):
+class ImmutableDictList(Mapping[Hashable, V], Generic[V]):
     """
     A dictionary where each item can also be accessed by the
     integer index of the initial position.
@@ -28,35 +30,33 @@ class ImmutableDictList(object):
     (23, 24)
     """
 
-    def __init__(self, items):
-        self._names = []
-        self._values = {}
+    def __init__(self, items: Iterable[tuple[Hashable, V]]) -> None:
+        names: list[Hashable] = []
+        values: dict[Hashable, V] = {}
+
         for name, value in items:
-            self._values[name] = value
-            self._names.append(name)
+            if name in values:
+                raise ValueError(f"Duplicate key: {name!r}")
+            names.append(name)
+            values[name] = value
 
-    def __getitem__(self, name):
-        if isinstance(name, str):
-            return self._values[name]
-        else:
-            return self._values[self._names[name]]
+        self._names: tuple[Hashable, ...] = tuple(names)
+        self._values: dict[Hashable, V] = values
 
-    def __contains__(self, name):
-        try:
-            self[name]
-            return True
-        except KeyError:
-            return False
+    def __getitem__(self, key: Hashable | int) -> V:
+        if isinstance(key, int):
+            return self._values[self._names[key]]
+        return self._values[key]
 
-    def __len__(self):
+    def __iter__(self) -> Iterator[Hashable]:
+        # Mapping contract: iteration yields keys
+        return iter(self._names)
+
+    def __len__(self) -> int:
         return len(self._values)
 
-    def __str__(self):
-        values = []
-        for name in self._names:
-            values.append('%s: %s' % (name, self._values[name]))
-        return '[%s]' % (', '.join(values),)
-
-    def iteritems(self):
-        for idx in self._names:
-            yield idx, self._values[idx]
+    def __repr__(self) -> str:
+        contents = ", ".join(
+            f"{name!r}: {self._values[name]!r}" for name in self._names
+        )
+        return f"{self.__class__.__name__}([{contents}])"

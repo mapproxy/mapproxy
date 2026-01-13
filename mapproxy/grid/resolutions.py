@@ -1,5 +1,8 @@
 import math
+from typing import Optional, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from mapproxy.grid.tile_grid import NamedGridList
 from mapproxy.util.bbox import bbox_size
 
 
@@ -35,16 +38,15 @@ def get_resolution(bbox, size):
 
 
 def aligned_resolutions(
-    min_res=None,
-    max_res=None,
-    res_factor=2.0,
-    num_levels=None,
+    with_resolutions: 'NamedGridList',
+    min_res: Optional[float] = None,
+    max_res: Optional[float] = None,
+    res_factor: float = 2.0,
+    num_levels: Optional[int] = None,
     bbox=None,
-    tile_size=(256, 256),
-    align_with=None,
+    tile_size: tuple[int, int] = (256, 256),
 ):
-    alinged_res = align_with.resolutions
-    res = list(alinged_res)
+    res = list(with_resolutions.values())
 
     if not min_res:
         width = bbox[2] - bbox[0]
