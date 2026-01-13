@@ -175,7 +175,7 @@ class ArcGISRequest(BaseRequest):
     fixed_params = {"f": "image"}
 
     def __init__(self, param=None, url='', validate=False, http=None):
-        BaseRequest.__init__(self, param, url, validate, http)
+        super().__init__(param, url, validate, http)
 
         self.url = rest_endpoint(url)
 
@@ -195,7 +195,7 @@ class ArcGISIdentifyRequest(BaseRequest):
     fixed_params = {'geometryType': 'esriGeometryPoint'}
 
     def __init__(self, param=None, url='', validate=False, http=None):
-        BaseRequest.__init__(self, param, url, validate, http)
+        super().__init__(param, url, validate, http)
 
         self.url = rest_identify_endpoint(url)
 

@@ -24,7 +24,7 @@ from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image
 from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImageError
 from mapproxy.extent import MapExtent, DefaultMapExtent
 from mapproxy.query import MapQuery, LegendQuery
 from mapproxy.source import InfoSource, SourceError, LegendSource
@@ -66,9 +66,9 @@ class WMSLikeSource(MapLayer):
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
-            raise BlankImage()
+            raise BlankImageError()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-            raise BlankImage()
+            raise BlankImageError()
         try:
             resp = self._get_map(query)
             if self.transparent_color:
@@ -111,7 +111,7 @@ class WMSLikeSource(MapLayer):
     def _get_sub_query(self, query, format):
         size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
         if size[0] == 0 or size[1] == 0:
-            raise BlankImage()
+            raise BlankImageError()
         src_query = MapQuery(bbox, size, query.srs, format, dimensions=query.dimensions)
         resp = self._retrieve(src_query, format)
         return sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts)

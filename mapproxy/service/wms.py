@@ -23,6 +23,9 @@ from math import sqrt
 from collections import OrderedDict
 from typing import Any, Optional
 
+from mapproxy.grid.resolutions import ResolutionRange
+from mapproxy.image import BaseImageSource
+from mapproxy.layer.map_layer import MapLayer
 from mapproxy.layer.limited_layer import LimitedLayer
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
@@ -37,7 +40,7 @@ from mapproxy.image import bbox_position_in_image, sub_image_source, BlankImageS
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
-from mapproxy.layer import BlankImage, MapError, MapBBOXError, merge_layer_res_ranges
+from mapproxy.layer import BlankImageError, MapError, MapBBOXError, merge_layer_res_ranges
 from mapproxy.query import MapQuery, InfoQuery, LegendQuery
 from mapproxy.util import async_
 from mapproxy.util.bbox import TransformationError
@@ -58,14 +61,14 @@ class WMSServer(Server):
     service = 'wms'
     fi_transformers = None
 
-    def __init__(self, root_layer, md, srs, image_formats, tile_layers=None, attribution=None,
+    def __init__(self, root_layer: 'WMSGroupLayer', md, srs, image_formats, tile_layers=None, attribution=None,
                  info_types=None, strict=False, on_error='raise',
                  concurrent_layer_renderer=1, max_output_pixels=None,
                  srs_extents=None, max_tile_age=None,
                  versions=None,
                  inspire_md=None,
                  ):
-        Server.__init__(self)
+        super().__init__()
         self.versions = versions
         self.root_layer = root_layer
         self.layers = root_layer.child_layers()
@@ -590,8 +593,8 @@ def limit_llbbox(bbox):
     return minx, miny, maxx, maxy
 
 
-class LayerRenderer(object):
-    def __init__(self, layers, query, request, raise_source_errors=True,
+class LayerRenderer:
+    def __init__(self, layers: list[MapLayer], query: MapQuery, request, raise_source_errors=True,
                  concurrent_rendering=1):
         self.layers = layers
         self.query = query
@@ -599,7 +602,7 @@ class LayerRenderer(object):
         self.raise_source_errors = raise_source_errors
         self.concurrent_rendering = concurrent_rendering
 
-    def render(self, layer_merger):
+    def render(self, layer_merger: LayerMerger):
         render_layers = combined_layers(self.layers, self.query)
         if not render_layers:
             return
@@ -612,7 +615,8 @@ class LayerRenderer(object):
             return self._render_capture_source_errors(async_pool, render_layers,
                                                       layer_merger)
 
-    def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
+    def _render_raise_exceptions(self, async_pool: async_.Pool, render_layers: list[MapLayer],
+                                 layer_merger: LayerMerger):
         # call _render_layer, raise all exceptions
         try:
             for layer_task in async_pool.imap(self._render_layer, render_layers,
@@ -628,9 +632,10 @@ class LayerRenderer(object):
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
-    def _render_capture_source_errors(self, async_pool, render_layers, layer_merger):
+    def _render_capture_source_errors(self, async_pool: async_.Pool, render_layers: list[MapLayer],
+                                      layer_merger: LayerMerger):
         # call _render_layer, capture SourceError exceptions
-        errors = []
+        errors: list[str] = []
         rendered = 0
 
         for layer_task in async_pool.imap(self._render_layer, render_layers,
@@ -650,18 +655,16 @@ class LayerRenderer(object):
                     raise reraise(ex)
 
         if render_layers and not rendered:
-            errors = '\n'.join(errors)
-            raise RequestError('Could not get any sources:\n'+errors, request=self.request)
+            joined_errors = '\n'.join(errors)
+            raise RequestError('Could not get any sources:\n' + joined_errors, request=self.request)
 
         if errors:
             layer_merger.add(message_image('\n'.join(errors), self.query.size,
                                            image_opts=ImageOptions(transparent=True)))
 
-    def _render_layer(self, layer):
+    def _render_layer(self, layer: MapLayer) -> tuple[MapLayer, Optional[BaseImageSource]]:
         try:
             layer_img = layer.get_map(self.query)
-            if layer_img is not None:
-                layer_img.opacity = layer.opacity
 
             return layer, layer_img
         except SourceError:
@@ -673,7 +676,7 @@ class LayerRenderer(object):
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',
                                request=self.request)
-        except BlankImage:
+        except BlankImageError:
             return layer, None
 
 
@@ -696,11 +699,11 @@ class WMSLayerBase(ABC):
 
     "True is .legend() is supported"
     has_legend = False
-    legend_url = None
-    legend_size = None
+    legend_url: Optional[str] = None
+    legend_size: Optional[tuple[int, int]] = None
 
     "resolution range (i.e. ScaleHint) of the layer"
-    res_range = None
+    res_range: Optional[ResolutionRange] = None
     "MapExtend of the layer"
     extent: MapExtent
     name: str
@@ -714,7 +717,7 @@ class WMSLayerBase(ABC):
     def renders_query(self, query):
         pass
 
-    def map_layers_for_query(self, query):
+    def map_layers_for_query(self, query: MapQuery) -> list[tuple[str, list[MapLayer]]]:
         raise NotImplementedError()
 
     def legend(self, query):
@@ -761,7 +764,7 @@ class WMSLayer(WMSLayerBase):
             return False
         return True
 
-    def map_layers_for_query(self, query):
+    def map_layers_for_query(self, query: MapQuery) -> list[tuple[str, list[MapLayer]]]:
         if not self.map_layers:
             return []
         return [(self.name, self.map_layers)]
@@ -811,6 +814,7 @@ class WMSGroupLayer(WMSLayerBase):
     def __init__(self, name, title, this, layers: list[WMSLayerBase], md=None):
         self.name = name
         self.title = title
+        # TODO: What is the purpose of this 'this'?
         self.this = this
         self.md = md or {}
         self.is_active = True if this is not None else False
@@ -838,7 +842,7 @@ class WMSGroupLayer(WMSLayerBase):
             return False
         return True
 
-    def map_layers_for_query(self, query):
+    def map_layers_for_query(self, query: MapQuery) -> list[tuple[str, list[MapLayer]]]:
         if self.this:
             return self.this.map_layers_for_query(query)
         else:
@@ -856,8 +860,8 @@ class WMSGroupLayer(WMSLayerBase):
                 layers.extend(layer.info_layers_for_query(query))
             return layers
 
-    def child_layers(self):
-        layers = OrderedDict()
+    def child_layers(self) -> OrderedDict[str, WMSLayerBase]:
+        layers: OrderedDict[str, WMSLayerBase] = OrderedDict()
         if self.name:
             layers[self.name] = self
         for lyr in self.layers:
@@ -868,7 +872,7 @@ class WMSGroupLayer(WMSLayerBase):
         return layers
 
 
-def combined_layers(layers, query):
+def combined_layers(layers: list[MapLayer], query: MapQuery) -> list[MapLayer]:
     """
     Returns a new list of the layers where all adjacent layers are combined
     if possible.
@@ -876,13 +880,13 @@ def combined_layers(layers, query):
     if len(layers) <= 1:
         return layers
     layers = layers[:]
-    combined_layers = [layers.pop(0)]
+    _combined_layers = [layers.pop(0)]
     while layers:
         current_layer = layers.pop(0)
-        combined = combined_layers[-1].combined_layer(current_layer, query)
+        combined = _combined_layers[-1].combined_layer(current_layer, query)
         if combined:
             # change last layer with combined
-            combined_layers[-1] = combined
+            _combined_layers[-1] = combined
         else:
-            combined_layers.append(current_layer)
-    return combined_layers
+            _combined_layers.append(current_layer)
+    return _combined_layers

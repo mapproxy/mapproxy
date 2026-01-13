@@ -117,7 +117,7 @@ class WMTSRequest(BaseRequest):
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict
-        BaseRequest.__init__(self, param=param, url=url, validate=validate, **kw)
+        super().__init__(param=param, url=url, validate=validate, **kw)
 
     def validate(self):
         pass
@@ -144,8 +144,7 @@ class WMTS100TileRequest(WMTSRequest):
                       'tilematrix', 'tilerow', 'tilecol', 'format']
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
-        WMTSRequest.__init__(self, param=param, url=url, validate=validate,
-                             non_strict=non_strict, **kw)
+        super().__init__(param=param, url=url, validate=validate, non_strict=non_strict, **kw)
 
     def make_request(self):
         self.layer = self.params.layer
@@ -225,7 +224,7 @@ class WMTS100CapabilitiesRequest(WMTSRequest):
     fixed_params = {}
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
-        WMTSRequest.__init__(self, param=param, url=url, validate=validate, **kw)
+        super().__init__(param=param, url=url, validate=validate, **kw)
 
 
 request_mapping = {'featureinfo': WMTS100FeatureInfoRequest,

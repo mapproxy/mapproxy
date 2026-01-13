@@ -79,7 +79,7 @@ class HTTPServer(HTTPServer_):
 
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses, unordered=False, query_comparator=None):
-        threading.Thread.__init__(self, **{'group': None})
+        super().__init__(**{'group': None})
         self.requests_responses = requests_responses
         self.daemon = True
         self.sucess = False
@@ -111,7 +111,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
 
 class ThreadedSingleRequestHTTPServer(threading.Thread):
     def __init__(self, address, request_handler):
-        threading.Thread.__init__(self, **{'group': None})
+        super().__init__(**{'group': None})
         self.daemon = True
         self.sucess = False
         self.shutdown = False

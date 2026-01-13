@@ -33,7 +33,7 @@ def has_renderd_support():
 
 class RenderdTileCreator(TileCreator):
     def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None):
-        TileCreator.__init__(self, tile_mgr, dimensions)
+        super().__init__(tile_mgr, dimensions)
         self.tile_locker = tile_locker.lock or self.tile_mgr.lock
         self.renderd_address = renderd_address
         self.priority = priority

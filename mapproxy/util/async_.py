@@ -56,7 +56,7 @@ def _result_iter(results, use_result_objects=False):
 
 class ThreadWorker(threading.Thread):
     def __init__(self, task_queue, result_queue):
-        threading.Thread.__init__(self)
+        super().__init__()
         self.task_queue = task_queue
         self.result_queue = result_queue
         self.base_config = base_config()

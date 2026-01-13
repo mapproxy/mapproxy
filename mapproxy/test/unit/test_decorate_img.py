@@ -36,7 +36,7 @@ class DummyLayer(MapLayer):
     queryable = False
 
     def __init__(self, name):
-        MapLayer.__init__(self)
+        super().__init__()
         self.name = name
         self.requested = False
         self.queried = False

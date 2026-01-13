@@ -1,11 +1,12 @@
 from __future__ import division
 
 from functools import reduce
+from typing import Protocol, Optional, Sequence
 
-from mapproxy.grid.resolutions import merge_resolution_range
+from mapproxy.grid.resolutions import merge_resolution_range, ResolutionRange
 
 
-class BlankImage(Exception):
+class BlankImageError(Exception):
     pass
 
 
@@ -28,14 +29,20 @@ class Dimension(list):
         if not default and values:
             default = values[0]
         self.default = default
-        list.__init__(self, values)
+        super().__init__(values)
 
 
-def merge_layer_res_ranges(layers):
+class WithResRange(Protocol):
+    @property
+    def res_range(self) -> Optional[ResolutionRange]:
+        pass
+
+
+def merge_layer_res_ranges(layers: Sequence[WithResRange]) -> Optional[ResolutionRange]:
     ranges = [s.res_range for s in layers
               if hasattr(s, 'res_range')]
 
-    if ranges:
-        ranges = reduce(merge_resolution_range, ranges)
+    if not ranges:
+        return None
 
-    return ranges
+    return reduce(merge_resolution_range, ranges)
