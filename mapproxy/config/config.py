@@ -51,9 +51,7 @@ class Options(dict):
 
     def update(self, other=None, **kw):
         if other is not None:
-            if hasattr(other, 'iteritems'):
-                it = other.iteritems()
-            elif hasattr(other, 'items'):
+            if hasattr(other, 'items'):
                 it = other.items()
             else:
                 it = iter(other)

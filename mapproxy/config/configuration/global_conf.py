@@ -40,7 +40,7 @@ class GlobalConfiguration(ConfigurationBase):
         for k, v in d.items():
             if v is None:
                 continue
-            if (hasattr(v, 'iteritems') or hasattr(v, 'items')) and k in target:
+            if hasattr(v, 'items') and k in target:
                 self._copy_conf_values(v, target[k])
             else:
                 target[k] = v

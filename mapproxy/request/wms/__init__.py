@@ -206,7 +206,7 @@ class WMSMapRequest(WMSRequest):
                                   "^(%s)$" % "|".join(self.dimension_params))
             keys = []
             if isinstance(param, RequestParams):
-                keys = list(map(lambda k: k[0], param.iteritems()))
+                keys = list(map(lambda k: k[0], param.items()))
             else:
                 keys = list(param.keys())
             if len(keys) > 0:
