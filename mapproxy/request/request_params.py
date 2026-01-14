@@ -1,9 +1,10 @@
+from typing import Union
 from urllib.parse import quote
 
 from mapproxy.request.no_case_multi_dict import NoCaseMultiDict
 
 
-class RequestParams(object):
+class RequestParams:
     """
     This class represents key-value request parameters. It allows case-insensitive
     access to all keys. Multiple values for a single key will be concatenated
@@ -13,25 +14,26 @@ class RequestParams(object):
 
     :param param: A dict or ``NoCaseMultiDict``.
     """
-    params = None
+    params: NoCaseMultiDict = NoCaseMultiDict()
 
-    def __init__(self, param=None):
+    def __init__(self, param: 'Union[dict[str, str]|NoCaseMultiDict[str]|RequestParams|None]' = None):
         self.delimiter = ','
 
-        if param is None:
-            self.params = NoCaseMultiDict()
-        else:
+        if isinstance(param, RequestParams):
+            self.params = param.params.copy()
+        elif isinstance(param, NoCaseMultiDict) or isinstance(param, dict):
             self.params = NoCaseMultiDict(param)
+        elif param is not None:
+            raise ValueError('param has invalid value')
 
     def __str__(self):
         return self.query_string
 
-    def get(self, key, default=None, type_func=None):
+    def get(self, key, default=None):
         """
-        Returns the value for `key` or the `default`. `type_func` is called on the
-        value to alter the value (e.g. use ``type_func=int`` to get ints).
+        Returns the value for `key` or the `default`.
         """
-        return self.params.get(key, default, type_func)
+        return self.params.get(key, default)
 
     def set(self, key, value, append=False, unpack=False):
         """
@@ -50,7 +52,7 @@ class RequestParams(object):
         If `append` is ``True`` the value will be added to other values for
         this `key`.
         """
-        self.params.update(mapping, append=append)
+        self.params.update_multi(mapping, append=append)
 
     def __getattr__(self, name):
         if name in self:
@@ -73,7 +75,7 @@ class RequestParams(object):
             del self.params[key]
 
     def iteritems(self):
-        for key, values in self.params.iteritems():
+        for key, values in self.params.items_multi():
             yield key, self.delimiter.join((str(x) for x in values))
 
     def __contains__(self, key):
@@ -92,7 +94,7 @@ class RequestParams(object):
         ['bar=ham%25eggs', 'baz=100', 'foo=egg']
         """
         kv_pairs = []
-        for key, values in self.params.iteritems():
+        for key, values in self.params.items_multi():
             value = ','.join(str(v) for v in values)
             kv_pairs.append(key + '=' + quote(value.encode('utf-8'), safe=','))
         return '&'.join(kv_pairs)
@@ -102,7 +104,7 @@ class RequestParams(object):
         Return this MapRequest with all values from `defaults` overwritten.
         """
         new = self.copy()
-        for key, value in defaults.params.iteritems():
-            if value != [None]:
-                new.set(key, value, unpack=True)
+        for key, values in defaults.params.items_multi():
+            if values != [None]:
+                new.set(key, values, unpack=True)
         return new

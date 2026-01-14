@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Iterable, Optional, Callable, Iterator, MutableMapping
+from typing import TypeVar, Generic, Iterable, Iterator, MutableMapping
 
 V = TypeVar("V")
 T = TypeVar("T")
@@ -25,10 +25,11 @@ class NoCaseMultiDict(MutableMapping[str, V], Generic[V]):
     def _key(self, key: str) -> str:
         return key.lower()
 
-    def update_multi(self, mapping: Iterable[tuple[str, V]] | dict[str, V] | "NoCaseMultiDict[V]", append: bool = False) -> None:
+    def update_multi(self, mapping: Iterable[tuple[str, V]] | dict[str, V] | "NoCaseMultiDict[V]",
+                     append: bool = False) -> None:
         if isinstance(mapping, NoCaseMultiDict):
-            for key, value in mapping.items_multi():
-                self.set(key, value, append=append)
+            for key, values in mapping.items_multi():
+                self.set(key, values, append=append, unpack=True)
         elif isinstance(mapping, dict):
             for key2, value2 in mapping.items():
                 self.set(key2, value2, append=append)
@@ -61,16 +62,6 @@ class NoCaseMultiDict(MutableMapping[str, V], Generic[V]):
     def __setstate__(self, state: Iterable[tuple[str, V]]) -> None:
         self._data = {}
         self.update_multi(state)
-
-    def get_typed(self, key: str, default: Optional[T] = None, type_func: Optional[Callable[[V], T]] = None) -> Optional[V | T]:
-        try:
-            value = self[key]
-            if type_func:
-                return type_func(value)
-            else:
-                return value
-        except (KeyError, ValueError):
-            return default
 
     def get_all(self, key: str) -> list[V]:
         return self._data.get(self._key(key), ("", []))[1]
