@@ -72,7 +72,7 @@ class Local(object):
         object.__setattr__(self, '__ident_func__', get_ident)
 
     def __iter__(self):
-        return self.__storage__.iteritems()
+        return self.__storage__.items()
 
     def __call__(self, proxy):
         """Create a proxy for a name."""

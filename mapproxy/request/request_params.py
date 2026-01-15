@@ -1,24 +1,26 @@
-from typing import Union
+from typing import TypeVar, Generic, Iterable, Iterator, Union
 from urllib.parse import quote
 
 from mapproxy.request.no_case_multi_dict import NoCaseMultiDict
 
 
-class RequestParams:
+V = TypeVar("V")
+
+
+class RequestParams(Generic[V]):
     """
-    This class represents key-value request parameters. It allows case-insensitive
-    access to all keys. Multiple values for a single key will be concatenated
-    (eg. to ``layers=foo&layers=bar`` becomes ``layers: foo,bar``).
+    Represents key-value request parameters with case-insensitive keys.
+    Multiple values for a single key are concatenated.
 
-    All values can be accessed as a property.
-
-    :param param: A dict or ``NoCaseMultiDict``.
+    >>> qs = RequestParams(dict(foo='egg', bar='ham%eggs', baz=100)).query_string
+    >>> sorted(qs.split('&'))
+    ['bar=ham%25eggs', 'baz=100', 'foo=egg']
     """
-    params: NoCaseMultiDict = NoCaseMultiDict()
 
-    def __init__(self, param: 'Union[dict[str, str]|NoCaseMultiDict[str]|RequestParams|None]' = None):
-        self.delimiter = ','
+    params: NoCaseMultiDict[V] = NoCaseMultiDict()
 
+    def __init__(self, param: 'Union[dict[str, V]|NoCaseMultiDict[V]|RequestParams|None]' = None, delimiter=','):
+        self.delimiter = delimiter
         if isinstance(param, RequestParams):
             self.params = param.params.copy()
         elif isinstance(param, NoCaseMultiDict) or isinstance(param, dict):
@@ -26,22 +28,13 @@ class RequestParams:
         elif param is not None:
             raise ValueError('param has invalid value')
 
-    def __str__(self):
-        return self.query_string
-
     def get(self, key, default=None):
         """
         Returns the value for `key` or the `default`.
         """
         return self.params.get(key, default)
 
-    def set(self, key, value, append=False, unpack=False):
-        """
-        Set a `value` for the `key`. If `append` is ``True`` the value will be added
-        to other values for this `key`.
-
-        If `unpack` is True, `value` will be unpacked and each item will be added.
-        """
+    def set(self, key: str, value: V | Iterable[V], *, append: bool = False, unpack: bool = False) -> None:
         self.params.set(key, value, append=append, unpack=unpack)
 
     def update(self, mapping=(), append=False):
@@ -54,38 +47,42 @@ class RequestParams:
         """
         self.params.update_multi(mapping, append=append)
 
-    def __getattr__(self, name):
-        if name in self:
-            return self[name]
-        else:
-            raise AttributeError("'%s' object has no attribute '%s" %
-                                 (self.__class__.__name__, name))
-
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str:
         return self.delimiter.join(map(str, self.params.get_all(key)))
 
-    def __setitem__(self, key, value):
-        """
-        Set `value` for the `key`. Does not append values (see ``MapRequest.set``).
-        """
+    def __setitem__(self, key: str, value: V) -> None:
         self.set(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         if key in self:
             del self.params[key]
 
-    def iteritems(self):
+    def __contains__(self, key: object) -> bool:
+        return isinstance(key, str) and key in self.params
+
+    def __getattr__(self, name: str) -> str:
+        if name in self:
+            return self[name]
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
+
+    def __iter__(self) -> Iterator[str]:
+        for key, _ in self.params.items():
+            yield key
+
+    def __str__(self) -> str:
+        return self.query_string
+
+    def items(self) -> Iterator[tuple[str, V]]:
         for key, values in self.params.items_multi():
-            yield key, self.delimiter.join((str(x) for x in values))
+            yield key, self.delimiter.join(str(v) for v in values)
 
-    def __contains__(self, key):
-        return self.params and key in self.params
-
-    def copy(self):
-        return self.__class__(self.params)
+    def copy(self) -> "RequestParams[V]":
+        return self.__class__(self.params, delimiter=self.delimiter)
 
     @property
-    def query_string(self):
+    def query_string(self) -> str:
         """
         The map request as a query string (the order is not guaranteed).
 
@@ -93,18 +90,24 @@ class RequestParams:
         >>> sorted(qs.split('&'))
         ['bar=ham%25eggs', 'baz=100', 'foo=egg']
         """
-        kv_pairs = []
-        for key, values in self.params.items_multi():
-            value = ','.join(str(v) for v in values)
-            kv_pairs.append(key + '=' + quote(value.encode('utf-8'), safe=','))
-        return '&'.join(kv_pairs)
+        kv_pairs: list[str] = []
 
-    def with_defaults(self, defaults):
+        for key, values in self.params.items_multi():
+            value = self.delimiter.join(str(v) for v in values)
+            encoded = quote(value.encode("utf-8"), safe=self.delimiter)
+            kv_pairs.append(f"{key}={encoded}")
+
+        return "&".join(kv_pairs)
+
+    def with_defaults(self, defaults: "RequestParams[V]") -> "RequestParams[V]":
         """
-        Return this MapRequest with all values from `defaults` overwritten.
+        Return a copy with values from `defaults` applied unless explicitly set.
         """
         new = self.copy()
         for key, values in defaults.params.items_multi():
             if values != [None]:
                 new.set(key, values, unpack=True)
         return new
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({list(self.items())!r})"
