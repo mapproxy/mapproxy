@@ -493,7 +493,7 @@ class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
 class WMSLegendGraphicRequest(WMSMapRequest):
     request_params = WMSLegendGraphicRequestParams
     request_handler_name = 'legendgraphic'
-    non_strict_params = set(['sld_version', 'scale'])
+    non_strict_params = {'sld_version', 'scale'}
     fixed_params = {'request': 'GetLegendGraphic', 'service': 'WMS', 'sld_version': '1.1.0'}
     expected_param = ['version', 'request', 'layer', 'format', 'sld_version']
 
@@ -522,7 +522,7 @@ class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
 
 
 class WMSFeatureInfoRequest(WMSMapRequest):
-    non_strict_params = set(['format', 'styles'])
+    non_strict_params = {'format', 'styles'}
 
     def validate_format(self, image_formats):
         if self.non_strict:
@@ -578,7 +578,7 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     fixed_params = WMS130MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'i', 'j']
-    non_strict_params = set(['format', 'styles'])
+    non_strict_params = {'format', 'styles'}
 
     def adapt_to_111(self):
         WMS130MapRequest.adapt_to_111(self)

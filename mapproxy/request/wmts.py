@@ -96,8 +96,8 @@ class WMTSTileRequestParams(RequestParams):
 
     @property
     def dimensions(self):
-        expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
-                              'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
+        expected_param = {'version', 'request', 'layer', 'style', 'tilematrixset', 'tilematrix', 'tilerow', 'tilecol',
+                          'format', 'service'}
         dimensions = {}
         for key, value in self.items():
             if key not in expected_param:
@@ -209,7 +209,7 @@ class WMTS100FeatureInfoRequest(WMTS100TileRequest):
     fixed_params = WMTS100TileRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMTS100TileRequest.expected_param[:] + ['infoformat', 'i', 'j']
-    non_strict_params = set(['format', 'styles'])
+    non_strict_params = {'format', 'styles'}
 
     def make_request(self):
         WMTS100TileRequest.make_request(self)
@@ -295,7 +295,7 @@ class URLTemplateConverter(object):
         'InfoFormat': r'\w+',
     }
 
-    required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'])
+    required = {'TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'}
 
     def __init__(self, template):
         self.template = template
@@ -328,7 +328,7 @@ class URLTemplateConverter(object):
 
 
 class FeatureInfoURLTemplateConverter(URLTemplateConverter):
-    required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer', 'I', 'J'])
+    required = {'TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer', 'I', 'J'}
 
 
 class WMTS100RestTileRequest(TileRequest):
@@ -342,7 +342,6 @@ class WMTS100RestTileRequest(TileRequest):
     def __init__(self, request, req_vars, url_converter=None):
         self.http = request
         self.url = request.base_url
-        self.dimensions = {}
         self.req_vars = req_vars
         self.url_converter = url_converter
 
@@ -375,7 +374,6 @@ class WMTS100RestFeatureInfoRequest(TileRequest):
     def __init__(self, request, req_vars, url_converter=None):
         self.http = request
         self.url = request.base_url
-        self.dimensions = {}
         self.req_vars = req_vars
         self.url_converter = url_converter
 

@@ -124,10 +124,9 @@ class MapnikSource(MapLayer):
         except RuntimeError as ex:
             log.error('could not render Mapnik map: %s', ex)
             raise reraise_exception(SourceError(ex.args[0]), sys.exc_info())
-        resp.opacity = self.opacity
         return resp
 
-    def render(self, query):
+    def render(self, query) -> ImageSource:
         mapfile = self.mapfile
         if '%(webmercator_level)' in mapfile:
             _bbox, level = tile_grid(3857).get_affected_bbox_and_level(
@@ -224,7 +223,7 @@ class MapnikSource(MapLayer):
 
         return mapnik_map
 
-    def render_mapfile(self, mapfile, query):
+    def render_mapfile(self, mapfile, query) -> ImageSource:
         return run_non_blocking(self._render_mapfile, (mapfile, query))
 
     def _render_mapfile(self, mapfile, query) -> ImageSource:

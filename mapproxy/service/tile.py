@@ -31,7 +31,7 @@ from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.grid import default_bboxs
+from mapproxy.grid import default_bboxs, TileCoord
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
@@ -514,7 +514,7 @@ class TileServiceGrid(object):
             tile_sets.append((order, self.grid.resolutions[level]))
         return tile_sets
 
-    def internal_tile_coord(self, tile_coord, use_profiles):
+    def internal_tile_coord(self, tile_coord: TileCoord, use_profiles) -> Optional[TileCoord]:
         """
         Converts public tile coords to internal tile coords.
 
@@ -531,7 +531,7 @@ class TileServiceGrid(object):
             z *= 2
         return self.grid.limit_tile((x, y, z))
 
-    def external_tile_coord(self, tile_coord, use_profiles):
+    def external_tile_coord(self, tile_coord: TileCoord, use_profiles) -> Optional[TileCoord]:
         """
         Converts internal tile coords to external tile coords.
 

@@ -1,13 +1,13 @@
 import math
-from typing import Optional
+from typing import Optional, Any, TypeGuard, Union
 
 from mapproxy.grid import (NoTiles, GridError, _create_tile_list, default_bboxs,
-                           grid_bbox, origin_from_string)
+                           grid_bbox, origin_from_string, TileCoord)
 from mapproxy.grid.resolutions import (aligned_resolutions, resolutions,
                                        pyramid_res_level, get_resolution,
                                        res_to_ogc_scale)
-from mapproxy.srs import get_epsg_num, SRS, ogc_crs_url_to_auth_code
-from mapproxy.util.bbox import bbox_equals, bbox_intersects, merge_bbox
+from mapproxy.srs import get_epsg_num, SRS, ogc_crs_url_to_auth_code, _SRS
+from mapproxy.util.bbox import bbox_equals, bbox_intersects, merge_bbox, BBOX
 from mapproxy.util.immutable_dict_list import ImmutableDictList
 
 geodetic_epsg_codes = [4326]
@@ -79,11 +79,11 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
 
-    origin = origin_from_string(origin)
+    _origin = origin_from_string(origin)
 
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor,
-                    origin=origin, name=name)
+                    origin=_origin, name=name)
 
 
 class UnsupportedException(Exception):
@@ -183,11 +183,13 @@ class TileGrid(object):
 
     spheroid_a = 6378137.0  # for 900913
     flipped_y_axis = False
+    srs: _SRS
 
-    def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
-                 threshold_res=None, is_geodetic=False, levels=None,
-                 stretch_factor=1.15, max_shrink_factor=4.0, origin='ll',
-                 name=None):
+    def __init__(self, srs: Union[_SRS, int, str] = 900913, bbox: Optional[BBOX] = None,
+                 tile_size: tuple[int, int] = (256, 256), res: Optional[list[float]] = None,
+                 threshold_res: Optional[list[float]] = None, is_geodetic=False, levels: Optional[int] = None,
+                 stretch_factor=1.15, max_shrink_factor=4.0, origin: str = 'll',
+                 name: Optional[str] = None):
         """
         :param stretch_factor: allow images to be scaled up by this factor
             before the next level will be selected
@@ -199,8 +201,10 @@ class TileGrid(object):
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         """
         if isinstance(srs, (int, str)):
-            srs = SRS(srs)
-        self.srs = srs
+            self.srs = SRS(srs)
+        else:
+            self.srs = srs
+
         self.tile_size = tile_size
         self.origin = origin_from_string(origin)
         self.name = name
@@ -221,8 +225,6 @@ class TileGrid(object):
         if bbox is None:
             bbox = self._calc_bbox()
         self.bbox = bbox
-
-        factor = None
 
         if res is None:
             factor = 2.0
@@ -245,7 +247,7 @@ class TileGrid(object):
 
         self.grid_sizes = self._calc_grids()
 
-    def _calc_grids(self):
+    def _calc_grids(self) -> NamedGridList:
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         grids = []
@@ -255,15 +257,15 @@ class TileGrid(object):
             grids.append((idx, (int(x), int(y))))
         return NamedGridList(grids)
 
-    def _calc_bbox(self):
+    def _calc_bbox(self) -> BBOX:
         if self.is_geodetic:
-            return (-180.0, -90.0, 180.0, 90.0)
+            return -180.0, -90.0, 180.0, 90.0
         else:
             circum = 2 * math.pi * self.spheroid_a
             offset = circum / 2.0
-            return (-offset, -offset, offset, offset)
+            return -offset, -offset, offset, offset
 
-    def _calc_res(self, factor=None):
+    def _calc_res(self, factor: Optional[float] = None) -> list[float]:
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         initial_res = max(width/self.tile_size[0], height/self.tile_size[1])
@@ -272,7 +274,7 @@ class TileGrid(object):
         else:
             return pyramid_res_level(initial_res, factor, levels=self.levels)
 
-    def resolution(self, level: str):
+    def resolution(self, level: str | int):
         """
         Returns the resolution of the `level` in units/pixel.
 
@@ -288,7 +290,7 @@ class TileGrid(object):
         """
         return self.resolutions[level]
 
-    def closest_level(self, res):
+    def closest_level(self, res: float) -> int:
         """
         Returns the level index that offers the required resolution.
 
@@ -336,17 +338,17 @@ class TileGrid(object):
             prev_l_res = l_res
         return level
 
-    def tile(self, x, y, level):
+    def tile_coord_for_point(self, x: float, y: float, level: int) -> TileCoord:
         """
         Returns the tile id for the given point.
 
         >>> grid = TileGrid(SRS(900913))
-        >>> grid.tile(1000, 1000, 0)
+        >>> grid.tile_coord_for_point(1000, 1000, 0)
         (0, 0, 0)
-        >>> grid.tile(1000, 1000, 1)
+        >>> grid.tile_coord_for_point(1000, 1000, 1)
         (1, 1, 1)
         >>> grid = TileGrid(SRS(900913), tile_size=(512, 512))
-        >>> grid.tile(1000, 1000, 2)
+        >>> grid.tile_coord_for_point(1000, 1000, 2)
         (2, 2, 2)
         """
         res = self.resolution(level)
@@ -359,7 +361,7 @@ class TileGrid(object):
         tile_y = y/float(res*self.tile_size[1])
         return (int(math.floor(tile_x)), int(math.floor(tile_y)), level)
 
-    def flip_tile_coord(self, tile_coord):
+    def flip_tile_coord(self, tile_coord: TileCoord) -> TileCoord:
         """
         Flip the tile coord on the y-axis. (Switch between bottom-left and top-left
         origin.)
@@ -371,9 +373,9 @@ class TileGrid(object):
         (1, 0, 2)
         """
         (x, y, z) = tile_coord
-        return (x, self.grid_sizes[z][1]-1-y, z)
+        return x, self.grid_sizes[z][1] - 1 - y, z
 
-    def supports_access_with_origin(self, origin):
+    def supports_access_with_origin(self, origin: str):
         if origin_from_string(origin) == self.origin:
             return True
 
@@ -401,7 +403,8 @@ class TileGrid(object):
 
         return self.flip_tile_coord(tile)
 
-    def get_affected_tiles(self, bbox, size, req_srs=None):
+    def get_affected_tiles(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None) \
+            -> tuple[BBOX, tuple[int, int], list[TileCoord]]:
         """
         Get a list with all affected tiles for a bbox and output size.
 
@@ -420,7 +423,7 @@ class TileGrid(object):
         src_bbox, level = self.get_affected_bbox_and_level(bbox, size, req_srs=req_srs)
         return self.get_affected_level_tiles(src_bbox, level)
 
-    def get_affected_bbox_and_level(self, bbox, size, req_srs=None):
+    def get_affected_bbox_and_level(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None):
         if req_srs and req_srs != self.srs:
             src_bbox = req_srs.transform_bbox_to(self.srs, bbox)
         else:
@@ -437,7 +440,7 @@ class TileGrid(object):
 
         return src_bbox, level
 
-    def get_affected_level_tiles(self, bbox, level):
+    def get_affected_level_tiles(self, bbox: BBOX, level: int) -> tuple[BBOX, tuple[int, int], list[TileCoord]]:
         """
         Get a list with all affected tiles for a `bbox` in the given `level`.
         :returns: the bbox, the size and a list with tile coordinates, sorted row-wise
@@ -453,8 +456,8 @@ class TileGrid(object):
         """
         # remove 1/10 of a pixel so we don't get a tiles we only touch
         delta = self.resolutions[level] / 10.0
-        x0, y0, _ = self.tile(bbox[0]+delta, bbox[1]+delta, level)
-        x1, y1, _ = self.tile(bbox[2]-delta, bbox[3]-delta, level)
+        x0, y0, _ = self.tile_coord_for_point(bbox[0] + delta, bbox[1] + delta, level)
+        x1, y1, _ = self.tile_coord_for_point(bbox[2] - delta, bbox[3] - delta, level)
         try:
             return self._tile_iter(x0, y0, x1, y1, level)
         except IndexError:
@@ -475,19 +478,19 @@ class TileGrid(object):
         return (abbox, (len(xs), len(ys)),
                 _create_tile_list(xs, ys, level, self.grid_sizes[level]))
 
-    def _tiles_bbox(self, tiles):
+    def _tiles_bbox(self, tile_coords: list[TileCoord]) -> BBOX:
         """
         Returns the bbox of multiple tiles.
         The tiles should be ordered row-wise, bottom-up.
 
-        :param tiles: ordered list of tiles
+        :param tile_coords: ordered list of tiles
         :returns: the bbox of all tiles
         """
-        ll_bbox = self.tile_bbox(tiles[0])
-        ur_bbox = self.tile_bbox(tiles[-1])
+        ll_bbox = self.tile_bbox(tile_coords[0])
+        ur_bbox = self.tile_bbox(tile_coords[-1])
         return merge_bbox(ll_bbox, ur_bbox)
 
-    def tile_bbox(self, tile_coord, limit=False):
+    def tile_bbox(self, tile_coord: TileCoord, limit=False) -> BBOX:
         """
         Returns the bbox of the given tile.
 
@@ -520,7 +523,7 @@ class TileGrid(object):
 
         return x0, y0, x1, y1
 
-    def limit_tile(self, tile_coord):
+    def limit_tile(self, tile_coord: TileCoord) -> Optional[TileCoord]:
         """
         Check if the `tile_coord` is in the grid.
 
@@ -550,7 +553,7 @@ class TileGrid(object):
         return '%s(%r, (%.4f, %.4f, %.4f, %.4f),...)' % (
             self.__class__.__name__, self.srs, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3])
 
-    def is_subset_of(self, other):
+    def is_subset_of(self, other: 'TileGrid') -> bool:
         """
         Returns ``True`` if every tile in `self` is present in `other`.
         Tile coordinates might differ and `other` may contain more
@@ -570,8 +573,8 @@ class TileGrid(object):
                 self.grid_sizes[self_level][1] * self.tile_size[1]
             )
             level_bbox = self._tiles_bbox([
-                (0, 0, self_level),
-                (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, self_level)
+                (0, 0, int(str(self_level))),
+                (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, int(str(self_level)))
             ])
 
             try:
@@ -591,7 +594,7 @@ class TileGrid(object):
         return True
 
 
-def is_float(x):
+def is_float(x: Any) -> TypeGuard[float]:
     try:
         float(x)
         return True
@@ -603,7 +606,7 @@ def tile_grid_to_ogc_tile_matrix_set(tile_grid: TileGrid,
                                      id: str,
                                      title: Optional[str],
                                      uri: Optional[str] = None,
-                                     wellKnownScaleSet: Optional[str] = None):
+                                     well_known_scale_set: Optional[str] = None):
 
     srs = tile_grid.srs
     if srs.srs_code == "EPSG:4326":
@@ -617,36 +620,36 @@ def tile_grid_to_ogc_tile_matrix_set(tile_grid: TileGrid,
     }
     if uri:
         tms["uri"] = uri
-    if wellKnownScaleSet:
-        tms["wellKnownScaleSet"] = wellKnownScaleSet
+    if well_known_scale_set:
+        tms["wellKnownScaleSet"] = well_known_scale_set
 
-    tileMatrices = []
+    tile_matrices = []
     for level in range(tile_grid.levels):
-        cellSize = tile_grid.resolutions[level]
-        cornerOfOrigin = "topLeft" if tile_grid.origin == "ul" else "bottomLeft"
+        cell_size = tile_grid.resolutions[level]
+        corner_of_origin = "topLeft" if tile_grid.origin == "ul" else "bottomLeft"
         if tile_grid.origin == "ul":
-            pointOfOrigin = [tile_grid.bbox[0], tile_grid.bbox[3]]
+            point_of_origin = [tile_grid.bbox[0], tile_grid.bbox[3]]
         else:
-            pointOfOrigin = [tile_grid.bbox[0], tile_grid.bbox[1]]
+            point_of_origin = [tile_grid.bbox[0], tile_grid.bbox[1]]
         if srs.is_axis_order_ne:
-            pointOfOrigin = [pointOfOrigin[1], pointOfOrigin[0]]
-        tileWidth = tile_grid.tile_size[0]
-        tileHeight = tile_grid.tile_size[1]
-        matrixWidth = tile_grid.grid_sizes[level][0]
-        matrixHeight = tile_grid.grid_sizes[level][1]
+            point_of_origin = [point_of_origin[1], point_of_origin[0]]
+        tile_width = tile_grid.tile_size[0]
+        tile_height = tile_grid.tile_size[1]
+        matrix_width = tile_grid.grid_sizes[level][0]
+        matrix_height = tile_grid.grid_sizes[level][1]
         tm = {
             "id": str(level),
-            "cellSize": cellSize,
-            "scaleDenominator": res_to_ogc_scale(cellSize),
-            "cornerOfOrigin": cornerOfOrigin,
-            "pointOfOrigin": pointOfOrigin,
-            "matrixWidth": matrixWidth,
-            "matrixHeight": matrixHeight,
-            "tileWidth": tileWidth,
-            "tileHeight": tileHeight,
+            "cellSize": cell_size,
+            "scaleDenominator": res_to_ogc_scale(cell_size),
+            "cornerOfOrigin": corner_of_origin,
+            "pointOfOrigin": point_of_origin,
+            "matrixWidth": matrix_width,
+            "matrixHeight": matrix_height,
+            "tileWidth": tile_width,
+            "tileHeight": tile_height,
         }
-        tileMatrices.append(tm)
+        tile_matrices.append(tm)
 
-    tms["tileMatrices"] = tileMatrices
+    tms["tileMatrices"] = tile_matrices
 
     return tms

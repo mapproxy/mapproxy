@@ -31,6 +31,8 @@ class LRU(object):
     Contains: O(1)
     """
 
+    last_used: deque
+
     def __init__(self, size=100):
         self.size = size
         self.values = {}

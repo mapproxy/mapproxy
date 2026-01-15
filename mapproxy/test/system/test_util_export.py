@@ -19,6 +19,7 @@ import shutil
 import contextlib
 
 import pytest
+from mapproxy.grid import TileCoord
 
 from mapproxy.script.export import export_command
 from mapproxy.test.image import tmp_image
@@ -30,14 +31,14 @@ FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixture")
 
 
 @contextlib.contextmanager
-def tile_server(tile_coords):
+def tile_server(tile_coords: list[TileCoord]):
     with tmp_image((256, 256), format="jpeg") as img:
         img = img.read()
     expected_reqs = []
-    for tile in tile_coords:
+    for tile_coord in tile_coords:
         expected_reqs.append(
             (
-                {"path": r"/tiles/%d/%d/%d.png" % (tile[2], tile[0], tile[1])},
+                {"path": r"/tiles/%d/%d/%d.png" % (tile_coord[2], tile_coord[0], tile_coord[1])},
                 {"body": img, "headers": {"content-type": "image/png"}},
             )
         )

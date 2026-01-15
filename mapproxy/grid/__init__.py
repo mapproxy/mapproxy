@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional, Generator, Sequence, Literal
 from mapproxy.srs import SRS
 from mapproxy.util.bbox import bbox_tuple
 
@@ -24,7 +25,8 @@ class NoTiles(GridError):
     pass
 
 
-def _create_tile_list(xs, ys, level, grid_size):
+def _create_tile_list(xs: Sequence[int], ys: Sequence[int], level: int, grid_size: tuple[int, int])\
+        -> Generator[Optional['TileCoord'], None, None]:
     """
     Returns an iterator tile_coords for the given tile ranges (`xs` and `ys`).
     If the one tile_coord is negative or out of the `grid_size` bound,
@@ -76,17 +78,18 @@ def grid_bbox(bbox, bbox_srs, srs):
     return bbox
 
 
-ORIGIN_UL = 'ul'
-ORIGIN_LL = 'll'
+Origin = Literal['ul', 'll']
 
 
-def origin_from_string(origin):
+def origin_from_string(origin: str) -> Origin:
     if origin is None:
-        origin = ORIGIN_LL
+        return 'll'
     elif origin.lower() in ('ll', 'sw'):
-        origin = ORIGIN_LL
+        return 'll'
     elif origin.lower() in ('ul', 'nw'):
-        origin = ORIGIN_UL
+        return 'ul'
     else:
         raise ValueError("unknown origin value '%s'" % origin)
-    return origin
+
+
+TileCoord = tuple[int, int, int]

@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Optional
 
-from mapproxy.cache.tile import Tile
+from mapproxy.cache.tile import Tile, TileCollection
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
 from mapproxy.util.coverage import Coverage
 
@@ -57,7 +57,7 @@ class TileCacheBase(ABC):
     def load_tile(self, tile: Tile, with_metadata: bool = False, dimensions=None):
         pass
 
-    def load_tiles(self, tiles: list[Tile], with_metadata: bool = False, dimensions=None):
+    def load_tiles(self, tiles: TileCollection, with_metadata: bool = False, dimensions=None):
         all_succeed = True
         for tile in tiles:
             if not self.load_tile(tile, with_metadata=with_metadata, dimensions=dimensions):
