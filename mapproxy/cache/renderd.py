@@ -20,7 +20,8 @@ import json
 import requests
 
 from mapproxy.client.log import log_request
-from mapproxy.cache.tile import TileCreator, Tile
+from mapproxy.cache.tile import Tile
+from mapproxy.cache.tile_creator import TileCreator
 from mapproxy.source import SourceError
 from mapproxy.util.lock import LockTimeout
 

@@ -549,7 +549,7 @@ class CacheConfiguration(ConfigurationBase):
     @memoize
     def caches(self):
         from mapproxy.cache.dummy import DummyCache, DummyLocker
-        from mapproxy.cache.tile import TileManager
+        from mapproxy.cache.tile_manager import TileManager
         from mapproxy.cache.base import TileLocker
         from mapproxy.image.opts import compatible_image_options
         from mapproxy.extent import merge_layer_extents, map_extent_from_grid
@@ -667,7 +667,7 @@ class CacheConfiguration(ConfigurationBase):
                                              priority=priority, tile_locker=locker)
 
             else:
-                from mapproxy.cache.tile import TileCreator
+                from mapproxy.cache.tile_creator import TileCreator
                 tile_creator_class = partial(TileCreator, image_merger=band_merger)
 
             if isinstance(cache, DummyCache):
