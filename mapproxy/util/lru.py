@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
 from collections import deque
 from itertools import islice
 
@@ -86,49 +85,3 @@ class LRU(object):
 
     def __contains__(self, key):
         return key in self.values
-
-
-class ImmutableDictList(object):
-    """
-    A dictionary where each item can also be accessed by the
-    integer index of the initial position.
-
-    >>> d = ImmutableDictList([('foo', 23), ('bar', 24)])
-    >>> d['bar']
-    24
-    >>> d[0], d[1]
-    (23, 24)
-    """
-
-    def __init__(self, items):
-        self._names = []
-        self._values = {}
-        for name, value in items:
-            self._values[name] = value
-            self._names.append(name)
-
-    def __getitem__(self, name):
-        if isinstance(name, str):
-            return self._values[name]
-        else:
-            return self._values[self._names[name]]
-
-    def __contains__(self, name):
-        try:
-            self[name]
-            return True
-        except KeyError:
-            return False
-
-    def __len__(self):
-        return len(self._values)
-
-    def __str__(self):
-        values = []
-        for name in self._names:
-            values.append('%s: %s' % (name, self._values[name]))
-        return '[%s]' % (', '.join(values),)
-
-    def iteritems(self):
-        for idx in self._names:
-            yield idx, self._values[idx]

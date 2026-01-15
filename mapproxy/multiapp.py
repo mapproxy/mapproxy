@@ -18,7 +18,7 @@ import os
 
 from mapproxy.request import Request
 from mapproxy.response import Response
-from mapproxy.util.collections import LRU
+from mapproxy.util.lru import LRU
 from mapproxy.wsgiapp import make_wsgi_app as make_mapproxy_wsgi_app
 from mapproxy.util.escape import escape_html
 

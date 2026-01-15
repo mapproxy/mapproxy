@@ -15,7 +15,7 @@
 
 import os
 from mapproxy.util.fs import ensure_directory
-from mapproxy.request.base import NoCaseMultiDict
+from mapproxy.request.no_case_multi_dict import NoCaseMultiDict
 
 
 def location_funcs(layout):

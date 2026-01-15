@@ -23,8 +23,8 @@ from typing import Optional
 from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError, XMLExceptionHandler
 from mapproxy.srs import SRS, make_lin_transf
-from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
-
+from mapproxy.request.base import BaseRequest, split_mime_type
+from mapproxy.request.request_params import RequestParams
 
 import logging
 log = logging.getLogger(__name__)

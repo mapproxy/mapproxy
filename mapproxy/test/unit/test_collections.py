@@ -15,7 +15,8 @@
 
 import pytest
 
-from mapproxy.util.collections import LRU, ImmutableDictList
+from mapproxy.util.lru import LRU
+from mapproxy.util.immutable_dict_list import ImmutableDictList
 
 
 class TestLRU(object):

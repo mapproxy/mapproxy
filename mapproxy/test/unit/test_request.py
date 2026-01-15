@@ -21,7 +21,9 @@ import pickle
 import pytest
 
 from mapproxy.srs import SRS
-from mapproxy.request.base import url_decode, Request, NoCaseMultiDict, RequestParams
+from mapproxy.request.base import url_decode, Request
+from mapproxy.request.request_params import RequestParams
+from mapproxy.request.no_case_multi_dict import NoCaseMultiDict
 from mapproxy.request.tile import TMSRequest, tile_request, TileRequest
 from mapproxy.request.wms import (
     wms_request,
