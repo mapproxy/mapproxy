@@ -30,7 +30,7 @@ from mapproxy.config.loader import (
 )
 from mapproxy.config.configuration.base import ConfigurationError
 from mapproxy.config.configuration.proxy import ProxyConfiguration
-from mapproxy.cache.tile import TileManager
+from mapproxy.cache.tile_manager import TileManager
 from mapproxy.config.spec import validate_options
 from mapproxy.extent import MapExtent
 from mapproxy.seed.spec import validate_seed_conf

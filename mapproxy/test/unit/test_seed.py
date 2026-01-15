@@ -28,7 +28,7 @@ import pytest
 
 from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.dummy import DummyLocker
-from mapproxy.cache.tile import TileManager
+from mapproxy.cache.tile_manager import TileManager
 from mapproxy.source.tile import TiledSource
 from mapproxy.grid.tile_grid import tile_grid_for_epsg, TileGrid
 from mapproxy.srs import SRS
