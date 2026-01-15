@@ -18,7 +18,7 @@ from __future__ import print_function
 
 from PIL import Image, ImageDraw, ImageColor, ImageFont
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.image.message import TextDraw, message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.tilefilter import watermark_filter
@@ -122,7 +122,7 @@ class TestMessageImage(object):
         image_opts = PNG_FORMAT.copy()
         image_opts.bgcolor = "#113399"
         img = message_image("", size=(100, 150), image_opts=image_opts)
-        assert isinstance(img, ImageSource)
+        assert isinstance(img, ImageResult)
         assert img.size == (100, 150)
         pil_img = img.as_image()
         assert pil_img.getpixel((0, 0)) == ImageColor.getrgb("#113399")
@@ -140,7 +140,7 @@ class TestMessageImage(object):
         img = message_image("test", size=(100, 150), image_opts=image_opts)
         text_pixels = 75
         image_pixels = 100 * 150
-        assert isinstance(img, ImageSource)
+        assert isinstance(img, ImageResult)
         assert img.size == (100, 150)
         # expect the large histogram count values to be the amount of background pixels
         assert [x for x in img.as_image().histogram() if x > 10] == [
@@ -153,7 +153,7 @@ class TestMessageImage(object):
         image_opts = ImageOptions(transparent=True)
         print(image_opts)
         img = message_image("", size=(100, 150), image_opts=image_opts)
-        assert isinstance(img, ImageSource)
+        assert isinstance(img, ImageResult)
         assert img.size == (100, 150)
         pil_img = img.as_image()
         assert pil_img.getpixel((0, 0)) == (255, 255, 255, 0)
@@ -174,14 +174,14 @@ class TestWatermarkTileFilter(object):
 
     def test_filter(self):
         img = Image.new("RGB", (200, 200))
-        orig_source = ImageSource(img)
-        self.tile.source = orig_source
+        orig_source = ImageResult(img)
+        self.tile.image_result = orig_source
         filtered_tile = self.filter(self.tile)
 
         assert self.tile is filtered_tile
-        assert orig_source != filtered_tile.source
+        assert orig_source != filtered_tile.image_result
 
-        pil_img = filtered_tile.source.as_image()
+        pil_img = filtered_tile.image_result.as_image()
         assert pil_img.getpixel((0, 0)) == (0, 0, 0)
 
         colors = pil_img.getcolors()
@@ -192,14 +192,14 @@ class TestWatermarkTileFilter(object):
 
     def test_filter_with_alpha(self):
         img = Image.new("RGBA", (200, 200), (10, 15, 20, 0))
-        orig_source = ImageSource(img)
-        self.tile.source = orig_source
+        orig_source = ImageResult(img)
+        self.tile.image_result = orig_source
         filtered_tile = self.filter(self.tile)
 
         assert self.tile is filtered_tile
-        assert orig_source != filtered_tile.source
+        assert orig_source != filtered_tile.image_result
 
-        pil_img = filtered_tile.source.as_image()
+        pil_img = filtered_tile.image_result.as_image()
         assert pil_img.getpixel((0, 0)) == (10, 15, 20, 0)
 
         colors = pil_img.getcolors()

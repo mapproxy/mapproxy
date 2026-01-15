@@ -20,7 +20,7 @@ from typing import Optional
 
 from mapproxy.cache.tile import Tile
 from mapproxy.util.fs import ensure_directory, write_atomic
-from mapproxy.image import ImageSource, is_single_color_image
+from mapproxy.image import ImageResult, is_single_color_image
 from mapproxy.cache import path
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 
@@ -123,7 +123,7 @@ class FileCache(TileCacheBase):
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         """
-        Fills the `Tile.source` of the `tile` if it is cached.
+        Fills the `Tile.image_result` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
         """
         if not tile.is_missing():
@@ -134,7 +134,7 @@ class FileCache(TileCacheBase):
         if os.path.exists(location):
             if with_metadata:
                 self.load_tile_metadata(tile, dimensions=dimensions)
-            tile.source = ImageSource(location, image_opts=self.image_opts)
+            tile.image_result = ImageResult(location, image_opts=self.image_opts)
             return True
         return False
 
@@ -148,7 +148,7 @@ class FileCache(TileCacheBase):
 
     def store_tile(self, tile: Tile, dimensions=None):
         """
-        Add the given `tile` to the file cache. Stores the `Tile.source` to
+        Add the given `tile` to the file cache. Stores the `Tile.image_result` to
         `FileCache.tile_location`.
         """
         if tile.stored:
@@ -157,8 +157,8 @@ class FileCache(TileCacheBase):
         tile_loc = self.tile_location(tile, create_dir=True, dimensions=dimensions)
 
         if self.link_single_color_images:
-            assert tile.source is not None
-            color = is_single_color_image(tile.source.as_image())
+            assert tile.image_result is not None
+            color = is_single_color_image(tile.image_result.as_image())
             if color:
                 self._store_single_color_tile(tile, tile_loc, color)
             else:

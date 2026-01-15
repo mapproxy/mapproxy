@@ -28,7 +28,7 @@ from typing import Optional
 from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.srs import get_epsg_num
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
@@ -312,7 +312,7 @@ class GeopackageCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
-        if tile.source:
+        if tile.image_result:
             return True
 
         return self.load_tile(tile, dimensions=dimensions)
@@ -349,7 +349,7 @@ class GeopackageCache(TileCacheBase):
         return True
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         cur = self.db.cursor()
@@ -360,7 +360,7 @@ class GeopackageCache(TileCacheBase):
 
         content = cur.fetchone()
         if content:
-            tile.source = ImageSource(BytesIO(content[0]))
+            tile.image_result = ImageResult(BytesIO(content[0]))
             return True
         else:
             return False
@@ -370,7 +370,7 @@ class GeopackageCache(TileCacheBase):
         tile_dict = {}
         coords = []
         for tile in tiles:
-            if tile.source or tile.coord is None:
+            if tile.image_result or tile.coord is None:
                 continue
             x, y, level = tile.coord
             coords.append(x)
@@ -401,7 +401,7 @@ class GeopackageCache(TileCacheBase):
                 tile = tile_dict[(row[0], row[1])]
                 data = row[2]
                 tile.size = len(data)
-                tile.source = ImageSource(BytesIO(data))
+                tile.image_result = ImageResult(BytesIO(data))
             cursor.close()
 
             coords = coords[999:]
@@ -487,7 +487,7 @@ class GeopackageLevelCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
-        if tile.source:
+        if tile.image_result:
             return True
 
         return self._get_level(tile.coord[2]).is_cached(tile, dimensions=dimensions)
@@ -508,7 +508,7 @@ class GeopackageLevelCache(TileCacheBase):
         return failed
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
@@ -516,7 +516,7 @@ class GeopackageLevelCache(TileCacheBase):
     def load_tiles(self, tiles: TileCollection, with_metadata=False, dimensions=None) -> bool:
         level = None
         for tile in tiles:
-            if tile.source or tile.coord is None:
+            if tile.image_result or tile.coord is None:
                 continue
             level = tile.coord[2]
             break

@@ -26,7 +26,7 @@ from io import BytesIO
 from urllib.parse import urlparse
 
 from mapproxy.source import SourceError
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
 
@@ -133,9 +133,9 @@ class CGIClient(object):
                     status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
 
-    def open_image(self, url: str, data=None) -> ImageSource:
+    def open_image(self, url: str, data=None) -> ImageResult:
         resp = self.open(url, data=data)
         if 'Content-type' in resp.headers:
             if not resp.headers['Content-type'].lower().startswith('image'):
                 raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
-        return ImageSource(resp)
+        return ImageResult(resp)

@@ -16,8 +16,9 @@
 
 import os
 import hashlib
+from typing import Optional
 
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult, BaseImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.util.fs import ensure_directory, write_atomic
 
@@ -63,7 +64,7 @@ class LegendCache(object):
             legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
             ensure_directory(legend.location, self.directory_permissions)
 
-        data = legend.source.as_buffer(ImageOptions(format='image/' + self.file_ext), seekable=True)
+        data = legend.image_result.as_buffer(ImageOptions(format='image/' + self.file_ext), seekable=True)
         data.seek(0)
         set_permissions = self.file_permissions and not os.path.exists(legend.location)
         log.debug('writing to %s' % (legend.location))
@@ -80,14 +81,14 @@ class LegendCache(object):
         legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
 
         if os.path.exists(legend.location):
-            legend.source = ImageSource(legend.location)
+            legend.image_result = ImageResult(legend.location)
             return True
         return False
 
 
 class Legend(object):
-    def __init__(self, source=None, id=None, scale=None):
-        self.source = source
+    def __init__(self, image_result: Optional[BaseImageResult] = None, id=None, scale=None):
+        self.image_result = image_result
         self.stored = None
         self.location = None
         self.id = id

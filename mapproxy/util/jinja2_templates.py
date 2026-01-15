@@ -237,7 +237,7 @@ def render_j2_template(
 
     locale_dir = "."
     translations = Translations.load(locale_dir, [locale_] if locale_ is not None else [])
-    env.install_gettext_translations(translations)
+    env.install_gettext_translations(translations)  # type: ignore[attr-defined]
 
     try:
         template = env.get_template(template_path)

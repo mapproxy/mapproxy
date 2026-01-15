@@ -25,7 +25,7 @@ from io import BytesIO
 
 from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.script.defrag import defrag_compact_cache
 from mapproxy.test.helper import assert_permissions
@@ -100,7 +100,7 @@ class TestCompactCacheV1(TileCacheTestBase):
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
     def test_bundle_header(self):
-        t = Tile((5000, 1000, 12), ImageSource(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1000, 12), ImageResult(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle'))
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundlx'))
@@ -118,15 +118,15 @@ class TestCompactCacheV1(TileCacheTestBase):
 
         assert_header([4000 + 4], 4000)
 
-        t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 6000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1001, 12), ImageResult(BytesIO(b'a' * 6000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4], 6000)
 
-        t = Tile((4992, 999, 12), ImageSource(BytesIO(b'a' * 1000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((4992, 999, 12), ImageResult(BytesIO(b'a' * 1000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4, 1000 + 4], 6000)
 
-        t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1001, 12), ImageResult(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
 
@@ -204,7 +204,7 @@ class TestCompactCacheV2(TileCacheTestBase):
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
     def test_bundle_header(self):
-        t = Tile((5000, 1000, 12), ImageSource(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1000, 12), ImageResult(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle'))
 
@@ -218,15 +218,15 @@ class TestCompactCacheV2(TileCacheTestBase):
 
         assert_header([4000 + 4], 4000)
 
-        t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 6000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1001, 12), ImageResult(BytesIO(b'a' * 6000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4], 6000)
 
-        t = Tile((4992, 999, 12), ImageSource(BytesIO(b'a' * 1000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((4992, 999, 12), ImageResult(BytesIO(b'a' * 1000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4, 1000 + 4], 6000)
 
-        t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
+        t = Tile((5000, 1001, 12), ImageResult(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
 
@@ -274,7 +274,7 @@ class DefragmentationTestBase(object):
         cache = self.cache_class(self.cache_dir)
 
         t = Tile((5000, 1000, 12),
-                 ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+                 ImageResult(BytesIO(b'a' * 60 * 1024), image_opts=ImageOptions(format='image/png')))
         cache.store_tile(t)
         cache.remove_tile(t)
 
@@ -291,7 +291,7 @@ class DefragmentationTestBase(object):
 
         for _ in range(2):
             t = Tile((5000, 1000, 12),
-                     ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+                     ImageResult(BytesIO(b'a' * 60 * 1024), image_opts=ImageOptions(format='image/png')))
             cache.store_tile(t)
 
         logger = mockProgressLog()
@@ -315,7 +315,7 @@ class DefragmentationTestBase(object):
         cache = self.cache_class(self.cache_dir)
 
         t = Tile((10000, 2000, 13),
-                 ImageSource(
+                 ImageResult(
             BytesIO(b'a' * 120 * 1024),
             image_opts=ImageOptions(format='image/png')))
         cache.store_tile(t)
@@ -323,7 +323,7 @@ class DefragmentationTestBase(object):
         for x in range(100):
             for _ in range(2 if x < 10 else 1):
                 t = Tile((5000+x, 1000, 12),
-                         ImageSource(
+                         ImageResult(
                     BytesIO(b'a' * 120 * 1024),
                     image_opts=ImageOptions(format='image/png')))
                 cache.store_tile(t)

@@ -20,7 +20,7 @@ import tempfile
 
 from mapproxy.config.loader import load_configuration
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
@@ -260,7 +260,7 @@ class TestSeed(SeedTestBase):
 
     def create_tile(self, coord=(0, 0, 0)):
         return Tile(coord,
-                    ImageSource(tile_image_buf,
+                    ImageResult(tile_image_buf,
                                 image_opts=ImageOptions(format='image/png')))
 
     def test_reseed_mbtiles(self):

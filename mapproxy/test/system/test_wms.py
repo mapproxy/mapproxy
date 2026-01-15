@@ -24,7 +24,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.srs import SRS
 from PIL import Image
 from mapproxy.request.wms import (
@@ -353,7 +353,7 @@ class TestWMS111(SysTest):
         self.common_map_req.params["format"] = "image/tiff"
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/tiff"
-        img = ImageSource(BytesIO(resp.body)).as_image()
+        img = ImageResult(BytesIO(resp.body)).as_image()
         assert_geotiff_tags(img, (-180, 80), (180 / 200.0, 80 / 200.0), 4326, False)
 
     def test_get_map_xml_exception(self, app):

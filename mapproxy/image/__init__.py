@@ -91,9 +91,9 @@ class GeoReference(object):
         return tags
 
 
-class BaseImageSource(ABC):
+class BaseImageResult(ABC):
     """
-    Virtual parent class for ImageSource and BlankImageSource
+    Virtual parent class for ImageResult and BlankImageResult
     """
 
     size: tuple[int, int]
@@ -114,25 +114,25 @@ class BaseImageSource(ABC):
         pass
 
 
-class ImageSource(BaseImageSource):
+class ImageResult(BaseImageResult):
     """
     This class wraps either a PIL image, a file-like object, or a file name.
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
 
-    def __init__(self, source: Union[Image.Image, IO[bytes], str], size: Optional[tuple[int, int]] = None,
+    def __init__(self, image: Union[Image.Image, IO[bytes], str], size: Optional[tuple[int, int]] = None,
                  image_opts=None, cacheable: bool = True, georef=None):
         """
-        :param source: the image
-        :type source: PIL `Image`, image file object, or filename
-        :param format: the format of the ``source``
-        :param size: the size of the ``source`` in pixel
+        :param image: the image
+        :type image: PIL `Image`, image file object, or filename
+        :param format: the format of the ``image``
+        :param size: the size of the ``image`` in pixel
         """
         self._img: Optional[Image.Image] = None
         self._buf: Union[IO[bytes], ReadBufWrapper, None] = None
         self._fname: Optional[str] = None
-        self.source = source
+        self.image = image
         self.image_opts = image_opts
         self._size = size
         self.cacheable = cacheable
@@ -140,19 +140,19 @@ class ImageSource(BaseImageSource):
         self.authorize_stale = False
 
     @property
-    def source(self):
+    def image(self):
         return self._img or self._buf or self._fname
 
-    @source.setter
-    def source(self, source):
+    @image.setter
+    def image(self, image):
         self._img = None
         self._buf = None
-        if isinstance(source, str):
-            self._fname = source
-        elif isinstance(source, Image.Image):
-            self._img = source
+        if isinstance(image, str):
+            self._fname = image
+        elif isinstance(image, Image.Image):
+            self._img = image
         else:
-            self._buf = source
+            self._buf = image
 
     def close_buffers(self):
         if self._buf:
@@ -234,6 +234,7 @@ class ImageSource(BaseImageSource):
             if image_opts is None:
                 image_opts = self.image_opts
             log.debug('image -> buf(%s)' % (image_opts.format,))
+            assert self._img is not None
             self._buf = img_to_buf(self._img, image_opts=image_opts, georef=self.georef)
         else:
             buf = self._seekable_buf if seekable else self._readable_buf
@@ -243,7 +244,7 @@ class ImageSource(BaseImageSource):
                 self.image_opts.format = peek_image_format(buf)
             if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
-                self.source = self.as_image()
+                self.image = self.as_image()
                 self._buf = None
                 self.image_opts = image_opts
                 # hide fname to prevent as_buffer from reading the file
@@ -261,26 +262,26 @@ class ImageSource(BaseImageSource):
         return self._size
 
 
-def sub_image_source(source, size, offset, image_opts, cacheable=True):
+def sub_image_result(image: BaseImageResult | Image.Image, size, offset, image_opts, cacheable=True) -> ImageResult:
     """
-    Create a new ImageSource with `size` and `image_opts` and
-    place `source` image at `offset`.
+    Create a new ImageResult with `size` and `image_opts` and
+    place `image` at `offset`.
     """
     # force new image to contain alpha channel
     new_image_opts = image_opts.copy()
     new_image_opts.transparent = True
     img = create_image(size, new_image_opts)
 
-    if not hasattr(source, 'as_image'):
-        source = ImageSource(source)
-    subimg = source.as_image()
+    if not hasattr(image, 'as_image'):
+        image = ImageResult(image)
+    subimg = image.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
+    return ImageResult(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
 
 
-class BlankImageSource(BaseImageSource):
+class BlankImageResult(BaseImageResult):
     """
-    ImageSource for transparent or solid-color images.
+    ImageResult for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
 
@@ -345,7 +346,7 @@ class ReadBufWrapper(object):
         return getattr(self.stringio, name)
 
 
-def img_has_transparency(img):
+def img_has_transparency(img: Image.Image) -> bool:
     if img.mode == 'P':
         if img.info.get('transparency', False):
             return True
@@ -357,8 +358,8 @@ def img_has_transparency(img):
     return False
 
 
-def img_to_buf(img, image_opts, georef=None):
-    defaults = {}
+def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
+    defaults: dict[str, Any] = {}
     image_opts = image_opts.copy()
 
     # convert I or L images to target mode
@@ -381,7 +382,7 @@ def img_to_buf(img, image_opts, georef=None):
             image_opts.transparent = False
 
     # quantize if colors is set, but not if we already have a paletted image
-    if image_opts.colors and not (img.mode == 'P' and len(img.getpalette()) == image_opts.colors*3):
+    if image_opts.colors and not (img.mode == 'P' and len(img.getpalette() or []) == image_opts.colors*3):
         quantizer = None
         if 'quantizer' in image_opts.encoding_options:
             quantizer = image_opts.encoding_options['quantizer']
@@ -423,7 +424,7 @@ def img_to_buf(img, image_opts, georef=None):
     return buf
 
 
-def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
+def quantize(img: Image.Image, colors=256, alpha=False, defaults=None, quantizer=None) -> Image.Image:
     if hasattr(Image, 'FASTOCTREE') and quantizer in (None, 'fastoctree'):
         if not alpha:
             img = img.convert('RGB')
@@ -435,25 +436,26 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
         except ValueError:
             pass
     else:
+        palette = Image.ADAPTIVE  # type: ignore[attr-defined]
         if alpha and img.mode == 'RGBA':
             img.load()  # split might fail if image is not loaded
             alpha = img.split()[3]
-            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors-1)
+            img = img.convert('RGB').convert('P', palette=palette, colors=colors-1)
             mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
             img.paste(255, mask)
             if defaults is not None:
                 defaults['transparency'] = 255
         else:
-            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+            img = img.convert('RGB').convert('P', palette=palette, colors=colors)
 
     return img
 
 
-def filter_format(format):
+def filter_format(format: str) -> str:
     if format.lower() == 'geotiff':
-        format = 'tiff'
+        return 'tiff'
     if format.lower().startswith('png'):
-        format = 'png'
+        return 'png'
     return format
 
 
@@ -465,7 +467,7 @@ image_filter = {
 }
 
 
-def is_single_color_image(image):
+def is_single_color_image(image: Image.Image) -> bool | tuple[int, ...] | float:
     """
     Checks if the `image` contains only one color.
     Returns ``False`` if it contains more than one color, else
@@ -478,13 +480,15 @@ def is_single_color_image(image):
 
     color = result[0][1]
     if image.mode == 'P':
+        assert isinstance(color, int)
         palette = image.getpalette()
+        assert palette is not None
         return palette[color*3], palette[color*3+1], palette[color*3+2]
 
     return result[0][1]
 
 
-def make_transparent(img, color, tolerance=10):
+def make_transparent(img: BaseImageResult, color, tolerance=10) -> ImageResult:
     """
     Create alpha channel for the given image and make each pixel
     in `color` full transparent.
@@ -501,10 +505,10 @@ def make_transparent(img, color, tolerance=10):
     image_opts = img.image_opts.copy()
     image_opts.transparent = True
     image_opts.mode = 'RGBA'
-    return ImageSource(result, size=result.size, image_opts=image_opts)
+    return ImageResult(result, size=result.size, image_opts=image_opts)
 
 
-def _make_transparent(img, color, tolerance=10):
+def _make_transparent(img: Image.Image, color, tolerance=10) -> Image.Image:
     img.load()
 
     if img.mode == 'P':

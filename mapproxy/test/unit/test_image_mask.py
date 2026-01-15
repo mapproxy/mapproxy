@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from PIL import Image, ImageDraw
-from mapproxy.image import ImageSource
-from mapproxy.image.mask import mask_image_source_from_coverage
+from mapproxy.image import ImageResult
+from mapproxy.image.mask import mask_image_result_from_coverage
 from mapproxy.image.merge import LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
@@ -32,11 +32,11 @@ def coverage(geom, srs="EPSG:4326"):
 class TestMaskImage(object):
 
     def test_mask_outside_of_image_transparent(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(transparent=True),
         )
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage([20, 20, 30, 30])
         )
         assert_img_colors_eq(
@@ -44,12 +44,12 @@ class TestMaskImage(object):
         )
 
     def test_mask_outside_of_image_bgcolor(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(bgcolor=(200, 30, 120)),
         )
 
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage([20, 20, 30, 30])
         )
         assert_img_colors_eq(
@@ -57,12 +57,12 @@ class TestMaskImage(object):
         )
 
     def test_mask_partial_image_bgcolor(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(bgcolor=(200, 30, 120)),
         )
 
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage([5, 5, 30, 30])
         )
         assert_img_colors_eq(
@@ -71,12 +71,12 @@ class TestMaskImage(object):
         )
 
     def test_mask_partial_image_transparent(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(transparent=True),
         )
 
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage([5, 5, 30, 30])
         )
         assert_img_colors_eq(
@@ -85,7 +85,7 @@ class TestMaskImage(object):
         )
 
     def test_wkt_mask_partial_image_transparent(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(transparent=True),
         )
@@ -93,7 +93,7 @@ class TestMaskImage(object):
         # polygon with hole
         geom = "POLYGON((2 2, 2 8, 8 8, 8 2, 2 2), (4 4, 4 6, 6 6, 6 4, 4 4))"
 
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage(geom)
         )
         # 60*60 - 20*20 = 3200
@@ -103,7 +103,7 @@ class TestMaskImage(object):
         )
 
     def test_shapely_mask_with_transform_partial_image_transparent(self):
-        img = ImageSource(
+        img = ImageResult(
             Image.new("RGB", (100, 100), color=(100, 0, 200)),
             image_opts=ImageOptions(transparent=True),
         )
@@ -112,7 +112,7 @@ class TestMaskImage(object):
             [(0, 0), (222000, 0), (222000, 222000), (0, 222000)]
         )  # ~ 2x2 degres
 
-        result = mask_image_source_from_coverage(
+        result = mask_image_result_from_coverage(
             img, [0, 0, 10, 10], SRS(4326), coverage(p, "EPSG:3857")
         )
         # 20*20 = 400
@@ -133,7 +133,7 @@ class TestLayerCoverageMerge(object):
     def test_merge_single_coverage(self):
         merger = LayerMerger()
         merger.add(
-            ImageSource(Image.new("RGB", (10, 10), (255, 255, 255))),
+            ImageResult(Image.new("RGB", (10, 10), (255, 255, 255))),
             self.coverage1,
         )
         result = merger.merge(
@@ -151,10 +151,10 @@ class TestLayerCoverageMerge(object):
         color2 = (0, 255, 255)
         merger = LayerMerger()
         merger.add(
-            ImageSource(Image.new("RGB", (10, 10), color1)), self.coverage1
+            ImageResult(Image.new("RGB", (10, 10), color1)), self.coverage1
         )
         merger.add(
-            ImageSource(Image.new("RGB", (10, 10), color2)), self.coverage2
+            ImageResult(Image.new("RGB", (10, 10), color2)), self.coverage2
         )
 
         result = merger.merge(

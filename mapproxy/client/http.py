@@ -21,7 +21,7 @@ import time
 from typing import Any
 
 from mapproxy.version import version
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
 
@@ -232,12 +232,12 @@ class HTTPClient(object):
         finally:
             log_request(url, code, result, duration=time.time()-start_time, method=req.get_method())
 
-    def open_image(self, url: str, data=None) -> ImageSource:
+    def open_image(self, url: str, data=None) -> ImageResult:
         resp = self.open(url, data=data)
         if 'content-type' in resp.headers:
             if not resp.headers['content-type'].lower().startswith('image'):
                 raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
-        return ImageSource(resp)
+        return ImageResult(resp)
 
     def handle_url_exception(self, url, message, reason, response_code=None):
         full_msg = '%s "%s": %s' % (message, url, reason)
@@ -308,7 +308,7 @@ def open_url(url: str):
     return http_client.open(url)
 
 
-def retrieve_image(url: str) -> ImageSource:
+def retrieve_image(url: str) -> ImageResult:
     """
     Retrive an image from `url`.
 
@@ -318,4 +318,4 @@ def retrieve_image(url: str) -> ImageSource:
     resp = open_url(url)
     if not resp.headers['content-type'].startswith('image'):
         raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
-    return ImageSource(resp)
+    return ImageResult(resp)

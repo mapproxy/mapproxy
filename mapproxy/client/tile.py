@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from mapproxy.client.http import retrieve_image
+from mapproxy.image import ImageResult
 
 
 class TileClient(object):
@@ -22,7 +23,7 @@ class TileClient(object):
         self.http_client = http_client
         self.grid = grid
 
-    def get_tile(self, tile_coord, format=None):
+    def get_tile(self, tile_coord, format=None) -> ImageResult:
         url = self.url_template.substitute(tile_coord, format, self.grid)
         if self.http_client:
             return self.http_client.open_image(url)

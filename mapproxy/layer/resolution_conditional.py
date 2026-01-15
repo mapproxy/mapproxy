@@ -2,7 +2,7 @@ from __future__ import division
 
 import logging
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.layer import merge_layer_res_ranges
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.query import MapQuery
@@ -24,7 +24,7 @@ class ResolutionConditional(MapLayer):
         self.opacity = opacity
         self.extent = extent
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self.check_res_range(query)
         bbox = query.bbox
         if query.srs != self.srs:

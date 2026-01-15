@@ -317,7 +317,7 @@ class TestTileClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/09/000/000/005/000/000/013.png'},
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
-            resp = client.get_tile((5, 13, 9)).source.read()
+            resp = client.get_tile((5, 13, 9)).image.read()
             assert resp == b'tile'
 
     def test_quadkey(self):
@@ -326,7 +326,7 @@ class TestTileClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/key=000002303&format=png'},
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
-            resp = client.get_tile((5, 13, 9)).source.read()
+            resp = client.get_tile((5, 13, 9)).image.read()
             assert resp == b'tile'
 
     def test_xyz(self):
@@ -335,7 +335,7 @@ class TestTileClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/x=5&y=13&z=9&format=png'},
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
-            resp = client.get_tile((5, 13, 9)).source.read()
+            resp = client.get_tile((5, 13, 9)).image.read()
             assert resp == b'tile'
 
     def test_arcgiscache_path(self):
@@ -344,7 +344,7 @@ class TestTileClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R0000000d/C00000005.png'},
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
-            resp = client.get_tile((5, 13, 9)).source.read()
+            resp = client.get_tile((5, 13, 9)).image.read()
             assert resp == b'tile'
 
     def test_bbox(self):
@@ -354,7 +354,7 @@ class TestTileClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?BBOX=-180.00000000,0.00000000,-90.00000000,90.00000000'},  # noqa
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
-            resp = client.get_tile((0, 1, 2)).source.read()
+            resp = client.get_tile((0, 1, 2)).image.read()
             assert resp == b'tile'
 
 

@@ -22,8 +22,8 @@ from typing import Optional, cast
 
 from mapproxy.image import (
     bbox_position_in_image,
-    sub_image_source,
-    BlankImageSource,
+    sub_image_result,
+    BlankImageResult,
     GeoReference,
 )
 from mapproxy.image.merge import LayerMerger
@@ -455,7 +455,7 @@ def render_map(
     if not layer.extent.transform(query.srs).contains(query_extent):
         limited_extent = layer.extent.transform(query.srs).intersection(query_extent)
         if not limited_extent:
-            img = BlankImageSource(
+            img = BlankImageResult(
                 size=query.size, image_opts=image_opts, cacheable=True
             )
             return Response(
@@ -511,7 +511,7 @@ def render_map(
         )
 
     if query != orig_query:
-        result = sub_image_source(
+        result = sub_image_result(
             result, size=orig_query.size, offset=offset, image_opts=image_opts
         )
 

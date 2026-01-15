@@ -1,6 +1,6 @@
 from __future__ import division
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.extent import MapExtent
 from mapproxy.layer import merge_layer_res_ranges
 from mapproxy.layer.map_layer import MapLayer
@@ -24,7 +24,7 @@ class SRSConditional(MapLayer):
         self.extent = extent
         self.opacity = opacity
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self.check_res_range(query)
         layer = self._select_layer(query.srs)
         return layer.get_map(query)

@@ -21,7 +21,7 @@ from collections import namedtuple
 from typing import Optional, cast, Sequence
 
 from PIL import Image, ImageColor, ImageChops, ImageMath
-from mapproxy.image import BlankImageSource, ImageSource, BaseImageSource
+from mapproxy.image import BlankImageResult, ImageResult, BaseImageResult
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
 
@@ -39,14 +39,14 @@ class LayerMerger:
     Merge multiple layers into one image.
     """
 
-    layers: list[tuple[BaseImageSource, Optional[Coverage]]]
+    layers: list[tuple[BaseImageResult, Optional[Coverage]]]
     cacheable: bool
 
     def __init__(self):
         self.layers = []
         self.cacheable = True
 
-    def add(self, img: BaseImageSource, coverage: Optional[Coverage] = None):
+    def add(self, img: BaseImageResult, coverage: Optional[Coverage] = None):
         """
         Add one layer image to merge. Bottom-layers first.
         """
@@ -54,12 +54,12 @@ class LayerMerger:
             self.layers.append((img, coverage))
 
     def merge(self, image_opts, size: Optional[tuple[int, int]] = None, bbox: Optional[BBOX] = None,
-              bbox_srs: Optional[_SRS] = None, coverage: Optional[Coverage] = None) -> BaseImageSource:
+              bbox_srs: Optional[_SRS] = None, coverage: Optional[Coverage] = None) -> BaseImageResult:
         """
         Merge the layers. If the format is not 'png' just return the last image.
         """
         if not self.layers:
-            return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
+            return BlankImageResult(size=size, image_opts=image_opts, cacheable=True)
         if len(self.layers) == 1:
             layer_img, layer_coverage = self.layers[0]
             layer_opts = layer_img.image_opts
@@ -132,7 +132,7 @@ class LayerMerger:
             bg.paste(result, (0, 0), mask)
             result = bg
 
-        return ImageSource(result, size=size, image_opts=image_opts, cacheable=cacheable)
+        return ImageResult(result, size=size, image_opts=image_opts, cacheable=cacheable)
 
 
 band_ops = namedtuple("band_ops", ["dst_band", "src_img", "src_band", "factor"])
@@ -173,17 +173,17 @@ class BandMerger:
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
         self.max_src_images = max(src_img+1, self.max_src_images)
 
-    def merge(self, sources: list[BaseImageSource], image_opts, size: Optional[tuple[int, int]] = None) ->\
-            BaseImageSource:
-        if len(sources) < self.max_src_images:
-            return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
+    def merge(self, image_results: list[BaseImageResult], image_opts, size: Optional[tuple[int, int]] = None) ->\
+            BaseImageResult:
+        if len(image_results) < self.max_src_images:
+            return BlankImageResult(size=size, image_opts=image_opts, cacheable=True)
 
         if size is None:
-            size = sources[0].size
+            size = image_results[0].size
 
         # load src bands
         src_img_bands: list[Optional[tuple[Image.Image, ...]]] = []
-        for i, layer_img in enumerate(sources):
+        for i, layer_img in enumerate(image_results):
             img = layer_img.as_image()
 
             if i not in self.max_band:
@@ -242,29 +242,29 @@ class BandMerger:
             assert r is not None
 
         result = Image.merge(tmp_mode, cast(list[Image.Image], result_bands))
-        return ImageSource(result, size=size, image_opts=image_opts)
+        return ImageResult(result, size=size, image_opts=image_opts)
 
 
-def merge_images(layers: Sequence[tuple[BaseImageSource, Optional[Coverage]]], image_opts, size=None, bbox=None,
-                 bbox_srs=None, merger=None) -> BaseImageSource:
+def merge_images(layers: Sequence[tuple[BaseImageResult, Optional[Coverage]]], image_opts, size=None, bbox=None,
+                 bbox_srs=None, merger=None) -> BaseImageResult:
     """
     Merge multiple images into one.
 
-    :param layers: list of `ImageSource`, bottom image first
+    :param layers: list of `ImageResult`, bottom image first
     :param size: size of the merged image, if ``None`` the size
                  of the first image is used
     :param bbox: Bounding box
     :param bbox_srs: Bounding box SRS
     :param merger: Image merger
-    :rtype: `ImageSource`
+    :rtype: `ImageResult`
     """
     if merger is None:
         merger = LayerMerger()
 
     # BandMerger does not have coverage support, passing only images
     if isinstance(merger, BandMerger):
-        sources = [x[0] for x in layers]
-        return merger.merge(sources, image_opts=image_opts, size=size)
+        image_results = [x[0] for x in layers]
+        return merger.merge(image_results, image_opts=image_opts, size=size)
 
     for layer in layers:
         merger.add(layer[0], layer[1])
@@ -272,18 +272,18 @@ def merge_images(layers: Sequence[tuple[BaseImageSource, Optional[Coverage]]], i
     return merger.merge(image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
 
 
-def concat_legends(legends: list[ImageSource], format='png', size=None, bgcolor='#ffffff', transparent=True) ->\
-        BaseImageSource:
+def concat_legends(legends: list[ImageResult], format='png', size=None, bgcolor='#ffffff', transparent=True) ->\
+        BaseImageResult:
     """
     Merge multiple legends into one
-    :param legends: list of `ImageSource`, bottom image first
-    :param format: the format of the output `ImageSource`
+    :param legends: list of `ImageResult`, bottom image first
+    :param format: the format of the output `ImageResult`
     :param size: size of the merged image, if ``None`` the size
                  will be calculated
-    :rtype: `ImageSource`
+    :rtype: `ImageResult`
     """
     if not legends:
-        return BlankImageSource(size=(1, 1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
+        return BlankImageResult(size=(1, 1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
     if len(legends) == 1:
         return legends[0]
 
@@ -314,7 +314,7 @@ def concat_legends(legends: list[ImageSource], format='png', size=None, bgcolor=
             img.paste(legend_img, (0, legend_position_y[i]), legend_img)
         else:
             img.paste(legend_img, (0, legend_position_y[i]))
-    return ImageSource(img, image_opts=ImageOptions(format=format))
+    return ImageResult(img, image_opts=ImageOptions(format=format))
 
 
 def concat_json_legends(legends):

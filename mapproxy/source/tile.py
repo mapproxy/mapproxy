@@ -22,7 +22,7 @@ from typing import Optional
 
 from mapproxy.layer.cache_map_layer import CacheMapLayer
 from mapproxy.layer.map_layer import MapLayer
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
@@ -51,7 +51,7 @@ class TiledSource(MapLayer):
         self.res_range = res_range
         self.error_handler = error_handler
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         if self.grid.tile_size != query.size:
             ex = InvalidSourceQuery(
                 'tile size of cache and tile source do not match: %s != %s'
@@ -99,7 +99,7 @@ class CacheSource(CacheMapLayer):
         self.supports_meta_tiles = not tiled_only
         self.tiled_only = tiled_only
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         if self.tiled_only:
             query.tiled_only = True
         return super().get_map(query)

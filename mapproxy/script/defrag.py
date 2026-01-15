@@ -167,7 +167,7 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progre
         for y in range(128):
             tiles = [Tile((x, y, 0)) for x in range(128)]
             b.load_tiles(tiles)
-            tiles = [t for t in tiles if t.source]
+            tiles = [t for t in tiles if t.image_result]
             if tiles:
                 stored_tiles = True
                 defb.store_tiles(tiles)

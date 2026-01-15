@@ -3,7 +3,7 @@ from __future__ import division
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.grid.resolutions import ResolutionRange
 from mapproxy.layer import BlankImageError
 from mapproxy.image.opts import ImageOptions
@@ -47,7 +47,7 @@ class MapLayer(ABC):
             raise BlankImageError()
 
     @abstractmethod
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         pass
 
     def combined_layer(self, other, query):

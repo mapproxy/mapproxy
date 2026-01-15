@@ -5,7 +5,7 @@ from typing import Optional
 from mapproxy.cache.tile_manager import TileManager
 from mapproxy.extent import map_extent_from_grid, MapExtent
 from mapproxy.grid import NoTiles, GridError
-from mapproxy.image import bbox_position_in_image, sub_image_source, BaseImageSource
+from mapproxy.image import bbox_position_in_image, sub_image_result, BaseImageResult
 from mapproxy.image.tile import TiledImage
 from mapproxy.layer import merge_layer_res_ranges, BlankImageError, MapError, MapBBOXError
 from mapproxy.layer.map_layer import MapLayer
@@ -28,7 +28,7 @@ class CacheMapLayer(MapLayer):
             self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.max_tile_limit = max_tile_limit
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self.check_res_range(query)
 
         if query.tiled_only:
@@ -43,11 +43,10 @@ class CacheMapLayer(MapLayer):
                 raise BlankImageError()
             src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
-            result = sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts,
-                                      cacheable=resp.cacheable)
+            return sub_image_result(resp, size=query.size, offset=offset, image_opts=self.image_opts,
+                                    cacheable=resp.cacheable)
         else:
-            result = self._image(query)
-        return result
+            return self._image(query)
 
     def _check_tiled(self, query):
         if query.format != self.tile_manager.format:
@@ -55,7 +54,7 @@ class CacheMapLayer(MapLayer):
         if query.size != self.grid.tile_size:
             raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
 
-    def _image(self, query: MapQuery) -> BaseImageSource:
+    def _image(self, query: MapQuery) -> BaseImageResult:
         try:
             src_bbox, tile_grid_size, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
@@ -86,13 +85,13 @@ class CacheMapLayer(MapLayer):
             raise BlankImageError()
 
         if query.tiled_only:
-            tile = tile_collection[0].source
+            tile = tile_collection[0].image_result
             tile.image_opts = self.tile_manager.image_opts
             tile.cacheable = tile_collection[0].cacheable
             return tile
 
-        tile_sources = [tile.source for tile in tile_collection]
-        tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
+        tile_image_results = [tile.image_result for tile in tile_collection]
+        tiled_image = TiledImage(tile_image_results, src_bbox=src_bbox, src_srs=self.grid.srs,
                                  tile_grid_size=tile_grid_size, tile_size=self.grid.tile_size)
         try:
             return tiled_image.transform(query.bbox, query.srs, query.size,

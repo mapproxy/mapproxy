@@ -23,7 +23,7 @@ from typing import Optional
 from mapproxy.cache.tile import Tile
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.util import async_
 from mapproxy.util.coverage import Coverage
 
@@ -115,10 +115,10 @@ class AzureBlobCache(TileCacheBase):
         try:
             r = self.container_client.download_blob(key)
             self._set_metadata(r.properties, tile)
-            tile.source = ImageSource(BytesIO(r.readall()))
+            tile.image_result = ImageResult(BytesIO(r.readall()))
         except AzureError as e:
             log.debug("AzureBlob:load_tile unable to load key: %s" % key, e)
-            tile.source = None
+            tile.image_result = None
             return False
 
         log.debug("AzureBlob:load_tile loaded key: %s" % key)

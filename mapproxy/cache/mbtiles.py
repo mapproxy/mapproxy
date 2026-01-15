@@ -23,7 +23,7 @@ from itertools import groupby
 from typing import Optional
 
 from mapproxy.cache.tile import Tile, TileCollection
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
@@ -156,7 +156,7 @@ class MBTilesCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
-        if tile.source:
+        if tile.image_result:
             return True
 
         return self.load_tile(tile, dimensions=dimensions)
@@ -200,7 +200,7 @@ class MBTilesCache(TileCacheBase):
         return True
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         cur = self.db.cursor()
@@ -223,7 +223,7 @@ class MBTilesCache(TileCacheBase):
 
         content = cur.fetchone()
         if content:
-            tile.source = ImageSource(BytesIO(content[0]))
+            tile.image_result = ImageResult(BytesIO(content[0]))
             if self.supports_timestamp:
                 tile.timestamp = sqlite_datetime_to_timestamp(content[1])
             return True
@@ -235,7 +235,7 @@ class MBTilesCache(TileCacheBase):
         tile_dict = {}
         coords = []
         for tile in tiles:
-            if tile.source or tile.coord is None:
+            if tile.image_result or tile.coord is None:
                 continue
             x, y, level = tile.coord
             coords.append(x)
@@ -272,7 +272,7 @@ class MBTilesCache(TileCacheBase):
                 tile = tile_dict[(row[0], row[1])]
                 data = row[2]
                 tile.size = len(data)
-                tile.source = ImageSource(BytesIO(data))
+                tile.image_result = ImageResult(BytesIO(data))
                 if self.supports_timestamp:
                     tile.timestamp = sqlite_datetime_to_timestamp(row[3])
             cursor.close()
@@ -369,7 +369,7 @@ class MBTilesLevelCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
-        if tile.source:
+        if tile.image_result:
             return True
 
         return self._get_level(tile.coord[2]).is_cached(tile, dimensions=dimensions)
@@ -390,7 +390,7 @@ class MBTilesLevelCache(TileCacheBase):
         return failed
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
@@ -398,7 +398,7 @@ class MBTilesLevelCache(TileCacheBase):
     def load_tiles(self, tiles: TileCollection, with_metadata=False, dimensions=None) -> bool:
         level = None
         for tile in tiles:
-            if tile.source or tile.coord is None:
+            if tile.image_result or tile.coord is None:
                 continue
             level = tile.coord[2]
             break

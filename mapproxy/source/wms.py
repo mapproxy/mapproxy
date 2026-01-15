@@ -21,7 +21,7 @@ from typing import Optional
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
-from mapproxy.image import make_transparent, ImageSource, sub_image_source, bbox_position_in_image, BaseImageSource
+from mapproxy.image import make_transparent, ImageResult, sub_image_result, bbox_position_in_image, BaseImageResult
 from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import BlankImageError
@@ -63,7 +63,7 @@ class WMSLikeSource(MapLayer):
     def _retrieve(self, query, format):
         raise NotImplementedError
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
             raise BlankImageError()
@@ -84,7 +84,7 @@ class WMSLikeSource(MapLayer):
             log.warning('could not retrieve WMS map: %s', e.full_msg or e)
             raise reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
-    def _get_map(self, query) -> ImageSource:
+    def _get_map(self, query) -> ImageResult:
         format = self.image_opts.format
         if not format:
             format = query.format
@@ -105,7 +105,7 @@ class WMSLikeSource(MapLayer):
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
         resp = self._retrieve(query, format)
-        return ImageSource(resp, size=query.size, image_opts=self.image_opts)
+        return ImageResult(resp, size=query.size, image_opts=self.image_opts)
 
     def _get_sub_query(self, query, format):
         size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
@@ -113,9 +113,9 @@ class WMSLikeSource(MapLayer):
             raise BlankImageError()
         src_query = MapQuery(bbox, size, query.srs, format, dimensions=query.dimensions)
         resp = self._retrieve(src_query, format)
-        return sub_image_source(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+        return sub_image_result(resp, size=query.size, offset=offset, image_opts=self.image_opts)
 
-    def _get_transformed(self, query, format) -> ImageSource:
+    def _get_transformed(self, query, format) -> ImageResult:
         if self.supported_srs is None:
             raise Exception('No supported SRS for transformation available')
         dst_srs = query.srs
@@ -138,7 +138,7 @@ class WMSLikeSource(MapLayer):
             img = self._get_sub_query(src_query, format)
         else:
             resp = self._retrieve(src_query, format)
-            img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
+            img = ImageResult(resp, size=src_size, image_opts=self.image_opts)
 
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox,
                                                            query.size, dst_bbox, self.image_opts)
@@ -292,10 +292,10 @@ class WMSLegendSource(LegendSource):
             if format == 'json':
                 return concat_json_legends(legends)
 
-            legend = Legend(source=concat_legends(legends, format=format),
+            legend = Legend(image_result=concat_legends(legends, format=format),
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
 
-        # returns ImageSource
-        return legend.source
+        # returns ImageResult
+        return legend.image_result

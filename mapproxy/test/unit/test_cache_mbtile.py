@@ -21,7 +21,7 @@ from io import BytesIO
 
 from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.test.helper import assert_files_in_dir, assert_permissions
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
@@ -51,7 +51,7 @@ class TestMBTileCache(TileCacheTestBase):
     def test_load_more_than_2000_tiles(self):
         # prepare data
         for i in range(0, 2010):
-            assert self.cache.store_tile(Tile((i, 0, 10),  ImageSource(BytesIO(b'foo'))))
+            assert self.cache.store_tile(Tile((i, 0, 10), ImageResult(BytesIO(b'foo'))))
 
         tiles = [Tile((i, 0, 10)) for i in range(0, 2010)]
         assert self.cache.load_tiles(tiles)
