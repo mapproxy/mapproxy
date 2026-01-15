@@ -66,11 +66,11 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get_all("layers") == ["foo,bar", "baz"]
         assert nc_dict.get_all("crs") == ["EPSG:4326"]
 
-    def test_iteritems(self):
+    def test_items(self):
         data = [("LAYERS", "foo,bar"), ("laYERs", "baz"), ("crs", "EPSG:4326")]
         nc_dict = NoCaseMultiDict(data)
 
-        for key, values in nc_dict.iteritems():
+        for key, values in nc_dict.items_multi():
             if key in ("LAYERS", "laYERs"):
                 assert values == ["foo,bar", "baz"]
             elif key == "crs":
@@ -98,7 +98,7 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get("bar") is None
         assert nc_dict.get("bar", "default_bar") == "default_bar"
         assert nc_dict.get("num") == "42"
-        assert nc_dict.get("num", type_func=int) == 42
+        assert int(nc_dict.get("num")) == 42
         assert nc_dict.get("foo") == "bar"
 
     def test_get_all(self):
@@ -543,7 +543,7 @@ class TestWMSMapRequestParams(object):
 
     def test_get(self):
         assert self.m.get("LAYERS") == "bar"
-        assert self.m.get("width", type_func=int) == 100
+        assert int(self.m.get("width")) == 100
 
     def test_set(self):
         self.m.set("Layers", "baz", append=True)

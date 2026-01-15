@@ -1,6 +1,13 @@
-class NoCaseMultiDict(dict):
+from typing import TypeVar, Generic, Iterable, Iterator, MutableMapping
+
+V = TypeVar("V")
+T = TypeVar("T")
+
+
+class NoCaseMultiDict(MutableMapping[str, V], Generic[V]):
     """
-    This is a dictionary that allows case insensitive access to values.
+    Dictionary with case-insensitive keys and support for multiple values
+    per key. The first inserted key spelling is preserved.
 
     >>> d = NoCaseMultiDict([('A', 'b'), ('a', 'c'), ('B', 'f'), ('c', 'x'), ('c', 'y'), ('c', 'z')])
     >>> d['a']
@@ -11,131 +18,76 @@ class NoCaseMultiDict(dict):
     True
     """
 
-    def _gen_dict(self, mapping=()):
-        """A `NoCaseMultiDict` can be constructed from an iterable of
-        ``(key, value)`` tuples or a dict.
-        """
-        tmp = {}
+    def __init__(self, mapping: Iterable[tuple[str, V]] | dict[str, V] | "NoCaseMultiDict[V]" = ()) -> None:
+        self._data: dict[str, tuple[str, list[V]]] = {}
+        self.update_multi(mapping, append=True)
+
+    def _key(self, key: str) -> str:
+        return key.lower()
+
+    def update_multi(self, mapping: Iterable[tuple[str, V]] | dict[str, V] | "NoCaseMultiDict[V]",
+                     append: bool = False) -> None:
         if isinstance(mapping, NoCaseMultiDict):
-            for key, value in mapping.iteritems():
-                tmp.setdefault(key.lower(), (key, []))[1].extend(value)
+            for key, values in mapping.items_multi():
+                self.set(key, values, append=append, unpack=True)
+        elif isinstance(mapping, dict):
+            for key2, value2 in mapping.items():
+                self.set(key2, value2, append=append)
         else:
-            if isinstance(mapping, dict):
-                itr = mapping.items()
-            else:
-                itr = iter(mapping)
-            for key, value in itr:
-                tmp.setdefault(key.lower(), (key, []))[1].append(value)
-        return tmp
+            for key3, value3 in mapping:
+                self.set(key3, value3, append=append)
 
-    def __init__(self, mapping=()):
-        """A `NoCaseMultiDict` can be constructed from an iterable of
-        ``(key, value)`` tuples or a dict.
-        """
-        super().__init__(self._gen_dict(mapping))
+    def __getitem__(self, key: str) -> V:
+        if not self._key(key) in self._data:
+            raise KeyError(key) from None
 
-    def update(self, mapping=(), append=False):
-        """A `NoCaseMultiDict` can be updated from an iterable of
-        ``(key, value)`` tuples or a dict.
-        """
-        for _, (key, values) in self._gen_dict(mapping).items():
-            self.set(key, values, append=append, unpack=True)
+        return self._data[self._key(key)][1][0]
 
-    def __getitem__(self, key):
-        """
-        Return the first data value for this key.
+    def __setitem__(self, key: str, value: V) -> None:
+        self._data[self._key(key)] = (key, [value])
 
-        :raise KeyError: if the key does not exist
-        """
-        if key in self:
-            return dict.__getitem__(self, key.lower())[1][0]
-        raise KeyError(key)
+    def __delitem__(self, key: str) -> None:
+        del self._data[self._key(key)]
 
-    def __setitem__(self, key, value):
-        dict.setdefault(self, key.lower(), (key, []))[1][:] = [value]
+    def __iter__(self) -> Iterator[str]:
+        for original_key, _ in self._data.values():
+            yield original_key
 
-    def __delitem__(self, key):
-        dict.__delitem__(self, key.lower())
+    def __len__(self) -> int:
+        return len(self._data)
 
-    def __contains__(self, key):
-        return dict.__contains__(self, key.lower())
+    def __getstate__(self) -> list[tuple[str, V]]:
+        return [(k, v) for k, vs in self.items_multi() for v in vs]
 
-    def __getstate__(self):
-        data = []
-        for key, values in self.iteritems():
-            for v in values:
-                data.append((key, v))
-        return data
+    def __setstate__(self, state: Iterable[tuple[str, V]]) -> None:
+        self._data = {}
+        self.update_multi(state)
 
-    def __setstate__(self, data):
-        self.__init__(data)
+    def get_all(self, key: str) -> list[V]:
+        return self._data.get(self._key(key), ("", []))[1]
 
-    def get(self, key, default=None, type_func=None):
-        """Return the default value if the requested data doesn't exist.
-        If `type_func` is provided and is a callable it should convert the value,
-        return it or raise a `ValueError` if that is not possible.  In this
-        case the function will return the default as if the value was not
-        found.
+    def set(self, key: str, value: V | Iterable[V], *, append: bool = False, unpack: bool = False) -> None:
+        key_l = self._key(key)
 
-        Example:
+        if key_l not in self._data:
+            self._data[key_l] = (key, [])
 
-        >>> d = NoCaseMultiDict(dict(foo='42', bar='blub'))
-        >>> d.get('foo', type_func=int)
-        42
-        >>> d.get('bar', -1, type_func=int)
-        -1
-        """
-        try:
-            rv = self[key]
-            if type_func is not None:
-                rv = type_func(rv)
-        except (KeyError, ValueError):
-            rv = default
-        return rv
+        _, values = self._data[key_l]
 
-    def get_all(self, key):
-        """
-        Return all values for the key as a list. Returns an empty list, if
-        the key doesn't exist.
-        """
-        if key in self:
-            return dict.__getitem__(self, key.lower())[1]
-        else:
-            return []
+        if not append:
+            values.clear()
 
-    def set(self, key, value, append=False, unpack=False):
-        """
-        Set a `value` for the `key`. If `append` is ``True`` the value will be added
-        to other values for this `key`.
-
-        If `unpack` is True, `value` will be unpacked and each item will be added.
-        """
-        if key in self:
-            if not append:
-                dict.__getitem__(self, key.lower())[1][:] = []
-        else:
-            dict.__setitem__(self, key.lower(), (key, []))
         if unpack:
-            for v in value:
-                dict.__getitem__(self, key.lower())[1].append(v)
+            values.extend(value)  # type: ignore[arg-type]
         else:
-            dict.__getitem__(self, key.lower())[1].append(value)
+            values.append(value)  # type: ignore[arg-type]
 
-    def iteritems(self):
-        """
-        Iterates over all keys and values.
-        """
-        for _, (key, values) in dict.items(self):
+    def items_multi(self) -> Iterator[tuple[str, list[V]]]:
+        for key, values in self._data.values():
             yield key, values
 
-    def copy(self):
-        """
-        Returns a copy of this object.
-        """
-        return self.__class__(self)
+    def copy(self) -> "NoCaseMultiDict[V]":
+        return NoCaseMultiDict(self)
 
-    def __repr__(self):
-        tmp = []
-        for key, values in self.iteritems():
-            tmp.append((key, values))
-        return '%s(%r)' % (self.__class__.__name__, tmp)
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({list(self.items_multi())!r})"
