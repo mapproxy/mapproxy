@@ -39,7 +39,7 @@ tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
 
-class TileCacheTestBase(object):
+class TileCacheTestBase:
     always_loads_metadata = False
     uses_utc = False
 
@@ -201,7 +201,7 @@ class TileCacheTestBase(object):
 
     def test_store_tile_already_stored(self):
         # tile object is marked as stored,
-        # check that is is not stored 'again'
+        # check that it is not stored 'again'
         # (used for disable_storage)
         tile = Tile((1234, 589, 12), ImageSource(BytesIO(b'foo')))
         tile.stored = True

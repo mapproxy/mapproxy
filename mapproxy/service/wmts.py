@@ -405,7 +405,7 @@ class TileMatrixSet(object):
         return iter(self.tile_matrices)
 
     def _tile_matrices(self):
-        for level, res in self.grid.resolutions.iteritems():
+        for level, res in self.grid.resolutions.items():
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
             topleft = bbox[0], bbox[3]

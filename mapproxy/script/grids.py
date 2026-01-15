@@ -82,8 +82,8 @@ def display_grid(grid_conf, coverage=None):
         print('    Levels: Resolutions, # x * y = total tiles (approx. tiles within coverage)')
     else:
         print('    Levels: Resolutions, # x * y = total tiles')
-    max_digits = max([len("%r" % (res,)) for level, res in enumerate(tile_grid.resolutions)])
-    for level, res in enumerate(tile_grid.resolutions):
+    max_digits = max([len("%r" % (res,)) for level, res in enumerate(tile_grid.resolutions.values())])
+    for level, res in enumerate(tile_grid.resolutions.values()):
         tiles_in_x, tiles_in_y = tile_grid.grid_sizes[level]
         total_tiles = tiles_in_x * tiles_in_y
         spaces = max_digits - len("%r" % (res,)) + 1

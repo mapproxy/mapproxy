@@ -75,8 +75,7 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
             raise ValueError("res is not a list, use res_factor for float values")
 
     elif align_with is not None:
-        res = aligned_resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size,
-                                  align_with)
+        res = aligned_resolutions(align_with.resolutions, min_res, max_res, res_factor, num_levels, bbox, tile_size)
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
 
@@ -162,10 +161,8 @@ def tile_grid_from_ogc_tile_matrix_set(ogc_tile_matrix_set):
                     name=ogc_tile_matrix_set["id"])
 
     grids = []
-    idx = 0
-    for name, _ in tilegrid.resolutions.iteritems():
+    for idx, name in enumerate(tilegrid.resolutions.keys()):
         grids.append((name, grid_sizes[idx]))
-        idx += 1
     tilegrid.grid_sizes = NamedGridList(grids)
 
     return tilegrid
@@ -252,7 +249,7 @@ class TileGrid(object):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         grids = []
-        for idx, res in self.resolutions.iteritems():
+        for idx, res in self.resolutions.items():
             x = max(math.ceil(width // res / self.tile_size[0]), 1)
             y = max(math.ceil(height // res / self.tile_size[1]), 1)
             grids.append((idx, (int(x), int(y))))
@@ -275,7 +272,7 @@ class TileGrid(object):
         else:
             return pyramid_res_level(initial_res, factor, levels=self.levels)
 
-    def resolution(self, level):
+    def resolution(self, level: str):
         """
         Returns the resolution of the `level` in units/pixel.
 
@@ -316,7 +313,7 @@ class TileGrid(object):
                 threshold = thresholds.pop()
 
         threshold_result = None
-        for level, l_res in enumerate(self.resolutions):
+        for level, l_res in enumerate(self.resolutions.values()):
             if threshold and prev_l_res > threshold >= l_res:
                 if res > threshold:
                     return level-1
@@ -387,7 +384,7 @@ class TileGrid(object):
         # allow for some rounding errors in the _tiles_bbox calculations
         delta = max(abs(self.bbox[1]), abs(self.bbox[3])) / 1e12
 
-        for level, grid_size in enumerate(self.grid_sizes):
+        for level, grid_size in enumerate(self.grid_sizes.values()):
             level_bbox = self._tiles_bbox([(0, 0, level),
                                            (grid_size[0] - 1, grid_size[1] - 1, level)])
 
@@ -567,7 +564,7 @@ class TileGrid(object):
 
         # check if all level tiles from self align with (affected)
         # tiles from other
-        for self_level, self_level_res in self.resolutions.iteritems():
+        for self_level, self_level_res in self.resolutions.items():
             level_size = (
                 self.grid_sizes[self_level][0] * self.tile_size[0],
                 self.grid_sizes[self_level][1] * self.tile_size[1]
