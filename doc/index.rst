@@ -33,6 +33,7 @@ MapProxy Documentation
    auth
    decorate_img
    development
+   architecture
    plugins
 
 
