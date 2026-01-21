@@ -18,7 +18,7 @@ from io import BytesIO
 import pytest
 
 from PIL import Image
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100TileRequest
 from mapproxy.test.image import is_png, is_jpeg
@@ -36,7 +36,7 @@ def to_greyscale(image, service, layers, **kw):
         img = img.convert("LA").convert("RGBA")
     else:
         img = img.convert("L").convert("RGB")
-    return ImageSource(img, image.image_opts)
+    return ImageResult(img, image.image_opts)
 
 
 @pytest.mark.usefixtures("fixture_cache_data")
@@ -147,7 +147,7 @@ class TestDecorateImg(SysTest):
         )
 
         def callback(img_src, service, layers, environ, query_extent):
-            assert isinstance(img_src, ImageSource)
+            assert isinstance(img_src, ImageResult)
             assert "wms.map" == service
             assert len(layers) == 2
             assert "wms_cache_transparent" in layers
@@ -173,7 +173,7 @@ class TestDecorateImg(SysTest):
     def test_tms_args(self, app):
 
         def callback(img_src, service, layers, environ, query_extent):
-            assert isinstance(img_src, ImageSource)
+            assert isinstance(img_src, ImageResult)
             assert "tms" == service
             assert "wms_cache" == layers[0]
             assert isinstance(environ, dict)
@@ -200,7 +200,7 @@ class TestDecorateImg(SysTest):
     def test_wmts_args(self, app):
 
         def callback(img_src, service, layers, environ, query_extent):
-            assert isinstance(img_src, ImageSource)
+            assert isinstance(img_src, ImageResult)
             assert "wmts" == service
             assert "wms_cache" == layers[0]
             assert isinstance(environ, dict)

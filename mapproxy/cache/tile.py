@@ -32,12 +32,11 @@ Tile caching (creation, caching and retrieval of tiles).
         tm -> s  [label="get_map"]
     }
 
-
 """
 from typing import Optional, Union, Sequence
 
 from mapproxy.grid import TileCoord
-from mapproxy.image import BlankImageSource, BaseImageSource
+from mapproxy.image import BlankImageResult, BaseImageResult
 
 import logging
 
@@ -49,9 +48,9 @@ class Tile:
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
     """
 
-    def __init__(self, coord: Optional[TileCoord], source: Optional[BaseImageSource] = None, cacheable: bool = True):
+    def __init__(self, coord: Optional[TileCoord], result: Optional[BaseImageResult] = None, cacheable: bool = True):
         self.coord = coord
-        self.source = source
+        self.image_result = result
         self.location = None
         self.stored = False
         self._cacheable = cacheable
@@ -72,15 +71,15 @@ class Tile:
             self.timestamp = cacheable.timestamp
             self.size = cacheable.size
 
-    def source_buffer(self, *args, **kw):
-        if self.source is not None:
-            return self.source.as_buffer(*args, **kw)
+    def image_result_buffer(self, *args, **kw):
+        if self.image_result is not None:
+            return self.image_result.as_buffer(*args, **kw)
         else:
             return None
 
-    def source_image(self):
-        if self.source is not None:
-            return self.source.as_image()
+    def image_result_image(self):
+        if self.image_result is not None:
+            return self.image_result.as_image()
         else:
             return None
 
@@ -98,7 +97,7 @@ class Tile:
         """
         if self.coord is None:
             return False
-        return self.source is None
+        return self.image_result is None
 
     def __eq__(self, other):
         """
@@ -111,7 +110,7 @@ class Tile:
         """
         if isinstance(other, Tile):
             return (self.coord == other.coord and
-                    self.source == other.source)
+                    self.image_result == other.image_result)
         else:
             return NotImplemented
 
@@ -131,7 +130,7 @@ class Tile:
             return not equal_result
 
     def __repr__(self):
-        return 'Tile(%r, source=%r)' % (self.coord, self.source)
+        return 'Tile(%r, image_result=%r)' % (self.coord, self.image_result)
 
 
 class CacheInfo(object):
@@ -174,16 +173,16 @@ class TileCollection(object):
     @property
     def empty(self):
         """
-        Returns True if no tile in this collection contains a source.
+        Returns True if no tile in this collection contains an image_result.
         """
-        return all((t.source is None for t in self.tiles))
+        return all((t.image_result is None for t in self.tiles))
 
     @property
     def blank(self):
         """
-        Returns True if all sources collection are BlankImageSources or have not source at all.
+        Returns True if all image_results for the tiles are BlankImageResults or have no image result at all.
         """
-        return all((t.source is None or isinstance(t.source, BlankImageSource) for t in self.tiles))
+        return all((t.image_result is None or isinstance(t.image_result, BlankImageResult) for t in self.tiles))
 
     def __repr__(self):
         return 'TileCollection(%r)' % self.tiles

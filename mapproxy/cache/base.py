@@ -32,7 +32,7 @@ class CacheBackendError(Exception):
 
 @contextmanager
 def tile_buffer(tile):
-    data = tile.source.as_buffer(seekable=True)
+    data = tile.image_result.as_buffer(seekable=True)
     data.seek(0)
     yield data
     tile.size = data.tell()

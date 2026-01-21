@@ -15,22 +15,22 @@
 
 from PIL import Image, ImageDraw
 from mapproxy.srs import SRS, make_lin_transf, _SRS
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult, BaseImageResult
 from mapproxy.image.opts import create_image
 from mapproxy.util.geom import flatten_to_polygons
 from mapproxy.util.bbox import BBOX
 from mapproxy.util.coverage import GeomCoverage
 
 
-def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
-                                    image_opts=None) -> ImageSource:
+def mask_image_result_from_coverage(image_result: BaseImageResult, bbox, bbox_srs, coverage,
+                                    image_opts=None) -> ImageResult:
     if image_opts is None:
-        image_opts = img_source.image_opts
-    img = img_source.as_image()
+        image_opts = image_result.image_opts
+    img = image_result.as_image()
     img = mask_image(img, bbox, bbox_srs, coverage)
     result = create_image(img.size, image_opts)
     result.paste(img, (0, 0), img)
-    return ImageSource(result, image_opts=image_opts)
+    return ImageResult(result, image_opts=image_opts)
 
 
 def mask_image(img: Image.Image, bbox, bbox_srs, coverage) -> Image.Image:

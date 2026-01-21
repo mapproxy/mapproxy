@@ -24,11 +24,11 @@ import pytest
 import PIL
 from PIL import Image, ImageDraw
 from mapproxy.image import (
-    BlankImageSource,
+    BlankImageResult,
     GeoReference,
-    ImageSource,
+    ImageResult,
     ReadBufWrapper,
-    sub_image_source,
+    sub_image_result,
     TIFF_GEOKEYDIRECTORYTAG,
     TIFF_MODELPIXELSCALETAG,
     TIFF_MODELTIEPOINTTAG,
@@ -63,7 +63,7 @@ PIL_VERSION = getattr(PIL, '__version__') or getattr(PIL, 'PILLOW_VERSION')
 PIL_VERSION_TUPLE = tuple(int(i) for i in PIL_VERSION.split("."))
 
 
-class TestImageSource(object):
+class TestImageResult(object):
 
     def setup_method(self):
         self.tmp_filename = create_tmp_image_file((100, 100))
@@ -72,19 +72,19 @@ class TestImageSource(object):
         os.remove(self.tmp_filename)
 
     def test_from_filename(self):
-        ir = ImageSource(self.tmp_filename, PNG_FORMAT)
+        ir = ImageResult(self.tmp_filename, PNG_FORMAT)
         assert is_png(ir.as_buffer())
         assert ir.as_image().size == (100, 100)
 
     def test_from_file(self):
         with open(self.tmp_filename, "rb") as tmp_file:
-            ir = ImageSource(tmp_file, "png")
+            ir = ImageResult(tmp_file, "png")
             assert ir.as_buffer() == tmp_file
             assert ir.as_image().size == (100, 100)
 
     def test_from_image(self):
         img = Image.new("RGBA", (100, 100))
-        ir = ImageSource(img, (100, 100), PNG_FORMAT)
+        ir = ImageResult(img, (100, 100), PNG_FORMAT)
         assert ir.as_image() == img
         assert is_png(ir.as_buffer())
 
@@ -97,7 +97,7 @@ class TestImageSource(object):
             def read(self):
                 return data
 
-        ir = ImageSource(FileLikeDummy(), "png")
+        ir = ImageResult(FileLikeDummy(), "png")
         assert ir.as_buffer(seekable=True).read() == data
         assert ir.as_image().size == (100, 100)
         assert ir.as_buffer().read() == data
@@ -105,11 +105,11 @@ class TestImageSource(object):
     def test_output_formats(self):
         img = Image.new("RGB", (100, 100))
         for format in ["png", "gif", "tiff", "jpeg", "GeoTIFF", "bmp"]:
-            ir = ImageSource(img, (100, 100), image_opts=ImageOptions(format=format))
+            ir = ImageResult(img, (100, 100), image_opts=ImageOptions(format=format))
             check_format(ir.as_buffer(), format)
 
     def test_converted_output(self):
-        ir = ImageSource(self.tmp_filename, (100, 100), PNG_FORMAT)
+        ir = ImageResult(self.tmp_filename, (100, 100), PNG_FORMAT)
         assert is_png(ir.as_buffer())
         assert is_jpeg(ir.as_buffer(JPEG_FORMAT))
         assert is_jpeg(ir.as_buffer())
@@ -118,7 +118,7 @@ class TestImageSource(object):
 
     def test_tiff_compression(self):
         def encoded_size(encoding_options):
-            ir = ImageSource(create_debug_img((100, 100)), PNG_FORMAT)
+            ir = ImageResult(create_debug_img((100, 100)), PNG_FORMAT)
             buf = ir.as_buffer(ImageOptions(format="tiff", encoding_options=encoding_options))
             return len(buf.read())
 
@@ -142,7 +142,7 @@ class TestImageSource(object):
     )
     def test_output_formats_greyscale_png(self):
         img = Image.new("L", (100, 100))
-        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        ir = ImageResult(img, image_opts=PNG_FORMAT)
         img = Image.open(
             ir.as_buffer(ImageOptions(colors=256, transparent=True, format="image/png"))
         )
@@ -151,7 +151,7 @@ class TestImageSource(object):
 
     def test_output_formats_greyscale_alpha_png(self):
         img = Image.new("LA", (100, 100))
-        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        ir = ImageResult(img, image_opts=PNG_FORMAT)
         img = Image.open(
             ir.as_buffer(ImageOptions(colors=256, transparent=True, format="image/png"))
         )
@@ -164,7 +164,7 @@ class TestImageSource(object):
     )
     def test_output_formats_png8(self):
         img = Image.new("RGBA", (100, 100))
-        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        ir = ImageResult(img, image_opts=PNG_FORMAT)
         img = Image.open(
             ir.as_buffer(ImageOptions(colors=256, transparent=True, format="image/png"))
         )
@@ -175,7 +175,7 @@ class TestImageSource(object):
         img = Image.new("RGBA", (100, 100))
         image_opts = PNG_FORMAT.copy()
         image_opts.colors = 0  # TODO image_opts
-        ir = ImageSource(img, image_opts=image_opts)
+        ir = ImageResult(img, image_opts=image_opts)
         img = Image.open(ir.as_buffer())
         assert img.mode == "RGBA"
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
@@ -187,37 +187,37 @@ class TestImageSource(object):
         img.info["transparency"] = (0, 0, 0)
         image_opts = PNG_FORMAT.copy()
 
-        ir = ImageSource(img, image_opts=image_opts)
+        ir = ImageResult(img, image_opts=image_opts)
         img = Image.open(ir.as_buffer())
         assert img.mode == "P"
 
 
-class TestSubImageSource(object):
+class TestSubImageResult(object):
 
     def test_full(self):
         sub_img = create_image((100, 100), color=[100, 120, 130, 140])
-        img = sub_image_source(
+        img = sub_image_result(
             sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_larger(self):
         sub_img = create_image((150, 150), color=[100, 120, 130, 140])
-        img = sub_image_source(
+        img = sub_image_result(
             sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_negative_offset(self):
         sub_img = create_image((150, 150), color=[100, 120, 130, 140])
-        img = sub_image_source(
+        img = sub_image_result(
             sub_img, size=(100, 100), offset=(-50, 0), image_opts=ImageOptions()
         ).as_image()
         assert img.getcolors() == [(100 * 100, (100, 120, 130, 140))]
 
     def test_overlap_right(self):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
-        img = sub_image_source(
+        img = sub_image_result(
             sub_img,
             size=(100, 100),
             offset=(75, 25),
@@ -230,7 +230,7 @@ class TestSubImageSource(object):
 
     def test_outside(self):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
-        img = sub_image_source(
+        img = sub_image_result(
             sub_img,
             size=(100, 100),
             offset=(200, 0),
@@ -299,7 +299,7 @@ class TestMergeAll(object):
 
     def test_full_merge(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
-        self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
+        self.tiles = [ImageResult(tile) for tile in self.cleanup_tiles]
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         img_opts = ImageOptions()
         result = m.merge(self.tiles, img_opts)
@@ -308,7 +308,7 @@ class TestMergeAll(object):
 
     def test_one(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100))]
-        self.tiles = [ImageSource(self.cleanup_tiles[0])]
+        self.tiles = [ImageResult(self.cleanup_tiles[0])]
         m = TileMerger(tile_grid=(1, 1), tile_size=(100, 100))
         img_opts = ImageOptions(transparent=True)
         result = m.merge(self.tiles, img_opts)
@@ -318,7 +318,7 @@ class TestMergeAll(object):
 
     def test_missing_tiles(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100))]
-        self.tiles = [ImageSource(self.cleanup_tiles[0])]
+        self.tiles = [ImageResult(self.cleanup_tiles[0])]
         self.tiles.extend([None] * 8)
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         img_opts = ImageOptions()
@@ -329,8 +329,8 @@ class TestMergeAll(object):
 
     def test_invalid_tile(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
-        self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
-        invalid_tile = self.tiles[0].source
+        self.tiles = [ImageResult(tile) for tile in self.cleanup_tiles]
+        invalid_tile = self.tiles[0].image
         with open(invalid_tile, "wb") as tmp:
             tmp.write(b"invalid")
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
@@ -360,7 +360,7 @@ class TestGetCrop(object):
 
     def setup_method(self):
         self.tmp_file = create_tmp_image_file((100, 100), two_colored=True)
-        self.img = ImageSource(
+        self.img = ImageResult(
             self.tmp_file, image_opts=ImageOptions(format="image/png"), size=(100, 100)
         )
 
@@ -413,8 +413,8 @@ class TestGetCrop(object):
 class TestLayerMerge(object):
 
     def test_opacity_merge(self):
-        img1 = ImageSource(Image.new("RGB", (10, 10), (255, 0, 255)))
-        img2 = ImageSource(
+        img1 = ImageResult(Image.new("RGB", (10, 10), (255, 0, 255)))
+        img2 = ImageResult(
             Image.new("RGB", (10, 10), (0, 255, 255)),
             image_opts=ImageOptions(opacity=0.5),
         )
@@ -424,8 +424,8 @@ class TestLayerMerge(object):
         assert img.getpixel((0, 0)) == (127, 127, 255)
 
     def test_opacity_merge_mixed_modes(self):
-        img1 = ImageSource(Image.new("RGBA", (10, 10), (255, 0, 255, 255)))
-        img2 = ImageSource(
+        img1 = ImageResult(Image.new("RGBA", (10, 10), (255, 0, 255, 255)))
+        img2 = ImageResult(
             Image.new("RGB", (10, 10), (0, 255, 255)).convert("P"),
             image_opts=ImageOptions(opacity=0.5),
         )
@@ -435,8 +435,8 @@ class TestLayerMerge(object):
         assert_img_colors_eq(img, [(10 * 10, (127, 127, 255, 255))])
 
     def test_merge_L(self):
-        img1 = ImageSource(Image.new("RGBA", (10, 10), (255, 0, 255, 255)))
-        img2 = ImageSource(Image.new("L", (10, 10), 100))
+        img1 = ImageResult(Image.new("RGBA", (10, 10), (255, 0, 255, 255)))
+        img2 = ImageResult(Image.new("L", (10, 10), 100))
 
         # img2 overlays img1
         result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=True))
@@ -448,7 +448,7 @@ class TestLayerMerge(object):
     )
     def test_paletted_merge(self):
         # generate RGBA images with a transparent rectangle in the lower right
-        img1 = ImageSource(Image.new("RGBA", (50, 50), (0, 255, 0, 255))).as_image()
+        img1 = ImageResult(Image.new("RGBA", (50, 50), (0, 255, 0, 255))).as_image()
         draw = ImageDraw.Draw(img1)
         draw.rectangle((25, 25, 49, 49), fill=(0, 0, 0, 0))
         paletted_img = quantize(img1, alpha=True)
@@ -459,11 +459,11 @@ class TestLayerMerge(object):
         draw = ImageDraw.Draw(rgba_img)
         draw.rectangle((25, 25, 49, 49), fill=(0, 0, 0, 0))
 
-        img1 = ImageSource(paletted_img)
-        img2 = ImageSource(rgba_img)
+        img1 = ImageResult(paletted_img)
+        img2 = ImageResult(rgba_img)
 
         # generate base image and merge the others above
-        img3 = ImageSource(Image.new("RGBA", (50, 50), (0, 0, 255, 255)))
+        img3 = ImageResult(Image.new("RGBA", (50, 50), (0, 0, 255, 255)))
         result = merge_images([(img3, None), (img1, None), (img2, None)], ImageOptions(transparent=True))
         img = result.as_image()
 
@@ -472,18 +472,18 @@ class TestLayerMerge(object):
         assert img.getpixel((0, 0)) == (255, 0, 0, 255)
 
     def test_solid_merge(self):
-        img1 = ImageSource(Image.new("RGB", (10, 10), (255, 0, 255)))
-        img2 = ImageSource(Image.new("RGB", (10, 10), (0, 255, 255)))
+        img1 = ImageResult(Image.new("RGB", (10, 10), (255, 0, 255)))
+        img2 = ImageResult(Image.new("RGB", (10, 10), (0, 255, 255)))
 
         result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
         assert img.getpixel((0, 0)) == (0, 255, 255)
 
     def test_merge_rgb_with_transp(self):
-        img1 = ImageSource(Image.new("RGB", (10, 10), (255, 0, 255)))
+        img1 = ImageResult(Image.new("RGB", (10, 10), (255, 0, 255)))
         raw = Image.new("RGB", (10, 10), (0, 255, 255))
         raw.info = {"transparency": (0, 255, 255)}  # make full transparent
-        img2 = ImageSource(raw)
+        img2 = ImageResult(raw)
 
         result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
@@ -502,12 +502,12 @@ class TestLayerCompositeMerge(object):
         draw = ImageDraw.Draw(img1)
         draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
         draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
-        img1 = ImageSource(img1)
+        img1 = ImageResult(img1)
         img2 = Image.new("RGBA", size=(100, 100), color=(0, 255, 0, 255))
         draw = ImageDraw.Draw(img2)
         draw.rectangle((0, 33, 100, 66), fill=(0, 255, 0, 128))
         draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
-        img2 = ImageSource(img2)
+        img2 = ImageResult(img2)
 
         result = merge_images([(img2, None), (img1, None)], ImageOptions(transparent=True))
         img = result.as_image()
@@ -527,11 +527,11 @@ class TestLayerCompositeMerge(object):
 
     def test_composite_merge_opacity(self):
         bg = Image.new("RGBA", size=(100, 100), color=(255, 0, 255, 255))
-        bg = ImageSource(bg)
+        bg = ImageResult(bg)
         fg = Image.new("RGBA", size=(100, 100), color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(fg)
         draw.rectangle((10, 10, 89, 89), fill=(0, 255, 255, 255))
-        fg = ImageSource(fg, image_opts=ImageOptions(opacity=0.5))
+        fg = ImageResult(fg, image_opts=ImageOptions(opacity=0.5))
 
         result = merge_images([(bg, None), (fg, None)], ImageOptions(transparent=True))
         img = result.as_image()
@@ -544,7 +544,7 @@ class TestLayerCompositeMerge(object):
 class TestTransform(object):
 
     def setup_method(self):
-        self.src_img = ImageSource(create_debug_img((200, 200), transparent=False))
+        self.src_img = ImageResult(create_debug_img((200, 200), transparent=False))
         self.src_srs = SRS(31467)
         self.dst_size = (100, 150)
         self.dst_srs = SRS(4326)
@@ -560,7 +560,7 @@ class TestTransform(object):
             self.dst_bbox,
             image_opts=ImageOptions(resampling="nearest"),
         )
-        assert isinstance(result, ImageSource)
+        assert isinstance(result, ImageResult)
         assert result.as_image() != self.src_img.as_image()
         assert result.size == (100, 150)
 
@@ -614,10 +614,10 @@ class TestGeoTIFF(object):
         expected_pixel_res, expected_origin, projected,
         compression,
     ):
-        img = ImageSource(create_debug_img(size), georef=GeoReference(bbox=bbox, srs=SRS(srs)))
+        img = ImageResult(create_debug_img(size), georef=GeoReference(bbox=bbox, srs=SRS(srs)))
 
         img_opts = ImageOptions(format='tiff', encoding_options={'tiff_compression': compression})
-        img2 = ImageSource(img.as_buffer(img_opts)).as_image()
+        img2 = ImageResult(img.as_buffer(img_opts)).as_image()
 
         assert_geotiff_tags(img2, expected_origin, expected_pixel_res, srs, projected)
 
@@ -782,7 +782,7 @@ class TestMakeTransparent(object):
 class TestTileSplitter(object):
 
     def test_background_larger_crop(self):
-        img = ImageSource(Image.new("RGB", (356, 266), (130, 140, 120)))
+        img = ImageResult(Image.new("RGB", (356, 266), (130, 140, 120)))
         img_opts = ImageOptions("RGB")
         splitter = TileSplitter(img, img_opts)
 
@@ -802,7 +802,7 @@ class TestTileSplitter(object):
         ]
 
     def test_background_larger_crop_with_transparent(self):
-        img = ImageSource(Image.new("RGBA", (356, 266), (130, 140, 120, 255)))
+        img = ImageResult(Image.new("RGBA", (356, 266), (130, 140, 120, 255)))
         img_opts = ImageOptions("RGBA", transparent=True)
         splitter = TileSplitter(img, img_opts)
 
@@ -862,11 +862,11 @@ class TestPeekImageFormat(object):
 class TestBandMerge(object):
 
     def setup_method(self):
-        self.img0 = ImageSource(Image.new("RGB", (10, 10), (0, 10, 20)))
-        self.img1 = ImageSource(Image.new("RGB", (10, 10), (100, 110, 120)))
-        self.img2 = ImageSource(Image.new("RGB", (10, 10), (200, 210, 220)))
-        self.img3 = ImageSource(Image.new("RGB", (10, 10), (0, 255, 0)))
-        self.blank = BlankImageSource(size=(10, 10), image_opts=ImageOptions())
+        self.img0 = ImageResult(Image.new("RGB", (10, 10), (0, 10, 20)))
+        self.img1 = ImageResult(Image.new("RGB", (10, 10), (100, 110, 120)))
+        self.img2 = ImageResult(Image.new("RGB", (10, 10), (200, 210, 220)))
+        self.img3 = ImageResult(Image.new("RGB", (10, 10), (0, 255, 0)))
+        self.blank = BlankImageResult(size=(10, 10), image_opts=ImageOptions())
 
     def test_merge_noops(self):
         """
@@ -883,7 +883,7 @@ class TestBandMerge(object):
     def test_merge_missing_source(self):
         """
         Check that empty source list or source list with missing images
-        returns BlankImageSource.
+        returns BlankImageResult.
         """
         merger = BandMerger(mode="RGB")
         merger.add_ops(dst_band=0, src_img=0, src_band=0)
@@ -1022,7 +1022,7 @@ class TestBandMerge(object):
         img = Image.new("RGB", (10, 10), (0, 100, 200)).quantize(256)
         assert img.mode == "P"
         # src img is P but we can still access RGB bands
-        src_img = ImageSource(img)
+        src_img = ImageResult(img)
 
         img_opts = ImageOptions("RGB")
         result = merger.merge([src_img], img_opts)
@@ -1043,7 +1043,7 @@ class TestBandMerge(object):
         merger.add_ops(dst_band=3, src_img=0, src_band=3)
 
         img = Image.new("RGB", (10, 10), (0, 100, 200))
-        src_img = ImageSource(img)
+        src_img = ImageResult(img)
 
         img_opts = ImageOptions("RGBA")
         result = merger.merge([src_img], img_opts)

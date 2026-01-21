@@ -15,7 +15,7 @@
 from typing import Optional
 
 from mapproxy.image.opts import ImageOptions
-from mapproxy.image import BlankImageSource
+from mapproxy.image import BlankImageResult
 
 
 class HTTPSourceErrorHandler(object):
@@ -25,7 +25,7 @@ class HTTPSourceErrorHandler(object):
     def add_handler(self, http_code, color, cacheable=False, authorize_stale=False):
         self.response_error_codes[http_code] = (color, cacheable, authorize_stale)
 
-    def handle(self, status_code, query) -> Optional[BlankImageSource]:
+    def handle(self, status_code, query) -> Optional[BlankImageResult]:
         if status_code in self.response_error_codes:
             color, cacheable, authorize_stale = self.response_error_codes[status_code]
         elif 'other' in self.response_error_codes:
@@ -35,6 +35,6 @@ class HTTPSourceErrorHandler(object):
 
         transparent = len(color) == 4
         image_opts = ImageOptions(bgcolor=color, transparent=transparent)
-        img_source = BlankImageSource(query.size, image_opts, cacheable=cacheable)
-        img_source.authorize_stale = authorize_stale
-        return img_source
+        image_result = BlankImageResult(query.size, image_opts, cacheable=cacheable)
+        image_result.authorize_stale = authorize_stale
+        return image_result

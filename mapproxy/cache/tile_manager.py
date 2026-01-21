@@ -3,23 +3,23 @@ from functools import partial
 from typing import Any, cast, Optional, Union
 
 from mapproxy.cache.tile_creator import TileCreator
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.grid import TileCoord
-from mapproxy.image import BlankImageSource
+from mapproxy.image import BlankImageResult
 from mapproxy.cache.base import TileCacheBase
 from mapproxy.cache.tile import Tile, TileCollection
 from mapproxy.grid.meta_grid import MetaGrid
 from mapproxy.grid.tile_grid import TileGrid
-from mapproxy.image.mask import mask_image_source_from_coverage
+from mapproxy.image.mask import mask_image_result_from_coverage
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.source import DummySource
 
-# RESCALE_TILE_MISSING is a dummy source to prevent a tile cache from loading
+# RESCALE_TILE_MISSING is a dummy image result to prevent a tile cache from loading
 # a tile that we already found out is missing.
 
-RESCALE_TILE_MISSING = BlankImageSource((256, 256), ImageOptions())
+RESCALE_TILE_MISSING = BlankImageResult((256, 256), ImageOptions())
 
 
 class TileManager:
@@ -123,17 +123,18 @@ class TileManager:
 
         for t in tiles.tiles:
             # Clip tiles if clipping is enabled for coverage
-            if t.coord and self.cache.coverage and self.cache.coverage.clip and t.source:
+            if t.coord and self.cache.coverage and self.cache.coverage.clip and t.image_result:
                 tile_bbox = self.grid.tile_bbox(t.coord)
                 coverage = self.cache.coverage
 
                 if coverage.intersects(tile_bbox, self.grid.srs):
-                    t.source = mask_image_source_from_coverage(
-                        t.source, tile_bbox, self.grid.srs, coverage, ImageOptions(transparent=True, format='png'))
+                    t.image_result = mask_image_result_from_coverage(
+                        t.image_result, tile_bbox, self.grid.srs, coverage,
+                        ImageOptions(transparent=True, format='png'))
 
             # Remove our internal marker source, for missing tiles.
-            if t.source is RESCALE_TILE_MISSING:
-                t.source = None
+            if t.image_result is RESCALE_TILE_MISSING:
+                t.image_result = None
         return tiles
 
     def _is_tile_missing(self, tile, cache_only, dimensions=None):
@@ -154,7 +155,7 @@ class TileManager:
         if rescaled_tiles:
             for t in tiles:
                 if t.coord in rescaled_tiles:
-                    t.source = rescaled_tiles[t.coord].source
+                    t.image_result = rescaled_tiles[t.coord].image_result
 
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata, dimensions=dimensions)
@@ -177,7 +178,7 @@ class TileManager:
 
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
-                    tiles[created_tile.coord].source = created_tile.source
+                    tiles[created_tile.coord].image_result = created_tile.image_result
 
         return tiles
 
@@ -262,8 +263,8 @@ class TileManager:
             return rescaled_tiles[tile.coord]
 
         # Cache tile in rescaled_tiles. We initially set source to a fixed
-        # BlankImageSource and overwrite it if we actually rescaled the tile.
-        tile.source = RESCALE_TILE_MISSING
+        # BlankImageResult and overwrite it if we actually rescaled the tile.
+        tile.image_result = RESCALE_TILE_MISSING
         rescaled_tiles[tile.coord] = tile
 
         assert tile.coord is not None
@@ -283,7 +284,7 @@ class TileManager:
             # Add sources of cached tiles, to avoid loading same tile multiple times
             # loading recursive.
             if t.coord in rescaled_tiles:
-                t.source = rescaled_tiles[t.coord].source
+                t.image_result = rescaled_tiles[t.coord].image_result
 
         tile_collection = self._load_tile_coords(
             affected_tiles,
@@ -294,14 +295,14 @@ class TileManager:
         if tile_collection.blank:
             return tile
 
-        tile_sources: list[Optional[BaseImageSource]] = []
+        tile_results: list[Optional[BaseImageResult]] = []
         for t in tile_collection:
             # Replace RESCALE_TILE_MISSING with None, before transforming tiles.
-            tile_sources.append(t.source if t.source is not RESCALE_TILE_MISSING else None)
+            tile_results.append(t.image_result if t.image_result is not RESCALE_TILE_MISSING else None)
 
-        tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
+        tiled_image = TiledImage(tile_results, src_bbox=src_bbox, src_srs=self.grid.srs,
                                  tile_grid_size=src_tile_grid, tile_size=self.grid.tile_size)
-        tile.source = tiled_image.transform(tile_bbox, self.grid.srs, self.grid.tile_size, self.image_opts)
+        tile.image_result = tiled_image.transform(tile_bbox, self.grid.srs, self.grid.tile_size, self.image_opts)
 
         if self.cache_rescaled_tiles:
             self.cache.store_tile(tile)

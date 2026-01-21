@@ -24,7 +24,7 @@ except ImportError:
     from importlib import resources as importlib_resources  # type: ignore[no-redef]
 
 from mapproxy.config import base_config, abspath
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.image.opts import create_image, ImageOptions
 
 _pil_ttf_support = True
@@ -46,7 +46,7 @@ def message_image(message, size, image_opts, bgcolor='#ffffff',
     :param bgcolor: the background color of the image
     :param transparent: if True and the `format` supports it,
                         return a transparent image
-    :rtype: `ImageSource`
+    :rtype: `ImageResult`
     """
     eimg = ExceptionImage(message, image_opts=image_opts)
     return eimg.draw(size=size)
@@ -59,7 +59,7 @@ def attribution_image(message, size, image_opts=None, inverse=False):
     :param message: the message to put in the image
     :param size: the size of the output image
     :param inverse: if true, write white text
-    :rtype: `ImageSource`
+    :rtype: `ImageResult`
     """
     if image_opts is None:
         image_opts = ImageOptions(transparent=True)
@@ -113,7 +113,7 @@ class MessageImage(object):
     def new_image(self, size):
         return Image.new('RGBA', size)
 
-    def draw(self, img=None, size=None, in_place=True) -> ImageSource:
+    def draw(self, img=None, size=None, in_place=True) -> ImageResult:
         """
         Create the message image. Either draws on top of `img` or creates a
         new image with the given `size`.
@@ -133,7 +133,7 @@ class MessageImage(object):
         if not self.message:
             if img is not None:
                 return img
-            return ImageSource(base_img, size=size, image_opts=self.image_opts)
+            return ImageResult(base_img, size=size, image_opts=self.image_opts)
 
         draw = ImageDraw.Draw(base_img)
         self.draw_msg(draw, size)
@@ -152,7 +152,7 @@ class MessageImage(object):
                 img = img.convert('RGB')
             base_img = img
 
-        return ImageSource(base_img, size=size, image_opts=image_opts)
+        return ImageResult(base_img, size=size, image_opts=image_opts)
 
     def draw_msg(self, draw, size):
         td = TextDraw(self.message, font=self.font, bg_color=self.box_color,

@@ -38,7 +38,7 @@ from PIL import Image
 from mapproxy.config.coverage import load_coverage
 from mapproxy.grid.tile_grid import TileGrid
 from mapproxy.grid.resolutions import resolution_range
-from mapproxy.image import ImageSource, BlankImageSource
+from mapproxy.image import ImageResult, BlankImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import BlankImageError, MapBBOXError
 from mapproxy.layer.cache_map_layer import CacheMapLayer
@@ -97,7 +97,7 @@ class MockTileClient(object):
 
     def get_tile(self, tile_coord, format=None):
         self.requested_tiles.append(tile_coord)
-        return ImageSource(create_debug_img((256, 256)))
+        return ImageResult(create_debug_img((256, 256)))
 
 
 class TestTiledSourceGlobalGeodetic(object):
@@ -135,7 +135,7 @@ class RecordFileCache(FileCache):
             FileCache.store_tile(self, tile, dimensions=dimensions)
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
-        if tile.source:
+        if tile.image_result:
             # Do not record tiles with source as "loaded" as FileCache will
             # return tile without checking/loading from filesystem.
             return True
@@ -279,7 +279,7 @@ class MockSource(MapLayer):
 
     def get_map(self, query):
         self.requested.append((query.bbox, query.size, query.srs))
-        return ImageSource(self._image(query.size))
+        return ImageResult(self._image(query.size))
 
 
 @pytest.fixture
@@ -363,9 +363,9 @@ class TestTileManagerWMSSource(object):
     def test_load_tile_coords(self, tile_mgr, mock_file_cache, mock_wms_client):
         tiles = tile_mgr.load_tile_coords(((0, 0, 2), (2, 0, 2)))
         assert tiles[0].coord == (0, 0, 2)
-        assert isinstance(tiles[0].source, ImageSource)
+        assert isinstance(tiles[0].image_result, ImageResult)
         assert tiles[1].coord == (2, 0, 2)
-        assert isinstance(tiles[1].source, ImageSource)
+        assert isinstance(tiles[1].image_result, ImageResult)
 
         assert mock_file_cache.stored_tiles == \
                {(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2), (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)}
@@ -576,7 +576,7 @@ class TestTileManagerMultipleSourcesWithMetaTiles(object):
         assert source_overlay.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-        hist = tiles[0].source.as_image().histogram()
+        hist = tiles[0].image_result.as_image().histogram()
         # lots of red (base), but not everything (overlay)
         assert 55000 < hist[255] < 60000  # red   = 0xff
         assert 55000 < hist[256]         # green = 0x00
@@ -907,7 +907,7 @@ class TestWMSSourceWithClient(object):
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
                 result = source.get_map(q)
-                assert isinstance(result, ImageSource)
+                assert isinstance(result, ImageResult)
                 assert result.size == (512, 512)
                 assert is_png(result.as_buffer(seekable=True))
                 assert result.as_image().size == (512, 512)
@@ -1121,7 +1121,7 @@ def test_nested_conditional_layers(case, map_query, is_direct, is_l3857, is_l432
 
 
 def is_blank(tiles):
-    return all([t.source is None or isinstance(t.source, BlankImageSource) for t in tiles.tiles])
+    return all([t.image_result is None or isinstance(t.image_result, BlankImageResult) for t in tiles.tiles])
 
 
 class TestTileManagerEmptySources(object):
@@ -1269,7 +1269,7 @@ class TestTileManagerRescaleTiles(object):
             for i, t in enumerate(store):
                 color = (150+i*35, 5+i*35, 5+i*35)
                 colors.add(color)
-                tile = Tile(t, ImageSource(create_tmp_image_buf((256, 256), color=color)))
+                tile = Tile(t, ImageResult(create_tmp_image_buf((256, 256), color=color)))
                 file_cache.store_tile(tile)
 
             loaded_tiles = tm.load_tile_coords(tiles)
@@ -1277,7 +1277,7 @@ class TestTileManagerRescaleTiles(object):
             assert len(loaded_tiles) == len(tiles)
             got_colors = set()
             for t in loaded_tiles:
-                got_colors.update([c for _, c in t.source.as_image().getcolors()])
+                got_colors.update([c for _, c in t.image_result.as_image().getcolors()])
             assert got_colors == colors
         else:
             loaded_tiles = tm.load_tile_coords(tiles)

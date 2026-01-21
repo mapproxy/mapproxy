@@ -24,7 +24,7 @@ from collections import OrderedDict
 from typing import Any, Optional
 
 from mapproxy.grid.resolutions import ResolutionRange
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.layer.limited_layer import LimitedLayer
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.cache.tile import CacheInfo
@@ -36,7 +36,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.image import bbox_position_in_image, sub_image_source, BlankImageSource, GeoReference
+from mapproxy.image import bbox_position_in_image, sub_image_result, BlankImageResult, GeoReference
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
@@ -109,7 +109,7 @@ class WMSServer(Server):
                     img_opts = self.image_formats[params.format_mime_type].copy()
                     img_opts.bgcolor = params.bgcolor
                     img_opts.transparent = params.transparent
-                    img = BlankImageSource(size=params.size, image_opts=img_opts, cacheable=True)
+                    img = BlankImageResult(size=params.size, image_opts=img_opts, cacheable=True)
                     return Response(img.as_buffer(), content_type=img_opts.format.mime_type)
                 sub_size, offset, sub_bbox = bbox_position_in_image(params.bbox, params.size, limited_extent.bbox)
                 query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format)
@@ -155,7 +155,7 @@ class WMSServer(Server):
                               bbox=query.bbox, bbox_srs=params.srs, coverage=coverage)
 
         if query != orig_query:
-            result = sub_image_source(result, size=orig_query.size, offset=offset, image_opts=img_opts)
+            result = sub_image_result(result, size=orig_query.size, offset=offset, image_opts=img_opts)
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
@@ -662,7 +662,7 @@ class LayerRenderer:
             layer_merger.add(message_image('\n'.join(errors), self.query.size,
                                            image_opts=ImageOptions(transparent=True)))
 
-    def _render_layer(self, layer: MapLayer) -> tuple[MapLayer, Optional[BaseImageSource]]:
+    def _render_layer(self, layer: MapLayer) -> tuple[MapLayer, Optional[BaseImageResult]]:
         try:
             layer_img = layer.get_map(self.query)
 

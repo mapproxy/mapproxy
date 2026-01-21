@@ -23,7 +23,7 @@ from mapproxy.query import InfoQuery
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf, SRS, SupportedSRS
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.featureinfo import create_featureinfo_doc
 
@@ -196,14 +196,14 @@ class WMSLegendClient(object):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
 
-    def get_legend(self, query) -> ImageSource:
+    def get_legend(self, query) -> ImageResult:
         resp = self._retrieve(query)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp, format)
         if format == 'json':
             return resp
         else:
-            return ImageSource(resp, image_opts=ImageOptions(format=format))
+            return ImageResult(resp, image_opts=ImageOptions(format=format))
 
     def _retrieve(self, query):
         url = self._query_url(query)
@@ -238,11 +238,11 @@ class WMSLegendURLClient(object):
         self.url = static_url
         self.http_client = http_client or HTTPClient()
 
-    def get_legend(self, query) -> ImageSource:
+    def get_legend(self, query) -> ImageResult:
         resp = self.http_client.open(self.url)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp)
-        return ImageSource(resp, image_opts=ImageOptions(format=format))
+        return ImageResult(resp, image_opts=ImageOptions(format=format))
 
     def _check_resp(self, resp):
         if not resp.headers.get('Content-type', 'image/').startswith('image/'):

@@ -22,7 +22,7 @@ from io import BytesIO
 from typing import Optional, cast
 
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache.base import (
     TileCacheBase,
     tile_buffer,
@@ -80,7 +80,7 @@ class RedisCache(TileCacheBase):
         return self.prefix + '-%d-%d-%d' % (z, x, y)
 
     def is_cached(self, tile: Tile, dimensions=None) -> bool:
-        if tile.coord is None or tile.source:
+        if tile.coord is None or tile.image_result:
             return True
         key = self._key(tile)
 
@@ -130,7 +130,7 @@ class RedisCache(TileCacheBase):
         tile.size = pipe_res[1]
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
         key = self._key(tile)
 
@@ -139,7 +139,7 @@ class RedisCache(TileCacheBase):
             tile_data = self.r.get(key)
             if tile_data:
                 # TODO: according to documentation get returns an Awaitable
-                tile.source = ImageSource(BytesIO(cast(bytes, tile_data)))
+                tile.image_result = ImageResult(BytesIO(cast(bytes, tile_data)))
                 return True
             return False
         except redis.exceptions.ConnectionError as e:

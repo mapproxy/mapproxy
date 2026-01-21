@@ -16,8 +16,8 @@
 import os
 from typing import Optional
 
-from mapproxy.image import BaseImageSource
-from mapproxy.image import ImageSource
+from mapproxy.image import BaseImageResult
+from mapproxy.image import ImageResult
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.image.opts import create_image
 
@@ -43,12 +43,12 @@ class TileMerger(object):
         self.tile_grid = tile_grid
         self.tile_size = tile_size
 
-    def merge(self, ordered_tiles: list[BaseImageSource], image_opts) -> BaseImageSource:
+    def merge(self, ordered_tiles: list[BaseImageResult], image_opts) -> BaseImageResult:
         """
         Merge all tiles into one image.
 
         :param ordered_tiles: list of tiles, sorted row-wise (top to bottom)
-        :rtype: `ImageSource`
+        :rtype: `ImageResult`
         """
         if self.tile_grid == (1, 1):
             assert len(ordered_tiles) == 1
@@ -81,7 +81,7 @@ class TileMerger(object):
                             os.remove(filename)
                 else:
                     raise
-        return ImageSource(result, size=src_size, image_opts=image_opts, cacheable=cacheable)
+        return ImageResult(result, size=src_size, image_opts=image_opts, cacheable=cacheable)
 
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]
@@ -106,12 +106,12 @@ class TileSplitter:
         self.meta_img = meta_tile.as_image()
         self.image_opts = image_opts
 
-    def get_tile(self, crop_coord: tuple[int, int], tile_size: tuple[int, int]) -> ImageSource:
+    def get_tile(self, crop_coord: tuple[int, int], tile_size: tuple[int, int]) -> ImageResult:
         """
         Return the cropped tile.
         :param crop_coord: the upper left pixel coord to start
         :param tile_size: width and height of the new tile
-        :rtype: `ImageSource`
+        :rtype: `ImageResult`
         """
         minx, miny = crop_coord
         maxx = minx + tile_size[0]
@@ -130,7 +130,7 @@ class TileSplitter:
             crop = result
         else:
             crop = self.meta_img.crop((minx, miny, maxx, maxy))
-        return ImageSource(crop, size=tile_size, image_opts=self.image_opts)
+        return ImageResult(crop, size=tile_size, image_opts=self.image_opts)
 
 
 class TiledImage:
@@ -138,7 +138,7 @@ class TiledImage:
     An image built-up from multiple tiles.
     """
 
-    def __init__(self, tiles: list[Optional[BaseImageSource]], tile_grid_size: tuple[int, int],
+    def __init__(self, tiles: list[Optional[BaseImageResult]], tile_grid_size: tuple[int, int],
                  tile_size: tuple[int, int], src_bbox: BBOX, src_srs: _SRS):
         """
         :param tiles: all tiles (sorted row-wise, top to bottom)
@@ -158,7 +158,7 @@ class TiledImage:
         """
         Return the tiles as one merged image.
 
-        :rtype: `ImageSource`
+        :rtype: `ImageResult`
         """
         tm = TileMerger(self.tile_grid, self.tile_size)
         return tm.merge(self.tiles, image_opts=image_opts)
@@ -170,7 +170,7 @@ class TiledImage:
         :param req_bbox: the bbox of the output image
         :param req_srs: the srs of the req_bbox
         :param out_size: the size in pixel of the output image
-        :rtype: `ImageSource`
+        :rtype: `ImageResult`
         """
         transformer = ImageTransformer(self.src_srs, req_srs)
         src_img = self.image(image_opts)

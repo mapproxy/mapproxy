@@ -32,9 +32,9 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs, TileCoord
-from mapproxy.image import BlankImageSource
+from mapproxy.image import BlankImageResult
 from mapproxy.image.opts import ImageOptions
-from mapproxy.image.mask import mask_image_source_from_coverage
+from mapproxy.image.mask import mask_image_result_from_coverage
 from mapproxy.util.coverage import load_limited_to, Coverage
 
 import logging
@@ -270,7 +270,7 @@ class TileLayer(object):
         else:
             format = self.format
         if not self._empty_tile:
-            img = BlankImageSource(size=self.grid.tile_size,
+            img = BlankImageResult(size=self.grid.tile_size,
                                    image_opts=ImageOptions(format=format, transparent=True))
             self._empty_tile = img.as_buffer().read()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
@@ -318,13 +318,13 @@ class TileLayer(object):
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord,
                                                          dimensions=dimensions, with_metadata=True)
-            if tile.source is None:
+            if tile.image_result is None:
                 return self.empty_response()
 
             # Provide the wrapping WSGI app or filter the opportunity to process the
             # image before it's wrapped up in a response
             if decorate_img:
-                tile.source = decorate_img(tile.source)
+                tile.image_result = decorate_img(tile.image_result)
 
             format: Optional[str]
             if coverage_intersects:
@@ -333,10 +333,10 @@ class TileLayer(object):
                     image_opts = ImageOptions(transparent=True, format='png')
                 else:
                     format = self.format
-                    image_opts = tile.source.image_opts
+                    image_opts = tile.image_result.image_opts
 
-                tile.source = mask_image_source_from_coverage(
-                    tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+                tile.image_result = mask_image_result_from_coverage(
+                    tile.image_result, tile_bbox, self.grid.srs, coverage, image_opts)
 
                 return TileResponse(tile, format=format, image_opts=image_opts)
 
@@ -369,13 +369,13 @@ class TileLayer(object):
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord,
                                                          dimensions=dimensions, with_metadata=True)
-            if tile.source is None:
+            if tile.image_result is None:
                 return self.empty_response()
 
             # Provide the wrapping WSGI app or filter the opportunity to process the
             # image before it's wrapped up in a response
             if decorate_img:
-                tile.source = decorate_img(tile.source)
+                tile.image_result = decorate_img(tile.image_result)
 
             format: Optional[str]
 
@@ -385,10 +385,10 @@ class TileLayer(object):
                     image_opts = ImageOptions(transparent=True, format='png')
                 else:
                     format = self.format
-                    image_opts = tile.source.image_opts
+                    image_opts = tile.image_result.image_opts
 
-                tile.source = mask_image_source_from_coverage(
-                    tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+                tile.image_result = mask_image_result_from_coverage(
+                    tile.image_result, tile_bbox, self.grid.srs, coverage, image_opts)
 
                 return TileResponse(tile, format=format, image_opts=image_opts)
 
@@ -424,7 +424,7 @@ class TileResponse(object):
         self.timestamp = tile.timestamp
         self.size = tile.size
         self.cacheable = tile.cacheable
-        self._buf = self.tile.source_buffer(format=format, image_opts=image_opts)
+        self._buf = self.tile.image_result_buffer(format=format, image_opts=image_opts)
         self.format = format or self._format_from_magic_bytes()
 
     def as_buffer(self):

@@ -20,7 +20,7 @@ import sys
 from threading import Lock
 from typing import Optional
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.client.http import HTTPClientError
 from mapproxy.request.base import BaseRequest
 from mapproxy.source import SourceError
@@ -169,7 +169,7 @@ class OGCAPIMapsSource(WMSLikeSource):
             else:
                 self.supported_srs = SupportedSRS([SRS(crs) for crs in supported_srs])
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self._get_maps_list()
         return super().get_map(query)
 

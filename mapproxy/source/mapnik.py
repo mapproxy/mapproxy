@@ -25,7 +25,7 @@ from typing import Optional
 
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.grid.tile_grid import tile_grid
-from mapproxy.image import ImageSource, BaseImageSource
+from mapproxy.image import ImageResult, BaseImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import BlankImageError
 from mapproxy.extent import MapExtent, DefaultMapExtent
@@ -112,7 +112,7 @@ class MapnikSource(MapLayer):
             return _map_objs_lock
         return self._map_objs_lock
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
                                                           query.srs):
             raise BlankImageError()
@@ -126,7 +126,7 @@ class MapnikSource(MapLayer):
             raise reraise_exception(SourceError(ex.args[0]), sys.exc_info())
         return resp
 
-    def render(self, query) -> ImageSource:
+    def render(self, query) -> ImageResult:
         mapfile = self.mapfile
         if '%(webmercator_level)' in mapfile:
             _bbox, level = tile_grid(3857).get_affected_bbox_and_level(
@@ -223,10 +223,10 @@ class MapnikSource(MapLayer):
 
         return mapnik_map
 
-    def render_mapfile(self, mapfile, query) -> ImageSource:
+    def render_mapfile(self, mapfile, query) -> ImageResult:
         return run_non_blocking(self._render_mapfile, (mapfile, query))
 
-    def _render_mapfile(self, mapfile, query) -> ImageSource:
+    def _render_mapfile(self, mapfile, query) -> ImageResult:
         start_time = time.time()
 
         m = self.map_obj(mapfile)
@@ -258,5 +258,5 @@ class MapnikSource(MapLayer):
             log_request('%s:%s:%s:%s' % (mapfile, query.bbox, query.srs.srs_code, query.size),
                         status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
-        return ImageSource(BytesIO(data), size=query.size,
+        return ImageResult(BytesIO(data), size=query.size,
                            image_opts=ImageOptions(format=query.format))

@@ -1,6 +1,6 @@
 from __future__ import division
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.query import MapQuery
 from mapproxy.source.wms import WMSSource
@@ -15,6 +15,6 @@ class DirectMapLayer(MapLayer):
         self.res_range = getattr(source, 'res_range', None)
         self.extent = extent
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self.check_res_range(query)
         return self.source.get_map(query)

@@ -17,7 +17,7 @@ import pytest
 
 from mapproxy.exception import RequestError
 from mapproxy.grid.tile_grid import tile_grid
-from mapproxy.image import BlankImageSource
+from mapproxy.image import BlankImageResult
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.extent import DefaultMapExtent
@@ -339,7 +339,7 @@ class DummyTileLayer(object):
 
     def render(self, tile_request, use_profiles=None, coverage=None, decorate_img=None):
         self.requested = True
-        resp = BlankImageSource((256, 256), image_opts=ImageOptions(format='image/png'))
+        resp = BlankImageResult((256, 256), image_opts=ImageOptions(format='image/png'))
         resp.timestamp = 0
         return resp
 

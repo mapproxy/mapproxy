@@ -64,7 +64,7 @@ class TestCouchDBCache(TileCacheTestBase):
         assert self.cache.is_cached(Tile((0, 0, 4)))
         loaded_tile = Tile((0, 0, 4))
         assert self.cache.load_tile(loaded_tile)
-        assert loaded_tile.source_buffer().read() == tile.source_buffer().read()
+        assert loaded_tile.image_result_buffer().read() == tile.image_result_buffer().read()
 
         assert not self.cache.is_cached(Tile((1, 0, 4)))
 
@@ -75,8 +75,8 @@ class TestCouchDBCache(TileCacheTestBase):
         loaded_tile = Tile((0, 0, 4))
         assert self.cache.load_tile(loaded_tile)
         # check that tile is overwritten
-        assert loaded_tile.source_buffer().read() != tile.source_buffer().read()
-        assert loaded_tile.source_buffer().read() == tiles[0].source_buffer().read()
+        assert loaded_tile.image_result_buffer().read() != tile.image_result_buffer().read()
+        assert loaded_tile.image_result_buffer().read() == tiles[0].image_result_buffer().read()
 
     def test_double_remove(self):
         tile = self.create_tile()

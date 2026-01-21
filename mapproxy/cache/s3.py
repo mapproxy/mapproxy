@@ -22,7 +22,7 @@ from typing import Optional
 
 from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async_
@@ -156,7 +156,7 @@ class S3Cache(TileCacheBase):
         if self.use_http_get:
             try:
                 req = urllib2.Request(self.get_bucket_url(tile))
-                tile.source = ImageSource(urllib2.urlopen(req))
+                tile.image_result = ImageResult(urllib2.urlopen(req))
             except urllib2.HTTPError as e:
                 if e.code == 403:
                     return False
@@ -165,7 +165,7 @@ class S3Cache(TileCacheBase):
             try:
                 r = self.conn().get_object(Bucket=self.bucket_name, Key=key)
                 self._set_metadata(r, tile)
-                tile.source = ImageSource(r['Body'])
+                tile.image_result = ImageResult(r['Body'])
             except botocore.exceptions.ClientError as e:
                 # moto get_object can return Error wrapped in Errors...
                 error = e.response.get('Errors', e.response)['Error']

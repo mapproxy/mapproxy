@@ -20,7 +20,7 @@ import sys
 from threading import Lock
 from typing import Optional
 
-from mapproxy.image import BaseImageSource
+from mapproxy.image import BaseImageResult
 from mapproxy.layer.map_layer import MapLayer
 from mapproxy.client.http import HTTPClientError
 from mapproxy.grid.tile_grid import tile_grid_from_ogc_tile_matrix_set
@@ -266,7 +266,7 @@ class OGCAPITilesSource(MapLayer):
             self.map_srs_to_grid_and_template_url[key] = grid_and_template_url
             return grid_and_template_url
 
-    def get_map(self, query: MapQuery) -> BaseImageSource:
+    def get_map(self, query: MapQuery) -> BaseImageResult:
         self._get_tileset_list()
         image_mime_type = "image/" + query.format
         grid, template_url = self._get_grid_and_template_url_from_srs(

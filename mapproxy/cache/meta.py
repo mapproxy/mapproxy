@@ -51,5 +51,5 @@ class MetaTileFile(object):
 
             for i, (offset, size) in enumerate(tile_positions):
                 f.seek(offset, 0)
-                # img = ImageSource(BytesIO(f.read(size)))
+                # img = ImageResult(BytesIO(f.read(size)))
                 open('/tmp/img-%02d.png' % i, 'wb').write(f.read(size))

@@ -28,7 +28,7 @@ from typing import Optional
 import requests
 from mapproxy.cache.tile import Tile
 
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache.base import (
     TileCacheBase,
     tile_buffer, CacheBackendError,)
@@ -99,7 +99,7 @@ class CouchDBCache(TileCacheBase):
                 return '%(couch_url)s/%(grid_name)s-%(z)s-%(x)s-%(y)s' % locals()
 
     def is_cached(self, tile, dimensions=None):
-        if tile.coord is None or tile.source:
+        if tile.coord is None or tile.image_result:
             return True
         url = self.document_url(tile.coord)
         try:
@@ -213,7 +213,7 @@ class CouchDBCache(TileCacheBase):
         # bulk loading with load_tiles is not implemented, because
         # CouchDB's /all_docs? does not include attachments
 
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'
         self.init_db()
@@ -221,7 +221,7 @@ class CouchDBCache(TileCacheBase):
         if resp.status_code == 200:
             doc = json.loads(codecs.decode(resp.content, 'utf-8'))
             tile_data = BytesIO(base64.b64decode(doc['_attachments']['tile']['data']))
-            tile.source = ImageSource(tile_data)
+            tile.image_result = ImageResult(tile_data)
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
         return False

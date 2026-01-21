@@ -17,7 +17,7 @@ from __future__ import division
 
 from PIL import Image
 
-from mapproxy.image import ImageSource, image_filter
+from mapproxy.image import ImageResult, image_filter
 from mapproxy.srs import make_lin_transf, _SRS
 from mapproxy.util.bbox import bbox_equals, BBOX
 
@@ -63,8 +63,8 @@ class ImageTransformer:
         self.dst_bbox = self.dst_size = None
         self.max_px_err = max_px_err
 
-    def transform(self, src_img: ImageSource, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
-            -> ImageSource:
+    def transform(self, src_img: ImageResult, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
+            -> ImageResult:
         """
         Transforms the `src_img` between the source and destination SRS
         of this ``ImageTransformer`` instance.
@@ -79,7 +79,7 @@ class ImageTransformer:
         :type dst_size: ``(int(width), int(height))``
         :param dst_bbox: the bbox of the result image
         :return: the transformed image
-        :rtype: `ImageSource`
+        :rtype: `ImageResult`
         """
         if self._no_transformation_needed(src_img.size, src_bbox, dst_size, dst_bbox):
             return src_img
@@ -93,8 +93,8 @@ class ImageTransformer:
         result.cacheable = src_img.cacheable
         return result
 
-    def _transform_simple(self, src_img: ImageSource, src_bbox: BBOX,
-                          dst_size: tuple[int, int], dst_bbox: BBOX, image_opts) -> ImageSource:
+    def _transform_simple(self, src_img: ImageResult, src_bbox: BBOX,
+                          dst_size: tuple[int, int], dst_bbox: BBOX, image_opts) -> ImageResult:
         """
         Do a simple crop/extent transformation.
         """
@@ -126,10 +126,10 @@ class ImageTransformer:
             result = img.transform(dst_size, method,
                                    (minx, miny, maxx, maxy),
                                    image_filter[image_opts.resampling])
-        return ImageSource(result, size=dst_size, image_opts=image_opts)
+        return ImageResult(result, size=dst_size, image_opts=image_opts)
 
-    def _transform(self, src_img: ImageSource, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
-            -> ImageSource:
+    def _transform(self, src_img: ImageResult, src_bbox: BBOX, dst_size: tuple[int, int], dst_bbox: BBOX, image_opts)\
+            -> ImageResult:
         """
         Do a 'real' transformation with a transformed mesh (see above).
         """
@@ -158,7 +158,7 @@ class ImageTransformer:
             for g, _ in meshes:
                 draw.rectangle(g, fill=None, outline=(255, 0, 0))
 
-        return ImageSource(result, size=dst_size, image_opts=image_opts)
+        return ImageResult(result, size=dst_size, image_opts=image_opts)
 
     def _no_transformation_needed(self, src_size: tuple[int, int], src_bbox: BBOX,
                                   dst_size: tuple[int, int], dst_bbox: BBOX):

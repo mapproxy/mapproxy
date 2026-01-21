@@ -25,7 +25,7 @@ from typing import Optional
 
 from mapproxy.grid import TileCoord
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
@@ -73,7 +73,7 @@ class CompactCacheBase(TileCacheBase, ABC):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
-        if tile.source:
+        if tile.image_result:
             return True
 
         return self._get_bundle(tile.coord).is_cached(tile, dimensions=dimensions)
@@ -105,7 +105,7 @@ class CompactCacheBase(TileCacheBase, ABC):
         return not failed
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         return self._get_bundle(tile.coord).load_tile(tile, dimensions=dimensions)
@@ -116,7 +116,7 @@ class CompactCacheBase(TileCacheBase, ABC):
             bundle_files = set()
             tile_coord = None
             for t in tiles:
-                if t.source or t.coord is None:
+                if t.image_result or t.coord is None:
                     continue
                 bundle_files.add(self._get_bundle_fname_and_offset(t.coord)[0])
                 tile_coord = t.coord
@@ -174,7 +174,7 @@ class BundleV1:
         return BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT, self.directory_permissions, self.file_permissions)
 
     def is_cached(self, tile, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         with self.index().readonly() as idx:
@@ -216,7 +216,7 @@ class BundleV1:
         return True
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
         return self.load_tiles([tile], with_metadata, dimensions=dimensions)
 
@@ -228,7 +228,7 @@ class BundleV1:
                 return False
             with self.data().readonly() as bundle:
                 for t in tiles:
-                    if t.source or t.coord is None:
+                    if t.image_result or t.coord is None:
                         continue
                     x, y = self._rel_tile_coord(t.coord)
                     offset = idx.tile_offset(x, y)
@@ -240,7 +240,7 @@ class BundleV1:
                     if not data:
                         missing = True
                         continue
-                    t.source = ImageSource(BytesIO(data))
+                    t.image_result = ImageResult(BytesIO(data))
 
         return not missing
 
@@ -548,7 +548,7 @@ class BundleV2:
         return offset, size
 
     def _load_tile(self, fh, tile: Tile, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         x, y = self._rel_tile_coord(tile.coord)
@@ -559,11 +559,11 @@ class BundleV2:
         fh.seek(offset)
         data = fh.read(size)
 
-        tile.source = ImageSource(BytesIO(data))
+        tile.image_result = ImageResult(BytesIO(data))
         return True
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
-        if tile.source or tile.coord is None:
+        if tile.image_result or tile.coord is None:
             return True
 
         return self.load_tiles([tile], with_metadata, dimensions=dimensions)
@@ -576,7 +576,7 @@ class BundleV2:
                 return False
 
             for t in tiles:
-                if t.source or t.coord is None:
+                if t.image_result or t.coord is None:
                     continue
                 if not self._load_tile(fh, t):
                     missing = True
