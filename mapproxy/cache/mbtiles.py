@@ -194,8 +194,8 @@ class MBTilesCache(TileCacheBase):
                 stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
                 cursor.executemany(stmt, records)
             self.db.commit()
-        except sqlite3.OperationalError as ex:
-            log.warning('unable to store tile: %s', ex)
+        except sqlite3.DatabaseError as ex:
+            log.warning('unable to store tile in %s: %s' % (self.mbtile_file, ex))
             return False
         return True
 
@@ -218,16 +218,19 @@ class MBTilesCache(TileCacheBase):
 
         if self.ttl:
             stmt += " AND datetime('now', 'localtime', '%d seconds') < last_modified" % -self.ttl
-
-        cur.execute(stmt, tile.coord)
-
-        content = cur.fetchone()
-        if content:
-            tile.image_result = ImageResult(BytesIO(content[0]))
-            if self.supports_timestamp:
-                tile.timestamp = sqlite_datetime_to_timestamp(content[1])
-            return True
-        else:
+        try:
+            cur.execute(stmt, tile.coord)
+    
+            content = cur.fetchone()
+            if content:
+                tile.image_result = ImageResult(BytesIO(content[0]))
+                if self.supports_timestamp:
+                    tile.timestamp = sqlite_datetime_to_timestamp(content[1])
+                return True
+            else:
+                return False
+        except sqlite3.DatabaseError as ex:
+            log.warning('unable to load tile from %s: %s' % (self.mbtile_file, ex))
             return False
 
     def load_tiles(self, tiles: TileCollection, with_metadata=False, dimensions=None) -> bool:
@@ -265,51 +268,57 @@ class MBTilesCache(TileCacheBase):
                 ['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(cur_coords) // 3)) + ')'
 
             cursor = self.db.cursor()
-            cursor.execute(stmt, cur_coords)
-
-            for row in cursor:
-                loaded_tiles += 1
-                tile = tile_dict[(row[0], row[1])]
-                data = row[2]
-                tile.size = len(data)
-                tile.image_result = ImageResult(BytesIO(data))
-                if self.supports_timestamp:
-                    tile.timestamp = sqlite_datetime_to_timestamp(row[3])
-            cursor.close()
-
+            try:
+                cursor.execute(stmt, cur_coords)
+    
+                for row in cursor:
+                    loaded_tiles += 1
+                    tile = tile_dict[(row[0], row[1])]
+                    data = row[2]
+                    tile.size = len(data)
+                    tile.image_result = ImageResult(BytesIO(data))
+                    if self.supports_timestamp:
+                        tile.timestamp = sqlite_datetime_to_timestamp(row[3])
+                cursor.close()
+            except sqlite3.DatabaseError as ex:
+                log.warning('unable to load tiles from %s: %s' % (self.mbtile_file, ex))
+                return False
+                
             coords = coords[999:]
 
         return loaded_tiles == len(tile_dict)
 
     def remove_tile(self, tile, dimensions=None):
         cursor = self.db.cursor()
-        cursor.execute(
-            "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
-            tile.coord)
-        self.db.commit()
-        if cursor.rowcount:
-            return True
-        return False
-
-    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
-        if remove_all:
-            cursor = self.db.cursor()
+        try:
             cursor.execute(
-                "DELETE FROM tiles WHERE (zoom_level = ?)",
-                (level, ))
+                "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
+                tile.coord)
             self.db.commit()
             if cursor.rowcount:
                 return True
             return False
+        except sqlite3.DatabaseError as ex:
+            log.warning('unable to remove tile from %s: %s' % (self.mbtile_file, ex))
+            return False
 
-        if self.supports_timestamp:
+    def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
+        try:    
             cursor = self.db.cursor()
-            cursor.execute(
-                "DELETE FROM tiles WHERE (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))",
-                (level, timestamp))
+            if remove_all:
+                cursor.execute(
+                "DELETE FROM tiles WHERE (zoom_level = ?)",
+                (level, ))
+            if self.supports_timestamp:
+                cursor.execute(
+                    "DELETE FROM tiles WHERE (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))",
+                    (level, timestamp))
             self.db.commit()
             if cursor.rowcount:
                 return True
+            return False
+        except sqlite3.DatabaseError as ex:
+            log.warning('unable to remove level tiles before from %s: %s' % (self.mbtile_file, ex))
             return False
 
     def load_tile_metadata(self, tile, dimensions=None):
