@@ -311,7 +311,7 @@ class MBTilesCache(TileCacheBase):
                     (level, ))
             if self.supports_timestamp:
                 cursor.execute(
-                    '''DELETE FROM tiles WHERE 
+                    '''DELETE FROM tiles WHERE
                     (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))''',
                     (level, timestamp))
             self.db.commit()
