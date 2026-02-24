@@ -747,6 +747,12 @@ There are three pre-defined grids all with global coverage:
 - ``GLOBAL_MERCATOR``: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913
 - ``GLOBAL_WEBMERCATOR``: similar to ``GLOBAL_MERCATOR`` but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.
 
+Note: 
+  These pre-defined grids take all other parameters from default values, which might or might not fit your needs. 
+  Especially relevant is that resolutions calculation assumes a ``num_levels`` of 20 (exclusive) if not specified, resulting in a maximum zoom level of 19.
+  To check what grids look like from your configuration, the command ``mapproxy-util grids mapproxy.yaml``` comes handy.
+
+
 .. versionadded:: 1.6.0
     ``GLOBAL_WEBMERCATOR``
 
