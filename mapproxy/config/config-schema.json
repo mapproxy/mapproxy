@@ -119,6 +119,9 @@
                       },
                       {
                         "const": "xml"
+                      },
+                      {
+                        "const": "json"
                       }
                     ]
                   }
