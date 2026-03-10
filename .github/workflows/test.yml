@@ -55,7 +55,7 @@ jobs:
         sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
     - name: Checkout sources
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Use python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
@@ -106,7 +106,7 @@ jobs:
           sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -141,7 +141,7 @@ jobs:
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Install doc dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
@@ -154,7 +154,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use python 3.12
         uses: actions/setup-python@v6
@@ -174,7 +174,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use python 3.12
         uses: actions/setup-python@v6
