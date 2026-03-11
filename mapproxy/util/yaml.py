@@ -63,7 +63,7 @@ def load_yaml(doc):
 
 # functions for using env-names in variables
 def replace_env_vars(value):
-    """Ersetzt $VAR und ${VAR} in einem String."""
+    """Replaces $VAR and ${VAR} in a string."""
     def repl(match):
         var_name = match.group(1) or match.group(2)
         return os.environ.get(var_name, match.group(0))
@@ -72,7 +72,7 @@ def replace_env_vars(value):
 
 
 def expand_env(obj):
-    """Rekursiv durch ein nested Pythonobjekt gehen."""
+    """Recursively traverse a nested Python object."""
     if isinstance(obj, dict):
         return {k: expand_env(v) for k, v in obj.items()}
     elif isinstance(obj, list):
