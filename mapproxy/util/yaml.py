@@ -60,6 +60,7 @@ def load_yaml(doc):
         raise YAMLError("configuration not a YAML dictionary")
     return data
 
+
 # functions for using env-names in variables
 def replace_env_vars(value):
     """Ersetzt $VAR und ${VAR} in einem String."""
@@ -82,5 +83,3 @@ def expand_env(obj):
         return replace_env_vars(obj)
     else:
         return obj
-
-
