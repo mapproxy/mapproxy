@@ -14,8 +14,11 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+import os
+import re
 
 import yaml
+ENV_PATTERN = re.compile(r"\$(\w+)|\$\{([^}]+)\}")
 
 
 class YAMLError(Exception):
@@ -51,8 +54,33 @@ def load_yaml(doc):
     """
     Load yaml from file object or string.
     """
-    data = _load_yaml(doc)
+    data = expand_env(_load_yaml(doc))
     if type(data) is not dict:
         # all configs are dicts, raise YAMLError to prevent later AttributeErrors (#352)
         raise YAMLError("configuration not a YAML dictionary")
     return data
+
+# functions for using env-names in variables
+def replace_env_vars(value):
+    """Ersetzt $VAR und ${VAR} in einem String."""
+    def repl(match):
+        var_name = match.group(1) or match.group(2)
+        return os.environ.get(var_name, match.group(0))
+
+    return ENV_PATTERN.sub(repl, value)
+
+
+def expand_env(obj):
+    """Rekursiv durch ein nested Pythonobjekt gehen."""
+    if isinstance(obj, dict):
+        return {k: expand_env(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [expand_env(v) for v in obj]
+    elif isinstance(obj, tuple):
+        return tuple(expand_env(v) for v in obj)
+    elif isinstance(obj, str):
+        return replace_env_vars(obj)
+    else:
+        return obj
+
+
