@@ -257,7 +257,7 @@ def flatten_to_polygons(geometry):
         # GeometryCollection or MultiLineString? return list of all polygons
         geoms = []
         for part in geometry.geoms:
-            if part.type == 'Polygon':
+            if part.geom_type == 'Polygon':
                 geoms.append(part)
 
         if geoms:
