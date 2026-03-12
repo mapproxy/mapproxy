@@ -62,16 +62,18 @@ def load_yaml(doc):
 
 
 # functions for using env-names in variables
-    """Replaces $VAR and ${VAR} in a string. in case the environment variable isn't set it resets to the 'variablename'"""
+"""Replaces $VAR and ${VAR} in a string. in case the environment variable isn't set it resets to the 'variablename'"""
 def replace_env_vars(value):
     def repl(match):
         var_name = match.group(1) or match.group(2)
-        #sec paraemter: ${UNKNOWN} doesn't exists this sets the property-value to ${UNKNOW} see it as a fallback strategy
+        """sec paraemter: 
+        if ${UNKNOWN} doesn't exists (as env-variable) this sets the property-value to ${UNKNOW}.
+        see it as a fallback strategy"""
         return os.environ.get(var_name, match.group(0))
 
     return ENV_PATTERN.sub(repl, value)
 
-    """Recursively traverse a nested Python object."""
+"""Recursively traverse a nested Python object."""
 def expand_env(obj):
     if isinstance(obj, dict):
         return {k: expand_env(v) for k, v in obj.items()}
