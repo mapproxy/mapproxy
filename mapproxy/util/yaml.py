@@ -56,25 +56,28 @@ def load_yaml(doc):
     """
     data = expand_env(_load_yaml(doc))
     if type(data) is not dict:
-        # all configs are dicts, raise YAMLError to prevent later AttributeErrors (#352)
         raise YAMLError("configuration not a YAML dictionary")
     return data
 
 
 # functions for using env-names in variables
-"""Replaces $VAR and ${VAR} in a string. in case the environment variable isn't set it resets to the 'variablename'"""
 def replace_env_vars(value):
+    """Replaces $VAR and ${VAR} in a string.
+    in case the environment variable isn't set
+    it resets to the 'variablename'"""
     def repl(match):
         var_name = match.group(1) or match.group(2)
-        """sec paraemter: 
-        if ${UNKNOWN} doesn't exists (as env-variable) this sets the property-value to ${UNKNOW}.
+        """sec paraemter:
+        if ${UNKNOWN} doesn't exists (as env-variable)
+        this sets the property-value to ${UNKNOW}.
         see it as a fallback strategy"""
         return os.environ.get(var_name, match.group(0))
 
     return ENV_PATTERN.sub(repl, value)
 
-"""Recursively traverse a nested Python object."""
+
 def expand_env(obj):
+    """Recursively traverse a nested Python object."""
     if isinstance(obj, dict):
         return {k: expand_env(v) for k, v in obj.items()}
     elif isinstance(obj, list):
