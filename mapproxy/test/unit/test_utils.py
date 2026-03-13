@@ -25,7 +25,6 @@ import time
 from unittest.mock import patch
 
 from mapproxy.util.lock import FileLock, SemLock, cleanup_lockdir, LockTimeout
-from mapproxy.util.ext.lockfile import LockError
 from mapproxy.util.fs import (
     _force_rename_dir,
     swap_dir,
