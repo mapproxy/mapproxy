@@ -19,6 +19,7 @@ import sys
 from collections import deque
 from contextlib import contextmanager
 from itertools import zip_longest
+from http.client import HTTPException
 
 import queue
 
@@ -154,7 +155,7 @@ class TileSeedWorker(TileWorker):
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
                             max_repeat=100, max_backoff=600,
-                            exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
+                            exceptions=(SourceError, IOError, HTTPException), ignore_exceptions=(LockTimeout, ))
 
 
 class TileCleanupWorker(TileWorker):
