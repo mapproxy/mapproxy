@@ -128,7 +128,10 @@ class LockFile:
                 permission = int(file_permissions, base=8)
                 os.chmod(path, permission)
             except OSError as exc:
-                fp.close()
+                try:
+                    fp.close()
+                except Exception:
+                    pass
                 raise LockError('Could not set permissions on lock file') from exc
 
         try:
