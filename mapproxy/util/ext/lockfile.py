@@ -121,7 +121,7 @@ class LockFile:
         try:
             fp = open(path, 'w+')
         except IOError:
-            raise Exception('Could not create Lock-file, wrong permissions on lock directory?')
+            raise LockError('Could not create Lock-file, wrong permissions on lock directory?')
 
         if set_permissions:
             permission = int(file_permissions, base=8)
