@@ -22,6 +22,7 @@ import sys
 import tempfile
 import threading
 import time
+from unittest.mock import patch
 
 from mapproxy.util.lock import FileLock, SemLock, cleanup_lockdir, LockTimeout
 from mapproxy.util.fs import (
@@ -183,6 +184,44 @@ class TestFileLock(Mocker):
         assert_permissions(self.lock_file, file_permissions)
 
         lock_thread.join()
+
+    def test_lock_retries_on_permission_error(self):
+        real_open = open
+        call_count = 0
+
+        def flaky_open(path, *args, **kwargs):
+            nonlocal call_count
+            if path == self.lock_file:
+                call_count += 1
+                if call_count == 1:
+                    raise PermissionError("mock transient failure")
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=flaky_open):
+            lock = FileLock(self.lock_file, timeout=1.0, step=0.01)
+            lock.lock()
+            lock.unlock()
+
+        assert call_count >= 2, "expected open to be called at least twice (initial fail + retry)"
+
+    def test_lock_raises_lock_timeout_on_persistent_open_failure(self):
+        real_open = open
+
+        def always_fail(path, *args, **kwargs):
+            if path == self.lock_file:
+                raise PermissionError("mock persistent failure")
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=always_fail):
+            lock = FileLock(self.lock_file, timeout=0.05, step=0.01)
+            try:
+                lock.lock()
+            except LockTimeout:
+                pass
+            except PermissionError:
+                assert False, "PermissionError should be wrapped as LockError and retried until LockTimeout"
+            else:
+                assert False, "expected LockTimeout"
 
     def _create_lock(self):
         lock = FileLock(self.lock_file)
