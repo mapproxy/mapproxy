@@ -120,12 +120,16 @@ class LockFile:
         set_permissions = file_permissions and not os.path.exists(path)
         try:
             fp = open(path, 'w+')
-        except IOError:
-            raise Exception('Could not create Lock-file, wrong permissions on lock directory?')
+        except IOError as exc:
+            raise LockError('Could not create Lock-file, wrong permissions on lock directory?') from exc
 
         if set_permissions:
-            permission = int(file_permissions, base=8)
-            os.chmod(path, permission)
+            try:
+                permission = int(file_permissions, base=8)
+                os.chmod(path, permission)
+            except OSError as exc:
+                fp.close()
+                raise LockError('Could not set permissions on lock file') from exc
 
         try:
             _lock_file(fp)
