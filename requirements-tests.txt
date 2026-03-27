@@ -35,7 +35,7 @@ more-itertools==10.1.0
 moto==5.0.13
 mypy==1.18.2
 networkx==3.4.2
-numpy==1.26.4
+numpy==2.4.3
 packaging==24.2
 Pillow==12.1.1 # This version is overwritten in the test workflow, please adjust there as well
 pluggy==1.6.0
