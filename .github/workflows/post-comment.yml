@@ -27,7 +27,7 @@ jobs:
           echo "PR_NR=$(cat pr_number.txt)" >> $GITHUB_ENV
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           number: ${{ env.PR_NR }}
           recreate: true
