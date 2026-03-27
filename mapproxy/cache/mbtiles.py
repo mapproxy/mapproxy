@@ -304,32 +304,32 @@ class MBTilesCache(TileCacheBase):
 
     def remove_level_tiles_before(self, level, timestamp=None, remove_all=False):
         if remove_all:
-		    try:
-				cursor = self.db.cursor()
-				cursor.execute(
-					"DELETE FROM tiles WHERE (zoom_level = ?)",
-					(level, ))
-				self.db.commit()
-				if cursor.rowcount:
-					return True
-				return False
-			except sqlite3.DatabaseError as ex:
-				log.warning('unable to remove level tiles before from %s: %s' % (self.mbtile_file, ex))
-				return False
-			
+            try:
+                cursor = self.db.cursor()
+                cursor.execute(
+                    "DELETE FROM tiles WHERE (zoom_level = ?)",
+                    (level, ))
+                self.db.commit()
+                if cursor.rowcount:
+                    return True
+                return False
+            except sqlite3.DatabaseError as ex:
+                log.warning('unable to remove level tiles before from %s: %s' % (self.mbtile_file, ex))
+                return False
+            
         if self.supports_timestamp:
-			try:
-				cursor = self.db.cursor()
-				cursor.execute(
-					"DELETE FROM tiles WHERE (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))",
-					(level, timestamp))
-				self.db.commit()
-				if cursor.rowcount:
-					return True
-				return False
-			except sqlite3.DatabaseError as ex:
-				log.warning('unable to remove level tiles before from %s: %s' % (self.mbtile_file, ex))
-				return False
+            try:
+                cursor = self.db.cursor()
+                cursor.execute(
+                    "DELETE FROM tiles WHERE (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))",
+                    (level, timestamp))
+                self.db.commit()
+                if cursor.rowcount:
+                    return True
+                return False
+            except sqlite3.DatabaseError as ex:
+                log.warning('unable to remove level tiles before from %s: %s' % (self.mbtile_file, ex))
+                return False
 
     def load_tile_metadata(self, tile, dimensions=None):
         if not self.supports_timestamp:
