@@ -128,13 +128,16 @@ jobs:
       - name: Create coverage report
         run: |
           coverage report -m --format markdown > coverage-report.md
+          echo "${{ github.event.number }}" > pr_number.txt
 
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
-          recreate: true
-          path: coverage-report.md
+          name: coverage-report
+          path: |
+            coverage-report.md
+            pr_number.txt
 
   doc:
     runs-on: ubuntu-24.04

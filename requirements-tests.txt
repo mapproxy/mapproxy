@@ -10,7 +10,7 @@ cffi==2.0.0
 cfn-lint==0.80.3
 chardet==5.2.0
 coverage==7.11.3
-cryptography==44.0.2
+cryptography==46.0.5
 decorator==5.2.1
 docker==7.1.0
 docutils==0.21.2
@@ -37,10 +37,10 @@ mypy==1.18.2
 networkx==3.4.2
 numpy==1.26.4
 packaging==24.2
-Pillow==12.1.0 # This version is overwritten in the test workflow, please adjust there as well
+Pillow==12.1.1 # This version is overwritten in the test workflow, please adjust there as well
 pluggy==1.6.0
 py==1.11.0
-pyasn1==0.6.1
+pyasn1==0.6.3
 pycparser==2.22
 pyparsing==3.2.3
 pyproj==3.7.1
@@ -51,7 +51,7 @@ python-dateutil==2.9.0.post0
 python-jose==3.5.0
 pytz==2024.2
 redis==5.0.1
-requests==2.32.5
+requests==2.33.0
 responses==0.25.8
 rsa==4.9.1
 Shapely==2.1.0
