@@ -24,10 +24,14 @@ PEP8: <https://www.python.org/dev/peps/pep-0008/>
 PyCharm / Intellij
 ------------------
 
-* Mark the mapproxy folder as `Sources` 
+* Mark the mapproxy folder as `Sources`
 * Set your venv as the project SDK / Python interpreter in your project settings
 * Add the root folder of mapproxy to the paths of the python interpreter in your project settings
 
+Typing
+------
+
+Run `mypy mapproxy` to manually run the typechecker on the whole project.
 
 Debugging
 ---------

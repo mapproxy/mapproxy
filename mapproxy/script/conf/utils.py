@@ -129,7 +129,7 @@ class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresen
         Resolver.__init__(self)
 
 
-def wms_capapilities_url(url):
+def wms_capabilities_url(url):
     parsed_url = urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
@@ -144,5 +144,5 @@ def wms_capapilities_url(url):
 
 
 def download_capabilities(url):
-    capabilities_url = wms_capapilities_url(url)
+    capabilities_url = wms_capabilities_url(url)
     return open_url(capabilities_url)

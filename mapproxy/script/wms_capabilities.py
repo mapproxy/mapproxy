@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+import io
 import sys
 import optparse
 from io import BytesIO
@@ -34,7 +35,7 @@ class PrettyPrinter(object):
         self.marker = '- '
         self.version = version
 
-    def print_line(self, indent, key, value=None, mark_first=False):
+    def print_line(self, indent: int, key: str, value=None, mark_first: bool = False) -> None:
         marker = ''
         if value is None:
             value = ''
@@ -43,7 +44,7 @@ class PrettyPrinter(object):
             marker = self.marker
         print(("%s%s%s: %s" % (' '*indent, marker, key, value)))
 
-    def _format_output(self, key, value, indent, mark_first=False):
+    def _format_output(self, key: str, value, indent: int, mark_first: bool = False) -> None:
         if key == 'bbox':
             self.print_line(indent, key)
             for srs_code, bbox in value.items():
@@ -53,7 +54,7 @@ class PrettyPrinter(object):
                 value = list(value)
             self.print_line(indent, key, value=value, mark_first=mark_first)
 
-    def print_layers(self, capabilities, indent=None, root=False):
+    def print_layers(self, capabilities, indent: int | None = None, root: bool = False) -> None:
         if root:
             print("# Note: This is not a valid MapProxy configuration!")
             print('Capabilities Document Version %s' % (self.version,))
@@ -88,7 +89,7 @@ def log_error(msg, *args):
     print(msg % args, file=sys.stderr)
 
 
-def wms_capapilities_url(url, version):
+def wms_capabilities_url(url: str, version: str) -> str:
     parsed_url = urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
@@ -101,22 +102,22 @@ def wms_capapilities_url(url, version):
     return base_req.complete_url
 
 
-def parse_capabilities(fileobj, version='1.1.1'):
+def parse_capabilities(fileobj: io.BytesIO, version: str = '1.1.1'):
     try:
         return wmsparse.parse_capabilities(fileobj)
     except ValueError as ex:
         log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s',
-                  'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
+                  'Received document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
     except etree.ElementTree.ParseError as ex:
         log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s',
-                  'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
+                  'Received document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
 
 
-def parse_capabilities_url(url, version='1.1.1'):
+def parse_capabilities_url(url: str, version: str = '1.1.1') -> dict:
     try:
-        capabilities_url = wms_capapilities_url(url, version)
+        capabilities_url = wms_capabilities_url(url, version)
         capabilities_response = open_url(capabilities_url)
     except HTTPClientError as ex:
         log_error('ERROR: %s', ex.args[0])
