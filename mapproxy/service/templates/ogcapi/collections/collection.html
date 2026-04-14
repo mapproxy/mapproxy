@@ -166,7 +166,9 @@ let init;
             ol.proj.proj4.register(proj4);
         }
 
-        const tiles = await fetch('http://localhost:8080/ogcapi/collections/osm/map/tiles?f=json').then(res => res.json());
+        const tilesUrl = "{{ link['href'] }}";
+        const tiles = await fetch(tilesUrl)
+            .then(res => res.json());
         if (!tiles || !Array.isArray(tiles.tilesets) || tiles.tilesets.length === 0) {
             alert("No tilesets available for this collection");
             return;
