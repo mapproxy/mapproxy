@@ -65,7 +65,7 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
                     col["attribution"] = f"[{attribution_title}]({attribution_url})"
                 col["attributionMediaType"] = "text/markdown"
 
-    #  The OGC API Common specfication required that the
+    #  The OGC API Common specification required that the
     # ``"extent": { "spatial": { "bbox": [ [xmin,ymin,xmax,ymal] ] }`` property
     # is always presented in CRS84 (or for planetary datasets in the applicable
     # global geographic CRS, that you then set as a ``crs`` child member of crs.
@@ -176,12 +176,10 @@ def collections(server: OGCAPIServer, req: Request):
         raise OGCAPIServer.invalid_parameter("Invalid value for f query parameter")
 
     is_html = server.is_html_req(req)
-    collections = [
+    _collections = [
         get_collection(server, req, server.layers[id]) for id in server.layers
     ]
-    json_resp = {"collections": collections}
-
-    json_resp["links"] = [
+    json_resp = {"collections": _collections, "links": [
         {
             "rel": ("self" if not is_html else "alternate"),
             "type": FORMAT_TYPES[F_JSON],
@@ -194,7 +192,7 @@ def collections(server: OGCAPIServer, req: Request):
             "title": "The HTML representation of the list of all data collections served from this endpoint",
             "href": server.create_href(req, f"/ogcapi/collections?f={F_HTML}"),
         },
-    ]
+    ]}
 
     if is_html:
         json_resp["collections_path"] = server.create_href(req, "/ogcapi/collections")
