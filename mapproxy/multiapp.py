@@ -146,19 +146,19 @@ class ConfLoader(object):
         """
         raise NotImplementedError()
 
-    def app_available(self, app_name):
+    def app_available(self, app_name) -> bool:
         """
         Returns ``True`` if `app_name` is available.
         """
         raise NotImplementedError()
 
-    def available_apps(self):
+    def available_apps(self) -> list[str]:
         """
         Returns a list with all available lists.
         """
         raise NotImplementedError()
 
-    def app_conf(self, app_name):
+    def app_conf(self, app_name) -> dict | None:
         """
         Returns a configuration dict for the given `app_name`,
         None if the app is not found.

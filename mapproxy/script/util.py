@@ -36,7 +36,7 @@ from mapproxy.script.gridconf_from_ogcapitilematrixset import gridconf_from_ogca
 from mapproxy.version import version
 
 
-def setup_logging(level=logging.INFO, format=None):
+def setup_logging(level=logging.INFO, format=None) -> None:
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
 
@@ -49,7 +49,7 @@ def setup_logging(level=logging.INFO, format=None):
     mapproxy_log.addHandler(ch)
 
 
-def serve_develop_command(args):
+def serve_develop_command(args: list[str]) -> None:
     parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml")
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
@@ -113,7 +113,7 @@ def serve_develop_command(args):
                extra_files=extra_files)
 
 
-def serve_multiapp_develop_command(args):
+def serve_multiapp_develop_command(args: list[str]) -> None:
     parser = optparse.OptionParser("usage: %prog serve-multiapp-develop [options] projects/")
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
@@ -149,7 +149,7 @@ def serve_multiapp_develop_command(args):
                threaded=True, passthrough_errors=True)
 
 
-def parse_bind_address(address, default=('localhost', 8080)):
+def parse_bind_address(address: str, default: tuple[str, int] = ('localhost', 8080)) -> tuple[str, int]:
     """
     >>> parse_bind_address('80')
     ('localhost', 80)
@@ -158,9 +158,10 @@ def parse_bind_address(address, default=('localhost', 8080)):
     >>> parse_bind_address('0.0.0.0:8081')
     ('0.0.0.0', 8081)
     """
+    port: int = 0
     if ':' in address:
-        host, port = address.split(':', 1)
-        port = int(port)
+        host, p = address.split(':', 1)
+        port = int(p)
     elif re.match(r'^\d+$', address):
         host = default[0]
         port = int(address)
@@ -170,7 +171,7 @@ def parse_bind_address(address, default=('localhost', 8080)):
     return host, port
 
 
-def create_command(args):
+def create_command(args: list[str]) -> None:
     cmd = CreateCommand(args)
     cmd.run()
 
@@ -182,7 +183,7 @@ class CreateCommand(object):
         'log-ini': {},
     }
 
-    def __init__(self, args):
+    def __init__(self, args: list[str]):
         parser = optparse.OptionParser("usage: %prog create [options] [destination]")
         parser.add_option("-t", "--template", dest="template",
                           help="Create a configuration from this template.")
@@ -197,10 +198,10 @@ class CreateCommand(object):
         self.options, self.args = parser.parse_args(args)
         self.parser = parser
 
-    def log_error(self, msg, *args):
+    def log_error(self, msg: str, *args) -> None:
         print('ERROR:', msg % args, file=sys.stderr)
 
-    def run(self):
+    def run(self) -> None:
 
         if self.options.list_templates:
             print_items(self.templates, title="Available templates")
@@ -229,14 +230,14 @@ class CreateCommand(object):
             sys.exit(1)
         return os.path.abspath(self.options.mapproxy_conf)
 
-    def template_dir(self):
+    def template_dir(self) -> str:
         import mapproxy.config_template
         template_dir = os.path.join(
             os.path.dirname(mapproxy.config_template.__file__),
             'base_config')
         return template_dir
 
-    def template_wsgi_app(self):
+    def template_wsgi_app(self) -> int:
         app_filename = self.args[1]
         if '.' not in os.path.basename(app_filename):
             app_filename += '.py'
@@ -255,7 +256,7 @@ class CreateCommand(object):
 
         return 0
 
-    def template_base_config(self):
+    def template_base_config(self) -> int:
         outdir = self.args[1]
         if not os.path.exists(outdir):
             os.makedirs(outdir)
@@ -274,7 +275,7 @@ class CreateCommand(object):
 
         return 0
 
-    def template_log_ini(self):
+    def template_log_ini(self) -> int:
         log_filename = self.args[1]
 
         if os.path.exists(log_filename) and not self.options.force:
@@ -289,7 +290,7 @@ class CreateCommand(object):
         return 0
 
 
-commands = {
+commands: dict[str, dict[str, object]] = {
     'serve-develop': {
         'func': serve_develop_command,
         'help': 'Run MapProxy development server.'
@@ -333,7 +334,7 @@ commands = {
 }
 
 
-def register_command(command_name, command_spec):
+def register_command(command_name: str, command_spec: dict[str, object]) -> None:
     """ Method used by plugins to register a command.
 
         :param command_name: Name of the service
@@ -346,7 +347,7 @@ def register_command(command_name, command_spec):
 
 
 class NonStrictOptionParser(optparse.OptionParser):
-    def _process_args(self, largs, rargs, values):
+    def _process_args(self, largs: list[str], rargs: list[str], values) -> None:
         while rargs:
             arg = rargs[0]
             # We handle bare "--" explicitly, and bare "-" is handled by the
@@ -372,7 +373,7 @@ class NonStrictOptionParser(optparse.OptionParser):
                 largs.append(arg)
 
 
-def print_items(data, title='Commands'):
+def print_items(data: dict, title: str = 'Commands') -> None:
     name_len = max(len(name) for name in data)
 
     if title:
@@ -385,7 +386,7 @@ def print_items(data, title='Commands'):
         print('  %s%s' % (name, help), file=sys.stdout)
 
 
-def main():
+def main() -> None:
 
     load_plugins()
 
@@ -412,7 +413,11 @@ def main():
         sys.exit(1)
 
     args = sys.argv[0:1] + sys.argv[2:]
-    commands[command]['func'](args)
+    func = commands[command]['func']
+    if callable(func):
+        func(args)
+    else:
+        sys.exit(1)
 
 
 if __name__ == '__main__':

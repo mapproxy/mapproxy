@@ -34,25 +34,25 @@ def values_from_stdin():
     return values
 
 
-def scale_to_res(scale_denom, dpi, unit_factor):
+def scale_to_res(value: float, dpi: float, unit_factor: float) -> float:
     m_per_px = 2.54 / (dpi * 100)
-    return scale_denom * m_per_px / unit_factor
+    return value * m_per_px / unit_factor
 
 
-def res_to_scale(res, dpi, unit_factor):
+def res_to_scale(value: float, dpi: float, unit_factor: float) -> float:
     m_per_px = 2.54 / (dpi * 100)
-    return res / m_per_px * unit_factor
+    return value / m_per_px * unit_factor
 
 
-def format_simple(i, scale, res):
+def format_simple(i: int, scale: float, res: float) -> str:
     return '%20.10f # %2d %20.8f' % (res, i, scale)
 
 
-def format_list(i, scale, res):
+def format_list(i: int, scale: float, res: float) -> str:
     return '    %20.10f, # %2d %20.8f' % (res, i, scale)
 
 
-def repeated_values(values, n):
+def repeated_values(values: list[float], n: int) -> list[float]:
     current_factor = 1
     step_factor = 10
     result = []
@@ -63,11 +63,11 @@ def repeated_values(values, n):
     return result
 
 
-def fill_values(values, n):
+def fill_values(values: list[float], n: int) -> list[float]:
     return values + [values[-1]/(2**x) for x in range(1, n)]
 
 
-def scales_command(args=None):
+def scales_command(args: list[str] | None = None):
     parser = optparse.OptionParser("%prog scales [options] scale/resolution[, ...]")
     parser.add_option("-l", "--levels", default=1, type=int, metavar='1',
                       help="number of resolutions/scales to calculate")
