@@ -17,7 +17,6 @@
 import calendar
 import hashlib
 import io
-import os
 import sys
 import threading
 
@@ -25,7 +24,7 @@ import urllib3
 
 from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageResult
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async_
@@ -74,7 +73,6 @@ class S3Cache(TileCacheBase):
         self.access_control_list = access_control_list
         self.use_http_get = use_http_get
         self.username = username
-
 
         try:
             self.bucket = self.conn().head_bucket(Bucket=bucket_name)
@@ -180,7 +178,7 @@ class S3Cache(TileCacheBase):
                 if response.status != 200:
                     log.error('S3: load_tile HTTP error, url: %s, status: %s' % (url, response.status))
                     raise Exception('S3 HTTP error %s for url: %s' % (response.status, url))
-                tile.source = ImageSource(io.BytesIO(response.data))
+                tile.image_result = ImageResult(io.BytesIO(response.data))
             except urllib3.exceptions.HTTPError as e:
                 log.error('S3: load_tile request error, url: %s, error: %s' % (url, e))
                 raise
@@ -188,7 +186,7 @@ class S3Cache(TileCacheBase):
             try:
                 r = self.conn().get_object(Bucket=self.bucket_name, Key=key)
                 self._set_metadata(r, tile)
-                tile.source = ImageSource(r['Body'])
+                tile.image_result = ImageResult(r['Body'])
             except botocore.exceptions.ClientError as e:
                 # moto get_object can return Error wrapped in Errors...
                 error = e.response.get('Errors', e.response)['Error']
