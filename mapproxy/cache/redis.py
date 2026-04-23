@@ -30,9 +30,9 @@ from mapproxy.cache.base import (
 from mapproxy.util.coverage import Coverage
 
 try:
-    import redis  # type: ignore
+    import redis
 except ImportError:
-    redis = None  # type: ignore
+    redis = None
 
 
 import logging
@@ -75,6 +75,7 @@ class RedisCache(TileCacheBase):
             ssl=ssl_enabled
         )
 
+
     def _key(self, tile):
         x, y, z = tile.coord
         return self.prefix + '-%d-%d-%d' % (z, x, y)
@@ -88,9 +89,12 @@ class RedisCache(TileCacheBase):
             log.debug('exists_key, key: %s' % key)
             # TODO: according to documentation exists returns an Awaitable
             return cast(bool, self.r.exists(key))
+        except redis.exceptions.TimeoutError as e:
+            log.error('REDIS:exists_key timeout error, returning false. %s' % e)
+            return False
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False
+            return False  
         except Exception as e:
             log.error('REDIS:exists_key error  %s' % e)
             return False
@@ -107,27 +111,21 @@ class RedisCache(TileCacheBase):
             log.debug('store_key, key: %s' % key)
             # TODO: according to documentation set returns an Awaitable
             r = cast(bool, self.r.set(key, data))
+        except redis.exceptions.TimeoutError as e:
+            log.error('REDIS:store_key timeout error, returning false. %s' % e)
+            return False
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False
+            return False  
         except Exception as e:
             log.error('REDIS:store_key error  %s' % e)
             return False
 
+        
         if self.ttl:
             # use ms expire times for unit-tests
             self.r.pexpire(key, int(self.ttl * 1000))
         return r
-
-    def load_tile_metadata(self, tile: Tile, dimensions=None):
-        if tile.timestamp:
-            return
-        pipe = self.r.pipeline()
-        pipe.ttl(self._key(tile))
-        pipe.memory_usage(self._key(tile))
-        pipe_res = pipe.execute()
-        tile.timestamp = time.mktime(datetime.datetime.now().timetuple()) - self.ttl - int(pipe_res[0])
-        tile.size = pipe_res[1]
 
     def load_tile(self, tile: Tile, with_metadata=False, dimensions=None) -> bool:
         if tile.image_result or tile.coord is None:
@@ -142,17 +140,40 @@ class RedisCache(TileCacheBase):
                 tile.image_result = ImageResult(BytesIO(cast(bytes, tile_data)))
                 return True
             return False
+        except redis.exceptions.TimeoutError as e:
+            log.error('REDIS:get_key timeout error, returning false. %s' % e)
+            return False
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False
+            return False  
         except Exception as e:
             log.error('REDIS:get_key error  %s' % e)
             return False
 
+    def load_tile_metadata(self, tile: Tile, dimensions=None):
+        if tile.timestamp:
+            return
+        try:
+            pipe = self.r.pipeline()
+            pipe.ttl(self._key(tile))
+            pipe.memory_usage(self._key(tile))
+            pipe_res = pipe.execute()
+            tile.timestamp = time.mktime(datetime.datetime.now().timetuple()) - self.ttl - int(pipe_res[0])
+            tile.size = pipe_res[1]
+        except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError, Exception) as e:
+            log.error('REDIS:load_tile_metadata error %s' % e)
+            # Fail silently so the worker doesn't crash.
+            pass
+        
     def remove_tile(self, tile: Tile, dimensions=None):
         if tile.coord is None:
             return True
 
         key = self._key(tile)
-        self.r.delete(key)
-        return True
+        try:
+            self.r.delete(key)
+            return True
+        except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError, Exception) as e:
+            log.error('REDIS:remove_tile error %s' % e)
+            return False
+
