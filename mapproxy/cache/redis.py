@@ -30,9 +30,9 @@ from mapproxy.cache.base import (
 from mapproxy.util.coverage import Coverage
 
 try:
-    import redis
+    import redis  # type: ignore
 except ImportError:
-    redis = None
+    redis = None  # type: ignore
 
 
 import logging
