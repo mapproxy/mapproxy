@@ -36,13 +36,25 @@ except ImportError:
 
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
     def __init__(
-            self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage: Optional[Coverage] = None,
-            ssl_certfile=None, ssl_keyfile=None, ssl_ca_certs=None):
+        self,
+        host,
+        port,
+        prefix,
+        ttl=0,
+        db=0,
+        username=None,
+        password=None,
+        coverage: Optional[Coverage] = None,
+        ssl_certfile=None,
+        ssl_keyfile=None,
+        ssl_ca_certs=None,
+    ):
         super().__init__(coverage)
 
         if redis is None:
@@ -54,8 +66,12 @@ class RedisCache(TileCacheBase):
 
         self.prefix = prefix
         # str(username) => if not set defaults to None
-        md5 = hashlib.new('md5', (host + str(port) + prefix + str(db)).encode('utf-8'), usedforsecurity=False)
-        self.lock_cache_id = 'redis-' + md5.hexdigest()
+        md5 = hashlib.new(
+            "md5",
+            (host + str(port) + prefix + str(db)).encode("utf-8"),
+            usedforsecurity=False,
+        )
+        self.lock_cache_id = "redis-" + md5.hexdigest()
         self.ttl = ttl
         # Enable SSL only if certificate and key are provided (CA certificates are not mandatory, but if provided use
         # them)
@@ -72,13 +88,12 @@ class RedisCache(TileCacheBase):
             ssl_certfile=ssl_certfile,
             ssl_keyfile=ssl_keyfile,
             ssl_ca_certs=ssl_ca_certs,
-            ssl=ssl_enabled
+            ssl=ssl_enabled,
         )
-
 
     def _key(self, tile):
         x, y, z = tile.coord
-        return self.prefix + '-%d-%d-%d' % (z, x, y)
+        return self.prefix + "-%d-%d-%d" % (z, x, y)
 
     def is_cached(self, tile: Tile, dimensions=None) -> bool:
         if tile.coord is None or tile.image_result:
@@ -86,17 +101,17 @@ class RedisCache(TileCacheBase):
         key = self._key(tile)
 
         try:
-            log.debug('exists_key, key: %s' % key)
+            log.debug("exists_key, key: %s" % key)
             # TODO: according to documentation exists returns an Awaitable
             return cast(bool, self.r.exists(key))
         except redis.exceptions.TimeoutError as e:
-            log.error('REDIS:exists_key timeout error, returning false. %s' % e)
+            log.error("REDIS:exists_key timeout error, returning false. %s" % e)
             return False
         except redis.exceptions.ConnectionError as e:
-            log.error('Error during connection %s' % e)
-            return False  
+            log.error("Error during connection %s" % e)
+            return False
         except Exception as e:
-            log.error('REDIS:exists_key error  %s' % e)
+            log.error("REDIS:exists_key error  %s" % e)
             return False
 
     def store_tile(self, tile: Tile, dimensions=None) -> bool:
@@ -108,20 +123,19 @@ class RedisCache(TileCacheBase):
             data = buf.read()
 
         try:
-            log.debug('store_key, key: %s' % key)
+            log.debug("store_key, key: %s" % key)
             # TODO: according to documentation set returns an Awaitable
             r = cast(bool, self.r.set(key, data))
         except redis.exceptions.TimeoutError as e:
-            log.error('REDIS:store_key timeout error, returning false. %s' % e)
+            log.error("REDIS:store_key timeout error, returning false. %s" % e)
             return False
         except redis.exceptions.ConnectionError as e:
-            log.error('Error during connection %s' % e)
-            return False  
+            log.error("Error during connection %s" % e)
+            return False
         except Exception as e:
-            log.error('REDIS:store_key error  %s' % e)
+            log.error("REDIS:store_key error  %s" % e)
             return False
 
-        
         if self.ttl:
             # use ms expire times for unit-tests
             self.r.pexpire(key, int(self.ttl * 1000))
@@ -133,7 +147,7 @@ class RedisCache(TileCacheBase):
         key = self._key(tile)
 
         try:
-            log.debug('get_key, key: %s' % key)
+            log.debug("get_key, key: %s" % key)
             tile_data = self.r.get(key)
             if tile_data:
                 # TODO: according to documentation get returns an Awaitable
@@ -141,13 +155,13 @@ class RedisCache(TileCacheBase):
                 return True
             return False
         except redis.exceptions.TimeoutError as e:
-            log.error('REDIS:get_key timeout error, returning false. %s' % e)
+            log.error("REDIS:get_key timeout error, returning false. %s" % e)
             return False
         except redis.exceptions.ConnectionError as e:
-            log.error('Error during connection %s' % e)
-            return False  
+            log.error("Error during connection %s" % e)
+            return False
         except Exception as e:
-            log.error('REDIS:get_key error  %s' % e)
+            log.error("REDIS:get_key error  %s" % e)
             return False
 
     def load_tile_metadata(self, tile: Tile, dimensions=None):
@@ -158,13 +172,21 @@ class RedisCache(TileCacheBase):
             pipe.ttl(self._key(tile))
             pipe.memory_usage(self._key(tile))
             pipe_res = pipe.execute()
-            tile.timestamp = time.mktime(datetime.datetime.now().timetuple()) - self.ttl - int(pipe_res[0])
+            tile.timestamp = (
+                time.mktime(datetime.datetime.now().timetuple())
+                - self.ttl
+                - int(pipe_res[0])
+            )
             tile.size = pipe_res[1]
-        except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError, Exception) as e:
-            log.error('REDIS:load_tile_metadata error %s' % e)
+        except (
+            redis.exceptions.TimeoutError,
+            redis.exceptions.ConnectionError,
+            Exception,
+        ) as e:
+            log.error("REDIS:load_tile_metadata error %s" % e)
             # Fail silently so the worker doesn't crash.
             pass
-        
+
     def remove_tile(self, tile: Tile, dimensions=None):
         if tile.coord is None:
             return True
@@ -173,7 +195,10 @@ class RedisCache(TileCacheBase):
         try:
             self.r.delete(key)
             return True
-        except (redis.exceptions.TimeoutError, redis.exceptions.ConnectionError, Exception) as e:
-            log.error('REDIS:remove_tile error %s' % e)
+        except (
+            redis.exceptions.TimeoutError,
+            redis.exceptions.ConnectionError,
+            Exception,
+        ) as e:
+            log.error("REDIS:remove_tile error %s" % e)
             return False
-
