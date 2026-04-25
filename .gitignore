@@ -19,3 +19,6 @@ nosetests*.xml
 
 .idea/
 *.iml
+.cursor/
+.claude/
+.vscode/
