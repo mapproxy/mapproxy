@@ -27,7 +27,7 @@ jsonpickle==4.1.1
 jsonpointer==2.4
 jsonschema==4.20
 junit-xml==1.9
-lxml==6.0.2
+lxml==6.1.0
 lxml-stubs==0.5.1
 MarkupSafe==1.1.1
 mock==5.1.0
