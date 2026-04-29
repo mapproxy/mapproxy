@@ -243,6 +243,9 @@ class CacheConfiguration(ConfigurationBase):
                                                       global_key='cache.s3.use_http_get'
                                                       )
 
+        username = self.context.globals.get_value('cache.username', self.conf,
+                                                  global_key='cache.s3.username')
+
         include_grid_name = self.context.globals.get_value('cache.include_grid_name', self.conf,
                                                       global_key='cache.s3.include_grid_name')
 
@@ -266,7 +269,8 @@ class CacheConfiguration(ConfigurationBase):
             endpoint_url=endpoint_url,
             access_control_list=access_control_list,
             coverage=coverage,
-            use_http_get=use_http_get
+            use_http_get=use_http_get,
+            username=username
         )
 
     def _sqlite_cache(self, grid_conf, image_opts):
