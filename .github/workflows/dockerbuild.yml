@@ -52,6 +52,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}
@@ -61,6 +63,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-dev
@@ -70,6 +74,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
@@ -99,6 +105,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}-alpine
@@ -108,6 +116,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-alpine-dev
@@ -117,6 +127,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-alpine-nginx

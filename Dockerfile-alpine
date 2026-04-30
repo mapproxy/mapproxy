@@ -1,9 +1,8 @@
-FROM python:3.12-alpine AS base-libs
+FROM python:3.13-alpine AS base-libs
 
 LABEL maintainer="mapproxy.org"
 
-RUN apk -U upgrade --update \
-    && apk add \
+RUN apk add --no-cache \
       g++ \
       gdal \
       gdal-dev \
@@ -14,78 +13,87 @@ RUN apk -U upgrade --update \
       proj-util \
       geos \
       geos-dev \
-      libffi-dev \
-    && rm -rf /var/cache/apk/*
-
+      libffi-dev
 
 FROM base-libs AS builder
 
 RUN mkdir /mapproxy
-
 WORKDIR /mapproxy
 
 COPY setup.py MANIFEST.in README.md CHANGES.txt AUTHORS.txt COPYING.txt LICENSE.txt ./
 COPY mapproxy mapproxy
 
-RUN rm -rf dist/*
-RUN pip wheel . -w dist
+RUN rm -rf dist/* \
+     && pip wheel . -w dist
 
-
+###### base/plain image ######
 FROM base-libs AS base
 
-RUN mkdir /mapproxy
+ARG MAPPROXY_VERSION=6.0.1
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
+ENV PATH="${PATH}:/mapproxy/.local/bin"
 
-RUN addgroup -S mapproxy && \
-    adduser -D -s /bin/sh -S -h /mapproxy/ -G mapproxy mapproxy
-
-USER mapproxy:mapproxy
+RUN mkdir /mapproxy && addgroup -S mapproxy && \
+    adduser -D -s /bin/sh -S -h /mapproxy/ -G mapproxy mapproxy && \
+    chown -R mapproxy:mapproxy /mapproxy
 
 WORKDIR /mapproxy
-
-ENV PATH="${PATH}:/mapproxy/.local/bin"
+USER mapproxy:mapproxy
 
 RUN mkdir mapproxy-dist
 COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
 # Installing optional packages and MapProxy afterwards
-
-RUN pip install requests redis boto3 azure-storage-blob && \
-  pip install --find-links=./mapproxy-dist --no-index MapProxy && \
+RUN pip install --no-cache-dir requests redis boto3 azure-storage-blob && \
+  pip install --no-cache-dir --find-links=./mapproxy-dist --no-index MapProxy && \
   pip cache purge
 
 COPY docker/app.py .
-
 COPY docker/entrypoint.sh .
-
 COPY docker/logging.ini ./config/logging.ini
 
 ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["echo", "no CMD given"]
 
-###### development image ######
+LABEL org.opencontainers.image.authors="mapproxy.org"
+LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
+LABEL org.opencontainers.image.title="MapProxy Alpine base image"
+LABEL org.opencontainers.image.description="Docker image for MapProxy based on Alpine Linux and Python 3.13, including necessary dependencies for running MapProxy applications."
+LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
+###### development image ######
 FROM base AS development
+
+ARG MAPPROXY_VERSION=6.0.1
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 
 EXPOSE 8080
 
 CMD ["mapproxy-util", "serve-develop", "-b", "0.0.0.0", "/mapproxy/config/mapproxy.yaml", "--log-config", "/mapproxy/config/logging.ini"]
 
-##### nginx image ######
+LABEL org.opencontainers.image.authors="mapproxy.org"
+LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
+LABEL org.opencontainers.image.title="MapProxy Development Server"
+LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Alpine Linux and Python 3.13."
+LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
+##### nginx image ######
 FROM base AS nginx
 
-# use current version of nginx
-ARG NGINX_VERSION=1.25.3
-
+ARG MAPPROXY_VERSION=6.0.1
+ARG NGINX_VERSION=1.29.8
 ENV MAPPROXY_ALPINE=true
+ENV NGINX_VERSION=${NGINX_VERSION}
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 
 USER root:root
 
-RUN apk --no-cache add ca-certificates uwsgi uwsgi-python3 supervisor pcre-dev && \
-  rm -rf /var/cache/apk/*
-
-RUN apk --no-cache add build-base linux-headers openssl-dev wget zlib-dev && \
+RUN apk --no-cache add ca-certificates supervisor pcre-dev build-base linux-headers openssl-dev wget zlib-dev && \
   su mapproxy -c "pip install uwsgi" && \
   cd /tmp && \
   wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
@@ -113,22 +121,31 @@ RUN apk --no-cache add build-base linux-headers openssl-dev wget zlib-dev && \
 USER mapproxy:mapproxy
 
 COPY docker/uwsgi.conf .
-
-COPY docker/nginx-alpine-default.conf /etc/nginx/nginx.conf
-
+COPY docker/nginx-default.conf /etc/nginx/conf.d/nginx.conf
 COPY docker/run-nginx.sh .
 
-EXPOSE 80
-
 USER root:root
+
+# Since we have a custom build of NGINX, we need to make sure that it includes the configuration files from /etc/nginx/conf.d/*.conf.
+# The default nginx.conf does not include this, so we need to modify it to include our custom configuration.
+COPY docker/nginx-minimal.conf /etc/nginx/nginx.conf
 
 RUN mkdir /var/cache/nginx \
     && chown -R mapproxy:mapproxy /var/cache/nginx \
     && chown -R mapproxy:mapproxy /var/log/nginx \
     && touch /var/run/nginx.pid \
     && chown -R mapproxy:mapproxy /var/run/nginx.pid \
+    && chown -R mapproxy:mapproxy /var/run \
     && chown -R mapproxy:mapproxy /etc/nginx
 
 USER mapproxy:mapproxy
-
+EXPOSE 9090
 CMD ["./run-nginx.sh"]
+
+LABEL org.opencontainers.image.authors="mapproxy.org"
+LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
+LABEL org.opencontainers.image.title="MapProxy Alpine Image with NGINX and uWSGI"
+LABEL org.opencontainers.image.description="Docker image for MapProxy based on Alpine Linux, including NGINX and uWSGI for serving MapProxy applications in a production environment."
+LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
