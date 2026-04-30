@@ -32,7 +32,6 @@ RUN mkdir /mapproxy && groupadd mapproxy && \
     chown -R mapproxy:mapproxy /mapproxy
 
 WORKDIR /mapproxy
-
 USER mapproxy:mapproxy
 
 RUN mkdir mapproxy-dist
@@ -77,12 +76,12 @@ LABEL org.opencontainers.image.version=6.0.1
 ##### nginx image ######
 FROM base AS nginx
 
-USER root:root
-
 ARG NGINX_VERSION=1.29.8
 ENV NGINX_VERSION=${NGINX_VERSION}
 ARG NGINX_PKG_VERSION=${NGINX_VERSION}-1~bookworm
 ENV NGINX_PKG_VERSION=${NGINX_PKG_VERSION}
+
+USER root:root
 
 RUN apt-get update && apt-get install -y \
     curl \
