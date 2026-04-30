@@ -127,7 +127,7 @@ jobs:
 
       - name: Create coverage report
         run: |
-          coverage report -m --format markdown > coverage-report.md
+          coverage report --skip-covered --skip-empty --format markdown > coverage-report.md
           echo "${{ github.event.number }}" > pr_number.txt
 
       - name: Upload Coverage Artifact
