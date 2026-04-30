@@ -25,6 +25,8 @@ RUN rm -rf dist/* && \
 ###### base/plain image ######
 FROM base-libs AS base
 
+ARG MAPPROXY_VERSION=6.0.1
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 ENV PATH="${PATH}:/mapproxy/.local/bin"
 
 RUN mkdir /mapproxy && groupadd mapproxy && \
@@ -56,10 +58,13 @@ LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy base image"
 LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm and Python 3.13, including necessary dependencies for running MapProxy applications."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
-LABEL org.opencontainers.image.version=6.0.1
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
 ###### development image ######
 FROM base AS development
+
+ARG MAPPROXY_VERSION=6.0.1
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 
 EXPOSE 8080
 
@@ -71,15 +76,17 @@ LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy Development Server"
 LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Debian bookworm and Python 3.13."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
-LABEL org.opencontainers.image.version=6.0.1
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
 ##### nginx image ######
 FROM base AS nginx
 
-ARG NGINX_VERSION=1.29.8
-ENV NGINX_VERSION=${NGINX_VERSION}
+ARG MAPPROXY_VERSION=6.0.1
 ARG NGINX_PKG_VERSION=${NGINX_VERSION}-1~bookworm
+ARG NGINX_VERSION=1.29.8
+ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 ENV NGINX_PKG_VERSION=${NGINX_PKG_VERSION}
+ENV NGINX_VERSION=${NGINX_VERSION}
 
 USER root:root
 
@@ -136,4 +143,4 @@ LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy Docker Image with NGINX and uWSGI"
 LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm, including NGINX and uWSGI for serving MapProxy applications in a production environment."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
-LABEL org.opencontainers.image.version=6.0.1
+LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
