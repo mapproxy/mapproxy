@@ -85,16 +85,16 @@
 {% block extrafoot %}
 
 <script type="text/javascript">
+let init;
 {% for link in data['links'] %}
   {% if link['rel'] == 'http://www.opengis.net/def/rel/ogc/1.0/map' and link['href'] and link['type'] == 'image/png' %}
-
-    async function init() {
-
+    init = async () => {
         const srs = "{{ data['srs'] }}";
         const extent = {{ data['extent'] }};
 
         if (!ol.proj.get(srs)) {
-            const allDefs = await import('./static/proj4defs.js');
+            const projDefsUrl = "{{ config['server']['url'] }}/../demo/static/proj4defs.js";
+            const allDefs = await import(projDefsUrl);
             const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
             if (!allDefs.defs[srsNum]) {
                 alert("The preview map does not support this coordinate system");
@@ -109,7 +109,7 @@
             params: {
                 'VERSION': '1.1.1',
                 'TRANSPARENT': true,
-                'CRS': "{{ data['srs'] }}"
+                'CRS': srs
             }
         });
 
@@ -127,7 +127,7 @@
             layers: layers,
             target: 'collection-map',
             view: new ol.View({
-                projection: "{{ data['srs'] }}"
+                projection: srs
             })
         });
         map.getView().fit(extent);
@@ -148,9 +148,78 @@
         }
     }
   {% endif %}
+  {% if link['rel'] == 'http://www.opengis.net/def/rel/ogc/1.0/tilesets-map' and link['href'] and link['type'] == 'application/json' %}
+    init = async () => {
+        const srs = "{{ data['srs'] }}";
+        const extent = {{ data['extent'] }};
+        const storageCrs = "{{ data['storageCrs'] }}";
+
+        if (!ol.proj.get(srs)) {
+            const projDefsUrl = "{{ config['server']['url'] }}/../demo/static/proj4defs.js";
+            const allDefs = await import(projDefsUrl);
+            const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
+            if (!allDefs.defs[srsNum]) {
+                alert("The preview map does not support this coordinate system");
+                return;
+            }
+            proj4.defs(srs, allDefs.defs[srsNum]);
+            ol.proj.proj4.register(proj4);
+        }
+
+        const tilesUrl = "{{ link['href'] }}";
+        const tiles = await fetch(tilesUrl)
+            .then(res => res.json());
+        if (!tiles || !Array.isArray(tiles.tilesets) || tiles.tilesets.length === 0) {
+            alert("No tilesets available for this collection");
+            return;
+        }
+
+        let tileMatrixName = 'webmercator';
+        let url = "{{ link['href'] }}";
+        if (srs === 'EPSG:4326') {
+            tileMatrixName = 'GLOBAL_GEODETIC';
+        }
+        if (srs !== 'EPSG:3857' && tileMatrixName === 'webmercator') {
+            const tileMatrixSet = tiles.tilesets.find(ts => ts.crs === storageCrs && ts.title?.indexOf('GLOBAL') === -1) ?? tiles.tilesets[0];
+            if (tileMatrixSet.links?.length > 0) {
+                url = tileMatrixSet.links.find(l => l.rel === 'self')?.href;
+            }
+        }
+
+        const ogc_map_tile_source = new ol.source.OGCMapTile({
+            url,
+            projection: srs
+        });
+
+        const background_source = new ol.source.XYZ({
+            url: "{{ data['background_url'] }}"
+        });
+
+        const layers = [
+            new ol.layer.Tile({
+                source: background_source
+            }),
+            new ol.layer.Tile({
+                source: ogc_map_tile_source
+            })
+        ];
+        const map = new ol.Map({
+            layers: layers,
+            target: 'collection-map',
+            view: new ol.View({
+                projection: srs
+            })
+        });
+        map.getView().fit(extent);
+    }
+  {% endif %}
 {% endfor %}
 
+if (init && typeof init === "function") {
     window.addEventListener("load", init);
+} else {
+    console.warn("No map link found for this collection, skipping map initialization");
+}
 
 </script>
 {% endblock %}
