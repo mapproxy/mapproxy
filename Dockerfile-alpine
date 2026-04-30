@@ -132,7 +132,7 @@ RUN mkdir /var/cache/nginx \
     && chown -R mapproxy:mapproxy /etc/nginx
 
 USER mapproxy:mapproxy
-EXPOSE 80
+EXPOSE 9090
 CMD ["./run-nginx.sh"]
 
 LABEL org.opencontainers.image.authors="mapproxy.org"

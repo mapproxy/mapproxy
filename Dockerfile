@@ -109,8 +109,6 @@ COPY docker/uwsgi.conf .
 COPY docker/nginx-default.conf /etc/nginx/conf.d/default.conf
 COPY docker/run-nginx.sh .
 
-EXPOSE 80
-
 USER root:root
 
 RUN chown -R mapproxy:mapproxy /var/log/nginx \
@@ -118,15 +116,17 @@ RUN chown -R mapproxy:mapproxy /var/log/nginx \
     && chown -R mapproxy:mapproxy /etc/nginx/conf.d \
     && touch /var/run/nginx.pid \
     && chown -R mapproxy:mapproxy /var/run/nginx.pid \
-    &&   mkdir -p /var/cache/nginx/client_temp \
-                 /var/cache/nginx/proxy_temp \
-                 /var/cache/nginx/fastcgi_temp \
-                 /var/cache/nginx/uwsgi_temp \
-                 /var/cache/nginx/scgi_temp \
+    && mkdir -p /var/cache/nginx/client_temp \
+                /var/cache/nginx/proxy_temp \
+                /var/cache/nginx/fastcgi_temp \
+                /var/cache/nginx/uwsgi_temp \
+                /var/cache/nginx/scgi_temp \
     && chown -R mapproxy:mapproxy /var/cache/nginx \
     && chown -R mapproxy:mapproxy /var/run
 
 USER mapproxy:mapproxy
+
+EXPOSE 9090
 
 CMD ["./run-nginx.sh"]
 
