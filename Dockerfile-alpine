@@ -1,4 +1,4 @@
-FROM python:3.12-alpine AS base-libs
+FROM python:3.14-alpine AS base-libs
 
 LABEL maintainer="mapproxy.org"
 
