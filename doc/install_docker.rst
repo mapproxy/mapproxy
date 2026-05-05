@@ -88,6 +88,8 @@ Environment Variables
   mode and will run all configurations in the ``/mapproxy/config/apps`` directory as different apps. Default is ``false``.
 - ``MULTIAPP_ALLOW_LISTINGS``: In multi app mode if set to ``true``, MapProxy lists all available apps on the root page.
   Default is ``false``.
+- ``UWSGI_PROCESSES``: **nginx images only.** Number of uWSGI worker processes. Default is ``2``.
+- ``UWSGI_THREADS``: **nginx images only.** Number of threads per uWSGI worker process. Default is ``10``.
 
 
 Build your own image
