@@ -242,7 +242,7 @@ class ImageResult(BaseImageResult):
                 # need actual image_opts.format for next check
                 self.image_opts = self.image_opts.copy()
                 self.image_opts.format = peek_image_format(buf)
-            if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
+            if self.image_opts and image_opts and (self.image_opts.format != image_opts.format or self.image_opts.mode != image_opts.mode):
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.image = self.as_image()
                 self._buf = None
@@ -418,6 +418,9 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
     if (format == 'png' and img.mode != 'RGB'
             and 'transparency' in img.info and isinstance(img.info['transparency'], tuple)):
         del img.info['transparency']
+
+    if image_opts.mode is not None and img.mode != image_opts.mode:
+        img = img.convert(image_opts.mode)
 
     img.save(buf, format, **defaults)
     buf.seek(0)

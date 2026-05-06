@@ -191,6 +191,34 @@ class TestImageResult(object):
         img = Image.open(ir.as_buffer())
         assert img.mode == "P"
 
+    def test_rgb_image_as_buffer_with_rgba_mode(self):
+        # Regression test for https://github.com/mapproxy/mapproxy/issues/1354
+        # When mode=RGBA is requested, an RGB source image must be returned as
+        # RGBA PNG, not RGB PNG, regardless of whether it contains transparency.
+        img = Image.new("RGB", (10, 10), (255, 0, 0))
+        ir = ImageResult(img, image_opts=PNG_FORMAT)
+        rgba_opts = ImageOptions(mode="RGBA", transparent=True, format="image/png")
+        result = Image.open(ir.as_buffer(rgba_opts))
+        assert result.mode == "RGBA", (
+            "Expected RGBA PNG when mode=RGBA requested, got %s" % result.mode
+        )
+
+    def test_rgb_buf_as_buffer_with_rgba_mode(self):
+        # Regression test for https://github.com/mapproxy/mapproxy/issues/1354
+        # When an upstream source returns an opaque RGB PNG buffer and mode=RGBA
+        # is explicitly configured, as_buffer must re-encode to RGBA, not pass
+        # through the RGB bytes unchanged.
+        src = BytesIO()
+        Image.new("RGB", (10, 10), (255, 0, 0)).save(src, "png")
+        src.seek(0)
+        src_opts = ImageOptions(format="image/png", transparent=False)
+        ir = ImageResult(src, image_opts=src_opts)
+        rgba_opts = ImageOptions(mode="RGBA", transparent=True, format="image/png")
+        result = Image.open(ir.as_buffer(rgba_opts))
+        assert result.mode == "RGBA", (
+            "Expected RGBA PNG when mode=RGBA requested, got %s" % result.mode
+        )
+
 
 class TestSubImageResult(object):
 
@@ -488,6 +516,22 @@ class TestLayerMerge(object):
         result = merge_images([(img1, None), (img2, None)], ImageOptions(transparent=False))
         img = result.as_image()
         assert img.getpixel((0, 0)) == (255, 0, 255)
+
+    def test_single_opaque_rgb_layer_with_rgba_output(self):
+        # Regression test for https://github.com/mapproxy/mapproxy/issues/1354
+        # A single fully-opaque RGB source layer must produce an RGBA PNG when
+        # the requested ImageOptions specify mode=RGBA / transparent=True.
+        # Previously the single-layer shortcut in LayerMerger.merge() returned
+        # the source layer unchanged, so the RGB bytes were passed through
+        # without being converted.
+        source = ImageResult(Image.new("RGB", (10, 10), (255, 0, 0)))
+        rgba_opts = ImageOptions(mode="RGBA", transparent=True, format="image/png")
+        result = merge_images([(source, None)], rgba_opts)
+        output = Image.open(result.as_buffer(rgba_opts))
+        assert output.mode == "RGBA", (
+            "Expected RGBA PNG for opaque source when mode=RGBA requested, got %s"
+            % output.mode
+        )
 
 
 @pytest.mark.skipif(
