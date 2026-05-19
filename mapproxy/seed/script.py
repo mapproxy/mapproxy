@@ -218,57 +218,56 @@ class SeedScript(object):
                         sys.exit(1)
                     os.utime(options.reseed_file, (time.time(), time.time()))
 
-        with mapproxy_conf:
-            try:
-                seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
-                seed_names, cleanup_names = self.task_names(seed_conf, options)
-                seed_tasks = seed_conf.seeds(seed_names)
-                cleanup_tasks = seed_conf.cleanups(cleanup_names)
-            except ConfigurationError as ex:
-                print("error in configuration: " + '\n\t'.join(str(ex).split('\n')))
-                sys.exit(2)
+        try:
+            seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
+            seed_names, cleanup_names = self.task_names(seed_conf, options)
+            seed_tasks = seed_conf.seeds(seed_names)
+            cleanup_tasks = seed_conf.cleanups(cleanup_names)
+        except ConfigurationError as ex:
+            print("error in configuration: " + '\n\t'.join(str(ex).split('\n')))
+            sys.exit(2)
 
-            if options.summary:
+        if options.summary:
+            print('========== Seeding tasks ==========')
+            for task in seed_tasks:
+                print(format_seed_task(task))
+            print('========== Cleanup tasks ==========')
+            for task in cleanup_tasks:
+                print(format_cleanup_task(task))
+            return 0
+
+        try:
+            if options.interactive:
+                seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
+
+            if seed_tasks:
                 print('========== Seeding tasks ==========')
-                for task in seed_tasks:
-                    print(format_seed_task(task))
+                print('Start seeding process (%d task%s)' % (
+                    len(seed_tasks), 's' if len(seed_tasks) > 1 else ''))
+                logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
+                                     progress_store=progress)
+                seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
+                     concurrency=options.concurrency, cache_locker=cache_locker,
+                     skip_geoms_for_last_levels=options.geom_levels,
+                     skip_uncached=options.skip_uncached)
+            if cleanup_tasks:
                 print('========== Cleanup tasks ==========')
-                for task in cleanup_tasks:
-                    print(format_cleanup_task(task))
-                return 0
+                print('Start cleanup process (%d task%s)' % (
+                    len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else ''))
+                logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
+                                     progress_store=progress)
+                cleanup(cleanup_tasks, verbose=options.quiet == 0, dry_run=options.dry_run,
+                        concurrency=options.concurrency, progress_logger=logger,
+                        skip_geoms_for_last_levels=options.geom_levels)
+        except SeedInterrupted:
+            print('\ninterrupted...')
+            return 3
+        except KeyboardInterrupt:
+            print('\nexiting...')
+            return 2
 
-            try:
-                if options.interactive:
-                    seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
-
-                if seed_tasks:
-                    print('========== Seeding tasks ==========')
-                    print('Start seeding process (%d task%s)' % (
-                        len(seed_tasks), 's' if len(seed_tasks) > 1 else ''))
-                    logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
-                                         progress_store=progress)
-                    seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
-                         concurrency=options.concurrency, cache_locker=cache_locker,
-                         skip_geoms_for_last_levels=options.geom_levels,
-                         skip_uncached=options.skip_uncached)
-                if cleanup_tasks:
-                    print('========== Cleanup tasks ==========')
-                    print('Start cleanup process (%d task%s)' % (
-                        len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else ''))
-                    logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
-                                         progress_store=progress)
-                    cleanup(cleanup_tasks, verbose=options.quiet == 0, dry_run=options.dry_run,
-                            concurrency=options.concurrency, progress_logger=logger,
-                            skip_geoms_for_last_levels=options.geom_levels)
-            except SeedInterrupted:
-                print('\ninterrupted...')
-                return 3
-            except KeyboardInterrupt:
-                print('\nexiting...')
-                return 2
-
-            if progress:
-                progress.remove()
+        if progress:
+            progress.remove()
 
     def task_names(self, seed_conf, options):
         seed_names = cleanup_names = []
