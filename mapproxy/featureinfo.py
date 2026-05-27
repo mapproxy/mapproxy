@@ -15,13 +15,16 @@
 
 from codecs import decode
 import copy
+import logging
 import json
 
 from functools import reduce
-from io import StringIO, BytesIO
+from io import BytesIO
 from typing import Optional, Union
 
 from lxml import etree, html
+
+log = logging.getLogger('mapproxy.featureinfo')
 
 
 class FeatureInfoDoc(object):
@@ -49,7 +52,8 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
 
     @classmethod
     def combine(cls, docs: list[FeatureInfoDoc]):
-        result_content = [doc.as_string() for doc in docs]
+        result_content = [s for doc in docs if (s := doc.as_string())]
+
         return cls("\n".join(result_content))
 
 
@@ -77,26 +81,40 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 
     def as_etree(self):
         if self._etree is None:
-            self._etree = self._parse_content()
+            try:
+                self._etree = self._parse_content()
+            except (ValueError, etree.XMLSyntaxError):
+                log.warning("Failed to parse content as XML / HTML, returning empty element tree")
+
         return self._etree
 
     def _serialize_etree(self) -> Union[str, bytes]:
         _etree = self.as_etree()
+        if _etree is None:
+            log.warning("Failed to serialize content as XML / HTML, returning empty string")
+            return ""
         encoding = _etree.docinfo.encoding if \
             _etree.docinfo.encoding else self.defaultEncoding
         as_string = etree.tostring(_etree, encoding=encoding, xml_declaration=False)
         return decode(as_string, encoding)  # type: ignore[arg-type]
 
-    def _parse_content(self):
-        if isinstance(self.content, str) and self.content.lstrip().startswith('<?xml'):
-            # Convert back to bytes if it has XML declaration
-            return etree.parse(BytesIO(self.content.encode('utf-8')))
-        elif isinstance(self.content, str):
-            return etree.parse(StringIO(self.content))
-        elif self.content is not None:
-            return etree.parse(BytesIO(self.content))
-        else:
+    def _get_checked_content(self, encoding: str = defaultEncoding) -> Union[str, bytes]:
+        if self.content is None or not self.content:
             raise ValueError('content is None')
+
+        content: Union[str, bytes] = self.content
+        if isinstance(content, str) and not content:
+            log.debug('content is empty string')
+            raise ValueError('content is empty')
+        if isinstance(content, str):
+            return content.encode(encoding)
+        return content
+
+    def _parse_content(self):
+        content = self._get_checked_content()
+        if isinstance(content, str):
+            return etree.ElementTree(etree.fromstring(content))
+        return etree.parse(BytesIO(content))
 
     @classmethod
     def combine(cls, docs):
@@ -106,7 +124,10 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         result_tree = copy.deepcopy(doc.as_etree())
         for doc in docs:
             tree = doc.as_etree()
-            result_tree.getroot().extend(tree.getroot().iterchildren())
+            if tree is not None and tree.getroot() is not None:
+                result_tree.getroot().extend(tree.getroot().iterchildren())
+            else:
+                log.debug("Document has no root element, skipping: %s", doc)
 
         return cls(result_tree)
 
@@ -115,17 +136,18 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = "html"
 
     def _parse_content(self):
-        if self.content is None:
-            raise ValueError('content is None')
-        root = html.document_fromstring(self.content)
-        return root
+        content = self._get_checked_content()
+
+        root = html.document_fromstring(content)
+        return etree.ElementTree(root)
 
     def _serialize_etree(self):
         if self._etree is None:
-            raise ValueError('etree is None')
+            log.warning("Failed to serialize content as XML / HTML, returning empty string")
+            return ""
         encoding = self._etree.docinfo.encoding if \
             self._etree.docinfo.encoding else self.defaultEncoding
-        return decode(html.tostring(self._etree, encoding=encoding), encoding)
+        return html.tostring(self._etree.getroot(), encoding=encoding)
 
     @classmethod
     def combine(cls, docs):
@@ -133,16 +155,29 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
             return TextFeatureInfoDoc.combine(docs)
 
         doc = docs.pop(0)
-        result_tree = copy.deepcopy(doc.as_etree())
+        initial_etree = doc.as_etree()
+        if initial_etree is not None:
+            result_tree = copy.deepcopy(initial_etree)
+        else:
+            result_tree = etree.ElementTree(html.fromstring('<html><body/></html>'))
 
         for doc in docs:
-            tree = doc.as_etree()
+            tree = None
+            try:
+                tree = doc.as_etree()
+            except (ValueError, etree.XMLSyntaxError):
+                log.warning("Failed to parse document as XML / HTML, skipping: %s", doc.content)
+
+            if tree is None:
+                log.warning("Document has no body element, skipping: %s", doc.content)
+                continue
 
             try:
-                body = tree.body.getchildren()
+                body = tree.getroot().body.getchildren()
             except IndexError:
-                body = tree.getchildren()
-            result_tree.body.extend(body)
+                body = tree.getroot().getchildren()
+
+            result_tree.getroot().body.extend(body)
 
         return cls(result_tree)
 

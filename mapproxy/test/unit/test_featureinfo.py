@@ -97,6 +97,14 @@ class TestXMLFeatureInfoDocs(object):
         doc = XMLFeatureInfoDoc("<root>hello</root>")
         assert doc.as_etree().getroot().text == "hello"
 
+    def test_bytes(self):
+        doc = XMLFeatureInfoDoc(b"<p>hello</p>")
+        assert doc.as_etree().getroot().text == "hello"
+
+    def test_empty_response(self):
+        doc = XMLFeatureInfoDoc("")
+        assert doc.as_etree() is None
+
     def test_umlauts(self):
         doc = XMLFeatureInfoDoc('<root>öäüß</root>')
         assert doc.as_etree().getroot().text == 'öäüß'
@@ -110,6 +118,7 @@ class TestXMLFeatureInfoDocs(object):
             XMLFeatureInfoDoc("<root><a>foo</a></root>"),
             XMLFeatureInfoDoc("<root><b>bar</b></root>"),
             XMLFeatureInfoDoc("<other_root><a>baz</a></other_root>"),
+            XMLFeatureInfoDoc("")
         ]
         result = XMLFeatureInfoDoc.combine(docs)
 
@@ -137,6 +146,7 @@ class TestXMLFeatureInfoDocsNoLXML(object):
             XMLFeatureInfoDoc(b"<root><a>foo</a></root>"),
             XMLFeatureInfoDoc(b"<root><b>bar</b></root>"),
             XMLFeatureInfoDoc(b"<other_root><a>baz</a></other_root>"),
+            XMLFeatureInfoDoc(b""),
         ]
         result = XMLFeatureInfoDoc.combine(docs)
 
@@ -158,11 +168,26 @@ class TestHTMLFeatureInfoDocs(object):
         doc = HTMLFeatureInfoDoc("<p>hello</p>")
         assert doc.as_etree().find("body/p").text == "hello"
 
+    def test_bytes(self):
+        doc = HTMLFeatureInfoDoc(b"<p>hello</p>")
+        assert doc.as_etree().find("body/p").text == "hello"
+
+    def test_broken_html(self):
+        # see documentation of lxml (https://lxml.de/parsing.html#parsing-html)
+        broken_html = "<html><head><title>test</title><body><h1>page title</h3>"
+        doc = HTMLFeatureInfoDoc(broken_html)
+        assert doc.as_etree().find(".//h1").text == "page title"
+
+    def test_empty_response(self):
+        doc = HTMLFeatureInfoDoc("")
+        assert doc.as_etree() is None
+
     def test_combine(self):
         docs = [
             HTMLFeatureInfoDoc(b"<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>"),
             HTMLFeatureInfoDoc(b"<p>foo</p>"),
             HTMLFeatureInfoDoc(b"<body><p>bar</p></body>"),
+            HTMLFeatureInfoDoc(b""),
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
         assert "<title>Hello</title>" in result.as_string()
@@ -172,11 +197,42 @@ class TestHTMLFeatureInfoDocs(object):
         )
         assert result.info_type == "html"
 
-    def test_combine_parts(self):
+    def test_combine_parts_empty_last(self):
         docs = [
             HTMLFeatureInfoDoc("<p>foo</p>"),
             HTMLFeatureInfoDoc("<body><p>bar</p></body>"),
             HTMLFeatureInfoDoc("<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>"),
+            HTMLFeatureInfoDoc(""),
+        ]
+        result = HTMLFeatureInfoDoc.combine(docs)
+
+        assert (
+            "<body><p>foo</p><p>bar</p><p>baz</p><p>baz2</p></body>"
+            in result.as_string()
+        )
+        assert result.info_type == "html"
+
+    def test_combine_parts_empty_first(self):
+        docs = [
+            HTMLFeatureInfoDoc(""),
+            HTMLFeatureInfoDoc("<p>foo</p>"),
+            HTMLFeatureInfoDoc("<body><p>bar</p></body>"),
+            HTMLFeatureInfoDoc("<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>"),
+        ]
+        result = HTMLFeatureInfoDoc.combine(docs)
+
+        assert (
+            "<body><p>foo</p><p>bar</p><p>baz</p><p>baz2</p></body>"
+            in result.as_string()
+        )
+        assert result.info_type == "html"
+
+    def test_combine_parts_empty_inbetween(self):
+        docs = [
+            HTMLFeatureInfoDoc("<p>foo</p>"),
+            HTMLFeatureInfoDoc("<body><p>bar</p></body>"),
+            HTMLFeatureInfoDoc(""),
+            HTMLFeatureInfoDoc("<html><head><title>Hello</title></head><body><p>baz</p><p>baz2</body></html>")
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
 
@@ -204,6 +260,7 @@ class TestHTMLFeatureInfoDocsNoLXML(object):
         docs = [
             HTMLFeatureInfoDoc(b"<html><head><title>Hello<body><p>baz</p><p>baz2"),
             HTMLFeatureInfoDoc(b"<p>foo</p>"),
+            HTMLFeatureInfoDoc(b""),
             HTMLFeatureInfoDoc(b"<body><p>bar</p></body>"),
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
