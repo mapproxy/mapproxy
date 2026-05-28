@@ -15,8 +15,26 @@
 
 import os
 import tempfile
+import warnings
 
-from mapproxy.util.yaml import load_yaml, load_yaml_file, YAMLError, replace_env_vars, expand_env
+import pytest
+
+from mapproxy.util.yaml import (
+    load_yaml,
+    load_yaml_file,
+    YAMLError,
+    replace_env_vars,
+    expand_env,
+    _warned_env_vars,
+)
+
+
+@pytest.fixture(autouse=True)
+def clear_warned_env_vars():
+    """Reset the per-name warning tracker before every test."""
+    _warned_env_vars.clear()
+    yield
+    _warned_env_vars.clear()
 
 
 class TestLoadYAMLFile(object):
@@ -86,13 +104,32 @@ class TestReplaceEnvVars:
 
     def test_unknown_var_stays_unchanged(self, monkeypatch):
         monkeypatch.delenv("UNKNOWN_VAR_XYZ", raising=False)
-        assert replace_env_vars("$UNKNOWN_VAR_XYZ") == "$UNKNOWN_VAR_XYZ"
-        assert replace_env_vars("${UNKNOWN_VAR_XYZ}") == "${UNKNOWN_VAR_XYZ}"
+        with pytest.warns(UserWarning, match="UNKNOWN_VAR_XYZ") as w:
+            result = replace_env_vars("$UNKNOWN_VAR_XYZ")
+        assert result == "$UNKNOWN_VAR_XYZ"
+        assert "Using fallback value: '$UNKNOWN_VAR_XYZ'" in str(w[0].message)
+
+        # braced form – same var name: no second warning (already warned)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            result2 = replace_env_vars("${UNKNOWN_VAR_XYZ}")
+        assert result2 == "${UNKNOWN_VAR_XYZ}"
+
+    def test_unknown_var_warns_once_per_name(self, monkeypatch):
+        monkeypatch.delenv("ONCE_VAR", raising=False)
+        with pytest.warns(UserWarning):
+            replace_env_vars("$ONCE_VAR")
+        # second call must NOT trigger another warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            replace_env_vars("$ONCE_VAR")
 
     def test_mixed_known_and_unknown(self, monkeypatch):
         monkeypatch.setenv("KNOWN", "value")
         monkeypatch.delenv("UNKNOWN_VAR_XYZ", raising=False)
-        assert replace_env_vars("$KNOWN and $UNKNOWN_VAR_XYZ") == "value and $UNKNOWN_VAR_XYZ"
+        with pytest.warns(UserWarning, match="UNKNOWN_VAR_XYZ"):
+            result = replace_env_vars("$KNOWN and $UNKNOWN_VAR_XYZ")
+        assert result == "value and $UNKNOWN_VAR_XYZ"
 
     def test_multiple_vars(self, monkeypatch):
         monkeypatch.setenv("A", "1")
@@ -174,7 +211,9 @@ class TestExpandEnv:
     def test_unknown_env_in_nested_structure(self, monkeypatch):
         monkeypatch.delenv("MISSING_XYZ", raising=False)
         data = {"key": "${MISSING_XYZ}"}
-        assert expand_env(data) == {"key": "${MISSING_XYZ}"}
+        with pytest.warns(UserWarning, match="MISSING_XYZ"):
+            result = expand_env(data)
+        assert result == {"key": "${MISSING_XYZ}"}
 
 
 class TestLoadYamlWithEnvVars:
