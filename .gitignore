@@ -22,3 +22,6 @@ nosetests*.xml
 .cursor/
 .claude/
 .vscode/
+
+# Virtual environments
+venv/
