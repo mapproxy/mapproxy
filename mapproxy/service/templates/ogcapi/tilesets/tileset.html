@@ -54,7 +54,8 @@
         const extent = {{ data['extent'] }};
 
         if (!ol.proj.get(srs)) {
-            const allDefs = await import('./static/proj4defs.js');
+            const projDefsUrl = "{{ config['server']['url'] }}/../demo/static/proj4defs.js";
+            const allDefs = await import(projDefsUrl);
             const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
             if (!allDefs.defs[srsNum]) {
                 alert("The preview map does not support this coordinate system");
