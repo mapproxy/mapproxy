@@ -69,8 +69,8 @@
             projection: "EPSG:3857"
         });
 
-        const source = new ol.source.XYZ({
-            url: "{{ data['tileset_xyz_url'] }}",
+        const source = new ol.source.OGCMapTile({
+            url: "{{ data['ogcmaptile_url_href'] }}",
             projection: srs
         });
 
