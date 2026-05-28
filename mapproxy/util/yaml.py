@@ -29,7 +29,6 @@ class YAMLError(Exception):
     pass
 
 
-
 def load_yaml_file(file_or_filename):
     """
     Load yaml from file object or filename.
