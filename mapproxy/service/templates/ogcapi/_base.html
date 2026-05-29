@@ -26,7 +26,7 @@
     <meta name="twitter:image:src"   content="{% block thumb %}{% endblock %}{% if not self.thumb() %}{{ logo }}{% endif %}" />
     <meta property="og:image"        content="{{ self.thumb() }}{% if not self.thumb() %}{{ logo }}{% endif %}" />
     <meta name="twitter:site"        content="{{ config['metadata']['identification']['title'] }}" />
-    <meta property="og:site_name"    content="{{ config['metadata']['identification']['title'] }}" />    
+    <meta property="og:site_name"    content="{{ config['metadata']['identification']['title'] }}" />
     <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="{{ self.title() }}{% if not self.title() %}{{ config['metadata']['identification']['title'] }}{% endif %}" />
     <meta property="og:title"        content="{{ self.title() }}{% if not self.title() %}{{ config['metadata']['identification']['title'] }}{% endif %}" />
@@ -119,7 +119,7 @@
         <br>
         (HTML theming based on <a title="mapproxy" href="https://pygeoapi.io/"><img src="/ogcapi/static/img/pygeoapi-logo.png" class="mx-1" title="pygeoapi logo" style="height:24px;vertical-align: middle;" /></a>)
       </div>
-    </footer> 
+    </footer>
     {% block extrafoot %}
     {% endblock %}
 

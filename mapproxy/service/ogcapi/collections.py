@@ -58,12 +58,9 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
             if attribution_url:
                 attribution_logo_url = _get(attribution, "logo", "url")
                 if attribution_logo_url:
-                    col[
-                        "attribution"
-                    ] = f"[![{attribution_title}]({attribution_logo_url}]({attribution_url})"
+                    col["attribution"] = f"[![{attribution_title}]({attribution_logo_url}]({attribution_url})"
                 else:
-                    col[
-                        "attribution"] = f"[{attribution_title}]({attribution_url})"
+                    col["attribution"] = f"[{attribution_title}]({attribution_url})"
                 col["attributionMediaType"] = "text/markdown"
 
     #  The OGC API Common specification required that the
@@ -108,15 +105,13 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
             "rel": ("self" if not is_html else "alternate"),
             "type": FORMAT_TYPES[F_JSON],
             "title": "The JSON representation of this data collection",
-            "href": server.create_href(req,
-                                       f"/ogcapi/collections/{id}?f={F_JSON}"),
+            "href": server.create_href(req, f"/ogcapi/collections/{id}?f={F_JSON}"),
         },
         {
             "rel": ("alternate" if not is_html else "self"),
             "type": FORMAT_TYPES[F_HTML],
             "title": "The HTML representation of this data collection",
-            "href": server.create_href(req,
-                                       f"/ogcapi/collections/{id}?f={F_HTML}"),
+            "href": server.create_href(req, f"/ogcapi/collections/{id}?f={F_HTML}"),
         },
     ]
     if server.enable_maps:
@@ -125,15 +120,13 @@ def get_collection(server: OGCAPIServer, req: Request, layer: WMSLayerBase):
                 "rel": "http://www.opengis.net/def/rel/ogc/1.0/map",
                 "type": FORMAT_TYPES[F_PNG],
                 "title": "Default map (as PNG)",
-                "href": server.create_href(req,
-                                           f"/ogcapi/collections/{id}/map.png"),
+                "href": server.create_href(req, f"/ogcapi/collections/{id}/map.png"),
             },
             {
                 "rel": "http://www.opengis.net/def/rel/ogc/1.0/map",
                 "type": FORMAT_TYPES[F_JPEG],
                 "title": "Default map (as JPEG)",
-                "href": server.create_href(req,
-                                           f"/ogcapi/collections/{id}/map.jpg"),
+                "href": server.create_href(req, f"/ogcapi/collections/{id}/map.jpg"),
             },
         ]
     if server.enable_tiles:
@@ -201,11 +194,9 @@ def collections(server: OGCAPIServer, req: Request):
     ]}
 
     if is_html:
-        json_resp["collections_path"] = server.create_href(req,
-                                                           "/ogcapi/collections")
+        json_resp["collections_path"] = server.create_href(req, "/ogcapi/collections")
 
-    return server.create_json_or_html_response(req, json_resp,
-                                               "collections/index.html")
+    return server.create_json_or_html_response(req, json_resp, "collections/index.html")
 
 
 def collection(server: OGCAPIServer, req: Request, coll_id: str):
@@ -216,8 +207,7 @@ def collection(server: OGCAPIServer, req: Request, coll_id: str):
         if arg != "f":
             raise OGCAPIServer.unknown_query_parameter(arg)
     if req.args.get("f", None) not in (None, F_JSON, F_HTML):
-        raise OGCAPIServer.invalid_parameter(
-            "Invalid value for f query parameter")
+        raise OGCAPIServer.invalid_parameter("Invalid value for f query parameter")
 
     if coll_id not in server.layers:
         raise OGCAPIServer.collection_not_found()
