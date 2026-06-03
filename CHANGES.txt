@@ -1,3 +1,40 @@
+6.1.0 2026-06-03
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Add static typing
+  - Update action versions
+  - Post coverage report in PRs
+  - Update pillow versions in actions
+  - Replace tox.ini with pyproject.toml
+  - Update docs
+  - Add architecture diagrams
+  - Update various dependencies
+  - Refactored code to clarify and use types
+  - Refactored ImageSource to ImageResult
+  - Split loader.py into multiple files
+  - Remove support for python 3.9 (EOL)
+  - Fixed shapely deprecation warnings
+
+Improvements:
+
+  - Add json GFI format
+  - Improve configuration validation
+  - Improvements for reverse proxy setups
+  - Improve multi processing in tests
+  - XML / HMTL errors in GFI requests are handled in a more lenient way now. Instead of raising exceptions on bad input, the code now logs warnings and returns safe empty defaults.
+  - Feature: Update OpenLayers and use OGCMapTile source in OGC-API demo pages
+  - Use environment variables in yaml-files for storing sensitve data
+
+Fixes:
+
+  - Bug fixes in OGC APIs
+  - Fix seeding worker crash on incomplete HTTP responses
+  - Catch sqlite3.DatabaseErrors for all cursor actions
+  - Wrap IOError as LockError in LockFile.__init__ to enable retry on race condition
+
+
 6.0.1 2025-10-29
 ~~~~~~~~~~~~~~~~
 
