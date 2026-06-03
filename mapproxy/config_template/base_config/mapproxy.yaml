@@ -50,8 +50,8 @@ sources:
   osm_wms:
     type: wms
     req:
-      url: http://example.org/service?
-      layers: osm
+      url: http://${server}/service?
+      layers: $layer
 
 grids:
     webmercator:
