@@ -16,34 +16,37 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
   
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="_static/documentation_options.js?v=ce394494"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'configuration';</script>
     <link rel="canonical" href="/mapproxy/configuration.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
@@ -53,7 +56,8 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 29, 2025"/>
+  <meta name="docsearch:version" content="2.0" />
+    <meta name="docbuild:last-update" content="Jun 03, 2026"/>
   </head>
   
   
@@ -69,19 +73,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -89,7 +82,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -97,8 +89,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -115,7 +107,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">6.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">6.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -166,7 +158,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -196,21 +189,17 @@
     
     
     <img src="_static/logo_title.png" class="logo__image only-light" alt="MapProxy Docs 2.0.0 documentation - Home"/>
-    <script>document.write(`<img src="_static/logo_title.png" class="logo__image only-dark" alt="MapProxy Docs 2.0.0 documentation - Home"/>`);</script>
+    <img src="_static/logo_title.png" class="logo__image only-dark pst-js-only" alt="MapProxy Docs 2.0.0 documentation - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
@@ -235,6 +224,7 @@
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture Diagrams for MapProxy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
 </ul>
 
@@ -244,9 +234,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -294,25 +289,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -335,7 +322,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
@@ -585,9 +575,52 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 </div>
 </li>
 </ul>
+<section id="environment-variables">
+<span id="index-1"></span><h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">#</a></h3>
+<p>You can use environment variables in all MapProxy YAML configuration files (e.g <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code>, etc.).
+MapProxy supports two syntaxes for referencing environment variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$VARIABLE_NAME</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">${VARIABLE_NAME}</span></code></p></li>
+</ul>
+<p>Environment variables are expanded in all string values throughout the entire configuration, including nested structures such as lists and dictionaries. Non-string values (numbers, booleans, etc.) are not affected.</p>
+<p>If a referenced environment variable is <strong>not set</strong>, the original placeholder (e.g. <code class="docutils literal notranslate"><span class="pre">$VARIABLE_NAME</span></code> or <code class="docutils literal notranslate"><span class="pre">${VARIABLE_NAME}</span></code>) is kept unchanged. This acts as a safe fallback.</p>
+<p>For example, given the following environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DB_HOST</span><span class="o">=</span>mydbserver.example.com
+<span class="nb">export</span><span class="w"> </span><span class="nv">CACHE_DIR</span><span class="o">=</span>/var/cache/mapproxy
+<span class="nb">export</span><span class="w"> </span><span class="nv">WMS_URL</span><span class="o">=</span>http://wms.example.com/service
+</pre></div>
+</div>
+<p>You can reference them in your <code class="docutils literal notranslate"><span class="pre">mapproxy.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">globals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">base_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CACHE_DIR}</span>
+
+<span class="nt">sources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_wms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">    </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$WMS_URL</span>
+<span class="w">      </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_layer</span>
+
+<span class="nt">caches</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my_cache</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grids</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">GLOBAL_MERCATOR</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">my_wms</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">cache</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+<span class="w">      </span><span class="nt">directory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CACHE_DIR}/tiles</span>
+</pre></div>
+</div>
+<p>Both <code class="docutils literal notranslate"><span class="pre">$WMS_URL</span></code> and <code class="docutils literal notranslate"><span class="pre">${WMS_URL}</span></code> are equivalent. The braced syntax <code class="docutils literal notranslate"><span class="pre">${...}</span></code> is useful when the variable is directly followed by other characters, e.g. <code class="docutils literal notranslate"><span class="pre">${CACHE_DIR}/tiles</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Environment variables are resolved at configuration load time. Changes to environment variables after MapProxy has started require a restart to take effect.</p>
+</div>
+</section>
 </section>
 <section id="services">
-<span id="index-1"></span><h2>services<a class="headerlink" href="#services" title="Link to this heading">#</a></h2>
+<span id="index-2"></span><h2>services<a class="headerlink" href="#services" title="Link to this heading">#</a></h2>
 <p>Here you can configure which services should be started. The configuration for all services is described in the <a class="reference internal" href="services.html"><span class="doc">Services</span></a> documentation.</p>
 <p>Here is an example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">services</span><span class="p">:</span>
@@ -601,7 +634,7 @@ The services MapProxy offers, e.g. WMS or TMS.</p></li>
 </div>
 </section>
 <section id="layers">
-<span id="layers-section"></span><span id="index-2"></span><h2>layers<a class="headerlink" href="#layers" title="Link to this heading">#</a></h2>
+<span id="layers-section"></span><span id="index-3"></span><h2>layers<a class="headerlink" href="#layers" title="Link to this heading">#</a></h2>
 <p>Here you can define all layers MapProxy should offer. The layer definition is similar to WMS: each layer can have a name and title and you can nest layers to build a layer tree.</p>
 <p>Layers should be configured as a list (<code class="docutils literal notranslate"><span class="pre">-</span></code> in YAML), where each layer configuration is a dictionary (<code class="docutils literal notranslate"><span class="pre">key:</span> <span class="pre">value</span></code> in YAML)</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
@@ -795,7 +828,7 @@ which is the base URL of MapProxy and <code class="docutils literal notranslate"
 </section>
 </section>
 <section id="caches">
-<span id="index-3"></span><span id="id3"></span><h2>caches<a class="headerlink" href="#caches" title="Link to this heading">#</a></h2>
+<span id="index-4"></span><span id="id3"></span><h2>caches<a class="headerlink" href="#caches" title="Link to this heading">#</a></h2>
 <p>Here you can configure which sources should be cached.
 Available options are:</p>
 <section id="id4">
@@ -898,7 +931,7 @@ with no data (e.g. water areas, areas with no roads, etc.).</p>
 <p>By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a request will trigger four requests each larger than 2000x2000 pixel. With the <code class="docutils literal notranslate"><span class="pre">minimize_meta_requests</span></code> option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.</p>
 </section>
 <section id="watermark">
-<span id="index-4"></span><h3><code class="docutils literal notranslate"><span class="pre">watermark</span></code><a class="headerlink" href="#watermark" title="Link to this heading">#</a></h3>
+<span id="index-5"></span><h3><code class="docutils literal notranslate"><span class="pre">watermark</span></code><a class="headerlink" href="#watermark" title="Link to this heading">#</a></h3>
 <p>Add a watermark right into the cached tiles. The watermark is thus also present in TMS or KML requests.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">text</span></code></dt><dd><p>The watermark text. Should be short.</p>
@@ -1037,7 +1070,7 @@ See <a class="reference internal" href="caches.html#cache-file-directory"><span 
 </section>
 </section>
 <section id="id6">
-<span id="index-5"></span><span id="id7"></span><h2>grids<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<span id="index-6"></span><span id="id7"></span><h2>grids<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
 <p>Here you can define the tile grids that MapProxy uses for the internal caching.
 There are multiple options to define the grid, but beware, not all are required at the same time and some combinations will result in ambiguous results.</p>
 <p>There are three pre-defined grids all with global coverage:</p>
@@ -1046,6 +1079,12 @@ There are multiple options to define the grid, but beware, not all are required 
 <li><p><code class="docutils literal notranslate"><span class="pre">GLOBAL_MERCATOR</span></code>: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code>: similar to <code class="docutils literal notranslate"><span class="pre">GLOBAL_MERCATOR</span></code> but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.</p></li>
 </ul>
+<dl class="simple">
+<dt>Note:</dt><dd><p>These pre-defined grids take all other parameters from default values, which might or might not fit your needs.
+Especially relevant is that resolutions calculation assumes a <code class="docutils literal notranslate"><span class="pre">num_levels</span></code> of 20 (exclusive) if not specified, resulting in a maximum zoom level of 19.
+To check what grids look like from your configuration, the command <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span> <span class="pre">grids</span> <span class="pre">mapproxy.yaml`</span></code> comes handy.</p>
+</dd>
+</dl>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.6.0: </span><code class="docutils literal notranslate"><span class="pre">GLOBAL_WEBMERCATOR</span></code></p>
 </div>
@@ -1058,21 +1097,21 @@ There are multiple options to define the grid, but beware, not all are required 
 <p>The spatial reference system used for the internal cache, written as <code class="docutils literal notranslate"><span class="pre">EPSG:xxxx</span></code>.</p>
 </section>
 <section id="tile-size">
-<span id="index-6"></span><h3><code class="docutils literal notranslate"><span class="pre">tile_size</span></code><a class="headerlink" href="#tile-size" title="Link to this heading">#</a></h3>
+<span id="index-7"></span><h3><code class="docutils literal notranslate"><span class="pre">tile_size</span></code><a class="headerlink" href="#tile-size" title="Link to this heading">#</a></h3>
 <p>The size of each tile. Defaults to 256x256 pixel.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tile_size</span><span class="p">:</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
 <section id="res">
-<span id="index-7"></span><h3><code class="docutils literal notranslate"><span class="pre">res</span></code><a class="headerlink" href="#res" title="Link to this heading">#</a></h3>
+<span id="index-8"></span><h3><code class="docutils literal notranslate"><span class="pre">res</span></code><a class="headerlink" href="#res" title="Link to this heading">#</a></h3>
 <p>A list with all resolutions that MapProxy should cache.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">res</span><span class="p">:</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
 <section id="res-factor">
-<span id="index-8"></span><h3><code class="docutils literal notranslate"><span class="pre">res_factor</span></code><a class="headerlink" href="#res-factor" title="Link to this heading">#</a></h3>
+<span id="index-9"></span><h3><code class="docutils literal notranslate"><span class="pre">res_factor</span></code><a class="headerlink" href="#res-factor" title="Link to this heading">#</a></h3>
 <p>Here you can define a factor between each resolution.
 It should be either a number or the term <code class="docutils literal notranslate"><span class="pre">sqrt2</span></code>.
 <code class="docutils literal notranslate"><span class="pre">sqrt2</span></code> is a shorthand for a resolution factor of 1.4142, the square root of two. With this factor the resolution doubles every second level.
@@ -1107,7 +1146,7 @@ look to blurry/pixelated in some resolutions.</p>
 <p>The SRS of the grid bbox. See above.</p>
 </section>
 <section id="origin">
-<span id="grid-origin"></span><span id="index-9"></span><h3><code class="docutils literal notranslate"><span class="pre">origin</span></code><a class="headerlink" href="#origin" title="Link to this heading">#</a></h3>
+<span id="grid-origin"></span><span id="index-10"></span><h3><code class="docutils literal notranslate"><span class="pre">origin</span></code><a class="headerlink" href="#origin" title="Link to this heading">#</a></h3>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.3.0.</span></p>
 </div>
@@ -1177,7 +1216,7 @@ resolution will get a result, requests with 5km will get a blank response.</p>
 </section>
 </section>
 <section id="sources-conf-label">
-<span id="index-10"></span><span id="id9"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Link to this heading">#</a></h2>
+<span id="index-11"></span><span id="id9"></span><h2>sources<a class="headerlink" href="#sources-conf-label" title="Link to this heading">#</a></h2>
 <p>A source defines where MapProxy can request new data. Each source has a <code class="docutils literal notranslate"><span class="pre">type</span></code> and all other options are dependent to this type.</p>
 <p>See <a class="reference internal" href="sources.html"><span class="doc">Sources</span></a> for the documentation of all available sources.</p>
 <p>An example:</p>
@@ -1194,7 +1233,7 @@ resolution will get a result, requests with 5km will get a blank response.</p>
 </div>
 </section>
 <section id="globals">
-<span id="globals-conf-label"></span><span id="index-11"></span><h2>globals<a class="headerlink" href="#globals" title="Link to this heading">#</a></h2>
+<span id="globals-conf-label"></span><span id="index-12"></span><h2>globals<a class="headerlink" href="#globals" title="Link to this heading">#</a></h2>
 <p>Here you can define some internals of MapProxy and default values that are used in the other configuration directives.</p>
 <section id="background">
 <span id="globals-background"></span><h3><code class="docutils literal notranslate"><span class="pre">background</span></code><a class="headerlink" href="#background" title="Link to this heading">#</a></h3>
@@ -1600,16 +1639,21 @@ was not changed.</p>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> 
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mapproxy-yaml">mapproxy.yaml</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#services">services</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layers">layers</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#name"><code class="docutils literal notranslate"><span class="pre">name</span></code></a></li>
@@ -1742,7 +1786,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 29, 2025.
+  Last updated on Jun 03, 2026.
   <br/>
 </p>
   </div>
@@ -1760,8 +1804,8 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

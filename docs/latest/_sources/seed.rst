@@ -486,7 +486,7 @@ The ``--duration`` option allows you to run MapProxy seeding for a limited time.
 You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
 
 However, this will restart the seeding process from the beginning every time the seeding is completed.
-You can prevent this with the ``--reeseed-interval`` and ``--reseed-file`` option.
+You can prevent this with the ``--reseed-interval`` and ``--reseed-file`` option.
 The following example starts seeding for six hours. It will seed for another six hours, every time you call this command again. Once all seed and cleanup tasks were processed the command will exit immediately every time you call it within 14 days after the first call. After 14 days, the modification time of the ``reseed.time`` file will be updated and the re-seeding process starts again.
 
 ::

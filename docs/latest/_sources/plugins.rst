@@ -50,7 +50,9 @@ the YAML configuration file.
 .. code-block:: python
 
     def register_service_configuration(service_name, service_creator,
-                                       yaml_spec_service_name = None, yaml_spec_service_def = None):
+                                       yaml_spec_service_name = None,
+                                       yaml_spec_service_def = None,
+                                       schema_service=None):
         """ Method used by plugins to register a new service.
 
             :param config_name: Name of the service
@@ -61,6 +63,9 @@ the YAML configuration file.
             :type yaml_spec_service_name: str
             :param yaml_spec_service_def: Definition of the service in the YAML configuration file
             :type yaml_spec_service_def: dict
+            :param schema_service: JSON schema extract to insert under
+            /properties/services/properties/{yaml_spec_service_name} of config-schema.json
+            :type schema_service: dict
         """
 
 
@@ -68,7 +73,7 @@ This can for example by used like the following snippet:
 
 .. code-block:: python
 
-    from mapproxy.config.loader import register_service_configuration
+    from mapproxy.config.configuration.service import register_service_configuration
     from mapproxy.service.base import Server
 
     class MyExtraServiceServer(Server):
@@ -81,8 +86,18 @@ This can for example by used like the following snippet:
     def my_extra_service_method(serviceConfiguration, conf):
         return MyExtraServiceServer()
 
+    json_schema_extension = {
+        'type': 'object',
+        'additionalProperties': False,
+        'properties': {
+            'foo': {
+                'type': 'string'
+            }
+        }
+    }
     register_service_configuration('my_extra_service', my_extra_service_method,
-                                   'my_extra_service', {'foo': str()})
+                                   'my_extra_service', {'foo': str()},
+                                   json_schema_extension)
 
 
 This allows the following declaration in the YAML mapproxy configuration file:
@@ -152,8 +167,8 @@ This can for example by used like the following snippet:
 
 .. code-block:: python
 
-    from mapproxy.config.loader import register_source_configuration
-    from mapproxy.config.loader import SourceConfiguration
+    from mapproxy.config.configuration.source import register_source_configuration
+    from mapproxy.config.configuration.source import SourceConfiguration
 
     class my_source_configuration(SourceConfiguration):
         source_type = ('my_extra_source',)

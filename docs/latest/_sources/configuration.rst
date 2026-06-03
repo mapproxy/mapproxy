@@ -160,6 +160,58 @@ There are other optional sections:
   .. versionchanged:: 1.16.0
     Improved support of splat configuration files
 
+.. index:: environment variables
+   single: environment variables
+
+Environment Variables
+"""""""""""""""""""""
+
+You can use environment variables in all MapProxy YAML configuration files (e.g ``mapproxy.yaml``, ``seed.yaml``, etc.).
+MapProxy supports two syntaxes for referencing environment variables:
+
+- ``$VARIABLE_NAME``
+- ``${VARIABLE_NAME}``
+
+Environment variables are expanded in all string values throughout the entire configuration, including nested structures such as lists and dictionaries. Non-string values (numbers, booleans, etc.) are not affected.
+
+If a referenced environment variable is **not set**, the original placeholder (e.g. ``$VARIABLE_NAME`` or ``${VARIABLE_NAME}``) is kept unchanged. This acts as a safe fallback.
+
+For example, given the following environment variables:
+
+.. code-block:: bash
+
+  export DB_HOST=mydbserver.example.com
+  export CACHE_DIR=/var/cache/mapproxy
+  export WMS_URL=http://wms.example.com/service
+
+You can reference them in your ``mapproxy.yaml``:
+
+.. code-block:: yaml
+
+  globals:
+    cache:
+      base_dir: ${CACHE_DIR}
+
+  sources:
+    my_wms:
+      type: wms
+      req:
+        url: $WMS_URL
+        layers: my_layer
+
+  caches:
+    my_cache:
+      grids: [GLOBAL_MERCATOR]
+      sources: [my_wms]
+      cache:
+        type: sqlite
+        directory: ${CACHE_DIR}/tiles
+
+Both ``$WMS_URL`` and ``${WMS_URL}`` are equivalent. The braced syntax ``${...}`` is useful when the variable is directly followed by other characters, e.g. ``${CACHE_DIR}/tiles``.
+
+.. note::
+  Environment variables are resolved at configuration load time. Changes to environment variables after MapProxy has started require a restart to take effect.
+
 .. #################################################################################
 
 .. index:: services
@@ -746,6 +798,12 @@ There are three pre-defined grids all with global coverage:
 - ``GLOBAL_GEODETIC``: EPSG:4326, origin south-west, compatible with OpenLayers map in EPSG:4326
 - ``GLOBAL_MERCATOR``: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913
 - ``GLOBAL_WEBMERCATOR``: similar to ``GLOBAL_MERCATOR`` but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.
+
+Note: 
+  These pre-defined grids take all other parameters from default values, which might or might not fit your needs. 
+  Especially relevant is that resolutions calculation assumes a ``num_levels`` of 20 (exclusive) if not specified, resulting in a maximum zoom level of 19.
+  To check what grids look like from your configuration, the command ``mapproxy-util grids mapproxy.yaml``` comes handy.
+
 
 .. versionadded:: 1.6.0
     ``GLOBAL_WEBMERCATOR``

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>OGC API Support &#8212; MapProxy Docs 2.0.0 documentation</title>
+    <title>Architecture Diagrams for MapProxy &#8212; MapProxy Docs 2.0.0 documentation</title>
   
   
   
@@ -47,13 +47,13 @@
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'ogc_api';</script>
-    <link rel="canonical" href="/mapproxy/ogc_api.html" />
+    <script>DOCUMENTATION_OPTIONS.pagename = 'architecture';</script>
+    <link rel="canonical" href="/mapproxy/architecture.html" />
     <link rel="icon" href="_static/mapproxy-favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="INSPIRE View Service" href="inspire.html" />
-    <link rel="prev" title="Configuration examples" href="configuration_examples.html" />
+    <link rel="next" title="Writing plugins" href="plugins.html" />
+    <link rel="prev" title="Development" href="development.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.0" />
@@ -144,6 +144,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -214,13 +218,13 @@
 <li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">OGC API Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ogc_api.html">OGC API Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture Diagrams for MapProxy</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Architecture Diagrams for MapProxy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
 </ul>
 
@@ -295,7 +299,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -306,11 +312,25 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>OGC API Support</h1>
+    <h1>Architecture Diagrams for MapProxy</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2>  </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#system-context-view">System Context View</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#component-view">Component View</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-diagrams">Flow Diagrams</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-request">WMS Request</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-request">WMTS Request</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -320,9 +340,34 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="ogc-api-support">
-<h1>OGC API Support<a class="headerlink" href="#ogc-api-support" title="Link to this heading">#</a></h1>
-<p>MapProxy supports OGC API Tiles and Maps both as <a class="reference internal" href="services.html#ogcapi-service-label"><span class="std std-ref">services</span></a>, <a class="reference internal" href="sources.html#ogcapitiles-label"><span class="std std-ref">tile sources</span></a>, and <a class="reference internal" href="sources.html#ogcapimaps-label"><span class="std std-ref">map sources</span></a></p>
+  <section id="architecture-diagrams-for-mapproxy">
+<h1>Architecture Diagrams for MapProxy<a class="headerlink" href="#architecture-diagrams-for-mapproxy" title="Link to this heading">#</a></h1>
+<p>Last Update: 15.01.2026</p>
+<section id="system-context-view">
+<h2>System Context View<a class="headerlink" href="#system-context-view" title="Link to this heading">#</a></h2>
+<a class="reference internal image-reference" href="_images/01_context_view.drawio.svg"><img alt="System Context View" src="_images/01_context_view.drawio.svg" style="width: 600px;" />
+</a>
+</section>
+<section id="component-view">
+<h2>Component View<a class="headerlink" href="#component-view" title="Link to this heading">#</a></h2>
+<a class="reference internal image-reference" href="_images/02_component_view.drawio.svg"><img alt="Component View" src="_images/02_component_view.drawio.svg" style="width: 600px;" />
+</a>
+</section>
+<section id="flow-diagrams">
+<h2>Flow Diagrams<a class="headerlink" href="#flow-diagrams" title="Link to this heading">#</a></h2>
+<section id="wms-request">
+<h3>WMS Request<a class="headerlink" href="#wms-request" title="Link to this heading">#</a></h3>
+<p>A WMS request for a cached WMS source. The image is not cached yet.</p>
+<a class="reference internal image-reference" href="_images/03_wms_cached_wms_request_flow.drawio.svg"><img alt="WMS request flow diagram" src="_images/03_wms_cached_wms_request_flow.drawio.svg" style="width: 600px;" />
+</a>
+</section>
+<section id="wmts-request">
+<h3>WMTS Request<a class="headerlink" href="#wmts-request" title="Link to this heading">#</a></h3>
+<p>A WMTS request for a cached WMS source. The image is not cached yet.</p>
+<a class="reference internal image-reference" href="_images/04_wmts_cached_wms_request_flow.drawio.svg"><img alt="WMTS request flow diagram" src="_images/04_wmts_cached_wms_request_flow.drawio.svg" style="width: 600px;" />
+</a>
+</section>
+</section>
 </section>
 
 
@@ -337,20 +382,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="configuration_examples.html"
+       href="development.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Configuration examples</p>
+        <p class="prev-next-title">Development</p>
       </div>
     </a>
     <a class="right-next"
-       href="inspire.html"
+       href="plugins.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">INSPIRE View Service</p>
+        <p class="prev-next-title">Writing plugins</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -360,6 +405,29 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> 
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#system-context-view">System Context View</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#component-view">Component View</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-diagrams">Flow Diagrams</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wms-request">WMS Request</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wmts-request">WMTS Request</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

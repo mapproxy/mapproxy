@@ -99,7 +99,7 @@ This is the default cache type and it uses a single file for each tile. Availabl
 ``mbtiles``
 ===========
 
-Use a single SQLite file for this cache. It uses the `MBTile specification <http://mbtiles.org/>`_.
+Use a single SQLite file for this cache. It uses the `MBTiles specification <https://github.com/mapbox/mbtiles-spec>`_.
 
 Available options:
 
