@@ -403,7 +403,7 @@ class TileGrid(object):
 
         return self.flip_tile_coord(tile)
 
-    def get_affected_tiles(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None) \
+    def get_affected_tiles(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None, maxres=0) \
             -> tuple[BBOX, tuple[int, int], list[TileCoord]]:
         """
         Get a list with all affected tiles for a bbox and output size.
@@ -420,10 +420,10 @@ class TileGrid(object):
           20037508.342789244, 20037508.342789244), (1, 1),\
           <generator object ...>)
         """
-        src_bbox, level = self.get_affected_bbox_and_level(bbox, size, req_srs=req_srs)
+        src_bbox, level = self.get_affected_bbox_and_level(bbox, size, req_srs=req_srs, maxres=maxres)
         return self.get_affected_level_tiles(src_bbox, level)
 
-    def get_affected_bbox_and_level(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None):
+    def get_affected_bbox_and_level(self, bbox: BBOX, size: tuple[int, int], req_srs: Optional[_SRS] = None, maxres=0):
         if req_srs and req_srs != self.srs:
             src_bbox = req_srs.transform_bbox_to(self.srs, bbox)
         else:
@@ -433,6 +433,11 @@ class TileGrid(object):
             raise NoTiles()
 
         res = get_resolution(src_bbox, size)
+
+        # limit res to maxres
+        if res < maxres:
+            res = maxres
+
         level = self.closest_level(res)
 
         if res > self.resolutions[0]*self.max_shrink_factor:

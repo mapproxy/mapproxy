@@ -55,10 +55,13 @@ class CacheMapLayer(MapLayer):
             raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
 
     def _image(self, query: MapQuery) -> BaseImageResult:
+        if not hasattr(query,'maxres'):
+            query.maxres = 0
+
         try:
             src_bbox, tile_grid_size, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
-                                             req_srs=query.srs)
+                                             req_srs=query.srs, maxres=query.maxres)
         except NoTiles:
             raise BlankImageError()
         except GridError as ex:

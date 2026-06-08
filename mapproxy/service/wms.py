@@ -96,6 +96,8 @@ class WMSServer(Server):
         query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
         offset = None
 
+        query.maxres = float(map_request.params.get('maxres','0').replace('?',''))
+
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
         orig_query = query
@@ -198,6 +200,9 @@ class WMSServer(Server):
         service = self._service_md(map_request)
         root_layer = self.authorized_capability_layers(map_request.http.environ)
 
+        if 'maxres' in map_request.params:
+            service['url'] = service['url'] + '?maxres=' + map_request.params.maxres
+        
         info_types = ['text', 'html', 'xml']  # defaults
         if self.info_types:
             info_types = self.info_types
