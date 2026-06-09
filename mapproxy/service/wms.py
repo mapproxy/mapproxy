@@ -50,7 +50,8 @@ from mapproxy.template import template_loader, bunch, recursive_bunch
 from mapproxy.service import template_helper
 from mapproxy.extent import MapExtent, DefaultMapExtent, merge_layer_extents
 
-get_template = template_loader(__package__, 'templates', namespace=template_helper.__dict__)
+get_template = template_loader(
+    __package__, 'templates', namespace=template_helper.__dict__)
 
 
 class PERMIT_ALL_LAYERS(object):
@@ -93,10 +94,12 @@ class WMSServer(Server):
         self.check_map_request(map_request)
 
         params = map_request.params
-        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
+        query = MapQuery(params.bbox, params.size, SRS(
+            params.srs), params.format, dimensions=map_request.dimensions)
         offset = None
 
-        query.maxres = float(map_request.params.get('maxres','0').replace('?',''))
+        query.maxres = float(map_request.params.get(
+            'maxres', '0').replace('?', ''))
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -106,15 +109,20 @@ class WMSServer(Server):
             # limit query to srs_extent if query is larger
             query_extent = MapExtent(params.bbox, SRS(params.srs))
             if not self.srs_extents[params.srs].contains(query_extent):
-                limited_extent = self.srs_extents[params.srs].intersection(query_extent)
+                limited_extent = self.srs_extents[params.srs].intersection(
+                    query_extent)
                 if not limited_extent:
-                    img_opts = self.image_formats[params.format_mime_type].copy()
+                    img_opts = self.image_formats[params.format_mime_type].copy(
+                    )
                     img_opts.bgcolor = params.bgcolor
                     img_opts.transparent = params.transparent
-                    img = BlankImageResult(size=params.size, image_opts=img_opts, cacheable=True)
+                    img = BlankImageResult(
+                        size=params.size, image_opts=img_opts, cacheable=True)
                     return Response(img.as_buffer(), content_type=img_opts.format.mime_type)
-                sub_size, offset, sub_bbox = bbox_position_in_image(params.bbox, params.size, limited_extent.bbox)
-                query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format)
+                sub_size, offset, sub_bbox = bbox_position_in_image(
+                    params.bbox, params.size, limited_extent.bbox)
+                query = MapQuery(sub_bbox, sub_size, SRS(
+                    params.srs), params.format)
 
         actual_layers = OrderedDict()
         for layer_name in map_request.params.layers:
@@ -131,7 +139,8 @@ class WMSServer(Server):
         authorized_layers, coverage = self.authorized_layers(
             'map', list(actual_layers.keys()), map_request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
 
-        self.filter_actual_layers(actual_layers, map_request.params.layers, authorized_layers)
+        self.filter_actual_layers(
+            actual_layers, map_request.params.layers, authorized_layers)
 
         render_layers = []
         for layers in actual_layers.values():
@@ -157,7 +166,8 @@ class WMSServer(Server):
                               bbox=query.bbox, bbox_srs=params.srs, coverage=coverage)
 
         if query != orig_query:
-            result = sub_image_result(result, size=orig_query.size, offset=offset, image_opts=img_opts)
+            result = sub_image_result(
+                result, size=orig_query.size, offset=offset, image_opts=img_opts)
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
@@ -165,7 +175,8 @@ class WMSServer(Server):
                                    map_request.http.environ, (query.srs.srs_code, query.bbox))
 
         try:
-            result.georef = GeoReference(bbox=orig_query.bbox, srs=orig_query.srs)
+            result.georef = GeoReference(
+                bbox=orig_query.bbox, srs=orig_query.srs)
             result_buf = result.as_buffer(img_opts)
         except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
@@ -198,17 +209,20 @@ class WMSServer(Server):
             tile_layers = []
 
         service = self._service_md(map_request)
-        root_layer = self.authorized_capability_layers(map_request.http.environ)
+        root_layer = self.authorized_capability_layers(
+            map_request.http.environ)
 
         if 'maxres' in map_request.params:
-            service['url'] = service['url'] + '?maxres=' + map_request.params.maxres
-        
+            service['url'] = service['url'] + \
+                '?maxres=' + map_request.params.maxres
+
         info_types = ['text', 'html', 'xml']  # defaults
         if self.info_types:
             info_types = self.info_types
         elif self.fi_transformers:
             info_types = list(self.fi_transformers.keys())
-        info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
+        info_formats = [mimetype_from_infotype(
+            map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
                               self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
                               inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
@@ -229,14 +243,16 @@ class WMSServer(Server):
         for layer_name in request.params.query_layers:
             layer = self.layers[layer_name]
             if not layer.queryable:
-                raise RequestError('layer %s is not queryable' % layer_name, request=request)
+                raise RequestError('layer %s is not queryable' %
+                                   layer_name, request=request)
             for layer_name, info_layers in layer.info_layers_for_query(query):
                 actual_layers[layer_name] = info_layers
 
         authorized_layers, coverage = self.authorized_layers(
             'featureinfo', list(actual_layers.keys()), request.http.environ,
             query_extent=(query.srs.srs_code, query.bbox))
-        self.filter_actual_layers(actual_layers, request.params.layers, authorized_layers)
+        self.filter_actual_layers(
+            actual_layers, request.params.layers, authorized_layers)
 
         # outside of auth-coverage
         if coverage and not coverage.contains(query.coord, query.srs):
@@ -270,9 +286,11 @@ class WMSServer(Server):
                 mimetype = mimetype_from_infotype(request.version, info_type)
             else:
                 info_type = infotype_from_mimetype(request.version, mimetype)
-            resp, actual_info_type = combine_docs(infos, self.fi_transformers[info_type])
+            resp, actual_info_type = combine_docs(
+                infos, self.fi_transformers[info_type])
             if actual_info_type is not None and info_type != actual_info_type:
-                mimetype = mimetype_from_infotype(request.version, actual_info_type)
+                mimetype = mimetype_from_infotype(
+                    request.version, actual_info_type)
         else:
             resp, info_type = combine_docs(infos)
             mimetype = mimetype_from_infotype(request.version, info_type)
@@ -303,7 +321,8 @@ class WMSServer(Server):
         request.validate_srs(self.srs)
 
     def validate_layers(self, request):
-        query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []
+        query_layers = request.params.query_layers if hasattr(
+            request, 'query_layers') else []
         for layer in chain(request.params.layers, query_layers):
             if layer not in self.layers:
                 raise RequestError('unknown layer: ' + str(layer), code='LayerNotDefined',
@@ -320,7 +339,8 @@ class WMSServer(Server):
         self.check_legend_request(request)
         layer = request.params.layer
         if not self.layers[layer].has_legend:
-            raise RequestError('layer %s has no legend graphic' % layer, request=request, status=404)
+            raise RequestError('layer %s has no legend graphic' %
+                               layer, request=request, status=404)
         legend = self.layers[layer].legend(request)
 
         [legends.append(i) for i in legend if i is not None]
@@ -378,11 +398,13 @@ class WMSServer(Server):
                         del actual_layers[layer_name]
                 elif authorized_layers[layer_name] is not None:
                     limited_to = load_limited_to(authorized_layers[layer_name])
-                    actual_layers[layer_name] = [LimitedLayer(lyr, limited_to) for lyr in actual_layers[layer_name]]
+                    actual_layers[layer_name] = [LimitedLayer(
+                        lyr, limited_to) for lyr in actual_layers[layer_name]]
 
     def authorized_capability_layers(self, env):
         if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('wms.capabilities', list(self.layers.keys()), environ=env)
+            result = env['mapproxy.authorize'](
+                'wms.capabilities', list(self.layers.keys()), environ=env)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
@@ -420,7 +442,8 @@ class FilteredRootLayer(object):
             extent = limited_coverage.extent
 
         if self.coverage:
-            limited_coverage = self.coverage.intersection(extent.bbox, extent.srs)
+            limited_coverage = self.coverage.intersection(
+                extent.bbox, extent.srs)
             extent = limited_coverage.extent
         return extent
 
@@ -455,7 +478,8 @@ class FilteredRootLayer(object):
         layers = []
         for layer in self.root_layer.layers:
             if not layer.name or self.layer_permitted(layer):
-                filtered_layer = FilteredRootLayer(layer, self.permissions, self.coverage)
+                filtered_layer = FilteredRootLayer(
+                    layer, self.permissions, self.coverage)
                 if filtered_layer.is_active or filtered_layer.layers:
                     # add filtered_layer only if it is active (no grouping layer)
                     # or if it contains other active layers
@@ -539,7 +563,8 @@ class Capabilities(object):
 
     def layer_llbbox(self, layer):
         if 'EPSG:4326' in self.srs_extents:
-            intersection = self.srs_extents['EPSG:4326'].intersection(layer.extent)
+            intersection = self.srs_extents['EPSG:4326'].intersection(
+                layer.extent)
             if intersection is not None:
                 llbbox = intersection.llbbox
                 return limit_llbbox(llbbox)
@@ -612,7 +637,8 @@ class LayerRenderer:
         if not render_layers:
             return
 
-        async_pool = async_.Pool(size=min(len(render_layers), self.concurrent_rendering))
+        async_pool = async_.Pool(
+            size=min(len(render_layers), self.concurrent_rendering))
 
         if self.raise_source_errors:
             return self._render_raise_exceptions(async_pool, render_layers, layer_merger)
@@ -661,7 +687,8 @@ class LayerRenderer:
 
         if render_layers and not rendered:
             joined_errors = '\n'.join(errors)
-            raise RequestError('Could not get any sources:\n' + joined_errors, request=self.request)
+            raise RequestError('Could not get any sources:\n' +
+                               joined_errors, request=self.request)
 
         if errors:
             layer_merger.add(message_image('\n'.join(errors), self.query.size,
@@ -675,9 +702,11 @@ class LayerRenderer:
         except SourceError:
             raise
         except MapBBOXError as e:
-            raise RequestError('Request too large or invalid BBOX. (%s)' % e, request=self.request)
+            raise RequestError(
+                'Request too large or invalid BBOX. (%s)' % e, request=self.request)
         except MapError as e:
-            raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
+            raise RequestError('Invalid request: %s' %
+                               e.args[0], request=self.request)
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',
                                request=self.request)
@@ -824,12 +853,15 @@ class WMSGroupLayer(WMSLayerBase):
         self.md = md or {}
         self.is_active = True if this is not None else False
         self.layers = layers
-        self.has_legend = True if this and this.has_legend or any(x.has_legend for x in layers) else False
-        self.queryable = True if this and this.queryable or any(x.queryable for x in layers) else False
+        self.has_legend = True if this and this.has_legend or any(
+            x.has_legend for x in layers) else False
+        self.queryable = True if this and this.queryable or any(
+            x.queryable for x in layers) else False
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
-        self.nominal_scale = max([layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
+        self.nominal_scale = max(
+            [layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
 
     def is_opaque(self, query):
         return any(x.is_opaque(query) for x in self.layers)
