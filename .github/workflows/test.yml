@@ -131,7 +131,7 @@ jobs:
           echo "${{ github.event.number }}" > pr_number.txt
 
       - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: github.event_name == 'pull_request'
         with:
           name: coverage-report
