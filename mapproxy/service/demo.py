@@ -356,7 +356,7 @@ class DemoServer(Server):
                                    matrix_set=wmts_layer.grid.name,
                                    format=escape_html(req.args['format']),
                                    srs=escape_html(req.args['srs']),
-                                   resolutions=wmts_layer.grid.resolutions,
+                                   resolutions=list(wmts_layer.grid.resolutions.values()),
                                    units=units,
                                    all_tile_layers=self.tile_layers,
                                    rest_enabled=rest_enabled,
