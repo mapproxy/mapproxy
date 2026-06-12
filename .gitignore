@@ -16,7 +16,7 @@ nosetests*.xml
 .pydevproject
 .tox/
 /cache_data/
-
+venv/
 .idea/
 *.iml
 .cursor/
