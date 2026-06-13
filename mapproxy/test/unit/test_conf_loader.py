@@ -267,6 +267,30 @@ class TestLayerConfiguration(object):
             assert False, 'expected ConfigurationError'
 
 
+class TestProxyConfigurationContextManager(object):
+    # mapproxy-seed enters the configuration with ``with mapproxy_conf:``;
+    # ProxyConfiguration must therefore support the context manager protocol
+    # (regression: it was lost when the loader was split, see #1442).
+    def test_context_manager_pushes_and_pops_base_config(self):
+        import mapproxy.config.config as mpconfig
+
+        conf = ProxyConfiguration({})
+        before = mpconfig._config.top
+        with conf:
+            assert mpconfig._config.top is conf.base_config
+        assert mpconfig._config.top is before
+
+    def test_context_manager_pops_on_exception(self):
+        import mapproxy.config.config as mpconfig
+
+        conf = ProxyConfiguration({})
+        before = mpconfig._config.top
+        with pytest.raises(ValueError):
+            with conf:
+                raise ValueError
+        assert mpconfig._config.top is before
+
+
 class TestGridConfiguration(object):
     def test_default_grids(self):
         conf = {}
