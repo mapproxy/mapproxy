@@ -42,7 +42,7 @@ pluggy==1.6.0
 py==1.11.0
 pyasn1==0.6.3
 pycparser==2.22
-pyparsing==3.2.3
+pyparsing==3.3.2
 pyproj==3.7.1
 pyrsistent==0.20.0
 pytest-rerunfailures==16.0.1
