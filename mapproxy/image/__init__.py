@@ -423,6 +423,10 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
     if image_opts.mode is not None and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
 
+    # JPEG must always be RGB
+    if format == 'jpeg' and img.mode != 'RGB':
+        img = img.convert('RGB')
+
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
