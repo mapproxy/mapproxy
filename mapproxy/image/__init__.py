@@ -349,12 +349,12 @@ class ReadBufWrapper(object):
 
 def img_has_transparency(img: Image.Image) -> bool:
     if img.mode == 'P':
-        if img.info.get('transparency', False):
-            return True
-        # convert to RGBA and check alpha channel
+        # Convert to RGBA and check the actual alpha channel instead of
+        # relying on img.info['transparency'], which may reference a color
+        # that does not actually appear in the image.
         img = img.convert('RGBA')
     if img.mode == 'RGBA':
-        # any alpha except fully opaque
+        # any alpha except fully opaque (alpha < 255)
         return any(img.histogram()[-256:-1])
     return False
 

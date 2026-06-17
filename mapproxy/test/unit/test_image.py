@@ -1095,3 +1095,43 @@ class TestBandMerge(object):
         img = result.as_image()
         assert img.mode == "RGBA"
         assert img.getpixel((0, 0)) == (200, 100, 0, 255)
+
+
+class TestImgHasTransparency(object):
+    """Tests for img_has_transparency"""
+
+    def test_rgb_opaque(self):
+        img = Image.new("RGB", (10, 10), (255, 0, 0))
+        assert not img_has_transparency(img)
+
+    def test_rgba_fully_opaque(self):
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        assert not img_has_transparency(img)
+
+    def test_rgba_with_transparency(self):
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        img.paste((255, 0, 0, 0), (3, 3, 7, 7))
+        assert img_has_transparency(img)
+
+    def test_p_with_transparency_info_but_color_not_used(self):
+        """
+        Regression: P-mode image with transparency info entry, but the
+        transparent color does not appear in the image at all.
+        img_has_transparency should return False, not True.
+        """
+        img = Image.new("RGB", (10, 10), (255, 0, 0)).quantize(256)
+        assert img.mode == "P"
+        pixels = list(img.getdata())
+        assert 1 not in pixels, "palette index 1 must not appear in image for this test to be valid"
+        img.info["transparency"] = 1
+        assert not img_has_transparency(img)
+
+    def test_p_with_actual_transparency(self):
+        """
+        P-mode image where the transparent color actually appears in the image.
+        """
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        img.paste((255, 0, 0, 0), (3, 3, 7, 7))
+        img_p = img.quantize(256)
+        assert img.mode != "P" or img_has_transparency(img_p)
+        assert img_has_transparency(img_p)
