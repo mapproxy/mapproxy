@@ -10,7 +10,7 @@ class MapQuery:
     """
 
     def __init__(self, bbox: BBOX, size: tuple[int, int], srs: _SRS, format='image/png', transparent=False,
-                 tiled_only=False, dimensions=None):
+                 tiled_only=False, dimensions=None, maxres=0):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -18,6 +18,7 @@ class MapQuery:
         self.transparent = transparent
         self.tiled_only = tiled_only
         self.dimensions = dimensions or {}
+        self.maxres = maxres
 
     def dimensions_for_params(self, params):
         """

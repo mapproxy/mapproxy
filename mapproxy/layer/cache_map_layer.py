@@ -38,10 +38,12 @@ class CacheMapLayer(MapLayer):
         if not query.tiled_only and self.extent and not self.extent.contains(query_extent):
             if not self.extent.intersects(query_extent):
                 raise BlankImageError()
-            size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+            size, offset, bbox = bbox_position_in_image(
+                query.bbox, query.size, self.extent.bbox_for(query.srs))
             if size[0] == 0 or size[1] == 0:
                 raise BlankImageError()
-            src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
+            src_query = MapQuery(bbox, size, query.srs,
+                                 query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
             return sub_image_result(resp, size=query.size, offset=offset, image_opts=self.image_opts,
                                     cacheable=resp.cacheable)
@@ -50,15 +52,20 @@ class CacheMapLayer(MapLayer):
 
     def _check_tiled(self, query):
         if query.format != self.tile_manager.format:
-            raise MapError("invalid tile format, use %s" % self.tile_manager.format)
+            raise MapError("invalid tile format, use %s" %
+                           self.tile_manager.format)
         if query.size != self.grid.tile_size:
-            raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
+            raise MapError("invalid tile size (use %dx%d)" %
+                           self.grid.tile_size)
 
     def _image(self, query: MapQuery) -> BaseImageResult:
+        if not hasattr(query, 'maxres'):
+            query.maxres = 0
+
         try:
             src_bbox, tile_grid_size, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
-                                             req_srs=query.srs)
+                                             req_srs=query.srs, maxres=query.maxres)
         except NoTiles:
             raise BlankImageError()
         except GridError as ex:
@@ -67,7 +74,8 @@ class CacheMapLayer(MapLayer):
         num_tiles = tile_grid_size[0] * tile_grid_size[1]
 
         if self.max_tile_limit and num_tiles >= self.max_tile_limit:
-            raise MapBBOXError("too many tiles, max_tile_limit: %s, num_tiles: %s" % (self.max_tile_limit, num_tiles))
+            raise MapBBOXError("too many tiles, max_tile_limit: %s, num_tiles: %s" % (
+                self.max_tile_limit, num_tiles))
 
         if query.tiled_only:
             if num_tiles > 1:

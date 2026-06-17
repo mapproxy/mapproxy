@@ -22,6 +22,7 @@ venv/
 .cursor/
 .claude/
 .vscode/
+.vs/
 
 # Virtual environments
 venv/
