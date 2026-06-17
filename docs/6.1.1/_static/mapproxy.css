@@ -1,0 +1,49 @@
+body {
+  font-family: Verdana, sans-serif;
+}
+
+h1, .h1 {
+  margin-top: 10px;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active
+{
+  color: #2e3436;
+  color: #31A4B5;
+  text-decoration: none;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* .bd-sidebar-primary, .bd-footer-content, .bd-sidebar-secondary {
+  background-color: #ececec;
+} */
+
+.alert-warning, .alert-success, .alert-info {
+  background-image: none;
+}
+
+button.theme-switch-button {
+  display: none !important;
+}
+
+.btn-select-version {
+  color: #31A4B5;
+  border-color: #31A4B5;
+}
+
+/* !important is needed to overwrite bootstrap defaults */
+.btn-select-version:hover,
+.btn-select-version:active,
+.btn-select-version:focus
+{
+  color: #ffffff !important;
+  border-color: #31A4B5 !important;
+  background-color: #31A4B5 !important;
+}
