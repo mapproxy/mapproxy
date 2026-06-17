@@ -1,3 +1,18 @@
+6.1.1 2026-06-17
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Update dependencies
+
+Fixes:
+
+  - ImageResult.as_buffer will always return image mode rgba if requested
+  - Restore context manager protocol on ProxyConfiguration
+  - Fix base path for rendering OGC API HTML pages in multi mapproxy setups
+  - Fix determination of resolutions in WMTS demo
+
+
 6.1.0 2026-06-03
 ~~~~~~~~~~~~~~~~
 
