@@ -278,7 +278,6 @@ class OGCAPIServer(Server):
                 "type": e.type,
                 "status": e.status,
                 "detail": e.detail,
-                "ogc_api_base": self.create_href(req, "/ogcapi")
             }
             return self.create_json_or_html_response(
                 req, json_resp, "exception.html", status=e.status
@@ -307,11 +306,12 @@ class OGCAPIServer(Server):
         headers = copy.copy(headers)
         headers.update(self.response_headers)
 
-        # Add the ogc_api_base to the response, so it can be used in the templates and in the JSON response
-        # Needed especially in multi-mapproxy setups
-        json_resp["ogc_api_base"] = self.create_href(req, "/ogcapi")
-
         if self.is_html_req(req):
+            # Add the ogc_api_base to render the HTML response.
+            # In this case it is used in the templates to get the correct
+            # resource urls especially in multi-mapproxy setups
+            json_resp["ogc_api_base"] = self.create_href(req, "/ogcapi")
+
             content = render_j2_template(
                 self.get_pygeoapi_config(req),
                 service_package.__package__,
