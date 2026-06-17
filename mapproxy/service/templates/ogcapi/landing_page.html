@@ -61,7 +61,7 @@
   <section id="collections">
     <h2>{% trans %}Collections{% endtrans %}</h2>
     <p>
-      <a href="{{ config['server']['url'] }}/collections?f=html">{% trans %}View the collections in this service{% endtrans %}</a>
+      <a href="{{ data['ogc_api_base'] }}/collections?f=html">{% trans %}View the collections in this service{% endtrans %}</a>
     </p>
   </section>
  {% endif %}
@@ -69,7 +69,7 @@
   <section id="collections">
     <h2>{% trans %}SpatioTemporal Assets{% endtrans %}</h2>
     <p>
-      <a href="{{ config['server']['url'] }}/stac?f=html">{% trans %}View the SpatioTemporal Assets in this service{% endtrans %}</a>
+      <a href="{{ data['ogc_api_base'] }}/stac?f=html">{% trans %}View the SpatioTemporal Assets in this service{% endtrans %}</a>
     </p>
   </section>
  {% endif %}
@@ -77,7 +77,7 @@
   <section id="processes">
       <h2>{% trans %}Processes{% endtrans %}</h2>
       <p>
-        <a href="{{ config['server']['url'] }}/processes?f=html">{% trans %}View the processes in this service{% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/processes?f=html">{% trans %}View the processes in this service{% endtrans %}</a>
       </p>
   </section>
   <section id="jobs">
@@ -90,23 +90,23 @@
   <section id="openapi">
       <h2>{% trans %}API Definition{% endtrans %}</h2>
       <p>
-        {% trans %}Documentation{% endtrans %}: <a href="{{ config['server']['url'] }}/api?f=html">{% trans %}Swagger UI{% endtrans %}</a> <a href="{{ config['server']['url'] }}/api?f=html&ui=redoc">{% trans %}ReDoc{% endtrans %}</a>
+        {% trans %}Documentation{% endtrans %}: <a href="{{ data['ogc_api_base'] }}/api?f=html">{% trans %}Swagger UI{% endtrans %}</a> | <a href="{{ data['ogc_api_base'] }}/api?f=html&ui=redoc">{% trans %}ReDoc{% endtrans %}</a>
       </p>
       <p>
-        <a href="{{ config['server']['url'] }}/api?f=json">{% trans %}OpenAPI Document{% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/api?f=json">{% trans %}OpenAPI Document{% endtrans %}</a>
       </p>
   </section>
   <section id="conformance">
       <h2>{% trans %}Conformance{% endtrans %}</h2>
       <p>
-        <a href="{{ config['server']['url'] }}/conformance?f=html">{% trans %}View the conformance classes of this service{% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/conformance?f=html">{% trans %}View the conformance classes of this service{% endtrans %}</a>
       </p>
   </section>
   {% if data['tile'] %}
   <section id="tilematrixsets">
       <h2>{% trans %}Tile Matrix Sets{% endtrans %}</h2>
       <p>
-        <a href="{{ config['server']['url'] }}/tileMatrixSets?f=html">{% trans %}View the Tile Matrix Sets available on this service{% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/tileMatrixSets?f=html">{% trans %}View the Tile Matrix Sets available on this service{% endtrans %}</a>
       </p>
   </section>
   {% endif %}
@@ -114,10 +114,10 @@
   <section id="dataset_map">
       <h2>{% trans %}Dataset maps{% endtrans %}</h2>
       <p>
-        <a href="{{ config['server']['url'] }}/map.png">{% trans %}Default map of the whole dataset (as PNG){% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/map.png">{% trans %}Default map of the whole dataset (as PNG){% endtrans %}</a>
       </p>
       <p>
-        <a href="{{ config['server']['url'] }}/map.jpg">{% trans %}Default map of the whole dataset (as JPEG){% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/map.jpg">{% trans %}Default map of the whole dataset (as JPEG){% endtrans %}</a>
       </p>
   </section>
   {% endif %}
@@ -125,10 +125,10 @@
   <section id="dataset_tiles">
       <h2>{% trans %}Dataset tilesets{% endtrans %}</h2>
       <p>
-        <a href="{{ config['server']['url'] }}/map/tiles?f=html">{% trans %}Default tilesets for the whole dataset (as HTML){% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/map/tiles?f=html">{% trans %}Default tilesets for the whole dataset (as HTML){% endtrans %}</a>
       </p>
       <p>
-        <a href="{{ config['server']['url'] }}/map/tiles?f=json">{% trans %}Default tilesets for the whole dataset (as JSON){% endtrans %}</a>
+        <a href="{{ data['ogc_api_base'] }}/map/tiles?f=json">{% trans %}Default tilesets for the whole dataset (as JSON){% endtrans %}</a>
       </p>
   </section>
   {% endif %}

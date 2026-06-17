@@ -10,9 +10,9 @@
 {% endblock %}
 
 {% block extrahead %}
-<script src="{{ config['server']['url'] }}/static/ol.js"></script>
-<script src="{{ config['server']['url'] }}/static/proj4.min.js"></script>
-<link rel="stylesheet" href="{{ config['server']['url'] }}/static/ol.css"/>
+<script src="{{ data['ogc_api_base'] }}/static/ol.js"></script>
+<script src="{{ data['ogc_api_base'] }}/static/proj4.min.js"></script>
+<link rel="stylesheet" href="{{ data['ogc_api_base'] }}/static/ol.css"/>
 
 {% endblock %}
 
@@ -54,7 +54,7 @@
         const extent = {{ data['extent'] }};
 
         if (!ol.proj.get(srs)) {
-            const projDefsUrl = "{{ config['server']['url'] }}/static/proj4defs.js";
+            const projDefsUrl = "{{ data['ogc_api_base'] }}/static/proj4defs.js";
             const allDefs = await import(projDefsUrl);
             const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
             if (!allDefs.defs[srsNum]) {

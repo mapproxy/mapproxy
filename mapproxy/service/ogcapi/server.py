@@ -307,6 +307,11 @@ class OGCAPIServer(Server):
         headers.update(self.response_headers)
 
         if self.is_html_req(req):
+            # Add the ogc_api_base to render the HTML response.
+            # In this case it is used in the templates to get the correct
+            # resource urls especially in multi-mapproxy setups
+            json_resp["ogc_api_base"] = self.create_href(req, "/ogcapi")
+
             content = render_j2_template(
                 self.get_pygeoapi_config(req),
                 service_package.__package__,
