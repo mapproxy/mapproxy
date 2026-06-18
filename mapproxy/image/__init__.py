@@ -421,7 +421,10 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
         del img.info['transparency']
 
     if image_opts.mode is not None and img.mode != image_opts.mode:
-        img = img.convert(image_opts.mode)
+        # Don't convert JPEG output back to RGBA — Pillow cannot write
+        # RGBA as JPEG (fixes #1446).
+        if not (format == 'jpeg' and image_opts.mode == 'RGBA'):
+            img = img.convert(image_opts.mode)
 
     img.save(buf, format, **defaults)
     buf.seek(0)
