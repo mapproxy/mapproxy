@@ -28,10 +28,13 @@ RUN pip wheel . -w dist
 
 FROM base-libs AS base
 
+ARG USER_UID=1000
+ARG USER_GID=1000
+
 RUN mkdir /mapproxy
 
-RUN groupadd mapproxy && \
-    useradd --home-dir /mapproxy -s /bin/bash -g mapproxy mapproxy && \
+RUN groupadd -g $USER_GID mapproxy && \
+    useradd -ou $USER_UID -g $USER_GID --home-dir /mapproxy -s /bin/bash -g mapproxy mapproxy && \
     chown -R mapproxy:mapproxy /mapproxy
 
 USER mapproxy:mapproxy
