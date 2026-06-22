@@ -219,6 +219,38 @@ class TestImageResult(object):
             "Expected RGBA PNG when mode=RGBA requested, got %s" % result.mode
         )
 
+    def test_rgba_source_image_stored_as_jpeg(self):
+        """
+        Regression test: RGBA PNG from transparent WMS source (e.g. basemapde)
+        must not raise OSError when stored to a JPEG cache.
+        The mode=RGBA from image_opts must not override the JPEG-required RGB conversion.
+        """
+        # Simulate what a WMS with transparent=True & format=image/png returns
+        rgba_img = Image.new("RGBA", (256, 256), (100, 150, 200, 255))
+        source_opts = ImageOptions(format="image/png", transparent=True, mode="RGBA")
+        ir = ImageResult(rgba_img, image_opts=source_opts)
+
+        # Cache is configured as JPEG – mode=RGBA must not override the JPEG conversion
+        jpeg_opts = ImageOptions(format="image/jpeg", mode="RGBA")
+        buf = ir.as_buffer(jpeg_opts)
+        assert is_jpeg(buf), "Expected JPEG output when saving RGBA image with JPEG cache opts"
+
+    def test_rgba_image_to_jpeg_via_img_to_buf(self):
+        """
+        img_to_buf must not raise 'cannot write mode RGBA as JPEG'
+        when image_opts.mode='RGBA' and format='jpeg'.
+        """
+        from mapproxy.image import img_to_buf
+
+        rgba_img = Image.new("RGBA", (256, 256), (100, 150, 200, 128))
+        # The critical case: mode=RGBA but format=jpeg
+        opts = ImageOptions(format="image/jpeg", mode="RGBA", transparent=True)
+
+        # Must not raise OSError
+        buf = img_to_buf(rgba_img, image_opts=opts)
+        result = Image.open(buf)
+        assert result.mode == "RGB", "JPEG output must be RGB, not RGBA"
+
 
 class TestSubImageResult(object):
 
@@ -1095,3 +1127,43 @@ class TestBandMerge(object):
         img = result.as_image()
         assert img.mode == "RGBA"
         assert img.getpixel((0, 0)) == (200, 100, 0, 255)
+
+
+class TestImgHasTransparency(object):
+    """Tests for img_has_transparency"""
+
+    def test_rgb_opaque(self):
+        img = Image.new("RGB", (10, 10), (255, 0, 0))
+        assert not img_has_transparency(img)
+
+    def test_rgba_fully_opaque(self):
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        assert not img_has_transparency(img)
+
+    def test_rgba_with_transparency(self):
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        img.paste((255, 0, 0, 0), (3, 3, 7, 7))
+        assert img_has_transparency(img)
+
+    def test_p_with_transparency_info_but_color_not_used(self):
+        """
+        Regression: P-mode image with transparency info entry, but the
+        transparent color does not appear in the image at all.
+        img_has_transparency should return False, not True.
+        """
+        img = Image.new("RGB", (10, 10), (255, 0, 0)).quantize(256)
+        assert img.mode == "P"
+        pixels = list(img.getdata())
+        assert 1 not in pixels, "palette index 1 must not appear in image for this test to be valid"
+        img.info["transparency"] = 1
+        assert not img_has_transparency(img)
+
+    def test_p_with_actual_transparency(self):
+        """
+        P-mode image where the transparent color actually appears in the image.
+        """
+        img = Image.new("RGBA", (10, 10), (255, 0, 0, 255))
+        img.paste((255, 0, 0, 0), (3, 3, 7, 7))
+        img_p = img.quantize(256)
+        assert img.mode != "P" or img_has_transparency(img_p)
+        assert img_has_transparency(img_p)
