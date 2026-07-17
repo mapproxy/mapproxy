@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.0" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+    <meta name="docbuild:last-update" content="Jul 17, 2026"/>
   </head>
   
   
@@ -107,7 +107,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">6.1.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">7.0.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -414,6 +414,8 @@ This can be achieved with <cite>chmod -R a+r cache_data</cite></p></li>
 mode and will run all configurations in the <code class="docutils literal notranslate"><span class="pre">/mapproxy/config/apps</span></code> directory as different apps. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">MULTIAPP_ALLOW_LISTINGS</span></code>: In multi app mode if set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, MapProxy lists all available apps on the root page.
 Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">UWSGI_PROCESSES</span></code>: <strong>nginx images only.</strong> Number of uWSGI worker processes. Default is <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">UWSGI_THREADS</span></code>: <strong>nginx images only.</strong> Number of threads per uWSGI worker process. Default is <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -520,7 +522,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 17, 2026.
   <br/>
 </p>
   </div>
