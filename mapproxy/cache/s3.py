@@ -19,7 +19,9 @@ import hashlib
 import io
 import sys
 import threading
+from datetime import datetime
 from email.utils import parsedate_to_datetime
+from typing import Optional
 
 import urllib3
 
@@ -30,6 +32,8 @@ from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async_
 from mapproxy.util.py import reraise_exception
+
+from mapproxy.util.coverage import Coverage
 
 try:
     import boto3
@@ -66,8 +70,8 @@ class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
                  bucket_name='mapproxy', profile_name=None, region_name=None, endpoint_url=None,
-                 _concurrent_writer=4, access_control_list=None, coverage=None, use_http_get=False,
-                 username=None):
+                 _concurrent_writer=4, access_control_list=None, coverage: Optional[Coverage] = None,
+                 use_http_get=False, username=None):
         super().__init__(coverage)
         md5 = hashlib.new('md5', base_path.encode('utf-8') + bucket_name.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = md5.hexdigest()
@@ -130,24 +134,28 @@ class S3Cache(TileCacheBase):
 
     def _set_metadata(self, response, tile):
         # boto3 responses expose LastModified (datetime) / ContentLength (int);
-        # the urllib3 HTTP-GET path passes raw HTTP headers instead, which use
-        # Last-Modified / Content-Length. Handle both so metadata is populated
-        # on either path.
-        if 'LastModified' in response:
-            tile.timestamp = calendar.timegm(response['LastModified'].timetuple())
-        elif 'Last-Modified' in response:
-            # utctimetuple() normalizes tz-aware datetimes to UTC before
-            # calendar.timegm (which assumes UTC); timetuple() would drop the
-            # offset and skew timestamps for non-GMT Last-Modified headers.
-            tile.timestamp = calendar.timegm(parsedate_to_datetime(response['Last-Modified']).utctimetuple())
-
-        if 'ContentLength' in response:
-            tile.size = int(response['ContentLength'])
-        elif 'Content-Length' in response:
+        # the urllib3 HTTP-GET path passes raw HTTP headers instead, which spell
+        # the same two values Last-Modified / Content-Length. Only the key
+        # spelling and the value type differ, so normalize both spellings to the
+        # same handling instead of treating the paths differently.
+        last_modified = response.get('LastModified', response.get('Last-Modified'))
+        if last_modified is not None:
             try:
-                tile.size = int(response['Content-Length'])
-            except (TypeError, ValueError):
-                pass
+                if not isinstance(last_modified, datetime):
+                    last_modified = parsedate_to_datetime(last_modified)
+                # utctimetuple() normalizes tz-aware datetimes to UTC before
+                # calendar.timegm (which assumes UTC); timetuple() would drop
+                # the offset and skew non-UTC timestamps.
+                tile.timestamp = calendar.timegm(last_modified.utctimetuple())
+            except (TypeError, ValueError) as e:
+                log.warning('S3: ignoring unparsable last-modified %r: %s' % (last_modified, e))
+
+        content_length = response.get('ContentLength', response.get('Content-Length'))
+        if content_length is not None:
+            try:
+                tile.size = int(content_length)
+            except (TypeError, ValueError) as e:
+                log.warning('S3: ignoring unparsable content-length %r: %s' % (content_length, e))
 
     def is_cached(self, tile: Tile, dimensions=None) -> bool:
         if tile.is_missing():
@@ -197,7 +205,7 @@ class S3Cache(TileCacheBase):
                     return False
                 if response.status != 200:
                     log.error('S3: load_tile HTTP error, url: %s, status: %s' % (url, response.status))
-                    raise Exception('S3 HTTP error %s for url: %s' % (response.status, url))
+                    raise S3ConnectionError('S3 HTTP error %s for url: %s' % (response.status, url))
                 tile.image_result = ImageResult(io.BytesIO(response.data))
             except urllib3.exceptions.HTTPError as e:
                 log.error('S3: load_tile request error, url: %s, error: %s' % (url, e))

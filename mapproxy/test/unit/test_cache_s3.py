@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 import pytest
@@ -28,7 +29,7 @@ except ImportError:
     boto3 = None
     mock_aws = None
 
-from mapproxy.cache.s3 import S3Cache
+from mapproxy.cache.s3 import S3Cache, S3ConnectionError
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 
@@ -156,3 +157,49 @@ class TestS3Cache(TileCacheTestBase):
         with mock.patch('mapproxy.cache.s3._http') as http:
             http.request.return_value = mock.Mock(status=404)
             assert cache.load_tile(tile) is False
+
+    @pytest.mark.parametrize('method,status', [('HEAD', 500), ('GET', 500)])
+    def test_http_get_error_status_raises(self, method, status):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=status, data=b'')
+            with pytest.raises(S3ConnectionError):
+                if method == 'HEAD':
+                    cache.is_cached(tile)
+                else:
+                    cache.load_tile(tile)
+
+    def test_set_metadata_boto3_and_http_agree(self):
+        # boto3 spells the keys LastModified/ContentLength with typed values,
+        # the HTTP path spells them Last-Modified/Content-Length as strings.
+        # Both must yield identical tile metadata.
+        boto_tile, http_tile = Tile((0, 0, 1)), Tile((0, 0, 1))
+        self.cache._set_metadata(
+            {'LastModified': datetime(2015, 10, 21, 7, 28, tzinfo=timezone.utc),
+             'ContentLength': 1234}, boto_tile)
+        self.cache._set_metadata(
+            {'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
+             'Content-Length': '1234'}, http_tile)
+
+        assert boto_tile.timestamp == http_tile.timestamp
+        assert boto_tile.size == http_tile.size == 1234
+
+    def test_set_metadata_honours_utc_offset(self):
+        # a non-UTC offset must be normalized, not dropped
+        offset_tile, utc_tile = Tile((0, 0, 1)), Tile((0, 0, 1))
+        self.cache._set_metadata({'Last-Modified': 'Wed, 21 Oct 2015 09:28:00 +0200'}, offset_tile)
+        self.cache._set_metadata({'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT'}, utc_tile)
+        assert offset_tile.timestamp == utc_tile.timestamp
+
+        aware_tile = Tile((0, 0, 1))
+        self.cache._set_metadata(
+            {'LastModified': datetime(2015, 10, 21, 9, 28,
+                                      tzinfo=timezone(timedelta(hours=2)))}, aware_tile)
+        assert aware_tile.timestamp == utc_tile.timestamp
+
+    def test_set_metadata_ignores_unparsable_values(self):
+        tile = Tile((0, 0, 1))
+        self.cache._set_metadata({'Last-Modified': 'not a date', 'Content-Length': 'huge'}, tile)
+        assert tile.timestamp is None
+        assert tile.size is None
