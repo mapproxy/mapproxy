@@ -26,12 +26,6 @@ caches:
   mb_dim_cache:
     cache:
       type: mbtiles_dimensions
-      #filename: ./cache.mbtiles
       tile_lock_dir: ./testlockdir
-    sources: [] # [tms]
-
-sources:
-  tms:
-    type: tile
-    url: http://localhost:42423/tiles/time-%(time)/%(tc_path)s.png
+    sources: []
 

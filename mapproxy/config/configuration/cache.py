@@ -168,7 +168,9 @@ class CacheConfiguration(ConfigurationBase):
         dimensionlist = self.conf["cache"].get("dimensions")
         if dimensionlist is None:
             dimensionlist = self.context.globals.get_value("cache.dimensions")
-        assert dimensionlist is not None, "MBTiles with dimensions must be given the dimensionlist"
+        assert (
+            dimensionlist is not None
+        ), "MBTiles with dimensions must be given the dimensionlist"
 
         cache_dir = self.conf["cache"].get("directory")
         if cache_dir:
