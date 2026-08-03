@@ -15,15 +15,13 @@
 
 from __future__ import division
 
-import glob
 import os
 import shutil
 
 from io import BytesIO
 
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.http import MockServ
-from mapproxy.test.image import is_png, create_tmp_image
+from mapproxy.test.image import is_png
 from mapproxy.test.system import SysTest
 
 import pytest
