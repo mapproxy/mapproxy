@@ -449,7 +449,6 @@ class MBTilesLevelCache(TileCacheBase):
             return level_cache.remove_level_tiles_before(level, timestamp)
 
 
-
 class MBTilesDimensionsCache(TileCacheBase):
     supports_timestamp = False
     supports_dimensions = True
