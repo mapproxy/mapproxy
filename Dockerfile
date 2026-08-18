@@ -25,7 +25,7 @@ RUN rm -rf dist/* && \
 ###### base/plain image ######
 FROM base-libs AS base
 
-ARG MAPPROXY_VERSION=6.0.1
+ARG MAPPROXY_VERSION=7.0.0
 ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 ENV PATH="${PATH}:/mapproxy/.local/bin"
 
@@ -56,14 +56,14 @@ LABEL org.opencontainers.image.authors="mapproxy.org"
 LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
 LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy base image"
-LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm and Python 3.13, including necessary dependencies for running MapProxy applications."
+LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm and Python 3.14, including necessary dependencies for running MapProxy applications."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
 LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
 ###### development image ######
 FROM base AS development
 
-ARG MAPPROXY_VERSION=6.0.1
+ARG MAPPROXY_VERSION=7.0.0
 ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 
 EXPOSE 8080
@@ -74,16 +74,16 @@ LABEL org.opencontainers.image.authors="mapproxy.org"
 LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
 LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy Development Server"
-LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Debian bookworm and Python 3.13."
+LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Debian bookworm and Python 3.14."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
 LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
 ##### nginx image ######
 FROM base AS nginx
 
-ARG MAPPROXY_VERSION=6.0.1
+ARG MAPPROXY_VERSION=7.0.0
 ARG NGINX_PKG_VERSION=${NGINX_VERSION}-1~bookworm
-ARG NGINX_VERSION=1.29.8
+ARG NGINX_VERSION=1.30.4
 ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 ENV NGINX_PKG_VERSION=${NGINX_PKG_VERSION}
 ENV NGINX_VERSION=${NGINX_VERSION}
