@@ -19,7 +19,7 @@ import logging
 import sys
 import time
 import threading
-import multiprocessing
+import multiprocess
 from io import BytesIO
 from typing import Optional
 
@@ -149,7 +149,7 @@ class MapnikSource(MapLayer):
         if not self.multithreaded:
             return self._create_map_obj(mapfile, None)
 
-        process_id = multiprocessing.current_process()._identity
+        process_id = multiprocess.current_process()._identity
         queue_cachekey = (process_id, mapfile)
         if queue_cachekey in _map_objs_queues:
             try:
@@ -163,7 +163,7 @@ class MapnikSource(MapLayer):
         return self._create_map_obj(mapfile, process_id)
 
     def _put_unused_map_obj(self, mapfile, m):
-        process_id = multiprocessing.current_process()._identity
+        process_id = multiprocess.current_process()._identity
         queue_cachekey = (process_id, mapfile)
         if queue_cachekey not in _map_objs_queues:
             _map_objs_queues[queue_cachekey] = Queue(MAX_UNUSED_MAPS)
@@ -179,14 +179,14 @@ class MapnikSource(MapLayer):
             # all MapnikSources with the same mapfile share the same Mapnik Map.
             return (None, None, mapfile)
         thread_id = threading.current_thread().ident
-        process_id = multiprocessing.current_process()._identity
+        process_id = multiprocess.current_process()._identity
         return (process_id, thread_id, mapfile)
 
     def _cleanup_unused_cached_maps(self, mapfile):
         if not self.multithreaded:
             return
         # clean up no longer used cached maps
-        process_id = multiprocessing.current_process()._identity
+        process_id = multiprocess.current_process()._identity
         process_cache_keys = [k for k in self._map_cache().keys()
                               if k[0] == process_id]
         # To avoid time-consuming cleanup whenever one thread in the

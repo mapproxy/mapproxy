@@ -61,6 +61,14 @@ def dimensions_part(dimensions):
 
     """
     if dimensions:
+        def checkTraversal(v):
+            normalized = os.path.normpath(v)
+            parts = normalized.split('/') + normalized.split('\\')
+            isNormalized = v != normalized or any(part == ".." for part in parts)
+            if isNormalized:
+                raise ValueError('Dimension parameter value contains illegal characters')
+        for k, v in dimensions.items():
+            checkTraversal(v)
         dims = NoCaseMultiDict(dimensions)
         predefined_dims, custom_dims = [], []
         for dim in dims.keys():

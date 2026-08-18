@@ -16,7 +16,8 @@ install_requires = [
     'jinja2',
     'Babel',  # For jinja2
     'python-dateutil',  # For jinja2
-    'requests'
+    'requests',
+    'multiprocess'
 ]
 
 
@@ -44,7 +45,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="6.0.1",
+    version="7.0.0",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     long_description_content_type='text/x-rst',
@@ -73,6 +74,7 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",

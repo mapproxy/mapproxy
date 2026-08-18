@@ -286,6 +286,10 @@ def tileset(server: OGCAPIServer, req: Request, coll_id: Optional[str], tms_name
             req,
             f"{base_url}/map/tiles/{tms_name}/{{tileMatrix}}/{{tileRow}}/{{tileCol}}.png",
         )
+        json_resp["ogcmaptile_url_href"] = server.create_href(
+            req,
+            f"{base_url}/map/tiles/{tms_name}/",
+        )
         json_resp["sample_png_tile_href"] = server.create_href(
             req, f"{base_url}/map/tiles/{tms_name}/0/0/0.png"
         )

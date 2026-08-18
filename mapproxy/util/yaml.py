@@ -14,8 +14,15 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+import os
+import re
+import warnings
 
 import yaml
+ENV_PATTERN = re.compile(r"\$(\w+)|\$\{([^}]+)\}")
+
+# Tracks variable names for which a warning has already been issued (once per name).
+_warned_env_vars: set = set()
 
 
 class YAMLError(Exception):
@@ -51,8 +58,46 @@ def load_yaml(doc):
     """
     Load yaml from file object or string.
     """
-    data = _load_yaml(doc)
+    data = expand_env(_load_yaml(doc))
     if type(data) is not dict:
-        # all configs are dicts, raise YAMLError to prevent later AttributeErrors (#352)
         raise YAMLError("configuration not a YAML dictionary")
     return data
+
+
+# functions for using env-names in variables
+def replace_env_vars(value):
+    """Replaces $VAR and ${VAR} in a string.
+    If the environment variable is not set, the original placeholder is kept
+    as a fallback value and a :class:`UserWarning` is issued once per
+    unknown variable name.
+    """
+    def repl(match):
+        var_name = match.group(1) or match.group(2)
+        if var_name in os.environ:
+            return os.environ[var_name]
+        fallback = match.group(0)
+        if var_name not in _warned_env_vars:
+            _warned_env_vars.add(var_name)
+            warnings.warn(
+                f"Environment variable '{var_name}' is not set. "
+                f"Using fallback value: '{fallback}'",
+                UserWarning,
+                stacklevel=2,
+            )
+        return fallback
+
+    return ENV_PATTERN.sub(repl, value)
+
+
+def expand_env(obj):
+    """Recursively traverse a nested Python object."""
+    if isinstance(obj, dict):
+        return {k: expand_env(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [expand_env(v) for v in obj]
+    elif isinstance(obj, tuple):
+        return tuple(expand_env(v) for v in obj)
+    elif isinstance(obj, str):
+        return replace_env_vars(obj)
+    else:
+        return obj

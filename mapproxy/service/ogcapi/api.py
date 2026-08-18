@@ -113,9 +113,13 @@ def api(server: OGCAPIServer, req: Request):
 
     oas["info"] = info
 
+    server_url = cfg["server"]["url"]
+    if not req.script_url.endswith("/ogcapi"):
+        server_url = server.create_href(req, "/ogcapi")
+
     oas["servers"] = [
         {
-            "url": cfg["server"]["url"],
+            "url": server_url,
         }
     ]
     server_description = _get(cfg, "metadata", "identification", "description")

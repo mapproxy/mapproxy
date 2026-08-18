@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import multiprocessing
+import multiprocess
 import time
 import sys
 
@@ -36,7 +36,7 @@ class TestCacheLock(object):
             assert True
 
     def test_locked_by_process_no_block(self, lock_file):
-        ctx = multiprocessing.get_context('fork')
+        ctx = multiprocess.get_context('fork')
 
         proc_is_locked = ctx.Event()
 
@@ -68,7 +68,7 @@ class TestCacheLock(object):
             p.join()
 
     def test_locked_by_process_waiting(self, lock_file):
-        ctx = multiprocessing.get_context('fork')
+        ctx = multiprocess.get_context('fork')
 
         proc_is_locked = ctx.Event()
 

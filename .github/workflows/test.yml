@@ -34,7 +34,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         pillow-version: ["12.1.0"]
         include:
           - python-version: "3.10"
@@ -55,7 +55,7 @@ jobs:
         sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
     - name: Checkout sources
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Use python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
@@ -106,7 +106,7 @@ jobs:
           sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -131,7 +131,7 @@ jobs:
           echo "${{ github.event.number }}" > pr_number.txt
 
       - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: github.event_name == 'pull_request'
         with:
           name: coverage-report
@@ -144,7 +144,7 @@ jobs:
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Install doc dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
@@ -157,12 +157,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Use python 3.12
+      - name: Use python 3.14
         uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
 
       - name: Install requirements
         run: |
@@ -177,12 +177,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Use python 3.12
+      - name: Use python 3.14
         uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
 
       - name: Install requirements
         run: |

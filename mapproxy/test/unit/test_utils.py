@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import glob
-import multiprocessing
+import multiprocess
 import os
 import random
 import shutil
@@ -497,7 +497,7 @@ class TestWriteAtomic(object):
         num_writes = 800
         concurrent_writes = 8
 
-        p = multiprocessing.Pool(concurrent_writes)
+        p = multiprocess.Pool(concurrent_writes)
         p.map(_write_atomic_data, ((i, filename) for i in range(num_writes)))
         p.close()
         p.join()
