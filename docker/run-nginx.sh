@@ -10,13 +10,17 @@ trap 'done=1' TERM INT
 export UWSGI_PROCESSES="${UWSGI_PROCESSES:-2}"
 export UWSGI_THREADS="${UWSGI_THREADS:-10}"
 
+UWSGI_BIN="uwsgi"
 UWSGI_ADD_OPTIONS=""
+
 if [ -n "$MAPPROXY_ALPINE" ]; then
+  UWSGI_BIN="/mapproxy/.local/bin/uwsgi"
+else
   UWSGI_ADD_OPTIONS="--plugin python3"
 fi
 
 # run uswgi and nginx in parallel
-uwsgi $UWSGI_ADD_OPTIONS --ini /mapproxy/uwsgi.conf &
+$UWSGI_BIN $UWSGI_ADD_OPTIONS --ini /mapproxy/uwsgi.conf &
 echo "uswgi started"
 nginx &
 echo "nginx started"

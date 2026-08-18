@@ -43,3 +43,6 @@ grids:
         base: GLOBAL_WEBMERCATOR
 
 globals:
+  cache:
+    base_dir: '/mapproxy/config/cache_data'
+    lock_dir: '/mapproxy/config/cache_data'
