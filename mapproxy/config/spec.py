@@ -142,6 +142,15 @@ cache_types = {
         'directory_permissions': str(),
         'file_permissions': str(),
     }),
+    'mbtiles_dimensions': combined(cache_commons, {
+        'directory': str(),
+        'sqlite_timeout': number(),
+        'sqlite_wal': bool(),
+        'tile_lock_dir': str(),
+        'dimensions': [str()],
+        'directory_permissions': str(),
+        'file_permissions': str(),
+    }),
     'geopackage': combined(cache_commons, {
         'filename': str(),
         'directory': str(),
@@ -408,6 +417,7 @@ mapproxy_yaml_spec = {
                 'connection_string': str(),
                 'container_name': str(),
             },
+            'dimensions': [str()],
         },
         'grid': {
             'tile_size': [int()],
