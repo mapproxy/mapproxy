@@ -1228,6 +1228,20 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   MapProxy uses the systems CA files by default.
 
 
+.. index:: SSL_CERT_FILE, SSL_CERT_DIR
+   single: environment variables; SSL_CERT_FILE
+
+Instead of setting ``ssl_ca_certs`` you can point MapProxy at your CA certificates with the standard OpenSSL environment variables ``SSL_CERT_FILE`` (a single PEM bundle) and ``SSL_CERT_DIR`` (a directory of hashed certificates). MapProxy builds its default TLS context with Python's ``ssl.create_default_context()``, which loads the system CA store through OpenSSL and therefore honours both variables::
+
+  export SSL_CERT_FILE=/etc/ssl/private-ca/root-ca.crt
+
+This is useful in containerized deployments where a private root CA is mounted into the container, as it applies to every HTTPS source without touching ``mapproxy.yaml``.
+
+.. note::
+
+  ``REQUESTS_CA_BUNDLE`` and ``CURL_CA_BUNDLE`` have **no** effect on MapProxy. MapProxy makes its source requests with ``urllib.request`` from the Python standard library, not with the ``requests`` library or ``curl``, so only ``ssl_ca_certs``, ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` are taken into account.
+
+
 .. note::
 
   You need to supply a CA file that includes the root certificates if you use older MapProxy or older Python versions. Otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
