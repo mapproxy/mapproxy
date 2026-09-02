@@ -24,6 +24,7 @@ import time
 from io import BytesIO
 from itertools import groupby
 from typing import Optional
+from contextlib import closing
 
 from mapproxy.cache.tile import TileCollection
 from mapproxy.cache.tile import Tile
@@ -134,7 +135,7 @@ class GeopackageCache(TileCacheBase):
         return True
 
     def _verify_table(self):
-        with self.uncached_db() as db:
+        with closing(self.uncached_db()) as db:
             cur = db.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name=?""",
                              (self.table_name,))
             content = cur.fetchone()
@@ -144,7 +145,7 @@ class GeopackageCache(TileCacheBase):
             return True
 
     def _verify_gpkg_contents(self):
-        with self.uncached_db() as db:
+        with closing(self.uncached_db()) as db:
             cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?""", (self.table_name,))
 
             results = cur.fetchone()
@@ -168,7 +169,7 @@ class GeopackageCache(TileCacheBase):
             return True
 
     def _verify_tile_size(self):
-        with self.uncached_db() as db:
+        with closing(self.uncached_db()) as db:
             cur = db.execute(
                 """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
                 (self.table_name,))
