@@ -101,5 +101,11 @@ class TestS3Cache(TileCacheTestBase):
         monkeypatch.setattr(mapproxy.cache.path.os, 'path', ntpath)
         cache = S3Cache('/mycache/webmercator', 'png', bucket_name=self.bucket_name, directory_layout='tms')
 
-        assert cache.tile_key(self.create_tile((12345, 67890, 12))) == \
-            'mycache/webmercator/12/12345/67890.png'
+        tile = self.create_tile((12345, 67890, 12))
+        # the simulated Windows location really does use backslashes, so this
+        # exercises the backslash -> forward slash normalization in tile_key
+        assert '\\' in cache._tile_location(tile, cache.base_path, cache.file_ext)
+
+        key = cache.tile_key(tile)
+        assert key == 'mycache/webmercator/12/12345/67890.png'
+        assert '\\' not in key
