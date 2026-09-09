@@ -96,7 +96,11 @@ class S3Cache(TileCacheBase):
         return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{self.tile_key(tile)}"
 
     def tile_key(self, tile):
-        return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
+        # tile locations are built with os.path.join, which uses '\' as separator
+        # on Windows; S3 object keys always use '/' and treat '\' as a literal
+        # character, so keys must be normalized independently of the host OS.
+        location = self._tile_location(tile, self.base_path, self.file_ext)
+        return location.replace('\\', '/').lstrip('/')
 
     def conn(self):
         if boto3 is None:

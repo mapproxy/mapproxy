@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ntpath
+
 import pytest
 
+import mapproxy.cache.path
 from mapproxy.extent import MapExtent
 from mapproxy.srs import SRS
 
@@ -91,3 +94,18 @@ class TestS3Cache(TileCacheTestBase):
 
         # raises, if key is missing
         boto3.client("s3").head_object(Bucket=self.bucket_name, Key=key)
+
+    def test_tile_key_windows_separator(self, monkeypatch):
+        # on Windows the tile location is built with backslashes, but S3 object
+        # keys must always use forward slashes
+        monkeypatch.setattr(mapproxy.cache.path.os, 'path', ntpath)
+        cache = S3Cache('/mycache/webmercator', 'png', bucket_name=self.bucket_name, directory_layout='tms')
+
+        tile = self.create_tile((12345, 67890, 12))
+        # the simulated Windows location really does use backslashes, so this
+        # exercises the backslash -> forward slash normalization in tile_key
+        assert '\\' in cache._tile_location(tile, cache.base_path, cache.file_ext)
+
+        key = cache.tile_key(tile)
+        assert key == 'mycache/webmercator/12/12345/67890.png'
+        assert '\\' not in key
