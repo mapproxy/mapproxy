@@ -478,7 +478,10 @@ Available options:
   Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``. See *note* below.
 
 ``use_http_get``:
-  When set to ``true``, requests to S3 ``GetObject`` will be fetched via urllib2 instead of boto, which decreases response times. Defaults to ``false``.
+  When set to ``true``, tiles are read from S3 with plain HTTP requests via ``urllib3`` — ``HEAD`` for existence/metadata checks and ``GET`` for the tile body — instead of the boto3 ``HeadObject``/``GetObject`` API, which decreases response times. Writes still use boto3. Defaults to ``false``.
+
+``username``:
+  Optional S3 access user for a self-hosted endpoint. When set (together with ``endpoint_url`` and ``use_http_get``), it is placed into the read URL path-style as ``{endpoint_url}/{username}:{bucket_name}/{key}``. It is *not* a MapProxy credential and has no paired password — the HTTP ``GET``/``HEAD`` read path is unauthenticated, while boto3 write operations continue to use the standard AWS credential chain (environment, profile, etc.). You can set the default with ``globals.cache.s3.username``.
 
 ``include_grid_name``:
   When set to ``true``, the grid name will be included in the path in the bucket (``[directory]/[grid.name]/[z]/...``). Defaults to ``false``.
