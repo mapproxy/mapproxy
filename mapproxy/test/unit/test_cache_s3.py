@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime, timedelta, timezone
+from unittest import mock
+
 import pytest
 
+from mapproxy.cache.tile import Tile
 from mapproxy.extent import MapExtent
 from mapproxy.srs import SRS
 
@@ -25,7 +29,7 @@ except ImportError:
     boto3 = None
     mock_aws = None
 
-from mapproxy.cache.s3 import S3Cache
+from mapproxy.cache.s3 import S3Cache, S3ConnectionError
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 
@@ -91,3 +95,162 @@ class TestS3Cache(TileCacheTestBase):
 
         # raises, if key is missing
         boto3.client("s3").head_object(Bucket=self.bucket_name, Key=key)
+
+    def test_get_bucket_url_self_hosted(self):
+        tile = self.create_tile((0, 0, 1))
+        key = self.cache.tile_key(tile)
+
+        self.cache.endpoint_url = 'http://s3.example.com'
+        self.cache.username = 'myuser'
+        assert self.cache.get_bucket_url(tile) == \
+            'http://s3.example.com/myuser:%s/%s' % (self.bucket_name, key)
+
+        # without a username the segment is omitted
+        self.cache.username = None
+        assert self.cache.get_bucket_url(tile) == \
+            'http://s3.example.com/%s/%s' % (self.bucket_name, key)
+
+    def _http_get_cache(self):
+        # Construct without endpoint_url so __init__'s head_bucket hits the moto
+        # AWS mock; set the self-hosted endpoint afterwards for get_bucket_url.
+        # The HTTP-GET path itself is exercised with _http mocked (no network).
+        cache = S3Cache('mapproxy', file_ext='png', directory_layout='tms',
+                        bucket_name=self.bucket_name, use_http_get=True, _concurrent_writer=1)
+        cache.endpoint_url = 'http://s3.example.com'
+        return cache
+
+    def test_is_cached_http_get(self):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        resp = mock.Mock(status=200,
+                         headers={'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
+                                  'Content-Length': '1234'})
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = resp
+            assert cache.is_cached(tile) is True
+            assert http.request.call_args[0][0] == 'HEAD'
+        # the request is signed: a presigned URL, not the bare bucket URL
+        requested_url = http.request.call_args[0][1]
+        assert requested_url != cache.get_bucket_url(tile)
+        assert 'Signature=' in requested_url
+        # metadata parsed from the HTTP response headers
+        assert tile.size == 1234
+        assert tile.timestamp is not None
+
+    def test_is_cached_http_get_missing(self):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404)
+            assert cache.is_cached(tile) is False
+
+    def test_load_tile_http_get(self):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        resp = mock.Mock(status=200, data=b'\x89PNG\r\n\x1a\n')
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = resp
+            assert cache.load_tile(tile) is True
+            assert http.request.call_args[0][0] == 'GET'
+        # the request is signed: a presigned URL, not the bare bucket URL
+        requested_url = http.request.call_args[0][1]
+        assert requested_url != cache.get_bucket_url(tile)
+        assert 'Signature=' in requested_url
+        assert tile.image_result is not None
+        assert not tile.is_missing()
+
+    def test_load_tile_http_get_missing(self):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404)
+            assert cache.load_tile(tile) is False
+
+    @pytest.mark.parametrize('method,status', [
+        ('HEAD', 500), ('GET', 500),
+        # a genuine 403 on a signed request is a real error, not a cache miss
+        ('HEAD', 403), ('GET', 403),
+    ])
+    def test_http_get_error_status_raises(self, method, status):
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=status, data=b'')
+            with pytest.raises(S3ConnectionError):
+                if method == 'HEAD':
+                    cache.is_cached(tile)
+                else:
+                    cache.load_tile(tile)
+
+    @pytest.mark.parametrize('method', ['HEAD', 'GET'])
+    def test_http_get_404_is_cache_miss_not_error(self, method):
+        # 404 must remain a normal cache miss, unlike 403, even though both
+        # were previously grouped together
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            if method == 'HEAD':
+                assert cache.is_cached(tile) is False
+            else:
+                assert cache.load_tile(tile) is False
+
+    def test_http_get_uses_presigned_url_not_bucket_url(self):
+        # Bucket/Key addressing must match the boto3 write path — the
+        # {endpoint}/{username}:{bucket}/{key} convention is retired here.
+        cache = self._http_get_cache()
+        cache.username = 'myuser'
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            cache.is_cached(tile)
+        requested_url = http.request.call_args[0][1]
+        assert 'myuser:' not in requested_url
+        assert cache.bucket_name in requested_url
+
+    def test_http_get_logs_key_not_url(self, caplog):
+        # debug logs must not print the full request URL, which would carry
+        # the presigned signature
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        key = cache.tile_key(tile)
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            with caplog.at_level('DEBUG', logger='mapproxy.cache.s3'):
+                cache.is_cached(tile)
+        assert any(key in record.getMessage() and 'Signature=' not in record.getMessage()
+                   for record in caplog.records)
+
+    def test_set_metadata_boto3_and_http_agree(self):
+        # boto3 spells the keys LastModified/ContentLength with typed values,
+        # the HTTP path spells them Last-Modified/Content-Length as strings.
+        # Both must yield identical tile metadata.
+        boto_tile, http_tile = Tile((0, 0, 1)), Tile((0, 0, 1))
+        self.cache._set_metadata(
+            {'LastModified': datetime(2015, 10, 21, 7, 28, tzinfo=timezone.utc),
+             'ContentLength': 1234}, boto_tile)
+        self.cache._set_metadata(
+            {'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
+             'Content-Length': '1234'}, http_tile)
+
+        assert boto_tile.timestamp == http_tile.timestamp
+        assert boto_tile.size == http_tile.size == 1234
+
+    def test_set_metadata_honours_utc_offset(self):
+        # a non-UTC offset must be normalized, not dropped
+        offset_tile, utc_tile = Tile((0, 0, 1)), Tile((0, 0, 1))
+        self.cache._set_metadata({'Last-Modified': 'Wed, 21 Oct 2015 09:28:00 +0200'}, offset_tile)
+        self.cache._set_metadata({'Last-Modified': 'Wed, 21 Oct 2015 07:28:00 GMT'}, utc_tile)
+        assert offset_tile.timestamp == utc_tile.timestamp
+
+        aware_tile = Tile((0, 0, 1))
+        self.cache._set_metadata(
+            {'LastModified': datetime(2015, 10, 21, 9, 28,
+                                      tzinfo=timezone(timedelta(hours=2)))}, aware_tile)
+        assert aware_tile.timestamp == utc_tile.timestamp
+
+    def test_set_metadata_ignores_unparsable_values(self):
+        tile = Tile((0, 0, 1))
+        self.cache._set_metadata({'Last-Modified': 'not a date', 'Content-Length': 'huge'}, tile)
+        assert tile.timestamp is None
+        assert tile.size is None
