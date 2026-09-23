@@ -137,25 +137,35 @@ def merge_layers(conf, base):
     Return `base` dict with values from `conf` merged in.
     """
     out = []
-    remaining_conf = []
+    remaining_conf_named_layers = []
+    remaining_conf_unnamed_layers = []
     for conf_layer in conf:
-        remaining_conf.append(conf_layer['name'])
+        if 'name' in conf_layer:
+            remaining_conf_named_layers.append(conf_layer['name'])
+        else:
+            remaining_conf_unnamed_layers.append(conf_layer['title'])
+        
 
     for base_layer in base:
         found = False
         for conf_layer in conf:
-            if conf_layer['name'] in remaining_conf and base_layer['name'] == conf_layer['name']:
-                new_layer = merge_dict(conf_layer, base_layer)
-                out.append(new_layer)
-                remaining_conf.remove(conf_layer['name'])
-                found = True
-                break
+            if 'name' in conf_layer and 'name' in base_layer:
+                if conf_layer['name'] in remaining_conf_named_layers and base_layer['name'] == conf_layer['name']:
+                    new_layer = merge_dict(conf_layer, base_layer)
+                    out.append(new_layer)
+                    remaining_conf_named_layers.remove(conf_layer['name'])
+                    found = True
+                    break
 
         if not found:
             out.append(base_layer)
 
     for conf_layer in conf:
-        if conf_layer['name'] in remaining_conf:
-            out.append(conf_layer)
+        if 'name' in conf_layer:
+            if conf_layer['name'] in remaining_conf_named_layers:
+                out.append(conf_layer)
+        else:
+            if conf_layer['title'] in remaining_conf_unnamed_layers:
+                out.append(conf_layer)
 
     return out
