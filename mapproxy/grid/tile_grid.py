@@ -252,8 +252,12 @@ class TileGrid(object):
         height = self.bbox[3] - self.bbox[1]
         grids = []
         for idx, res in self.resolutions.items():
-            x = max(math.ceil(width // res / self.tile_size[0]), 1)
-            y = max(math.ceil(height // res / self.tile_size[1]), 1)
+            # Round the tile count before ceil()ing so that a bbox which is not
+            # an exact multiple of the tile extent still gets the partial tile
+            # that covers its edge, while floating point noise (e.g. from sqrt2
+            # resolutions) does not spuriously add an extra empty tile.
+            x = max(math.ceil(round(width / res / self.tile_size[0], 6)), 1)
+            y = max(math.ceil(round(height / res / self.tile_size[1], 6)), 1)
             grids.append((idx, (int(x), int(y))))
         return NamedGridList(grids)
 

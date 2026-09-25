@@ -1,3 +1,12 @@
+Unreleased
+~~~~~~~~~~
+
+Fixes:
+
+  - Count the partial edge tile in TileGrid.grid_sizes() so a bbox that is not
+    an exact multiple of the tile extent is fully covered
+
+
 7.0.0 2026-07-17
 ~~~~~~~~~~~~~~~~
 

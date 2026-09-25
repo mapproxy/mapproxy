@@ -1072,6 +1072,56 @@ class TestTileGrid(object):
             assert False, "Expected TransformationError"
 
 
+class TestGridSizePartialTiles(object):
+    def test_partial_edge_tile_is_counted(self):
+        # bbox is 2560.5 units wide with res 1.0 and 256px tiles, i.e. 10.002
+        # tiles. The partial tile at the right/top edge must be counted so the
+        # grid covers the whole bbox (11 tiles, not 10).
+        grid = TileGrid("EPSG:900913", bbox=(0, 0, 2560.5, 2560.5), res=[1.0])
+        assert grid.grid_sizes[0] == (11, 11)
+
+    def test_partial_edge_tile_is_counted_geographic(self):
+        # A geographic grid with a non-power-of-two resolution: 153.75 deg wide
+        # at res 0.3 with 256px tiles is 512.5 px, i.e. just over two tiles, so
+        # the partial third edge tile must be counted (3, not 2). The coarser,
+        # exactly-fitting levels must stay put and not be inflated by float noise.
+        grid = TileGrid("EPSG:4326", bbox=(-76.875, -76.875, 76.875, 76.875), res=[1.0, 0.5, 0.3])
+        assert grid.grid_sizes[0] == (1, 1)
+        assert grid.grid_sizes[1] == (2, 2)
+        assert grid.grid_sizes[2] == (3, 3)
+
+    @pytest.mark.parametrize(
+        "srs,bbox,origin",
+        [
+            ("EPSG:900913", (0, 0, 2560.5, 2560.5), "ll"),
+            ("EPSG:900913", (0, 0, 2560.5, 2560.5), "ul"),
+            # 153.75 units wide at res 0.3 with 256px tiles is 512.5 px = just
+            # over 2 tiles: the grid must cover 3 tiles, but the buggy floor of
+            # the pixel count drops the partial and only counts 2, leaving the
+            # right/top edge (and any point in it) uncovered.
+            ("EPSG:4326", (-76.875, -76.875, 76.875, 76.875), "ll"),
+            ("EPSG:4326", (-76.875, -76.875, 76.875, 76.875), "ul"),
+        ],
+    )
+    def test_point_inside_bbox_maps_to_existing_tile(self, srs, bbox, origin):
+        # Every point strictly inside the bbox must map to a tile that the grid
+        # actually contains, otherwise the edge of the bbox is left uncovered
+        # (regression for grid_sizes undercounting the partial edge tile).
+        grid = TileGrid(srs, bbox=bbox, res=[1.0, 0.5, 0.3], origin=origin)
+        w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        eps = min(w, h) * 1e-9
+        for z in range(grid.levels):
+            tile = grid.tile_coord_for_point(bbox[2] - eps, bbox[3] - eps, z)
+            assert grid.limit_tile(tile) is not None, (srs, origin, z, tile)
+
+    def test_sqrt2_grid_not_over_counted(self):
+        # sqrt2 resolutions carry float noise (sqrt(2)**2 == 2.0000000000000004);
+        # tile counts on exact-boundary levels must not be inflated by it.
+        grid = tile_grid("EPSG:4326", res_factor="sqrt2")
+        assert grid.grid_sizes[2] == (2, 1)
+        assert grid.grid_sizes[4] == (4, 2)
+
+
 class TestTileGridThreshold(object):
     def test_lower_bound(self):
         # thresholds near the next lower res value
