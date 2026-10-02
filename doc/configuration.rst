@@ -354,6 +354,51 @@ or in the response to the OGC API Maps or Tiles GetCollection requests.
 
 Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
+The limits of a group layer apply to all layers below it. The effective range of a layer is its own range, or the range of its sources if it has no range of its own, intersected with the effective range of its parent. A child can narrow the range of its parent, but it can not widen it. Groups advertise the union of the effective ranges of their children. A layer whose effective range is empty, because it does not overlap the range of its parent, is not published at all.
+
+.. code-block:: yaml
+
+  layers:
+    - name: basemap
+      title: Basemap
+      min_res: 1000
+      max_res: 10
+      layers:
+        - name: roads
+          title: Roads
+          sources: [roads_source]
+        - name: details
+          title: Details
+          min_res: 500
+          sources: [details_source]
+
+A GetMap request for ``basemap`` at a resolution of 700 renders only ``roads``, because ``details`` is limited to resolutions below 500. The same limits apply to the layers of the tile services (TMS, WMTS and KML), where tiles outside the effective range are returned as empty tiles.
+
+``coverage``
+""""""""""""
+
+Limit the layer and all layers below it to an area. The coverage is configured like the :ref:`coverages <coverages>` of sources. The effective coverage of a layer is the intersection of its own coverage and the effective coverage of its parent. The extent in the WMS, WMTS and TMS capabilities is limited to the effective coverage.
+
+A GetMap or GetFeatureInfo request is only passed to a layer if the requested bounding box intersects the effective coverage of the layer. Tiles that do not intersect the coverage are returned as empty tiles. A layer is not published if its effective coverage is empty because it does not overlap the coverage of its parent.
+
+.. code-block:: yaml
+
+  layers:
+    - name: region
+      title: Region
+      coverage:
+        bbox: [0, 0, 20, 20]
+        srs: 'EPSG:4326'
+      layers:
+        - name: lakes
+          title: Lakes
+          coverage:
+            bbox: [10, 10, 40, 40]
+            srs: 'EPSG:4326'
+          sources: [lakes_source]
+
+In this example ``lakes`` is only shown inside of ``[10, 10, 20, 20]``.
+
 .. _layer_nominal_scale:
 
 ``nominal_res`` or ``nominal_scale``
@@ -455,6 +500,8 @@ Each dimension is another dictionary with a list of ``values`` and an optional `
             - 0
             - 1000
             - 3000
+
+Dimensions of a group layer are inherited by all layers below it in the WMS capabilities. A layer that configures a dimension with the same name replaces the inherited one, other dimensions are added. Tile services do not inherit dimensions.
 
 ``wmts_kvp_legendurl`` and ``wmts_rest_legendurl``
 """"""""""""""""""""""""""""""""""""""""""""""""""

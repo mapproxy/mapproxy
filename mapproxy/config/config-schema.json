@@ -487,6 +487,11 @@
           "description": "Additional metadata for this layer",
           "type": "object"
         },
+        "coverage": {
+          "title": "coverage",
+          "description": "Area outside of which this layer and its sub-layers are not shown",
+          "type": "object"
+        },
         "dimensions": {
           "title": "dimensions",
           "description": "Configure dimensions for the layer",

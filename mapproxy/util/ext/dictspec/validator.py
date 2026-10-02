@@ -95,9 +95,10 @@ class Validator(object):
 
         if isinstance(spec, recursive):
             if spec.spec:
+                outer_spec = self.context.recurse_spec
                 self.context.recurse_spec = spec.spec
                 self._validate_part(spec.spec, data)
-                self.context.recurse_spec = None
+                self.context.recurse_spec = outer_spec
                 return
             else:
                 spec = self.context.recurse_spec

@@ -1,9 +1,15 @@
 from __future__ import division
 
+from typing import NamedTuple, Optional
+
 from mapproxy.config.configuration.base import ConfigurationBase
 from mapproxy.config.configuration.cache import cache_source_names
 from mapproxy.config.configuration.source import WMSSourceConfiguration, resolution_range
 from mapproxy.config.configuration.base import ConfigurationError
+from mapproxy.config.coverage import load_coverage
+from mapproxy.grid.resolutions import EmptyResolutionRangeError, ResolutionRange, intersect_resolution_range
+from mapproxy.util.coverage import Coverage, intersection_coverage
+from mapproxy.util.geom import EmptyGeometryError
 from mapproxy.util.py import memoize
 
 import logging
@@ -11,23 +17,60 @@ import logging
 log = logging.getLogger('mapproxy.config')
 
 
+class LayerLimits(NamedTuple):
+    """
+    Limits that a layer inherits from its ancestors in the layer tree:
+    resolution range, coverage and dimensions.
+    """
+    res_range: Optional[ResolutionRange] = None
+    coverage: Optional[Coverage] = None
+    dimensions: tuple = ()
+
+    def restrict(self, conf, own_dimensions):
+        """
+        Return the limits for a layer with the configuration `conf` below a layer with these limits.
+
+        The resolution range and the coverage are intersected with the ones of `conf`,
+        dimensions from `own_dimensions` replace inherited ones with the same name.
+        Raises `EmptyResolutionRangeError` or `EmptyGeometryError` if the layer can never be visible.
+        """
+        res_range = intersect_resolution_range(self.res_range, resolution_range(conf))
+        coverage = self.coverage
+        if 'coverage' in conf:
+            own_coverage = load_coverage(conf['coverage'])
+            if coverage is None:
+                coverage = own_coverage
+            else:
+                coverage = intersection_coverage([coverage, own_coverage])
+        dimensions = dict(self.dimensions)
+        dimensions.update(own_dimensions)
+        return LayerLimits(res_range, coverage, tuple(dimensions.items()))
+
+
 class WMSLayerConfiguration(ConfigurationBase):
+    def __init__(self, conf, context, limits=None):
+        ConfigurationBase.__init__(self, conf, context)
+        self.limits = limits or LayerLimits()
+
     @memoize
     def wms_layer(self):
         from mapproxy.service.wms import WMSGroupLayer
 
+        try:
+            limits = self.limits.restrict(self.conf, LayerConfiguration(self.conf, self.context).dimensions())
+        except (EmptyResolutionRangeError, EmptyGeometryError):
+            return None
+
         layers = []
         this_layer = None
 
-        if 'layers' in self.conf:
-            layers_conf = self.conf['layers']
-            for layer_conf in layers_conf:
-                lyr = WMSLayerConfiguration(layer_conf, self.context).wms_layer()
-                if lyr:
-                    layers.append(lyr)
+        for layer_conf in self.conf.get('layers', []):
+            lyr = WMSLayerConfiguration(layer_conf, self.context, limits).wms_layer()
+            if lyr:
+                layers.append(lyr)
 
         if 'sources' in self.conf or 'legendurl' in self.conf:
-            this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
+            this_layer = LayerConfiguration(self.conf, self.context, limits).wms_layer()
 
         if not layers and not this_layer:
             return None
@@ -36,15 +79,21 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
-                                  this=this_layer, layers=layers, md=self.conf.get('md'))
+                                  this=this_layer, layers=layers, md=self.conf.get('md'),
+                                  coverage=limits.coverage, dimensions=dict(limits.dimensions))
         return layer
 
 
 class LayerConfiguration(ConfigurationBase):
+    def __init__(self, conf, context, limits=None):
+        ConfigurationBase.__init__(self, conf, context)
+        self.limits = limits
+
     @memoize
     def wms_layer(self):
         from mapproxy.service.wms import WMSLayer
         from mapproxy.grid.resolutions import res_to_ogc_scale
+        from mapproxy.layer import merge_layer_res_ranges
 
         sources = []
         fi_sources = []
@@ -95,10 +144,21 @@ class LayerConfiguration(ConfigurationBase):
                     if lg_source:
                         lg_sources.append(lg_source)
 
-        res_range = resolution_range(self.conf)
-        dimensions = None
-        if 'dimensions' in self.conf.keys():
-            dimensions = self.dimensions()
+        limits = self.limits
+        if limits is None:
+            res_range = resolution_range(self.conf)
+            coverage = None
+            dimensions = None
+            if 'dimensions' in self.conf.keys():
+                dimensions = self.dimensions()
+        else:
+            own_range = resolution_range(self.conf) or merge_layer_res_ranges(sources)
+            try:
+                res_range = intersect_resolution_range(limits.res_range, own_range)
+            except EmptyResolutionRangeError:
+                return None
+            coverage = limits.coverage
+            dimensions = dict(limits.dimensions) or None
 
         nominal_scale = self.conf.get('nominal_scale')
         if not nominal_scale:
@@ -109,7 +169,7 @@ class LayerConfiguration(ConfigurationBase):
         layer = WMSLayer(
             self.conf.get('name'), self.conf.get('title'), sources, fi_sources, lg_sources, res_range=res_range,
             md=self.conf.get('md'), dimensions=dimensions,
-            nominal_scale=nominal_scale)
+            nominal_scale=nominal_scale, coverage=coverage)
         return layer
 
     @memoize
@@ -164,6 +224,7 @@ class LayerConfiguration(ConfigurationBase):
                 return []
 
         dimensions = self.dimensions()
+        limits = self.limits or LayerLimits()
 
         tile_layers = []
         for cache_name in sources:
@@ -204,6 +265,8 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
                 md['extent'] = extent
+                if limits.coverage is not None:
+                    md['extent'] = extent.intersection(limits.coverage.extent) or limits.coverage.extent
                 md['wmts_kvp_legendurl'] = self.conf.get('wmts_kvp_legendurl')
                 md['wmts_rest_legendurl'] = self.conf.get('wmts_rest_legendurl')
                 if 'legendurl' in self.conf:
@@ -223,7 +286,9 @@ class LayerConfiguration(ConfigurationBase):
                         info_sources=fi_sources,
                         md=md,
                         tile_manager=cache_source,
-                        dimensions=dimensions
+                        dimensions=dimensions,
+                        res_range=limits.res_range,
+                        coverage=limits.coverage,
                     )
                 )
 
