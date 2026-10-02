@@ -676,6 +676,7 @@ mapproxy_yaml_spec = {
             'wmts_kvp_legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,
+            'coverage': coverage,
             'dimensions': {
                 anything(): {
                     required('values'): [one_of(str, float, int)],
