@@ -17,6 +17,8 @@
 WMS clients for maps and information.
 """
 from codecs import decode
+from http.client import HTTPException
+from io import BytesIO
 
 from mapproxy.request.base import split_mime_type
 from mapproxy.query import InfoQuery
@@ -66,7 +68,14 @@ class WMSClient(object):
         else:
             resp = self.http_client.open(url, data=data)
         self._check_resp(resp, url)
-        return resp
+        # Read the body here: a truncated response (IncompleteRead) raised later from
+        # ImageResult has no URL, so nobody can tell which source/layer failed.
+        try:
+            body = resp.read()
+        except (HTTPException, OSError) as ex:
+            log.warning('incomplete response from source WMS: %s: %r', url, ex)
+            raise SourceError('incomplete response from source WMS: %s: %r' % (url, ex))
+        return BytesIO(body)
 
     def _check_resp(self, resp, url):
         if not resp.headers.get('Content-type', 'image/').startswith('image/'):

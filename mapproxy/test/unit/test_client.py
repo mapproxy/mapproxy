@@ -15,6 +15,7 @@
 
 
 import os
+from http.client import IncompleteRead
 import time
 
 import pytest
@@ -374,6 +375,25 @@ class TestWMSClient(object):
                 in caplog.record_tuples[0][2])
         else:
             assert False, 'expected no image returned error'
+
+    def test_incomplete_read_names_url(self):
+        class TruncatedResp(object):
+            headers = {'Content-type': 'image/png'}
+
+            def read(self, *args):
+                raise IncompleteRead(b'x' * 10, 5)
+
+        class TruncatingHTTPClient(object):
+            def open(self, url, data=None):
+                return TruncatedResp()
+
+        req = WMS111MapRequest(url='http://qgis.example/ows?map=foo', param={'layers': 'lag11'})
+        query = MapQuery((0, 0, 1, 1), (256, 256), SRS(25833), 'png')
+        with pytest.raises(SourceError) as exc:
+            WMSClient(req, http_client=TruncatingHTTPClient()).retrieve(query, 'png')
+        assert 'http://qgis.example/ows?map=foo' in str(exc.value)
+        assert 'layers=lag11' in str(exc.value)
+        assert 'IncompleteRead' in str(exc.value)
 
 
 class TestCombinedWMSClient(object):

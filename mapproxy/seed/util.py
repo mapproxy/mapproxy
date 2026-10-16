@@ -188,7 +188,9 @@ class BackoffError(Exception):
 
 
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
-                exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60):
+                exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60, context=None):
+    # context: label for the failing unit (e.g. cache/tile), else the log can't say what failed
+    where = ' (%s)' % context if context else ''
     n = 0
     while True:
         try:
@@ -197,13 +199,13 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
             time.sleep(0.01)
         except exceptions as ex:
             if n >= max_repeat:
-                print("An error occured. Giving up", file=sys.stderr)
+                print("An error occured%s. Giving up: %r" % (where, ex), file=sys.stderr)
                 raise BackoffError
             wait_for = start_backoff_sec * 2**n
             if wait_for > max_backoff:
                 wait_for = max_backoff
-            print("An error occured. Retry in %d seconds: %r. Retries left: %d" %
-                  (wait_for, ex, (max_repeat - n)), file=sys.stderr)
+            print("An error occured%s. Retry in %d seconds: %r. Retries left: %d" %
+                  (where, wait_for, ex, (max_repeat - n)), file=sys.stderr)
             time.sleep(wait_for)
             n += 1
         else:

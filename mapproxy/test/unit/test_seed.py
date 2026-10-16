@@ -40,7 +40,7 @@ from mapproxy.seed.config import (
     LevelsResolutionList,
     LevelsResolutionRange,
 )
-from mapproxy.seed.util import ProgressStore
+from mapproxy.seed.util import ProgressStore, exp_backoff
 from mapproxy.test.helper import TempFile
 
 
@@ -362,3 +362,18 @@ class TestSeedProgress(object):
                     assert not new.already_processed()
             with new.step_down(2, 4):
                 assert not new.already_processed()
+
+
+def test_exp_backoff_message_names_context(capsys):
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) == 1:
+            raise IOError('boom')
+        return 'ok'
+
+    assert exp_backoff(flaky, start_backoff_sec=0, context='cache topo z11') == 'ok'
+    err = capsys.readouterr().err
+    assert 'An error occured (cache topo z11). Retry in 0 seconds' in err
+    assert 'boom' in err

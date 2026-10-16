@@ -156,7 +156,15 @@ class TileSeedWorker(TileWorker):
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
                             max_repeat=100, max_backoff=600,
-                            exceptions=(SourceError, IOError, HTTPException), ignore_exceptions=(LockTimeout, ))
+                            exceptions=(SourceError, IOError, HTTPException), ignore_exceptions=(LockTimeout, ),
+                            context=self._error_context(tiles))
+
+    def _error_context(self, tiles):
+        md = self.task.md
+        first = next((t for t in tiles if t is not None), None)
+        tile = 'z%d x%d y%d' % (first[2], first[0], first[1]) if first else 'no tiles'
+        return 'task %s, cache %s, grid %s, %s, %d tiles' % (
+            md.get('name'), md.get('cache_name'), md.get('grid_name'), tile, len(tiles))
 
 
 class TileCleanupWorker(TileWorker):
