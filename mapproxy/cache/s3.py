@@ -93,7 +93,10 @@ class S3Cache(TileCacheBase):
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
 
     def get_bucket_url(self, tile):
-        return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{self.tile_key(tile)}"
+        if self.endpoint_url:
+            return f"{self.endpoint_url.rstrip('/')}/{self.bucket_name}/{self.tile_key(tile)}"
+        else:
+            return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{self.tile_key(tile)}"
 
     def tile_key(self, tile):
         return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
