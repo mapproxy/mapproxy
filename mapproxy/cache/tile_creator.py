@@ -150,6 +150,13 @@ class TileCreator:
             if layer[0] is not None:
                 layers.append(layer)
 
+        if not layers:
+            # all sources returned BlankImageError -- mirror the single-source
+            # path above and signal "nothing produced" with None rather than
+            # merge_images()'s truthy BlankImageResult, so callers relying on
+            # falsiness (e.g. rescale_tiles) see this case the same way.
+            return None
+
         return merge_images(layers, size=query.size, bbox=query.bbox, bbox_srs=query.srs,
                             image_opts=self.tile_mgr.image_opts, merger=self.image_merger)
 
