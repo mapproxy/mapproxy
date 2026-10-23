@@ -231,7 +231,7 @@ class MapnikSource(MapLayer):
 
         m = self.map_obj(mapfile)
         m.resize(query.size[0], query.size[1])
-        m.srs = '+init=%s' % str(query.srs.srs_code.lower())
+        m.srs = str(query.srs.srs_code.lower())
         envelope = mapnik.Box2d(*query.bbox)
         m.zoom_to_box(envelope)
         data = None
