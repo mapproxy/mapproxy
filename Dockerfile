@@ -1,4 +1,4 @@
-FROM python:3.14-slim-bookworm AS base-libs
+FROM python:3.15-slim-bookworm AS base-libs
 
 LABEL maintainer="mapproxy.org"
 
