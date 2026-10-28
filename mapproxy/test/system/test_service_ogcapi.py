@@ -2884,6 +2884,56 @@ class TestOGCAPITilesService(TestOGCAPIService):
         assert resp.json["detail"] == "unknown collection invalid_coll", resp.json
 
 
+class TestOGCAPITilesRegisteredGrids(TestOGCAPIService):
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "ogcapitiles_registered_grids_service.yaml"
+
+    def _tileset_uris(self, app):
+        resp = app.get("/ogcapi/collections/test/map/tiles")
+        self._validate_response_against_schema(resp.json, response_name="TileSetsList")
+        return {
+            ts["title"].split(" ")[2]: ts.get("tileMatrixSetURI")
+            for ts in resp.json["tilesets"]
+        }
+
+    def test_tileset_uri(self, app):
+        base = "http://www.opengis.net/def/tilematrixset/OGC/1.0/"
+        assert self._tileset_uris(app) == {
+            "GLOBAL_GEODETIC": None,
+            "GLOBAL_MERCATOR": None,
+            "WebMercatorQuad": base + "WebMercatorQuad",
+            "crs84_quad": base + "WorldCRS84Quad",
+            "tiles512": None,
+        }
+
+    def test_tilematrixsets_list_uri(self, app):
+        resp = app.get("/ogcapi/tileMatrixSets")
+        uris = {tms["id"]: tms.get("uri") for tms in resp.json["tileMatrixSets"]}
+        assert uris["crs84_quad"] == (
+            "http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad"
+        )
+        assert uris["tiles512"] is None
+        assert uris["GLOBAL_GEODETIC"] is None
+
+    def test_tilematrixset_uri_and_wkss(self, app):
+        resp = app.get("/ogcapi/tileMatrixSets/crs84_quad")
+        self._validate_response_against_schema(resp.json, response_name="TileMatrixSet")
+        assert resp.json["uri"] == (
+            "http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad"
+        )
+        assert resp.json["wellKnownScaleSet"] == (
+            "http://www.opengis.net/def/wkss/OGC/1.0/GoogleCRS84Quad"
+        )
+        resp = app.get("/ogcapi/tileMatrixSets/tiles512")
+        assert "uri" not in resp.json
+        assert "wellKnownScaleSet" not in resp.json
+
+    _validate_response_against_schema = (
+        TestOGCAPITilesService._validate_response_against_schema
+    )
+
+
 # Tests where both OGC API Maps and Tiles are enabled
 class TestOGCAPIMapsAndTilesService(TestOGCAPIService):
     @pytest.fixture(scope="class")
