@@ -47,7 +47,7 @@ pyparsing==3.3.2
 pyproj==3.7.1;python_version<"3.14"
 pyproj==3.7.2;python_version>"3.13"
 pyrsistent==0.20.0
-pytest-rerunfailures==16.0.1
+pytest-rerunfailures==16.4
 pytest==9.0.3
 python-dateutil==2.9.0.post0
 python-jose==3.5.0
