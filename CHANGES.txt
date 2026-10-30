@@ -5,6 +5,10 @@ Breaking:
 
   - Drop support for Python 3.10, 3.11, 3.12 and 3.13. MapProxy now requires Python 3.14
 
+Improvements:
+
+  - Add support for Python 3.15
+
 Maintenance:
 
   - Raise minimal Pillow version to 13.0.0 because of security fixes
@@ -15,6 +19,7 @@ Maintenance:
 Fixes:
 
   - Fix decorate_img example in the documentation
+  - Fix MBTiles cache on Python 3.15, sqlite3.connect no longer accepts a positional timeout
 
 
 7.0.0 2026-07-17
