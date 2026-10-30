@@ -129,6 +129,10 @@ class TestS3Cache(TileCacheTestBase):
             http.request.return_value = resp
             assert cache.is_cached(tile) is True
             assert http.request.call_args[0][0] == 'HEAD'
+        # the request is signed: a presigned URL, not the bare bucket URL
+        requested_url = http.request.call_args[0][1]
+        assert requested_url != cache.get_bucket_url(tile)
+        assert 'Signature=' in requested_url
         # metadata parsed from the HTTP response headers
         assert tile.size == 1234
         assert tile.timestamp is not None
@@ -148,6 +152,10 @@ class TestS3Cache(TileCacheTestBase):
             http.request.return_value = resp
             assert cache.load_tile(tile) is True
             assert http.request.call_args[0][0] == 'GET'
+        # the request is signed: a presigned URL, not the bare bucket URL
+        requested_url = http.request.call_args[0][1]
+        assert requested_url != cache.get_bucket_url(tile)
+        assert 'Signature=' in requested_url
         assert tile.image_result is not None
         assert not tile.is_missing()
 
@@ -158,7 +166,11 @@ class TestS3Cache(TileCacheTestBase):
             http.request.return_value = mock.Mock(status=404)
             assert cache.load_tile(tile) is False
 
-    @pytest.mark.parametrize('method,status', [('HEAD', 500), ('GET', 500)])
+    @pytest.mark.parametrize('method,status', [
+        ('HEAD', 500), ('GET', 500),
+        # a genuine 403 on a signed request is a real error, not a cache miss
+        ('HEAD', 403), ('GET', 403),
+    ])
     def test_http_get_error_status_raises(self, method, status):
         cache = self._http_get_cache()
         tile = Tile((0, 0, 1))
@@ -169,6 +181,45 @@ class TestS3Cache(TileCacheTestBase):
                     cache.is_cached(tile)
                 else:
                     cache.load_tile(tile)
+
+    @pytest.mark.parametrize('method', ['HEAD', 'GET'])
+    def test_http_get_404_is_cache_miss_not_error(self, method):
+        # 404 must remain a normal cache miss, unlike 403, even though both
+        # were previously grouped together
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            if method == 'HEAD':
+                assert cache.is_cached(tile) is False
+            else:
+                assert cache.load_tile(tile) is False
+
+    def test_http_get_uses_presigned_url_not_bucket_url(self):
+        # Bucket/Key addressing must match the boto3 write path — the
+        # {endpoint}/{username}:{bucket}/{key} convention is retired here.
+        cache = self._http_get_cache()
+        cache.username = 'myuser'
+        tile = Tile((0, 0, 1))
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            cache.is_cached(tile)
+        requested_url = http.request.call_args[0][1]
+        assert 'myuser:' not in requested_url
+        assert cache.bucket_name in requested_url
+
+    def test_http_get_logs_key_not_url(self, caplog):
+        # debug logs must not print the full request URL, which would carry
+        # the presigned signature
+        cache = self._http_get_cache()
+        tile = Tile((0, 0, 1))
+        key = cache.tile_key(tile)
+        with mock.patch('mapproxy.cache.s3._http') as http:
+            http.request.return_value = mock.Mock(status=404, data=b'')
+            with caplog.at_level('DEBUG', logger='mapproxy.cache.s3'):
+                cache.is_cached(tile)
+        assert any(key in record.getMessage() and 'Signature=' not in record.getMessage()
+                   for record in caplog.records)
 
     def test_set_metadata_boto3_and_http_agree(self):
         # boto3 spells the keys LastModified/ContentLength with typed values,
