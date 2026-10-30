@@ -121,9 +121,7 @@ class ImageTransformer:
                                               minx+dst_size[0], miny+dst_size[1]))
         else:
             img = img_for_resampling(src_img.as_image(), image_opts.resampling)
-            # Pillow==8
-            method = Image.EXTENT  # type: ignore[attr-defined]
-            result = img.transform(dst_size, method,
+            result = img.transform(dst_size, Image.Transform.EXTENT,
                                    (minx, miny, maxx, maxy),
                                    image_filter[image_opts.resampling])
         return ImageResult(result, size=dst_size, image_opts=image_opts)
@@ -146,9 +144,7 @@ class ImageTransformer:
         )
 
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)
-        # Pillow==8
-        method = Image.MESH  # type: ignore[attr-defined]
-        result = img.transform(dst_size, method, meshes,
+        result = img.transform(dst_size, Image.Transform.MESH, meshes,
                                image_filter[image_opts.resampling])
 
         if False:
@@ -304,9 +300,7 @@ def img_for_resampling(img: Image.Image, resampling) -> Image.Image:
     Convert P images to RGB(A) for non-NEAREST resamplings.
     """
     resampling = image_filter[resampling]
-    # Pillow==8
-    nearest = Image.NEAREST  # type: ignore[attr-defined]
-    if img.mode == 'P' and resampling != nearest:
+    if img.mode == 'P' and resampling != Image.Resampling.NEAREST:
         img.load()  # load to get actual palette mode
         if img.palette is not None:
             # palette can still be None for cropped images

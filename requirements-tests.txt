@@ -38,14 +38,13 @@ mypy==1.18.2
 networkx==3.4.2
 numpy==1.26.4
 packaging==24.2
-Pillow==12.1.1 # This version is overwritten in the test workflow, please adjust there as well
+Pillow==13.0.0 # This version is overwritten in the test workflow, please adjust there as well
 pluggy==1.6.0
 py==1.11.0
 pyasn1==0.6.3
 pycparser==2.22
 pyparsing==3.3.2
-pyproj==3.7.1;python_version<"3.14"
-pyproj==3.7.2;python_version>"3.13"
+pyproj==3.7.2
 pyrsistent==0.20.0
 pytest-rerunfailures==16.0.1
 pytest==9.0.3
