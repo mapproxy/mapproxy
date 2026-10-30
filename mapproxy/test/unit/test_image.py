@@ -21,7 +21,6 @@ from io import BytesIO
 
 import pytest
 
-import PIL
 from PIL import Image, ImageDraw
 from mapproxy.image import (
     BlankImageResult,
@@ -58,9 +57,6 @@ from mapproxy.test.image import (
 PNG_FORMAT = ImageOptions(format="image/png")
 JPEG_FORMAT = ImageOptions(format="image/jpeg")
 TIFF_FORMAT = ImageOptions(format="image/tiff")
-
-PIL_VERSION = getattr(PIL, '__version__') or getattr(PIL, 'PILLOW_VERSION')
-PIL_VERSION_TUPLE = tuple(int(i) for i in PIL_VERSION.split("."))
 
 
 class TestImageResult(object):
@@ -116,6 +112,32 @@ class TestImageResult(object):
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
 
+    def test_output_mode_i_tiff(self):
+        img = Image.new("I", (100, 100), 70000)
+        ir = ImageResult(img, image_opts=ImageOptions(format="tiff", mode="I"))
+        buf = ir.as_buffer()
+        assert is_tiff(buf)
+        buf.seek(0)
+        img = Image.open(buf)
+        assert img.mode == "I"
+        assert img.getpixel((0, 0)) == 70000
+
+    @pytest.mark.parametrize("image_opts", [
+        ImageOptions(format="image/png", mode="I", colors=0),
+        ImageOptions(format="image/png", colors=0),
+        ImageOptions(format="image/png", colors=256, transparent=True),
+    ])
+    def test_output_mode_i_png(self, image_opts):
+        # PNG has no 32bit integer mode, I images are stored as 16bit
+        img = Image.new("I", (3, 1))
+        img.putdata([-5, 1000, 70000])
+        buf = ImageResult(img, image_opts=image_opts).as_buffer()
+        assert is_png(buf)
+        buf.seek(0)
+        img = Image.open(buf)
+        assert img.mode == "I;16"
+        assert [img.getpixel((x, 0)) for x in range(3)] == [0, 1000, 65535]
+
     def test_tiff_compression(self):
         def encoded_size(encoding_options):
             ir = ImageResult(create_debug_img((100, 100)), PNG_FORMAT)
@@ -137,7 +159,6 @@ class TestImageResult(object):
         assert q50 > lzw
 
     @pytest.mark.xfail(
-        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_greyscale_png(self):
@@ -159,7 +180,6 @@ class TestImageResult(object):
         assert img.getpixel((0, 0)) == (0, 0)
 
     @pytest.mark.xfail(
-        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_png8(self):
@@ -503,9 +523,6 @@ class TestLayerMerge(object):
         img = result.as_image()
         assert_img_colors_eq(img, [(10 * 10, (100, 100, 100, 255))])
 
-    @pytest.mark.skipif(
-        not hasattr(Image, "FASTOCTREE"), reason="PIL has no FASTOCTREE"
-    )
     def test_paletted_merge(self):
         # generate RGBA images with a transparent rectangle in the lower right
         img1 = ImageResult(Image.new("RGBA", (50, 50), (0, 255, 0, 255))).as_image()
@@ -566,9 +583,6 @@ class TestLayerMerge(object):
         )
 
 
-@pytest.mark.skipif(
-    not hasattr(Image, "alpha_composite"), reason="PIL has no alpha_composite"
-)
 class TestLayerCompositeMerge(object):
 
     def test_composite_merge(self):
@@ -898,7 +912,6 @@ class TestTileSplitter(object):
         ]
 
 
-@pytest.mark.skipif(not hasattr(Image, "FASTOCTREE"), reason="PIL has no FASTOCTREE")
 class TestHasTransparency(object):
 
     def test_rgb(self):
@@ -1153,7 +1166,7 @@ class TestImgHasTransparency(object):
         """
         img = Image.new("RGB", (10, 10), (255, 0, 0)).quantize(256)
         assert img.mode == "P"
-        pixels = list(img.getdata())
+        pixels = list(img.get_flattened_data())
         assert 1 not in pixels, "palette index 1 must not appear in image for this test to be valid"
         img.info["transparency"] = 1
         assert not img_has_transparency(img)

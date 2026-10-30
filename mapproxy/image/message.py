@@ -284,14 +284,8 @@ class TextDraw(object):
         boxes = []
         y_offset = 0
         for i, line in enumerate(self.text):
-            try:
-                text_box = draw.textbbox((0, y_offset), line, font=self.font)
-                y_offset = text_box[3] + self.linespacing
-            except AttributeError:
-                # Some Pillow versions do not support textbox for non true type fonts
-                text_size = draw.textsize(line, font=self.font)
-                text_box = (0, y_offset, text_size[0], text_size[1]+y_offset)
-                y_offset += text_size[1] + self.linespacing
+            text_box = draw.textbbox((0, y_offset), line, font=self.font)
+            y_offset = text_box[3] + self.linespacing
             boxes.append(text_box)
             total_bbox = (min(total_bbox[0], text_box[0]),
                           min(total_bbox[1], text_box[1]),
