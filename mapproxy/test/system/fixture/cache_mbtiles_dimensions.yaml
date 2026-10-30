@@ -1,0 +1,31 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    dimensions: ["time"]
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy test fixture
+
+layers:
+  - name: mb
+    dimensions: {
+      "TIME" : {
+        "values" : [
+          "2026-08-03T06:00:00.000Z",
+          "2026-08-03T07:00:00.000Z",
+        ]
+      }
+    }
+    title: TMS Cache Layer
+    sources: [mb_dim_cache]
+
+caches:
+  mb_dim_cache:
+    cache:
+      type: mbtiles_dimensions
+      tile_lock_dir: ./testlockdir
+    sources: []
+
