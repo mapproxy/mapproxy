@@ -1,4 +1,4 @@
-FROM python:3.14-slim-bookworm AS base-libs
+FROM python:3.15-slim-bookworm AS base-libs
 
 LABEL maintainer="mapproxy.org"
 
@@ -60,7 +60,7 @@ LABEL org.opencontainers.image.authors="mapproxy.org"
 LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
 LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy base image"
-LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm and Python 3.14, including necessary dependencies for running MapProxy applications."
+LABEL org.opencontainers.image.description="Docker image for MapProxy based on Debian bookworm and Python 3.15, including necessary dependencies for running MapProxy applications."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
 LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
@@ -78,7 +78,7 @@ LABEL org.opencontainers.image.authors="mapproxy.org"
 LABEL org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
 LABEL org.opencontainers.image.source="https://github.com/mapproxy/mapproxy"
 LABEL org.opencontainers.image.title="MapProxy Development Server"
-LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Debian bookworm and Python 3.14."
+LABEL org.opencontainers.image.description="Docker image for MapProxy development server, based on Debian bookworm and Python 3.15."
 LABEL org.opencontainers.image.url=ghcr.io/mapproxy/mapproxy/mapproxy
 LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 
