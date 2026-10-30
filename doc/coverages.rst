@@ -4,7 +4,7 @@ Coverages
 =========
 
 With coverages you can define areas where data is available or where data you are interested in is.
-MapProxy supports coverages for :doc:`sources <sources>`, :doc:`caches <caches>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
+MapProxy supports coverages for :doc:`sources <sources>`, :doc:`caches <caches>`, :ref:`layers <layers>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
 
 There are five different ways to describe a coverage:

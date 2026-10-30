@@ -680,6 +680,18 @@ class LayerRenderer:
             return layer, None
 
 
+def layer_renders_query(layer, query):
+    """
+    Return True if the resolution of the query is inside the resolution range of the layer
+    and the bbox of the query intersects the coverage of the layer.
+    """
+    if layer.res_range and not layer.res_range.contains(query.bbox, query.size, query.srs):
+        return False
+    if layer.coverage is not None and not layer.coverage.intersects(query.bbox, query.srs):
+        return False
+    return True
+
+
 class WMSLayerBase(ABC):
     """
     Base class for WMS layer (layer groups and leaf layers).
@@ -704,6 +716,7 @@ class WMSLayerBase(ABC):
 
     "resolution range (i.e. ScaleHint) of the layer"
     res_range: Optional[ResolutionRange] = None
+    coverage: Optional[Coverage] = None
     "MapExtend of the layer"
     extent: MapExtent
     name: str
@@ -739,14 +752,17 @@ class WMSLayer(WMSLayerBase):
 
     def __init__(self, name, title, map_layers, info_layers=None, legend_layers=None,
                  res_range=None, md=None, dimensions=None,
-                 nominal_scale=None):
+                 nominal_scale=None, coverage=None):
         self.name = name
         self.title = title
         self.md = md or {}
         self.map_layers = map_layers
         self.info_layers = info_layers or []
         self.legend_layers = legend_layers or []
+        self.coverage = coverage
         self.extent = merge_layer_extents(map_layers)
+        if coverage is not None:
+            self.extent = self.extent.intersection(coverage.extent) or coverage.extent
         self.dimensions = dimensions
         if res_range is None:
             res_range = merge_layer_res_ranges(map_layers)
@@ -760,9 +776,7 @@ class WMSLayer(WMSLayerBase):
         return any(x.is_opaque(query) for x in self.map_layers)
 
     def renders_query(self, query):
-        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
-            return False
-        return True
+        return layer_renders_query(self, query)
 
     def map_layers_for_query(self, query: MapQuery) -> list[tuple[str, list[MapLayer]]]:
         if not self.map_layers:
@@ -770,7 +784,7 @@ class WMSLayer(WMSLayerBase):
         return [(self.name, self.map_layers)]
 
     def info_layers_for_query(self, query):
-        if not self.info_layers:
+        if not self.info_layers or not self.renders_query(query):
             return []
         return [(self.name, self.info_layers)]
 
@@ -811,12 +825,14 @@ class WMSGroupLayer(WMSLayerBase):
     that represents this layer.
     """
 
-    def __init__(self, name, title, this, layers: list[WMSLayerBase], md=None):
+    def __init__(self, name, title, this, layers: list[WMSLayerBase], md=None, coverage=None, dimensions=None):
         self.name = name
         self.title = title
         # TODO: What is the purpose of this 'this'?
         self.this = this
         self.md = md or {}
+        self.coverage = coverage
+        self.dimensions = dimensions
         self.is_active = True if this is not None else False
         self.layers = layers
         self.has_legend = True if this and this.has_legend or any(x.has_legend for x in layers) else False
@@ -827,7 +843,7 @@ class WMSGroupLayer(WMSLayerBase):
         self.nominal_scale = max([layer.nominal_scale if layer.nominal_scale else 0 for layer in all_layers])
 
     def is_opaque(self, query):
-        return any(x.is_opaque(query) for x in self.layers)
+        return any(x.is_opaque(query) for x in self.layers if layer_renders_query(x, query))
 
     @property
     def legend_size(self):
@@ -838,17 +854,18 @@ class WMSGroupLayer(WMSLayerBase):
         return self.this.legend_url
 
     def renders_query(self, query):
-        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
-            return False
-        return True
+        return layer_renders_query(self, query)
 
     def map_layers_for_query(self, query: MapQuery) -> list[tuple[str, list[MapLayer]]]:
         if self.this:
+            if not layer_renders_query(self.this, query):
+                return []
             return self.this.map_layers_for_query(query)
         else:
             layers = []
             for layer in self.layers:
-                layers.extend(layer.map_layers_for_query(query))
+                if layer_renders_query(layer, query):
+                    layers.extend(layer.map_layers_for_query(query))
             return layers
 
     def info_layers_for_query(self, query):
@@ -857,7 +874,8 @@ class WMSGroupLayer(WMSLayerBase):
         else:
             layers = []
             for layer in self.layers:
-                layers.extend(layer.info_layers_for_query(query))
+                if layer_renders_query(layer, query):
+                    layers.extend(layer.info_layers_for_query(query))
             return layers
 
     def child_layers(self) -> OrderedDict[str, WMSLayerBase]:

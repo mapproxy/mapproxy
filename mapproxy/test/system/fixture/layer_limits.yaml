@@ -1,0 +1,108 @@
+globals:
+  image:
+    paletted: false
+
+services:
+  tms:
+    use_grid_names: true
+  wmts:
+  wms:
+    srs: ['EPSG:3857', 'EPSG:4326']
+    featureinfo_types: ['text']
+    md:
+      title: Layer limits
+
+layers:
+  - name: basemap
+    title: Basemap
+    min_res: 1000
+    max_res: 10
+    dimensions:
+      time:
+        values: ['2020', '2021']
+        default: '2021'
+    layers:
+      - name: roads
+        title: Roads
+        sources: [wms_roads]
+      - name: rails
+        title: Rails
+        max_res: 100
+        sources: [wms_rails]
+        dimensions:
+          time:
+            values: ['2019', '2020']
+            default: '2019'
+          reference_time:
+            values: ['2018', '2019']
+            default: '2018'
+      - name: coarse
+        title: Coarse
+        min_res: 50000
+        max_res: 5000
+        sources: [wms_coarse]
+      - name: details
+        title: Details
+        min_res: 500
+        layers:
+          - name: poi
+            title: POI
+            sources: [wms_poi]
+      - name: roads_tiles
+        title: Road tiles
+        sources: [roads_cache]
+  - name: tiled_group
+    title: Tiled group
+    max_res: 1000
+    layers:
+      - name: tiled
+        title: Tiled
+        sources: [tiled_cache]
+
+caches:
+  tiled_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    meta_size: [1, 1]
+    meta_buffer: 0
+    format: image/png
+    sources: [wms_tiled]
+  roads_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    meta_size: [1, 1]
+    meta_buffer: 0
+    format: image/png
+    sources: [wms_roads]
+
+sources:
+  wms_roads:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: roads
+  wms_rails:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: rails
+  wms_coarse:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: coarse
+  wms_poi:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: poi
+  wms_tiled:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: tiled
