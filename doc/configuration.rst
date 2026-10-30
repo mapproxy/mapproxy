@@ -1343,6 +1343,7 @@ Available options are:
 
 ``mode``
   One of ``RGB`` for 24bit images, ``RGBA`` 32bit images with alpha, ``P`` for paletted images or ``I`` for integer images.
+  PNG stores ``I`` images with 16bit, values outside of 0-65535 are clipped. Use TIFF to keep 32bit values.
 
 ``colors``
   The number of colors to reduce the image before encoding. Use ``0`` to disable color reduction (quantizing) for this format and ``256`` for paletted images. See also :ref:`globals.image.paletted <image_paletted>`.

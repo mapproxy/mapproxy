@@ -393,8 +393,7 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
         else:
             img = quantize(img, colors=image_opts.colors,
                            quantizer=quantizer)
-        if hasattr(Image, 'RLE'):
-            defaults['compress_type'] = Image.RLE
+        defaults['compress_type'] = Image.RLE
 
     buf = BytesIO()
     if format == 'jpeg':
@@ -427,20 +426,25 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
     if format == 'jpeg' and img.mode != 'RGB':
         img = img.convert('RGB')
 
+    # PNG has no 32bit integer mode and Pillow>=13 no longer converts I images implicitly,
+    # convert to 16bit like older Pillow versions did (values are clipped to 0-65535)
+    if format == 'png' and img.mode == 'I':
+        img = img.convert('I;16')
+
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
 
 
 def quantize(img: Image.Image, colors=256, alpha=False, defaults=None, quantizer=None) -> Image.Image:
-    if hasattr(Image, 'FASTOCTREE') and quantizer in (None, 'fastoctree'):
+    if quantizer in (None, 'fastoctree'):
         if not alpha:
             img = img.convert('RGB')
         try:
             if img.mode == 'P':
                 # quantize with alpha does not work with P images
                 img = img.convert('RGBA')
-            img = img.quantize(colors, Image.FASTOCTREE)
+            img = img.quantize(colors, Image.Quantize.FASTOCTREE)
         except ValueError:
             pass
     else:
