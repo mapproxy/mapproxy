@@ -28,6 +28,7 @@ from mapproxy.grid.resolutions import (
 from mapproxy.grid.tile_grid import (
     tile_grid,
     TileGrid,
+    registered_ogc_tile_matrix_set,
     tile_grid_from_ogc_tile_matrix_set,
     UnsupportedException,
 )
@@ -1597,3 +1598,25 @@ def test_tile_grid_from_ogc_tile_matrix_set_errors():
         match="Tile matrix set with varying pointOfOrigin depending on tile matrix",
     ):
         tile_grid_from_ogc_tile_matrix_set(d)
+
+
+_WEB_MERCATOR_BBOX = (-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892)
+
+
+@pytest.mark.parametrize("kwargs,expected", [
+    (dict(srs="EPSG:3857", origin="nw"), "WebMercatorQuad"),
+    (dict(srs="EPSG:900913", origin="nw"), "WebMercatorQuad"),
+    (dict(srs="EPSG:3857", origin="nw", num_levels=5), "WebMercatorQuad"),
+    (dict(srs="EPSG:4326", origin="nw", bbox=(-180, -90, 180, 90), min_res=0.703125), "WorldCRS84Quad"),
+    (dict(srs="EPSG:3395", origin="nw", bbox=_WEB_MERCATOR_BBOX), "WorldMercatorWGS84Quad"),
+    (dict(srs="EPSG:3857", origin="sw"), None),
+    (dict(srs="EPSG:900913", origin="sw"), None),
+    (dict(srs="EPSG:4326", origin="sw"), None),
+    (dict(srs="EPSG:4326", origin="nw"), None),
+    (dict(srs="EPSG:3857", origin="nw", tile_size=(512, 512)), None),
+    (dict(srs="EPSG:3857", origin="nw", res_factor=1.5), None),
+    (dict(srs="EPSG:3857", origin="nw", num_levels=26), None),
+])
+def test_registered_ogc_tile_matrix_set(kwargs, expected):
+    registered = registered_ogc_tile_matrix_set(tile_grid(**kwargs))
+    assert (registered.id if registered else None) == expected
