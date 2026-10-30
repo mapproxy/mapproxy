@@ -105,7 +105,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Use python ${{ matrix.python-version }}
+      - name: Use python 3.14
         uses: actions/setup-python@v6
         with:
           python-version: '3.14'

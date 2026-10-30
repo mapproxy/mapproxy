@@ -448,7 +448,7 @@ def quantize(img: Image.Image, colors=256, alpha=False, defaults=None, quantizer
         except ValueError:
             pass
     else:
-        palette = Image.ADAPTIVE  # type: ignore[attr-defined]
+        palette = Image.Palette.ADAPTIVE
         if alpha and img.mode == 'RGBA':
             img.load()  # split might fail if image is not loaded
             alpha = img.split()[3]
@@ -471,11 +471,10 @@ def filter_format(format: str) -> str:
     return format
 
 
-# Pillow==8
 image_filter = {
-    'nearest': Image.NEAREST,  # type: ignore[attr-defined]
-    'bilinear': Image.BILINEAR,  # type: ignore[attr-defined]
-    'bicubic': Image.BICUBIC  # type: ignore[attr-defined]
+    'nearest': Image.Resampling.NEAREST,
+    'bilinear': Image.Resampling.BILINEAR,
+    'bicubic': Image.Resampling.BICUBIC
 }
 
 

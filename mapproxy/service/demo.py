@@ -40,10 +40,7 @@ from mapproxy.source.wms import WMSSource
 from mapproxy.util.escape import escape_html
 from mapproxy.template import template_loader, bunch
 
-try:
-    import importlib_resources as importlib_resources
-except ImportError:
-    from importlib import resources as importlib_resources  # type: ignore
+from importlib import resources as importlib_resources
 
 env = {'bunch': bunch}
 get_template = template_loader(__package__, 'templates', namespace=env)
