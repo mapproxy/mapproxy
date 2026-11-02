@@ -176,6 +176,11 @@ class TestWMTS(SysTest):
             goog_matrixset.findtext("ows:Identifier", namespaces=ns_wmts)
             == "GoogleMapsCompatible"
         )
+        # OGC URN with (empty) version field between authority and code
+        assert (
+            goog_matrixset.findtext("ows:SupportedCRS", namespaces=ns_wmts)
+            == "urn:ogc:def:crs:EPSG::900913"
+        )
         # top left corner: min X first then max Y
         assert re.match(
             r"-20037508\.\d+ 20037508\.\d+",

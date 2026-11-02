@@ -398,7 +398,10 @@ class TileMatrixSet(object):
     def __init__(self, grid):
         self.grid = grid
         self.name = grid.name
-        self.srs_name = grid.srs.srs_code
+        # OGC URN format (OGC 07-092r1) requires an (empty) version field
+        # between authority and code: urn:ogc:def:crs:EPSG::3857
+        authority, code = grid.srs.srs_code.rsplit(':', 1)
+        self.srs_name = f'{authority}::{code}'
         self.tile_matrices = list(self._tile_matrices())
 
     def __iter__(self):
