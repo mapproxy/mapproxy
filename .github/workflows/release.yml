@@ -15,16 +15,13 @@ jobs:
       contents: write # this is needed to create the github release
 
     steps:
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt -y install --no-install-recommends python3-pil python3-yaml python3-pyproj libgeos-dev python3-lxml libgdal-dev python3-shapely libxml2-dev libxslt-dev
-
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup python
+      - name: Setup python 3.14
         uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
 
       - name: Make wheel
         run: |
