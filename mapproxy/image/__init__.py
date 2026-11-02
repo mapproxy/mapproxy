@@ -242,7 +242,8 @@ class ImageResult(BaseImageResult):
                 # need actual image_opts.format for next check
                 self.image_opts = self.image_opts.copy()
                 self.image_opts.format = peek_image_format(buf)
-            if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
+            if self.image_opts and image_opts and (
+                    self.image_opts.format != image_opts.format or self.image_opts.mode != image_opts.mode):
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.image = self.as_image()
                 self._buf = None
@@ -348,12 +349,12 @@ class ReadBufWrapper(object):
 
 def img_has_transparency(img: Image.Image) -> bool:
     if img.mode == 'P':
-        if img.info.get('transparency', False):
-            return True
-        # convert to RGBA and check alpha channel
+        # Convert to RGBA and check the actual alpha channel instead of
+        # relying on img.info['transparency'], which may reference a color
+        # that does not actually appear in the image.
         img = img.convert('RGBA')
     if img.mode == 'RGBA':
-        # any alpha except fully opaque
+        # any alpha except fully opaque (alpha < 255)
         return any(img.histogram()[-256:-1])
     return False
 
@@ -418,6 +419,13 @@ def img_to_buf(img: Image.Image, image_opts, georef=None) -> BytesIO:
     if (format == 'png' and img.mode != 'RGB'
             and 'transparency' in img.info and isinstance(img.info['transparency'], tuple)):
         del img.info['transparency']
+
+    if image_opts.mode is not None and img.mode != image_opts.mode:
+        img = img.convert(image_opts.mode)
+
+    # JPEG must always be RGB
+    if format == 'jpeg' and img.mode != 'RGB':
+        img = img.convert('RGB')
 
     img.save(buf, format, **defaults)
     buf.seek(0)

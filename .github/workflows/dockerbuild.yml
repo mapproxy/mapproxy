@@ -15,7 +15,7 @@ jobs:
       version: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: meta
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -52,6 +52,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}
@@ -61,6 +63,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-dev
@@ -70,6 +74,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
@@ -80,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -99,6 +105,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}-alpine
@@ -108,6 +116,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-alpine-dev
@@ -117,6 +127,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile-alpine
+          build-args: |
+            MAPPROXY_VERSION=${{ github.ref_name }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-alpine-nginx
@@ -129,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run trivy
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           format: 'sarif'
           ignore-unfixed: true
@@ -139,6 +151,6 @@ jobs:
           vuln-type: 'os,library'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.37.4
         with:
           sarif_file: 'trivy-results.sarif'

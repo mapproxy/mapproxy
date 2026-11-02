@@ -39,8 +39,8 @@ services:
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
-      # the application will run at http://localhost/mapproxy/demo/
-      - "80:80"
+      # the application will run at http://localhost:9090/mapproxy/demo/
+      - "9090:9090"
 
   mapproxy-alpine-dev:
     profiles:
@@ -81,8 +81,8 @@ services:
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
-      # the application will run at http://localhost/mapproxy/demo/
-      - "80:80"
+      # the application will run at http://localhost:9090/mapproxy/demo/
+      - "9090:9090"
 
   mapproxy-multiapp:
     profiles:
@@ -106,5 +106,9 @@ services:
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
-      # the application will run at http://localhost/mapproxy/
-      - "80:80"
+      # the application will run at http://localhost:9090/mapproxy/
+      - "9090:9090"
+
+volumes:
+  cache:
+    name: mapproxy-cache

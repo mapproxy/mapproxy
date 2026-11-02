@@ -30,6 +30,7 @@ import pytest
 
 from mapproxy.cache.base import TileLocker
 from mapproxy.cache.file import FileCache
+from mapproxy.cache.path import dimensions_part
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.tile_manager import TileManager
 from mapproxy.client.http import HTTPClient
@@ -1404,3 +1405,32 @@ class TestTileManagerCacheGeojsonCoverage(TileCacheTestBase):
 
         assert self.cache.stored_tiles == set([])
         assert self.cache.loaded_tiles == counting_set([None for _ in coords])
+
+
+class TestDimensionsPart(TileCacheTestBase):
+
+    def test_dimensions_part_sanitized(self):
+
+        with pytest.raises(ValueError):
+            dimensions_part({"forwardparam": "../"})
+
+        with pytest.raises(ValueError):
+            dimensions_part({"forwardparam": "time/../.."})
+
+        with pytest.raises(ValueError):
+            dimensions_part({"forwardparam": "check/../test"})
+
+        with pytest.raises(ValueError):
+            dimensions_part({"forwardparam": "check\\..\\windoze"})
+
+        retVal = dimensions_part({"forwardparam": "1234-5678"})
+        assert retVal == "forwardparam-1234-5678"
+
+        retVal = dimensions_part({"forwardparam": "2004-10-12T13:55:20Z"})
+        assert retVal == "forwardparam-2004-10-12T13:55:20Z"
+
+        retVal = dimensions_part({"forwardparam": "2020-09-22T11:20:00Z/2020-09-22T14:20:00Z/PT2H"})
+        assert retVal == "forwardparam-2020-09-22T11:20:00Z/2020-09-22T14:20:00Z/PT2H"
+
+        retVal = dimensions_part({"forwardparam": r",;.:-_#'+*~´`?ß=})]([/{}])&%$§!^"})
+        assert retVal == "forwardparam-,;.:-_#'+*~´`?ß=})]([/{}])&%$§!^"

@@ -64,13 +64,13 @@ class FileLock(object):
         while not self._locked:
             try:
                 self._lock = self._try_lock()
-            except LockError:
+            except LockError as last_err:
                 current_time = time.time()
                 if current_time < stop_time:
                     time.sleep(self.step)
                     continue
                 else:
-                    raise LockTimeout('another process is still running with our lock')
+                    raise LockTimeout(last_err.args[0]) from last_err
             else:
                 self._locked = True
 

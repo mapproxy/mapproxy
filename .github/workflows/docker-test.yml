@@ -1,0 +1,91 @@
+name: Docker Image Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile-alpine'
+      - 'docker/**'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile-alpine'
+      - 'docker/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - dockerfile: Dockerfile
+            target: development
+            port: 8080
+            name: mapproxy-development
+            test_path: /demo/
+          - dockerfile: Dockerfile
+            target: nginx
+            port: 9090
+            name: mapproxy-nginx
+            test_path: /mapproxy/demo/
+          - dockerfile: Dockerfile-alpine
+            target: development
+            port: 8080
+            name: mapproxy-alpine-development
+            test_path: /demo/
+          - dockerfile: Dockerfile-alpine
+            target: nginx
+            port: 9090
+            name: mapproxy-alpine-nginx
+            test_path: /mapproxy/demo/
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v7
+
+      - name: Build Docker image (${{ matrix.name }})
+        run: |
+          docker build -f ${{ matrix.dockerfile }} --target ${{ matrix.target }} -t mapproxy-${{ matrix.name }}:test .
+
+      - name: Start container
+        run: |
+          docker run -d --name mapproxy-test \
+            -p ${{ matrix.port }}:${{ matrix.port }} \
+            -v ${{ github.workspace }}/docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml \
+            mapproxy-${{ matrix.name }}:test
+          sleep 5
+
+      - name: Check container is running
+        run: |
+          docker ps | grep mapproxy-test
+          docker logs mapproxy-test
+
+      - name: Test HTTP endpoint
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:${{ matrix.port }}${{ matrix.test_path }}; then
+              echo "✅ MapProxy (${{ matrix.name }}) is responding"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 2
+          done
+          echo "❌ MapProxy (${{ matrix.name }}) did not respond"
+          docker logs mapproxy-test
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop mapproxy-test || true
+          docker rm mapproxy-test || true

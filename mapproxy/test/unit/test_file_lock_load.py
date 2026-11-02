@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import multiprocessing
+import multiprocess
 import threading
 import time
 
@@ -40,7 +40,7 @@ def test_file_lock_load(tmpdir):
             time.sleep(0.01)
             lock((lock_file, count_file))
     threads = [threading.Thread(target=lock_x) for _ in range(20)]
-    p = multiprocessing.Pool(5)
+    p = multiprocess.Pool(5)
     [t.start() for t in threads]
     p.map(lock, [(lock_file, count_file) for _ in range(50)])
     [t.join() for t in threads]

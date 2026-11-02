@@ -352,11 +352,13 @@ class DemoServer(Server):
         background_url = base_config().background.url
         if self.background:
             background_url = self.background["url"]
+
+        res = [wmts_layer.grid.resolutions[k] for k in list(wmts_layer.grid.resolutions)]
         return template.substitute(layer=wmts_layer,
                                    matrix_set=wmts_layer.grid.name,
                                    format=escape_html(req.args['format']),
                                    srs=escape_html(req.args['srs']),
-                                   resolutions=wmts_layer.grid.resolutions,
+                                   resolutions=res,
                                    units=units,
                                    all_tile_layers=self.tile_layers,
                                    rest_enabled=rest_enabled,

@@ -15,6 +15,7 @@
 
 import os
 import time
+from unittest import mock
 
 import pytest
 
@@ -25,7 +26,9 @@ except ImportError:
 
 from mapproxy.cache.redis import RedisCache
 from mapproxy.cache.tile import Tile
-from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+from mapproxy.image import ImageResult
+from mapproxy.image.opts import ImageOptions
+from mapproxy.test.unit.test_cache_tile import TileCacheTestBase, tile_image
 
 
 @pytest.mark.skipif(not redis or not os.environ.get('MAPPROXY_TEST_REDIS'),
@@ -121,3 +124,64 @@ class TestRedisCache(TileCacheTestBase):
         assert cache.store_tile(t1)
         t2 = Tile(t1.coord)
         assert cache.is_cached(t2)
+
+
+@pytest.mark.skipif(not redis, reason="redis package required")
+class TestRedisErrorHandling:
+    """An unavailable Redis (timeout/connection error) must fall back gracefully
+    — return False / not crash the worker — so MapProxy can use the next cache.
+    Any other exception indicates a real defect and must propagate.
+
+    StrictRedis connects lazily, so these run without a live server: we build a
+    RedisCache and swap in a fake client that raises on every operation.
+    """
+
+    def _cache_with_client(self, client):
+        cache = RedisCache('localhost', 6379, prefix='mapproxy-test', db=1)
+        cache.r = client
+        return cache
+
+    def _stored_tile(self):
+        return Tile((0, 0, 1),
+                    ImageResult(tile_image, image_opts=ImageOptions(format='image/png')))
+
+    def _client_raising(self, exc):
+        client = mock.Mock()
+        client.exists.side_effect = exc
+        client.get.side_effect = exc
+        client.set.side_effect = exc
+        client.delete.side_effect = exc
+        pipe = mock.Mock()
+        pipe.execute.side_effect = exc
+        client.pipeline.return_value = pipe
+        return client
+
+    @pytest.mark.parametrize('exc', [
+        redis.exceptions.TimeoutError if redis else None,
+        redis.exceptions.ConnectionError if redis else None,
+    ])
+    def test_unavailable_redis_falls_back(self, exc):
+        cache = self._cache_with_client(self._client_raising(exc()))
+        assert cache.is_cached(Tile((0, 0, 1))) is False
+        assert cache.load_tile(Tile((0, 0, 1))) is False
+        tile = self._stored_tile()
+        assert cache.store_tile(tile) is False
+        # a failed store must not leave the tile marked stored, otherwise a
+        # fallback cache in a cascade would skip it
+        assert tile.stored is False
+        assert cache.remove_tile(Tile((0, 0, 1))) is False
+        # metadata loading must not raise
+        cache.load_tile_metadata(Tile((0, 0, 1)))
+
+    def test_other_exception_propagates(self):
+        cache = self._cache_with_client(self._client_raising(ValueError("boom")))
+        with pytest.raises(ValueError):
+            cache.is_cached(Tile((0, 0, 1)))
+        with pytest.raises(ValueError):
+            cache.load_tile(Tile((0, 0, 1)))
+        with pytest.raises(ValueError):
+            cache.store_tile(self._stored_tile())
+        with pytest.raises(ValueError):
+            cache.remove_tile(Tile((0, 0, 1)))
+        with pytest.raises(ValueError):
+            cache.load_tile_metadata(Tile((0, 0, 1)))
