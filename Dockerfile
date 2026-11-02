@@ -25,7 +25,7 @@ RUN rm -rf dist/* && \
 ###### base/plain image ######
 FROM base-libs AS base
 
-ARG MAPPROXY_VERSION=7.0.0
+ARG MAPPROXY_VERSION=8.0.0
 ARG USER_UID=1000
 ARG USER_GID=1000
 
@@ -67,7 +67,7 @@ LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 ###### development image ######
 FROM base AS development
 
-ARG MAPPROXY_VERSION=7.0.0
+ARG MAPPROXY_VERSION=8.0.0
 ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
 
 EXPOSE 8080
@@ -85,7 +85,7 @@ LABEL org.opencontainers.image.version=${MAPPROXY_VERSION}
 ##### nginx image ######
 FROM base AS nginx
 
-ARG MAPPROXY_VERSION=7.0.0
+ARG MAPPROXY_VERSION=8.0.0
 ARG NGINX_VERSION=1.31.3
 ARG NGINX_PKG_VERSION=${NGINX_VERSION}-1~bookworm
 ENV MAPPROXY_VERSION=${MAPPROXY_VERSION}
