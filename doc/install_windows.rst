@@ -11,7 +11,7 @@ Virtualenv
 
 To create a new virtual environment for your MapProxy installation and to activate it go to the command line and call::
 
- C:\Python38\python path\to\virtualenv.py c:\mapproxy_venv
+ C:\Python314\python -m venv c:\mapproxy_venv
  C:\mapproxy_venv\Scripts\activate.bat
 
 .. note::
@@ -32,7 +32,7 @@ PIP
 
 MapProxy and most dependencies can be installed with the ``pip`` command. `Read the pip documentation for more information <https://pip.pypa.io/en/stable/installing/>`_.
 
-    c:\Python38\Scripts\pip install MapProxy
+    c:\Python314\Scripts\pip install MapProxy
 
 This might take a minute.
 

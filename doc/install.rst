@@ -19,15 +19,13 @@ This is really, easy `but` we recommend to install MapProxy into a `virtual Pyth
 Create a new virtual environment
 --------------------------------
 
-``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation.html>`_.
+Python ships with the ``venv`` module to create virtual environments. To create a new environment with the name ``venv`` call::
 
-To create a new environment with the name ``venv`` call::
-
-    virtualenv --system-site-packages venv
+    python3.14 -m venv venv
 
 You should now have a Python installation under ``venv/bin/python``.
 
-.. note:: Virtualenv will use your Python system packages (like ``python-imaging`` or ``python-yaml``) only when the virtualenv was created with the ``--system-site-packages`` option.
+.. note:: The virtual environment will use your Python system packages (like ``python3-yaml``) only when it was created with the ``--system-site-packages`` option. This only works if the system Python is version 3.14 or higher.
 
 You need to either prefix all commands with ``venv/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
 
@@ -56,6 +54,8 @@ packages will only work if the python version you are using is the same as the s
 packages can be quite old, so this is **not recommended**::
 
   sudo apt-get install python3-dev python3-pil python3-yaml python3-pyproj python3-lxml python3-shapely
+
+.. note:: MapProxy requires Pillow 13.0.0 or higher. The ``python3-pil`` package of most distributions is older, in that case pip will install a newer Pillow anyway.
 
 
 Install MapProxy
