@@ -11,6 +11,7 @@ Improvements:
 
 Maintenance:
 
+  - Use Python 3.15 for the Docker images, CI and release builds. Python 3.14 is still supported
   - Raise minimal Pillow version to 13.0.0 because of security fixes
   - Remove compatibility code for old Pillow versions
   - Convert ``I`` mode images to 16bit before writing PNG, as Pillow 13 no longer does this implicitly.

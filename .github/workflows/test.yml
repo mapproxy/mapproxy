@@ -105,10 +105,10 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Use python 3.14
+      - name: Use python 3.15
         uses: actions/setup-python@v6
         with:
-          python-version: '3.14'
+          python-version: '3.15'
           cache: 'pip'
 
       - name: Install dependencies ⏬
@@ -156,10 +156,10 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Use python 3.14
+      - name: Use python 3.15
         uses: actions/setup-python@v6
         with:
-          python-version: 3.14
+          python-version: 3.15
 
       - name: Install requirements
         run: |
@@ -176,10 +176,10 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v7
 
-      - name: Use python 3.14
+      - name: Use python 3.15
         uses: actions/setup-python@v6
         with:
-          python-version: 3.14
+          python-version: 3.15
 
       - name: Install requirements
         run: |
