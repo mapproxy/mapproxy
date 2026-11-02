@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup python 3.15
+      - name: Setup python 3.14
         uses: actions/setup-python@v6
         with:
-          python-version: '3.15'
+          python-version: '3.14'
 
       - name: Make wheel
         run: |

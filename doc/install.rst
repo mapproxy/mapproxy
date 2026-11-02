@@ -21,7 +21,7 @@ Create a new virtual environment
 
 Python ships with the ``venv`` module to create virtual environments. To create a new environment with the name ``venv`` call::
 
-    python3.15 -m venv venv
+    python3.14 -m venv venv
 
 You should now have a Python installation under ``venv/bin/python``.
 
