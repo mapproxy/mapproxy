@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
+    "config:best-practices",
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)"
   ],
@@ -23,9 +23,9 @@
       "minimumReleaseAge": "3 days"
     },
     {
-      "description": "Python 3.14 stays the default version for the Docker images, CI jobs and .python-version. Python 3.15 is tested in the CI matrix. Adapt this rule to switch the default version",
-      "matchPackageNames": ["python", "actions/python-versions"],
-      "allowedVersions": "/^3\\.14(\\.|-|$)/"
+      "description": "Don't pin the base images of the Dockerfiles to a digest. The weekly rebuild of the latest release (dockerbuild.yml) relies on the image tags to get updated base images",
+      "matchManagers": ["dockerfile"],
+      "pinDigests": false
     },
     {
       "description": "Group non-major updates of the test dependencies",
@@ -40,6 +40,13 @@
       "groupName": "GitHub Actions (non-major)"
     },
     {
+      "description": "Changing the Python version of the Docker images, CI jobs and .python-version is a deliberate decision. It is offered on the Dependency Dashboard and updates all files together",
+      "matchPackageNames": ["python", "actions/python-versions"],
+      "matchUpdateTypes": ["minor", "major"],
+      "dependencyDashboardApproval": true,
+      "groupName": "Python"
+    },
+    {
       "description": "Jinja2 and MarkupSafe can only be updated together",
       "matchPackageNames": ["Jinja2", "MarkupSafe"],
       "groupName": "Jinja2 and MarkupSafe"
@@ -48,31 +55,28 @@
       "description": "Pillow is pinned in requirements-tests.txt and in the test workflow matrix, update both together",
       "matchPackageNames": ["Pillow"],
       "groupName": "Pillow"
-    },
-    {
-      "description": "The Debian image installs nginx mainline (odd minor version) from the nginx.org apt repository, give the repository time to publish the package",
-      "matchFileNames": ["Dockerfile"],
-      "matchPackageNames": ["nginx/nginx"],
-      "allowedVersions": "/^1\\.\\d*[13579]\\.\\d+$/",
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "description": "The Alpine image builds nginx stable (even minor version) from source",
-      "matchFileNames": ["Dockerfile-alpine"],
-      "matchPackageNames": ["nginx/nginx"],
-      "allowedVersions": "/^1\\.\\d*[02468]\\.\\d+$/"
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update the nginx version in the Dockerfiles",
-      "managerFilePatterns": ["/^Dockerfile$/", "/^Dockerfile-alpine$/"],
+      "description": "The Debian image installs nginx from the nginx.org mainline package repository, so take the versions from there",
+      "managerFilePatterns": ["/^Dockerfile$/"],
       "matchStrings": ["ARG NGINX_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "nginx",
-      "packageNameTemplate": "nginx/nginx",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^release-(?<version>.+)$"
+      "datasourceTemplate": "deb",
+      "registryUrlTemplate": "https://nginx.org/packages/mainline/debian?suite=bookworm&components=nginx&binaryArch=amd64",
+      "extractVersionTemplate": "^(?<version>.+)-\\d+~bookworm$"
+    },
+    {
+      "customType": "regex",
+      "description": "The Alpine image builds nginx stable from source, so take the versions from the nginx.org stable package repository for the Alpine version of the base image",
+      "managerFilePatterns": ["/^Dockerfile-alpine$/"],
+      "matchStrings": ["ARG NGINX_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "nginx",
+      "datasourceTemplate": "apk",
+      "registryUrlTemplate": "https://nginx.org/packages/alpine?branch=v3.24&components=main&arch=x86_64",
+      "extractVersionTemplate": "^(?<version>.+)-r\\d+$"
     },
     {
       "customType": "regex",
