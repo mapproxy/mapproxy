@@ -1,0 +1,89 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    ":automergeDigest"
+  ],
+  "labels": ["dependencies"],
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"]
+  },
+  "packageRules": [
+    {
+      "description": "Major updates are only created after approval on the Dependency Dashboard",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Wait a few days before updating Python packages, fresh releases are sometimes yanked or compromised",
+      "matchDatasources": ["pypi"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Automerge updates that only change the Dockerfiles (base image digests, nginx) if the tests pass",
+      "matchFileNames": ["Dockerfile", "Dockerfile-alpine"],
+      "automerge": true
+    },
+    {
+      "description": "Group non-major updates of the test dependencies",
+      "matchFileNames": ["requirements-tests.txt"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "test dependencies (non-major)"
+    },
+    {
+      "description": "Group non-major updates of GitHub Actions and CI service images",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "GitHub Actions (non-major)"
+    },
+    {
+      "description": "Changing the Python version of the Docker images, CI jobs and .python-version is a deliberate decision. It is offered on the Dependency Dashboard and updates all files together",
+      "matchPackageNames": ["python", "actions/python-versions"],
+      "matchUpdateTypes": ["minor", "major"],
+      "dependencyDashboardApproval": true,
+      "groupName": "Python"
+    },
+    {
+      "description": "Jinja2 and MarkupSafe can only be updated together",
+      "matchPackageNames": ["Jinja2", "MarkupSafe"],
+      "groupName": "Jinja2 and MarkupSafe"
+    },
+    {
+      "description": "Pillow is pinned in requirements-tests.txt and in the test workflow matrix, update both together",
+      "matchPackageNames": ["Pillow"],
+      "groupName": "Pillow"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The Debian image installs nginx from the nginx.org mainline package repository, so take the versions from there",
+      "managerFilePatterns": ["/^Dockerfile$/"],
+      "matchStrings": ["ARG NGINX_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "nginx",
+      "datasourceTemplate": "deb",
+      "registryUrlTemplate": "https://nginx.org/packages/mainline/debian?suite=bookworm&components=nginx&binaryArch=amd64",
+      "extractVersionTemplate": "^(?<version>.+)-\\d+~bookworm$"
+    },
+    {
+      "customType": "regex",
+      "description": "The Alpine image builds nginx stable from source, so take the versions from the nginx.org stable package repository for the Alpine version of the base image",
+      "managerFilePatterns": ["/^Dockerfile-alpine$/"],
+      "matchStrings": ["ARG NGINX_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "nginx",
+      "datasourceTemplate": "apk",
+      "registryUrlTemplate": "https://nginx.org/packages/alpine?branch=v3.24&components=main&arch=x86_64",
+      "extractVersionTemplate": "^(?<version>.+)-r\\d+$"
+    },
+    {
+      "customType": "regex",
+      "description": "Update the Pillow version in the test workflow matrix",
+      "managerFilePatterns": ["/^\\.github/workflows/test\\.yml$/"],
+      "matchStrings": ["pillow-version: \\[\"(?<currentValue>[^\"]+)\"\\]"],
+      "depNameTemplate": "Pillow",
+      "datasourceTemplate": "pypi"
+    }
+  ]
+}
