@@ -20,11 +20,11 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       redis-server:
-        image: redis
+        image: redis@sha256:de1068af6f552240dfab67bcc9bfef99bfc60f776bb4580ef077ea4c8c97e848
         ports:
           - 6379:6379
       couchdb:
-        image: couchdb:2
+        image: couchdb:2@sha256:30dc067ce470fd437f4074d41f150fa81c1ff9c923a371d38f155d1a36159f4e
         ports:
           - 5984:5984
       azure-blob:
@@ -52,10 +52,10 @@ jobs:
         sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
     - name: Checkout sources
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
     - name: Use python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -76,15 +76,15 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       redis-server:
-        image: redis
+        image: redis@sha256:de1068af6f552240dfab67bcc9bfef99bfc60f776bb4580ef077ea4c8c97e848
         ports:
           - 6379:6379
       couchdb:
-        image: couchdb:2
+        image: couchdb:2@sha256:30dc067ce470fd437f4074d41f150fa81c1ff9c923a371d38f155d1a36159f4e
         ports:
           - 5984:5984
       azure-blob:
-        image: mcr.microsoft.com/azure-storage/azurite
+        image: mcr.microsoft.com/azure-storage/azurite@sha256:830430c1da1a2d537e08f3e6764dd1f5ae00cf0346bcaf625b968ec3f0971fd5
         ports:
           - 10000:10000
 
@@ -103,10 +103,10 @@ jobs:
           sudo apt install proj-bin libgeos-dev libgdal-dev libxslt-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.14'
           cache: 'pip'
@@ -128,7 +128,7 @@ jobs:
           echo "${{ github.event.number }}" > pr_number.txt
 
       - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: github.event_name == 'pull_request'
         with:
           name: coverage-report
@@ -141,7 +141,7 @@ jobs:
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
     - name: Install doc dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
@@ -154,10 +154,10 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: 3.14
 
@@ -174,10 +174,10 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: 3.14
 
