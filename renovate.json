@@ -1,0 +1,86 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": ["* 0-8 * * 1"],
+  "labels": ["dependencies"],
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"]
+  },
+  "packageRules": [
+    {
+      "description": "Major updates are only created after approval on the Dependency Dashboard",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Wait a few days before updating Python packages, fresh releases are sometimes yanked or compromised",
+      "matchDatasources": ["pypi"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Python 3.14 stays the default version for the Docker images, CI jobs and .python-version. Python 3.15 is tested in the CI matrix. Adapt this rule to switch the default version",
+      "matchPackageNames": ["python", "actions/python-versions"],
+      "allowedVersions": "/^3\\.14(\\.|-|$)/"
+    },
+    {
+      "description": "Group non-major updates of the test dependencies",
+      "matchFileNames": ["requirements-tests.txt"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "test dependencies (non-major)"
+    },
+    {
+      "description": "Group non-major updates of GitHub Actions and CI service images",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "GitHub Actions (non-major)"
+    },
+    {
+      "description": "Jinja2 and MarkupSafe can only be updated together",
+      "matchPackageNames": ["Jinja2", "MarkupSafe"],
+      "groupName": "Jinja2 and MarkupSafe"
+    },
+    {
+      "description": "Pillow is pinned in requirements-tests.txt and in the test workflow matrix, update both together",
+      "matchPackageNames": ["Pillow"],
+      "groupName": "Pillow"
+    },
+    {
+      "description": "The Debian image installs nginx mainline (odd minor version) from the nginx.org apt repository, give the repository time to publish the package",
+      "matchFileNames": ["Dockerfile"],
+      "matchPackageNames": ["nginx/nginx"],
+      "allowedVersions": "/^1\\.\\d*[13579]\\.\\d+$/",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "The Alpine image builds nginx stable (even minor version) from source",
+      "matchFileNames": ["Dockerfile-alpine"],
+      "matchPackageNames": ["nginx/nginx"],
+      "allowedVersions": "/^1\\.\\d*[02468]\\.\\d+$/"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update the nginx version in the Dockerfiles",
+      "managerFilePatterns": ["/^Dockerfile$/", "/^Dockerfile-alpine$/"],
+      "matchStrings": ["ARG NGINX_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "nginx",
+      "packageNameTemplate": "nginx/nginx",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^release-(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Update the Pillow version in the test workflow matrix",
+      "managerFilePatterns": ["/^\\.github/workflows/test\\.yml$/"],
+      "matchStrings": ["pillow-version: \\[\"(?<currentValue>[^\"]+)\"\\]"],
+      "depNameTemplate": "Pillow",
+      "datasourceTemplate": "pypi"
+    }
+  ]
+}

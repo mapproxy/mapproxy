@@ -8,25 +8,42 @@ on:
   push:
     tags:
       - "*.*.*"
+  # Rebuild the images of the latest release weekly, so they contain updated base images and packages.
+  # The release tag is checked out, so the images only change in their dependencies.
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to rebuild, e.g. 8.0.0 (default: latest release)"
+        required: false
+
 jobs:
   get-version:
     runs-on: ubuntu-24.04
     outputs:
-      version: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ghcr.io/${{ github.repository }}/mapproxy:${{ steps.tag.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          flavor: |
-            latest=false
-          images: |
-            ghcr.io/${{ github.repository }}/mapproxy
-          tags: |
-            type=semver,pattern={{version}}
+      - name: Determine release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
+          elif [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
+          else
+            TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          fi
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: '$TAG'"
+            exit 1
+          fi
+          echo "Using release tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
   build-and-publish-ubuntu:
     needs: get-version
@@ -34,6 +51,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.get-version.outputs.tag }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -53,7 +72,7 @@ jobs:
         with:
           file: ./Dockerfile
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}
@@ -64,7 +83,7 @@ jobs:
         with:
           file: ./Dockerfile
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-dev
@@ -75,7 +94,7 @@ jobs:
         with:
           file: ./Dockerfile
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-nginx
@@ -87,6 +106,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.get-version.outputs.tag }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -106,7 +127,7 @@ jobs:
         with:
           file: ./Dockerfile-alpine
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: base
           tags: ${{ needs.get-version.outputs.version }}-alpine
@@ -117,7 +138,7 @@ jobs:
         with:
           file: ./Dockerfile-alpine
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: development
           tags: ${{ needs.get-version.outputs.version }}-alpine-dev
@@ -128,7 +149,7 @@ jobs:
         with:
           file: ./Dockerfile-alpine
           build-args: |
-            MAPPROXY_VERSION=${{ github.ref_name }}
+            MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
           push: true
           target: nginx
           tags: ${{ needs.get-version.outputs.version }}-alpine-nginx
