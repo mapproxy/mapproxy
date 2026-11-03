@@ -1,3 +1,15 @@
+8.0.1 2026-11-03
+~~~~~~~~~~~~~~~~
+
+Maintenance:
+
+  - Use Renovate instead of Dependabot and the docker-update workflow for dependency updates
+  - Pin GitHub Actions, CI service images and Docker base images to digests
+  - Docker images of a release are now built from the release tag, manual rebuilds only update dependencies
+  - Update nginx in the Docker images to 1.31.8 (Debian) and 1.30.6 (Alpine)
+  - Update test dependencies with security fixes (ecdsa, idna, soupsieve, urllib3)
+
+
 8.0.0 2026-11-02
 ~~~~~~~~~~~~~~~~
 
