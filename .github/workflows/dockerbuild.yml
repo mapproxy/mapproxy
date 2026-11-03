@@ -8,10 +8,7 @@ on:
   push:
     tags:
       - "*.*.*"
-  # Rebuild the images of the latest release weekly, so they contain updated base images and packages.
-  # The release tag is checked out, so the images only change in their dependencies.
-  schedule:
-    - cron: "0 4 * * 1"
+  # Manual rebuild of a release. The release tag is checked out, so the images only change in their dependencies.
   workflow_dispatch:
     inputs:
       tag:

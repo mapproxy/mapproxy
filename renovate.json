@@ -3,10 +3,9 @@
   "extends": [
     "config:best-practices",
     ":semanticCommits",
-    ":semanticCommitTypeAll(chore)"
+    ":semanticCommitTypeAll(chore)",
+    ":automergeDigest"
   ],
-  "timezone": "Europe/Berlin",
-  "schedule": ["* 0-8 * * 1"],
   "labels": ["dependencies"],
   "vulnerabilityAlerts": {
     "labels": ["dependencies", "security"]
@@ -23,9 +22,9 @@
       "minimumReleaseAge": "3 days"
     },
     {
-      "description": "Don't pin the base images of the Dockerfiles to a digest. The weekly rebuild of the latest release (dockerbuild.yml) relies on the image tags to get updated base images",
-      "matchManagers": ["dockerfile"],
-      "pinDigests": false
+      "description": "Automerge updates that only change the Dockerfiles (base image digests, nginx) if the tests pass",
+      "matchFileNames": ["Dockerfile", "Dockerfile-alpine"],
+      "automerge": true
     },
     {
       "description": "Group non-major updates of the test dependencies",
