@@ -70,6 +70,7 @@ jobs:
       - name: Build and push base image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
@@ -81,6 +82,7 @@ jobs:
       - name: Build and push development image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
@@ -92,6 +94,7 @@ jobs:
       - name: Build and push nginx image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
@@ -125,6 +128,7 @@ jobs:
       - name: Build and push base alpine image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile-alpine
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
@@ -136,6 +140,7 @@ jobs:
       - name: Build and push alpine development image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile-alpine
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
@@ -147,6 +152,7 @@ jobs:
       - name: Build and push alpine based nginx image
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: ./Dockerfile-alpine
           build-args: |
             MAPPROXY_VERSION=${{ needs.get-version.outputs.tag }}
