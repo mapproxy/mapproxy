@@ -78,4 +78,4 @@ websocket-client==1.8.0
 WebTest==3.0.0
 wrapt==1.17.2
 xmltodict==0.13.0
-zipp==3.23.0
+zipp==4.1.2
