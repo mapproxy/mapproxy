@@ -1,4 +1,4 @@
-attrs==23.2.0
+attrs==26.1.0
 aws-sam-translator==1.91.0
 aws-xray-sdk==2.12.1
 azure-storage-blob==12.27.1
