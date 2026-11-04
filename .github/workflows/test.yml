@@ -127,7 +127,7 @@ jobs:
       - name: Create coverage report
         run: |
           coverage xml -o coverage.xml
-          diff-cover coverage.xml --compare-branch=origin/master --format markdown > changed-coverage-details.md
+          diff-cover coverage.xml --compare-branch=origin/master --format markdown:changed-coverage-details.md
           coverage report -m --format markdown > coverage-report-details.md
           total=$(grep '^| TOTAL |' coverage-report-details.md)
           total_coverage=$(printf '%s\n' "$total" | awk -F'|' '{gsub(/[[:space:]]/, "", $5); print $5}')
