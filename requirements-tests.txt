@@ -77,5 +77,5 @@ WebOb==1.8.11
 websocket-client==1.8.0
 WebTest==3.0.0
 wrapt==2.5.2
-xmltodict==0.13.0
+xmltodict==1.0.4
 zipp==4.1.2
