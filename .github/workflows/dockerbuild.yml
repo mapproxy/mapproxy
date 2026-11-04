@@ -17,7 +17,7 @@ on:
 
 jobs:
   get-version:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
       version: ghcr.io/${{ github.repository }}/mapproxy:${{ steps.tag.outputs.tag }}
