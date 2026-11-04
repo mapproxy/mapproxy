@@ -209,7 +209,8 @@ class TileServer(Server):
 
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager, info_sources=None, dimensions=None, legend_version=None):
+    def __init__(self, name, title, md, tile_manager, info_sources=None, dimensions=None, legend_version=None,
+                 res_range=None, coverage=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -220,6 +221,8 @@ class TileLayer(object):
         self.tile_manager = tile_manager
         self.info_sources = info_sources or []
         self.dimensions = dimensions
+        self.res_range = res_range
+        self.coverage = coverage
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = self.md.get('extent').transform(tile_manager.grid.srs)
         self._empty_tile = None
@@ -275,6 +278,17 @@ class TileLayer(object):
             self._empty_tile = img.as_buffer().read()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
 
+    def shows_tile_bbox(self, bbox):
+        """
+        Return True if a tile with the given bbox is inside the resolution range
+        and intersects the coverage of this layer.
+        """
+        if self.res_range and not self.res_range.contains(bbox, self.grid.tile_size, self.grid.srs):
+            return False
+        if self.coverage is not None and not self.coverage.intersects(bbox, self.grid.srs):
+            return False
+        return True
+
     def tile_bbox(self, tile_request, use_profiles=False, limit=False):
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         return self.grid.tile_bbox(tile_coord, limit=limit)
@@ -301,6 +315,9 @@ class TileLayer(object):
                                code='InvalidParameterValue')
 
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
+
+        if not self.shows_tile_bbox(self.grid.tile_bbox(tile_coord)):
+            return self.empty_response()
 
         coverage_intersects = False
         if coverage:
