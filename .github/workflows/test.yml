@@ -127,11 +127,18 @@ jobs:
       - name: Create coverage report
         run: |
           coverage xml -o coverage.xml
-          diff-cover coverage.xml --compare-branch=origin/master --format markdown:changed-coverage-details.md
+          : > changed-coverage-details.md
+          diff_cover_status=0
+          diff-cover coverage.xml --compare-branch=origin/master --format markdown:changed-coverage-details.md || diff_cover_status=$?
+          if [[ $diff_cover_status -ne 0 ]]; then
+            if [[ $diff_cover_status -ne 1 ]]; then
+              exit "$diff_cover_status"
+            fi
+          fi
           coverage report -m --format markdown > coverage-report-details.md
-          total=$(grep '^| TOTAL |' coverage-report-details.md)
+          total=$(grep '^| TOTAL |' coverage-report-details.md || true)
           total_coverage=$(printf '%s\n' "$total" | awk -F'|' '{gsub(/[[:space:]]/, "", $5); print $5}')
-          changed_coverage=$(sed -n 's/^- \*\*Coverage\*\*: //p' changed-coverage-details.md)
+          changed_coverage=$(sed -n 's/^- \*\*Coverage\*\*: //p' changed-coverage-details.md || true)
           changed_coverage=${changed_coverage:-N/A}
           {
             echo "**Test coverage of changed lines:** ${changed_coverage} | **Total coverage:** ${total_coverage}"
