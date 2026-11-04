@@ -46,7 +46,7 @@ Pillow==13.0.0 # This version is overwritten in the test workflow, please adjust
 pluggy==1.6.0
 py==1.11.0
 pyasn1==0.6.5
-pycparser==2.22
+pycparser==3.12
 pyparsing==3.3.2
 pyproj==3.7.2;python_version<"3.15"
 pyproj==3.8.0;python_version>"3.14"
