@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     services:
       redis-server:
         image: redis@sha256:de1068af6f552240dfab67bcc9bfef99bfc60f776bb4580ef077ea4c8c97e848
@@ -73,7 +73,7 @@ jobs:
         pytest mapproxy
 
   coverage:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     services:
       redis-server:
         image: redis@sha256:de1068af6f552240dfab67bcc9bfef99bfc60f776bb4580ef077ea4c8c97e848
@@ -169,7 +169,7 @@ jobs:
             pr_number.txt
 
   doc:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout sources
@@ -182,7 +182,7 @@ jobs:
       run: sphinx-build doc/ docs -W
 
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Checkout sources
@@ -202,7 +202,7 @@ jobs:
           flake8
 
   typechecking:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Checkout sources
