@@ -104,6 +104,8 @@ jobs:
 
       - name: Checkout sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
 
       - name: Use python 3.14
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -124,7 +126,37 @@ jobs:
 
       - name: Create coverage report
         run: |
-          coverage report -m --format markdown > coverage-report.md
+          coverage xml -o coverage.xml
+          : > changed-coverage-details.md
+          diff_cover_status=0
+          diff-cover coverage.xml --compare-branch=origin/master --format markdown:changed-coverage-details.md || diff_cover_status=$?
+          if [[ $diff_cover_status -ne 0 ]]; then
+            if [[ $diff_cover_status -ne 1 ]]; then
+              exit "$diff_cover_status"
+            fi
+          fi
+          coverage report -m --format markdown > coverage-report-details.md
+          total=$(grep '^| TOTAL |' coverage-report-details.md || true)
+          total_coverage=$(printf '%s\n' "$total" | awk -F'|' '{gsub(/[[:space:]]/, "", $5); print $5}')
+          changed_coverage=$(sed -n 's/^- \*\*Coverage\*\*: //p' changed-coverage-details.md || true)
+          changed_coverage=${changed_coverage:-N/A}
+          {
+            echo "**Test coverage of changed lines:** ${changed_coverage} | **Total coverage:** ${total_coverage}"
+            echo
+            echo '<details>'
+            echo '<summary>Changed files</summary>'
+            echo
+            cat changed-coverage-details.md
+            echo
+            echo '</details>'
+            echo
+            echo '<details>'
+            echo "<summary>Full coverage report: ${total_coverage}</summary>"
+            echo
+            cat coverage-report-details.md
+            echo
+            echo '</details>'
+          } > coverage-report.md
           echo "${{ github.event.number }}" > pr_number.txt
 
       - name: Upload Coverage Artifact
