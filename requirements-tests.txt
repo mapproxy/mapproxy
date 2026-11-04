@@ -76,6 +76,6 @@ waitress==3.0.2
 WebOb==1.8.11
 websocket-client==1.8.0
 WebTest==3.0.0
-wrapt==1.17.2
+wrapt==2.5.2
 xmltodict==0.13.0
 zipp==3.23.0
