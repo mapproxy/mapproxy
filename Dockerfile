@@ -1,4 +1,4 @@
-FROM python:3.14-slim-bookworm@sha256:e6f981aeb339e6ead5e5e87e14c55b715ac76d6b2a710b86d70ca69c7f2399ce AS base-libs
+FROM python:3.14-slim-bookworm@sha256:3fe1a0b6c2d6b2ebb572906cdabeca75aeb558c0c17db5ffefbcf8094871c32b AS base-libs
 
 LABEL maintainer="mapproxy.org"
 
