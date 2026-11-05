@@ -5,7 +5,7 @@ This tutorial guides you to the MapProxy installation process on Unix systems. F
 
 This tutorial was created and tested with Debian and Ubuntu, if you're installing MapProxy on a different system you might need to change some package names.
 
-MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 3.13 or higher, you can install MapProxy with::
+MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 3.12 or higher, you can install MapProxy with::
 
   python -m pip install MapProxy
 
@@ -25,7 +25,7 @@ Python ships with the ``venv`` module to create virtual environments. To create 
 
 You should now have a Python installation under ``venv/bin/python``.
 
-.. note:: The virtual environment will use your Python system packages (like ``python3-yaml``) only when it was created with the ``--system-site-packages`` option. This only works if the system Python is version 3.13 or higher.
+.. note:: The virtual environment will use your Python system packages (like ``python3-yaml``) only when it was created with the ``--system-site-packages`` option. This only works if the system Python is version 3.12 or higher.
 
 You need to either prefix all commands with ``venv/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
 
@@ -37,7 +37,7 @@ This will change the ``PATH`` for your `current` session.
 Install Dependencies
 --------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.13 or higher. Check the Python version of your Linux distribution, older distributions might need a newer Python installation.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.12 or higher. Check the Python version of your Linux distribution, older distributions might need a newer Python installation.
 
 MapProxy requires a few third-party libraries that are required to run.
 

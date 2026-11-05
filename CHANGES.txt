@@ -3,8 +3,8 @@ Unreleased
 
 Improvements:
 
-  - Re-add support for Python 3.13, as it is still used by a lot of setups (e.g. Debian 13). MapProxy now requires
-    Python 3.13 or higher
+  - Re-add support for Python 3.12 and 3.13, as they are still used by a lot of setups (e.g. Ubuntu 24.04 LTS and
+    Debian 13). MapProxy now requires Python 3.12 or higher
 
 
 8.0.1 2026-11-03

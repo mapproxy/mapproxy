@@ -1,7 +1,7 @@
 Installation on Windows
 =======================
 
-At first you need a working Python installation. You can download Python from: https://www.python.org/download/. MapProxy requires Python 3.13 or higher.
+At first you need a working Python installation. You can download Python from: https://www.python.org/download/. MapProxy requires Python 3.12 or higher.
 
 Virtualenv
 ----------
