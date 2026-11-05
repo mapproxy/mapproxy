@@ -2,7 +2,7 @@ Writing plugins
 ===============
 
 Since MapProxy 1.15, it is possible to write plugins for MapProxy that can
-add new sources, services or commands. This requires Python >= 3.14
+add new sources, services or commands. This requires Python >= 3.12
 
 Example
 -------

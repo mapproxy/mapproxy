@@ -8,14 +8,14 @@ These are currently hosted on the GitHub container registry and can be found her
 
 Currently we have 6 different images for every release, named e.g.
 
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine
 
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-dev
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine-dev
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-dev
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine-dev
 
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx
-  - ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine-nginx
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
+  - ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine-nginx
 
 The alpine variants use alpine base images and are functionally the same as the other images.
 
@@ -57,13 +57,13 @@ Then pull the image that you want to use, for example:
 
 .. code-block:: sh
 
-  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx
+  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
 
 And then run the image like this:
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 9090:9090 -v `pwd`/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx
+  docker run --rm --name "mapproxy" -p 9090:9090 -v `pwd`/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
 
 Afterwards, the `MapProxy` instance is running on http://localhost:9090/mapproxy/demo/
 

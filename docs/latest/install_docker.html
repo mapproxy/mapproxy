@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mapproxy.css?v=9ab0fcd5" />
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="2.0" />
-    <meta name="docbuild:last-update" content="Nov 03, 2026"/>
+    <meta name="docbuild:last-update" content="Nov 05, 2026"/>
   
     
     <script src="_static/searchtools.js"></script>
@@ -114,7 +114,7 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">8.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">8.1.0</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
@@ -390,12 +390,12 @@ These are currently hosted on the GitHub container registry and can be found her
 <p>Currently we have 6 different images for every release, named e.g.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0</p></li>
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine</p></li>
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-dev</p></li>
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine-dev</p></li>
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx</p></li>
-<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-alpine-nginx</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-dev</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine-dev</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx</p></li>
+<li><p>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-alpine-nginx</p></li>
 </ul>
 </div></blockquote>
 <p>The alpine variants use alpine base images and are functionally the same as the other images.</p>
@@ -425,11 +425,11 @@ that you can use to run one of the images or as a reference for the most commonl
 <p>Create a directory (e.g. <cite>mapproxyconfig</cite>) for your configuration files. Put your configs into that folder.
 If you do not supply a mapproxy config file the image will create a default seed.yaml and mapproxy.yaml for you.</p>
 <p>Then pull the image that you want to use, for example:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
 </pre></div>
 </div>
 <p>And then run the image like this:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:8.0.0-nginx
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;mapproxy&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span>-v<span class="w"> </span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml<span class="w"> </span>ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
 </pre></div>
 </div>
 <p>Afterwards, the <cite>MapProxy</cite> instance is running on <a class="reference external" href="http://localhost:9090/mapproxy/demo/">http://localhost:9090/mapproxy/demo/</a></p>
@@ -566,7 +566,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Nov 03, 2026.
+  Last updated on Nov 05, 2026.
   <br/>
 </p>
   </div>
