@@ -3,6 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.mypy]
+# check against the minimal supported Python version
+python_version = "3.13"
 disable_error_code = ["import-untyped", "import-not-found"]
 
 [[tool.mypy.overrides]]

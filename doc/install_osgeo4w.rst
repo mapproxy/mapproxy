@@ -12,7 +12,7 @@ In order to install MapProxy within an OSGeo4W environment, the first step is to
 * Select advanced installation
 * When shown a list of available packages, check (at least) ``python`` and ``python-pil`` for installation.
 
-.. note:: MapProxy requires Python 3.14 and Pillow 13.0.0 or higher. Make sure the Python of your OSGeo4W installation is recent enough. If ``python-pil`` is older than 13.0.0, pip will install a newer Pillow when installing MapProxy.
+.. note:: MapProxy requires Python 3.13 and Pillow 13.0.0 or higher. Make sure the Python of your OSGeo4W installation is recent enough. If ``python-pil`` is older than 13.0.0, pip will install a newer Pillow when installing MapProxy.
 
 .. _`OSGeo4W installer`: http://download.osgeo.org/osgeo4w/osgeo4w-setup.exe
 
