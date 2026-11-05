@@ -84,8 +84,31 @@ jobs:
           docker logs mapproxy-test
           exit 1
 
+      - name: Test start without config and with a named cache volume
+        run: |
+          docker run -d --name mapproxy-test-default \
+            -p 1${{ matrix.port }}:${{ matrix.port }} \
+            -v mapproxy-test-cache:/mapproxy/config/cache_data \
+            mapproxy-${{ matrix.name }}:test
+          ok=0
+          for i in $(seq 1 15); do
+            if curl -sf -o /dev/null http://localhost:1${{ matrix.port }}${{ matrix.test_path }}; then
+              ok=1; break
+            fi
+            sleep 2
+          done
+          docker logs mapproxy-test-default
+          if [ $ok != 1 ]; then
+            echo "❌ MapProxy (${{ matrix.name }}) did not respond with a generated default config"
+            exit 1
+          fi
+          docker exec mapproxy-test-default test -f /mapproxy/config/mapproxy.yaml
+          docker exec mapproxy-test-default touch /mapproxy/config/cache_data/write-test
+          echo "✅ default config created and cache volume writable"
+
       - name: Cleanup
         if: always()
         run: |
-          docker stop mapproxy-test || true
-          docker rm mapproxy-test || true
+          docker stop mapproxy-test mapproxy-test-default || true
+          docker rm mapproxy-test mapproxy-test-default || true
+          docker volume rm mapproxy-test-cache || true

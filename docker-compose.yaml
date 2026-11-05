@@ -13,9 +13,10 @@ services:
     volumes:
       # in single config use, mount a mapproxy config file to this location:
       - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
-      # the cache_data folder needs to be writable for the container
-      # this can be ensured by running `sudo chmod -R a+w cache_data`
-      - ./cache_data:/mapproxy/config/cache_data
+      # the tile cache is stored in the named volume `mapproxy-cache` (see below).
+      # to store it in a host directory instead, create it first and make it writable for UID 1000
+      # (`mkdir cache_data && sudo chown 1000:1000 cache_data`) and use `./cache_data:/mapproxy/config/cache_data`
+      - cache:/mapproxy/config/cache_data
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
@@ -33,9 +34,10 @@ services:
     volumes:
       # in single config use, mount a mapproxy config file to this location:
       - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
-      # the cache_data folder needs to be writable for the container
-      # this can be ensured by running `sudo chmod -R a+w cache_data`
-      - ./cache_data:/mapproxy/config/cache_data
+      # the tile cache is stored in the named volume `mapproxy-cache` (see below).
+      # to store it in a host directory instead, create it first and make it writable for UID 1000
+      # (`mkdir cache_data && sudo chown 1000:1000 cache_data`) and use `./cache_data:/mapproxy/config/cache_data`
+      - cache:/mapproxy/config/cache_data
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
@@ -54,9 +56,10 @@ services:
     volumes:
       # in single config use, mount a mapproxy config file to this location:
       - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
-      # the cache_data folder needs to be writable for the container
-      # this can be ensured by running `sudo chmod -R a+w cache_data`
-      - ./cache_data:/mapproxy/config/cache_data
+      # the tile cache is stored in the named volume `mapproxy-cache` (see below).
+      # to store it in a host directory instead, create it first and make it writable for UID 1000
+      # (`mkdir cache_data && sudo chown 1000:1000 cache_data`) and use `./cache_data:/mapproxy/config/cache_data`
+      - cache:/mapproxy/config/cache_data
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
@@ -75,9 +78,10 @@ services:
     volumes:
       # in single config use, mount a mapproxy config file to this location:
       - ./docker/mapproxy-example.yaml:/mapproxy/config/mapproxy.yaml
-      # the cache_data folder needs to be writable for the container
-      # this can be ensured by running `sudo chmod -R a+w cache_data`
-      - ./cache_data:/mapproxy/config/cache_data
+      # the tile cache is stored in the named volume `mapproxy-cache` (see below).
+      # to store it in a host directory instead, create it first and make it writable for UID 1000
+      # (`mkdir cache_data && sudo chown 1000:1000 cache_data`) and use `./cache_data:/mapproxy/config/cache_data`
+      - cache:/mapproxy/config/cache_data
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:
@@ -100,9 +104,10 @@ services:
       # for multiapp mode, mount multiple mapproxy config files to this location:
       - ./docker/mapproxy-example.yaml:/mapproxy/config/apps/mapproxy1.yaml
       - ./docker/mapproxy-example.yaml:/mapproxy/config/apps/mapproxy2.yaml
-      # the cache_data folder needs to be writable for the container
-      # this can be ensured by running `sudo chmod -R a+w cache_data`
-      - ./cache_data:/mapproxy/config/cache_data
+      # the tile cache is stored in the named volume `mapproxy-cache` (see below).
+      # to store it in a host directory instead, create it first and make it writable for UID 1000
+      # (`mkdir cache_data && sudo chown 1000:1000 cache_data`) and use `./cache_data:/mapproxy/config/cache_data`
+      - cache:/mapproxy/config/cache_data
       # to use a logging config that differs from a default one, mount it to this location:
       - ./docker/logging.ini:/mapproxy/config/logging.ini
     ports:

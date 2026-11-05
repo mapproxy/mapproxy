@@ -19,7 +19,7 @@ Currently we have 6 different images for every release, named e.g.
 
 The alpine variants use alpine base images and are functionally the same as the other images.
 
-The first ones comes with everything installed, but no HTTP WebServer running. These can be used for seeding tasks or as
+The first ones come with everything installed, but no HTTP WebServer running. These can be used for seeding tasks or as
 base images for implementing custom setups. As they have no WebServer running they are not used normally.
 
 The images ending with ``-dev``, start the integrated webserver mapproxy provides through
@@ -31,7 +31,7 @@ lets you use MapProxy instantly in a production environment.
 See the quickstart section below for a configuration / example on how to use those images.
 
 There are also several unofficial Docker images available on `Docker Hub <https://hub.docker.com/search?q=mapproxy>`_
-that provide ready-to-use containers forMapProxy.
+that provide ready-to-use containers for MapProxy.
 
 The community has very good experiences with the following ones:
 
@@ -51,7 +51,6 @@ The mapproxy repository includes an `example docker compose file <https://github
 that you can use to run one of the images or as a reference for the most commonly used options.
 
 Create a directory (e.g. `mapproxyconfig`) for your configuration files. Put your configs into that folder.
-If you do not supply a mapproxy config file the image will create a default seed.yaml and mapproxy.yaml for you.
 
 Then pull the image that you want to use, for example:
 
@@ -63,22 +62,56 @@ And then run the image like this:
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 9090:9090 -v `pwd`/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
+  docker run --rm --name "mapproxy" -p 9090:9090 \
+    -v `pwd`/mapproxyconfig/mapproxy.yaml:/mapproxy/config/mapproxy.yaml \
+    -v mapproxy-cache:/mapproxy/config/cache_data \
+    ghcr.io/mapproxy/mapproxy/mapproxy:8.1.0-nginx
 
 Afterwards, the `MapProxy` instance is running on http://localhost:9090/mapproxy/demo/
+
+The cached tiles are stored in the named volume ``mapproxy-cache``, so they are kept when the container is recreated.
+See :ref:`docker_volume_mounts` for other ways to store the cache.
+
+If you do not mount a ``mapproxy.yaml``, the image creates a default ``mapproxy.yaml`` and ``seed.yaml`` in
+``/mapproxy/config/`` on startup. This is useful to try out the images, but you should supply your own configuration
+for any real use.
 
 
 Configuration
 -------------
 
 
+.. _docker_volume_mounts:
+
 Volume-Mounts
 ~~~~~~~~~~~~~
 
 - ``/mapproxy/config/mapproxy.yaml``: MapProxy Config
 - ``/mapproxy/config/logging.ini``: Logging-Configuration
-- ``/mapproxy/config/cache_data``: Cache Data dir. Make sure that this directory is writable for the mapproxy image.
-  This can be achieved with `chmod -R a+r cache_data`
+- ``/mapproxy/config/apps/``: MapProxy configs for the multi app mode (see ``MULTIAPP_MAPPROXY`` below)
+- ``/mapproxy/config/cache_data``: Cache Data dir. This directory must be writable for the user that runs MapProxy
+  in the container (``mapproxy``, UID/GID ``1000`` by default, see :ref:`docker_build_own_image`).
+
+The config files only need to be readable, so you can mount them read-only (e.g. with ``:ro``).
+
+For the cache there are two options:
+
+- **Named volume** (recommended): ``-v mapproxy-cache:/mapproxy/config/cache_data``. Docker creates the volume on
+  first use with the correct ownership, so no further setup is required.
+- **Host directory**: ``-v `pwd`/cache_data:/mapproxy/config/cache_data``. Create the directory before starting the
+  container and make it writable for UID ``1000``:
+
+  .. code-block:: sh
+
+    mkdir cache_data
+    sudo chown 1000:1000 cache_data
+
+  If the directory does not exist, Docker creates it owned by ``root`` and MapProxy can not write to it. Requests
+  that need to fetch new tiles then fail with an HTTP 500 error and a ``Permission denied`` message in the
+  container log.
+
+If you mount a host directory to ``/mapproxy/config`` instead of single files, that directory has to be writable for
+UID ``1000`` as well when it does not contain a ``mapproxy.yaml``, so that the default config can be created.
 
 
 Environment Variables
@@ -91,6 +124,8 @@ Environment Variables
 - ``UWSGI_PROCESSES``: **nginx images only.** Number of uWSGI worker processes. Default is ``2``.
 - ``UWSGI_THREADS``: **nginx images only.** Number of threads per uWSGI worker process. Default is ``10``.
 
+
+.. _docker_build_own_image:
 
 Build your own image
 --------------------
