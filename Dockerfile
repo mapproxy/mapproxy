@@ -40,7 +40,9 @@ RUN mkdir /mapproxy && \
 WORKDIR /mapproxy
 USER mapproxy:mapproxy
 
-RUN mkdir mapproxy-dist
+# config/ and config/cache_data/ must be owned by the mapproxy user, so that the entrypoint can create a default config
+# and freshly created named volumes for the cache inherit the ownership
+RUN mkdir mapproxy-dist && mkdir -p config/cache_data
 COPY --from=builder /mapproxy/dist/* mapproxy-dist/
 
 # Installing optional packages and MapProxy afterwards
