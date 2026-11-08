@@ -747,6 +747,37 @@ class TestCacheMapLayer(object):
                {(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)}
         assert result.size == (50, 50)
 
+    def test_query_sources_multiple_sources_all_blank(self, mock_file_cache, tile_locker):
+        # Regression test: TileCreator._query_sources() must return None --
+        # same as the single-source fast path a few lines above it -- when
+        # a cache has >=2 sources and every one of them raises
+        # BlankImageError. Before the fix, the multi-source branch passed an
+        # empty layer list to merge_images(), whose LayerMerger.merge()
+        # returns a *truthy* BlankImageResult for an empty list rather than
+        # None, so callers that check falsiness (both call sites in this
+        # file, and rescale_tiles in TileManager) treated "no source
+        # produced anything" as if real image data had come back.
+        #
+        # Query is the exact out-of-range query from
+        # test_get_map_with_res_range above, which that sibling test proves
+        # is blank for this res_range/grid.
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        res_range = resolution_range(1000, 10)
+        sources = [
+            WMSSource(MockWMSClient(), res_range=res_range),
+            WMSSource(MockWMSClient(), res_range=res_range),
+        ]
+        image_opts = ImageOptions(resampling='nearest')
+        tile_mgr = TileManager(grid, mock_file_cache, sources, 'png',
+                               meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+                               locker=tile_locker)
+
+        query = MapQuery(
+            (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+            SRS(900913), 'png')
+        result = tile_mgr.creator()._query_sources(query)
+        assert result is None
+
 
 class TestCacheMapLayerWithExtent(object):
     @pytest.fixture
