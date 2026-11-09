@@ -72,6 +72,32 @@ class TestRedisCache(TileCacheTestBase):
         t2 = Tile(t1.coord)
         assert not cache.is_cached(t2)
 
+    def test_load_tile_with_metadata(self):
+        cache = RedisCache(self.host, int(self.port), prefix='mapproxy-test', db=1, ttl=3600)
+        t1 = self.create_tile(coord=(1234, 567, 9))
+        data = t1.image_result.as_buffer().read()
+        assert cache.store_tile(t1)
+
+        loaded = []
+        for _ in range(2):
+            t = Tile(t1.coord)
+            assert cache.load_tile(t, with_metadata=True)
+            loaded.append((t.timestamp, t.size))
+            time.sleep(1.1)
+
+        timestamp, size = loaded[0]
+        assert size == len(data)
+        assert abs(timestamp - time.time()) <= 10
+        assert loaded[0] == loaded[1]
+
+    def test_load_tile_without_ttl_has_no_timestamp(self):
+        t1 = self.create_tile(coord=(1234, 568, 9))
+        assert self.cache.store_tile(t1)
+        t = Tile(t1.coord)
+        assert self.cache.load_tile(t, with_metadata=True)
+        assert t.timestamp is None
+        assert t.size == len(t1.image_result.as_buffer().read())
+
     def test_double_remove(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
