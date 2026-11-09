@@ -15,7 +15,11 @@
 
 
 import os
+import socket
+import threading
 import time
+from contextlib import contextmanager
+from http.client import IncompleteRead
 
 import pytest
 
@@ -23,6 +27,7 @@ from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid.tile_grid import tile_grid
+from mapproxy.image.opts import ImageOptions
 from mapproxy.query import MapQuery, InfoQuery
 from mapproxy.request.wms import (
     WMS111MapRequest,
@@ -31,6 +36,7 @@ from mapproxy.request.wms import (
     WMS111FeatureInfoRequest,
 )
 from mapproxy.source import SourceError
+from mapproxy.source.wms import WMSSource
 from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.helper import assert_re, TempFile
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
@@ -358,7 +364,144 @@ class TestTileClient(object):
             assert resp == b'tile'
 
 
+class FakeImageResponse(object):
+    headers = {'Content-type': 'image/png'}
+
+    def __init__(self, body=b'', error=None):
+        self.body = body
+        self.error = error
+        self.closed = False
+
+    def read(self, *args):
+        if self.error:
+            raise self.error
+        return self.body
+
+    def close(self):
+        self.closed = True
+
+
+class FakeHTTPClient(HTTPClient):
+    def __init__(self, response, **kw):
+        super().__init__(**kw)
+        self.response = response
+
+    def open(self, url, data=None):
+        return self.response
+
+
+@contextmanager
+def truncating_server(body, content_length):
+    """
+    Serve a single image response that announces more bytes than it sends.
+    """
+    srv = socket.socket()
+    srv.bind(('127.0.0.1', 0))
+    srv.listen(1)
+
+    def serve():
+        conn, _ = srv.accept()
+        with conn:
+            conn.recv(4096)
+            conn.sendall(
+                b'HTTP/1.1 200 OK\r\nContent-type: image/png\r\nContent-Length: %d\r\n\r\n' % content_length
+                + body)
+
+    thread = threading.Thread(target=serve, daemon=True)
+    thread.start()
+    try:
+        yield 'http://127.0.0.1:%d' % srv.getsockname()[1]
+    finally:
+        thread.join(5)
+        srv.close()
+
+
 class TestWMSClient(object):
+    @staticmethod
+    def make_request():
+        req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                               param={'layers': 'foo', 'transparent': 'true'})
+        query = MapQuery(
+            (-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+        return req, query
+
+    @pytest.mark.parametrize('error', [
+        ConnectionResetError(104, 'Connection reset by peer'),
+        IncompleteRead(b'partial image', 1024),
+        TimeoutError('timed out'),
+    ])
+    def test_incomplete_response_body_raises_http_client_error(self, error):
+        response = FakeImageResponse(error=error)
+        client = FakeHTTPClient(response)
+        req, query = self.make_request()
+
+        with pytest.raises(HTTPClientError) as exc:
+            WMSClient(req, http_client=client).retrieve(query, 'png')
+
+        assert 'incomplete response from source WMS' in str(exc.value)
+        assert req.url in str(exc.value)
+        assert isinstance(exc.value.__cause__, type(error))
+        assert response.closed
+
+    def test_incomplete_response_body_hides_url_when_configured(self):
+        response = FakeImageResponse(error=ConnectionResetError(104, 'Connection reset by peer'))
+        client = FakeHTTPClient(response, hide_error_details=True)
+        req, query = self.make_request()
+
+        with pytest.raises(HTTPClientError) as exc:
+            WMSClient(req, http_client=client).retrieve(query, 'png')
+
+        assert str(exc.value) == (
+            'incomplete response from source WMS (see logs for URL and reason).')
+        assert req.url in exc.value.full_msg
+        assert response.closed
+
+    def test_truncated_response_from_server(self):
+        # real http.client response, no fake: the body ends before Content-Length
+        with truncating_server(b'partial image', content_length=1024) as url:
+            req = WMS111MapRequest(url=url + '/service?map=foo', param={'layers': 'foo'})
+            _, query = self.make_request()
+
+            with pytest.raises(HTTPClientError) as exc:
+                WMSClient(req, http_client=HTTPClient()).retrieve(query, 'png')
+
+        assert 'incomplete response from source WMS' in str(exc.value)
+        assert isinstance(exc.value.__cause__, IncompleteRead)
+
+    def test_incomplete_response_is_source_error(self):
+        client = FakeHTTPClient(
+            FakeImageResponse(error=ConnectionResetError(104, 'Connection reset by peer')))
+        req, query = self.make_request()
+        source = WMSSource(WMSClient(req, http_client=client),
+                           image_opts=ImageOptions(format='image/png'))
+
+        with pytest.raises(SourceError) as exc:
+            source.get_map(query)
+
+        assert 'incomplete response from source WMS' in str(exc.value)
+
+    def test_request_lock_covers_response_body_read(self):
+        lock = threading.Lock()
+
+        class LockedResponse(FakeImageResponse):
+            read_locked = False
+
+            def read(self, *args):
+                self.read_locked = lock.locked()
+                return super().read(*args)
+
+        class LockedClient(FakeHTTPClient):
+            def open(self, url, data=None):
+                assert lock.locked()
+                return super().open(url, data)
+
+        req, query = self.make_request()
+        response = LockedResponse(body=b'complete image body')
+        client = LockedClient(response)
+        WMSClient(req, http_client=client, lock=lambda: lock).retrieve(query, 'png')
+        assert response.read_locked
+        assert not lock.locked()
+
     def test_no_image(self, caplog):
         try:
             with mock_httpd(TESTSERVER_ADDRESS, [({
