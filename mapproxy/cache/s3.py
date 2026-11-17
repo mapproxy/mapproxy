@@ -114,6 +114,13 @@ class S3Cache(TileCacheBase):
             # AWS S3: always HTTPS
             return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{key}"
 
+    def _presigned_url(self, client_method, key):
+        # Built locally by botocore (SigV4 signature over Bucket/Key) — no
+        # network round-trip — so unsigned HEAD/GET requests against a
+        # private bucket are authenticated the same as the boto3 write path.
+        return self.conn().generate_presigned_url(
+            client_method, Params={'Bucket': self.bucket_name, 'Key': key})
+
     def tile_key(self, tile):
         return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
 
@@ -160,18 +167,22 @@ class S3Cache(TileCacheBase):
     def is_cached(self, tile: Tile, dimensions=None) -> bool:
         if tile.is_missing():
             if self.use_http_get:
-                url = self.get_bucket_url(tile)
+                key = self.tile_key(tile)
+                url = self._presigned_url('head_object', key)
                 try:
                     response = _http.request('HEAD', url)
-                    if response.status in (403, 404):
-                        log.debug('S3: is_cached HTTP %s, url: %s' % (response.status, url))
+                    if response.status == 404:
+                        log.debug('S3: is_cached HTTP 404, key: %s' % key)
                         return False
+                    if response.status == 403:
+                        log.error('S3: is_cached HTTP 403 (access denied), key: %s' % key)
+                        raise S3ConnectionError('S3 HTTP 403 (access denied) for key: %s' % key)
                     if response.status != 200:
-                        log.error('S3: is_cached HTTP error, url: %s, status: %s' % (url, response.status))
-                        raise S3ConnectionError('S3 HTTP error %s for url: %s' % (response.status, url))
+                        log.error('S3: is_cached HTTP error, key: %s, status: %s' % (key, response.status))
+                        raise S3ConnectionError('S3 HTTP error %s for key: %s' % (response.status, key))
                     self._set_metadata(response.headers, tile)
                 except urllib3.exceptions.HTTPError as e:
-                    log.error('S3: is_cached request error, url: %s, error: %s' % (url, e))
+                    log.error('S3: is_cached request error, key: %s, error: %s' % (key, e))
                     raise
             else:
                 key = self.tile_key(tile)
@@ -197,18 +208,21 @@ class S3Cache(TileCacheBase):
         log.debug('S3:load_tile, key: %s' % key)
 
         if self.use_http_get:
-            url = self.get_bucket_url(tile)
+            url = self._presigned_url('get_object', key)
             try:
                 response = _http.request('GET', url)
-                if response.status in (403, 404):
-                    log.debug('S3: load_tile HTTP %s, url: %s' % (response.status, url))
+                if response.status == 404:
+                    log.debug('S3: load_tile HTTP 404, key: %s' % key)
                     return False
+                if response.status == 403:
+                    log.error('S3: load_tile HTTP 403 (access denied), key: %s' % key)
+                    raise S3ConnectionError('S3 HTTP 403 (access denied) for key: %s' % key)
                 if response.status != 200:
-                    log.error('S3: load_tile HTTP error, url: %s, status: %s' % (url, response.status))
-                    raise S3ConnectionError('S3 HTTP error %s for url: %s' % (response.status, url))
+                    log.error('S3: load_tile HTTP error, key: %s, status: %s' % (key, response.status))
+                    raise S3ConnectionError('S3 HTTP error %s for key: %s' % (response.status, key))
                 tile.image_result = ImageResult(io.BytesIO(response.data))
             except urllib3.exceptions.HTTPError as e:
-                log.error('S3: load_tile request error, url: %s, error: %s' % (url, e))
+                log.error('S3: load_tile request error, key: %s, error: %s' % (key, e))
                 raise
         else:
             try:
