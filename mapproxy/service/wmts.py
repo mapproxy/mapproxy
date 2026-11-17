@@ -135,6 +135,8 @@ class WMTSServer(Server):
 
         if coverage and not coverage.contains(query.coord, query.srs):
             infos = []
+        elif not tile_layer.shows_tile_bbox(bbox):
+            infos = []
         else:
             for source in tile_layer.info_sources:
                 info = source.get_info(query)

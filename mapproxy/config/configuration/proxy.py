@@ -7,7 +7,9 @@ from copy import deepcopy
 
 from mapproxy.config import defaults
 from mapproxy.config.configuration.service import ServiceConfiguration
-from mapproxy.config.configuration.layer import WMSLayerConfiguration, LayerConfiguration
+from mapproxy.config.configuration.layer import WMSLayerConfiguration, LayerConfiguration, LayerLimits
+from mapproxy.grid.resolutions import EmptyResolutionRangeError
+from mapproxy.util.geom import EmptyGeometryError
 from mapproxy.config.configuration.cache import CacheConfiguration
 from mapproxy.config.configuration.source import SourcesCollection, SourceConfiguration
 from mapproxy.config.configuration.global_conf import GlobalConfiguration
@@ -69,9 +71,9 @@ class ProxyConfiguration(object):
         if layers_conf is None:
             return
         layers = self._flatten_layers_conf_dict(layers_conf)
-        for layer_name, layer_conf in layers.items():
+        for layer_name, (layer_conf, limits) in layers.items():
             layer_conf['name'] = layer_name
-            self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
+            self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self, limits=limits)
 
     def _legacy_layers_conf_dict(self):
         """
@@ -158,19 +160,25 @@ class ProxyConfiguration(object):
 
         return layers_conf
 
-    def _flatten_layers_conf_dict(self, layers_conf, _layers=None):
+    def _flatten_layers_conf_dict(self, layers_conf, _layers=None, _limits=None):
         """
         Returns a dictionary with all layers that have a name and sources.
         Flattens the layer tree.
         """
         layers = _layers if _layers is not None else OrderedDict()
 
+        try:
+            limits = (_limits or LayerLimits()).restrict(
+                layers_conf, LayerConfiguration(layers_conf, self).dimensions())
+        except (EmptyResolutionRangeError, EmptyGeometryError):
+            return layers
+
         if 'layers' in layers_conf:
             for layer in layers_conf.pop('layers'):
-                self._flatten_layers_conf_dict(layer, layers)
+                self._flatten_layers_conf_dict(layer, layers, limits)
 
         if 'name' in layers_conf and ('sources' in layers_conf or 'tile_sources' in layers_conf):
-            layers[layers_conf['name']] = layers_conf
+            layers[layers_conf['name']] = (layers_conf, limits)
 
         return layers
 
