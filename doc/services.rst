@@ -475,6 +475,8 @@ MapProxy implements `OGC API Maps - Part 1 - Core <https://docs.ogc.org/is/20-05
 
 The service is available at ``/ogcapi``.
 
+A grid whose definition (SRS, origin, tile size and every level's resolution and matrix size) equals an `OGC registered tile matrix set <https://docs.ogc.org/is/17-083r4/17-083r4.html>`__ (``WebMercatorQuad``, ``WorldCRS84Quad`` or ``WorldMercatorWGS84Quad``) is advertised with that set's ``tileMatrixSetURI``. This needs ``origin: nw`` and 256x256 tiles. Other grids, including ``GLOBAL_GEODETIC`` (its level 0 differs from ``WorldCRS84Quad``), only link to their own definition under ``/ogcapi/tileMatrixSets``.
+
 The minimum block to enable them is:
 .. code-block:: yaml
 

@@ -18,6 +18,7 @@
 from typing import Optional, Any
 
 from mapproxy.config.config import base_config
+from mapproxy.grid.tile_grid import registered_ogc_tile_matrix_set
 from mapproxy.request.base import Request
 from mapproxy.srs import SRS
 from mapproxy.service.ogcapi.server import OGCAPIException, OGCAPIServer
@@ -40,13 +41,13 @@ def _base_tileset(
         if coll_id
         else f"Whole dataset with {tms_name} tile matrix set"
     )
-    if tms_name == "WebMercatorQuad":
-        tileset[
-            "tileMatrixSetURI"
-        ] = "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad"
+    tile_grid = server.grid_configs[tms_name].tile_grid()
+    registered = registered_ogc_tile_matrix_set(tile_grid)
+    if registered:
+        tileset["tileMatrixSetURI"] = registered.uri
     tileset["dataType"] = "map"
 
-    srs = server.grid_configs[tms_name].tile_grid().srs
+    srs = tile_grid.srs
     if srs.srs_code == "EPSG:4326":
         srs = SRS("OGC:CRS84")
     elif srs.srs_code == "EPSG:900913":

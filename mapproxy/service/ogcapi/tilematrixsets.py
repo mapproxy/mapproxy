@@ -16,7 +16,10 @@
 # limitations under the License.
 
 from mapproxy.request.base import Request
-from mapproxy.grid.tile_grid import tile_grid_to_ogc_tile_matrix_set
+from mapproxy.grid.tile_grid import (
+    registered_ogc_tile_matrix_set,
+    tile_grid_to_ogc_tile_matrix_set,
+)
 from mapproxy.service.ogcapi.server import OGCAPIException, OGCAPIServer
 from mapproxy.service.ogcapi.constants import FORMAT_TYPES, F_JSON, F_HTML
 
@@ -58,10 +61,9 @@ def tilematrixsets(server: OGCAPIServer, req: Request):
                 },
             ],
         }
-        if name == "WebMercatorQuad":
-            tms[
-                "uri"
-            ] = "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad"
+        registered = registered_ogc_tile_matrix_set(server.grid_configs[name].tile_grid())
+        if registered:
+            tms["uri"] = registered.uri
 
         tileMatrixSets.append(tms)
 
@@ -85,20 +87,15 @@ def tilematrixset(server: OGCAPIServer, req: Request, id: str):
     if id not in server.grid_configs:
         raise OGCAPIException("Not Found", "TileMatrixSet not found", status=404)
 
-    uri = None
-    wellKnownScaleSet = None
-    if id == "WebMercatorQuad":
-        uri = "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad"
-        wellKnownScaleSet = (
-            "http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible"
-        )
+    tile_grid = server.grid_configs[id].tile_grid()
+    registered = registered_ogc_tile_matrix_set(tile_grid)
 
     json_resp = tile_grid_to_ogc_tile_matrix_set(
-        server.grid_configs[id].tile_grid(),
+        tile_grid,
         id,
         title=id,
-        uri=uri,
-        well_known_scale_set=wellKnownScaleSet,
+        uri=registered and registered.uri,
+        well_known_scale_set=registered and registered.well_known_scale_set,
     )
 
     return server.create_json_or_html_response(
