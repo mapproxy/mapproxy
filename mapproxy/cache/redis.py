@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 
 import hashlib
-import datetime
 import time
 from io import BytesIO
 from typing import Optional, cast
@@ -151,6 +150,8 @@ class RedisCache(TileCacheBase):
             if tile_data:
                 # TODO: according to documentation get returns an Awaitable
                 tile.image_result = ImageResult(BytesIO(cast(bytes, tile_data)))
+                if with_metadata:
+                    self.load_tile_metadata(tile)
                 return True
             return False
         except redis.exceptions.TimeoutError as e:
@@ -165,15 +166,15 @@ class RedisCache(TileCacheBase):
             return
         try:
             pipe = self.r.pipeline()
-            pipe.ttl(self._key(tile))
-            pipe.memory_usage(self._key(tile))
-            pipe_res = pipe.execute()
-            tile.timestamp = (
-                time.mktime(datetime.datetime.now().timetuple())
-                - self.ttl
-                - int(pipe_res[0])
-            )
-            tile.size = pipe_res[1]
+            pipe.pttl(self._key(tile))
+            pipe.strlen(self._key(tile))
+            remaining_ms, size = pipe.execute()
+            if size:
+                tile.size = size
+            # The creation time is only known from the remaining TTL; without an expiry it stays unset.
+            # Rounded so that repeated loads give the same value (and the same ETag).
+            if self.ttl and remaining_ms >= 0:
+                tile.timestamp = round(time.time() - (self.ttl - remaining_ms / 1000))
         except (
             redis.exceptions.TimeoutError,
             redis.exceptions.ConnectionError,
