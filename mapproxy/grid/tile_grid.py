@@ -1,5 +1,5 @@
 import math
-from typing import Optional, Any, TypeGuard, Union
+from typing import NamedTuple, Optional, Any, TypeGuard, Union
 
 from mapproxy.grid import (NoTiles, GridError, _create_tile_list, default_bboxs,
                            grid_bbox, origin_from_string, TileCoord)
@@ -600,6 +600,56 @@ def is_float(x: Any) -> TypeGuard[float]:
         return True
     except TypeError:
         return False
+
+
+class RegisteredTileMatrixSet(NamedTuple):
+    id: str
+    srs_codes: tuple[str, ...]
+    well_known_scale_set: str
+    top_left: tuple[float, float]
+    cell_size: float
+    matrix_size: tuple[int, int]
+    max_levels: int
+
+    @property
+    def uri(self) -> str:
+        return f"http://www.opengis.net/def/tilematrixset/OGC/1.0/{self.id}"
+
+
+# https://github.com/opengeospatial/2D-Tile-Matrix-Set/tree/master/registry/json
+REGISTERED_TILE_MATRIX_SETS = (
+    RegisteredTileMatrixSet(
+        "WebMercatorQuad", ("EPSG:3857", "EPSG:900913"),
+        "http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible",
+        (-20037508.3427892, 20037508.3427892), 156543.033928041, (1, 1), 25),
+    RegisteredTileMatrixSet(
+        "WorldCRS84Quad", ("EPSG:4326", "CRS:84"),
+        "http://www.opengis.net/def/wkss/OGC/1.0/GoogleCRS84Quad",
+        (-180, 90), 0.703125, (2, 1), 24),
+    RegisteredTileMatrixSet(
+        "WorldMercatorWGS84Quad", ("EPSG:3395",),
+        "http://www.opengis.net/def/wkss/OGC/1.0/WorldMercatorWGS84",
+        (-20037508.3427892, 20037508.3427892), 156543.033928041, (1, 1), 25),
+)
+
+
+def registered_ogc_tile_matrix_set(tile_grid: TileGrid) -> Optional[RegisteredTileMatrixSet]:
+    if tile_grid.origin != "ul" or tuple(tile_grid.tile_size) != (256, 256):
+        return None
+    close = math.isclose
+    for reg in REGISTERED_TILE_MATRIX_SETS:
+        if (tile_grid.srs.srs_code not in reg.srs_codes
+                or not 0 < tile_grid.levels <= reg.max_levels
+                or not all(close(a, b, rel_tol=1e-9, abs_tol=1e-6)
+                           for a, b in zip((tile_grid.bbox[0], tile_grid.bbox[3]), reg.top_left))):
+            continue
+        if all(
+            tuple(tile_grid.grid_sizes[level]) == (reg.matrix_size[0] << level, reg.matrix_size[1] << level)
+            and close(tile_grid.resolutions[level], reg.cell_size / (1 << level), rel_tol=1e-8)
+            for level in range(tile_grid.levels)
+        ):
+            return reg
+    return None
 
 
 def tile_grid_to_ogc_tile_matrix_set(tile_grid: TileGrid,
