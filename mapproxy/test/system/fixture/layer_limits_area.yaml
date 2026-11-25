@@ -1,0 +1,82 @@
+globals:
+  image:
+    paletted: false
+
+services:
+  tms:
+    use_grid_names: true
+  wmts:
+  wms:
+    srs: ['EPSG:3857', 'EPSG:4326']
+    featureinfo_types: ['text']
+    md:
+      title: Layer limits
+
+layers:
+  - name: region
+    title: Region
+    coverage:
+      bbox: [0, 0, 20, 20]
+      srs: 'EPSG:4326'
+    layers:
+      - name: lakes
+        title: Lakes
+        coverage:
+          bbox: [10, 10, 40, 40]
+          srs: 'EPSG:4326'
+        sources: [wms_lakes]
+      - name: rivers
+        title: Rivers
+        sources: [wms_rivers]
+      - name: far
+        title: Far
+        coverage:
+          bbox: [100, 50, 120, 60]
+          srs: 'EPSG:4326'
+        sources: [wms_far]
+  - name: north_group
+    title: Northern tiles
+    coverage:
+      bbox: [-20037508.34, 0, 20037508.34, 20037508.34]
+      srs: 'EPSG:3857'
+    layers:
+      - name: north
+        title: North
+        sources: [north_cache]
+
+caches:
+  north_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    meta_size: [1, 1]
+    meta_buffer: 0
+    format: image/png
+    sources: [wms_north]
+
+sources:
+  wms_lakes:
+    type: wms
+    supported_srs: ['EPSG:4326']
+    wms_opts:
+      featureinfo: true
+    req:
+      url: http://localhost:42423/service
+      layers: lakes
+  wms_rivers:
+    type: wms
+    supported_srs: ['EPSG:4326']
+    req:
+      url: http://localhost:42423/service
+      layers: rivers
+  wms_far:
+    type: wms
+    supported_srs: ['EPSG:4326']
+    req:
+      url: http://localhost:42423/service
+      layers: far
+  wms_north:
+    type: wms
+    supported_srs: ['EPSG:3857']
+    req:
+      url: http://localhost:42423/service
+      layers: north

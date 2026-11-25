@@ -224,6 +224,30 @@ def min_with_none(a, b):
         return min(a, b)
 
 
+class EmptyResolutionRangeError(ValueError):
+    """Raised if two resolution ranges do not overlap."""
+
+
+def intersect_resolution_range(
+    a: Optional[ResolutionRange], b: Optional[ResolutionRange]
+) -> Optional[ResolutionRange]:
+    """
+    Return the resolution range that is inside of both `a` and `b`.
+    `None` means unlimited. Raises `EmptyResolutionRangeError` if the ranges do not overlap.
+    """
+    if a is None:
+        return b
+    if b is None:
+        return a
+    min_values = [r for r in (a.min_res, b.min_res) if r]
+    max_values = [r for r in (a.max_res, b.max_res) if r]
+    min_res = min(min_values) if min_values else None
+    max_res = max(max_values) if max_values else None
+    if min_res and max_res and min_res <= max_res:
+        raise EmptyResolutionRangeError("resolution ranges %r and %r do not overlap" % (a, b))
+    return ResolutionRange(min_res, max_res)
+
+
 def merge_resolution_range(a: Optional[ResolutionRange], b: Optional[ResolutionRange]) -> Optional[ResolutionRange]:
     if a is None or b is None:
         return None
