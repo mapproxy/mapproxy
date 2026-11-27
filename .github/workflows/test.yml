@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-26.04
     services:
       redis-server:
-        image: redis@sha256:1f88291b4c57bdf249f02eb085a8669889b2d2954e91d4de5118a5da6b78dd53
+        image: redis@sha256:56a1737794e36c3ebe8a4544a8ab421af3ab1a6488fb2238aec228c404933fed
         ports:
           - 6379:6379
       couchdb:
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-26.04
     services:
       redis-server:
-        image: redis@sha256:1f88291b4c57bdf249f02eb085a8669889b2d2954e91d4de5118a5da6b78dd53
+        image: redis@sha256:56a1737794e36c3ebe8a4544a8ab421af3ab1a6488fb2238aec228c404933fed
         ports:
           - 6379:6379
       couchdb:
